@@ -18,7 +18,7 @@ import { openArmory, getArmoryUrl, getGuildArmoryUrl } from '../utils/armory';
 export class AchievementLadderComponent implements OnInit {
   players: PlayerAchievement[] = [];
   currentSort: string = 'achievementPoints';
-  currentRealm?: string = undefined; // Changed to show all realms by default
+  currentRealm?: string = undefined;
   currentFaction?: string;
   currentClass?: number;
   pageSize = 100;
@@ -78,7 +78,6 @@ export class AchievementLadderComponent implements OnInit {
   ) {}
 
   ngOnInit() {
-    // Subscribe immediately so the view updates when data arrives
     this.applyFilters();
     this.syncData();
     this.loadLastUpdated();
@@ -94,13 +93,10 @@ export class AchievementLadderComponent implements OnInit {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
-  /**
-   * Trigger data sync from Tauri API (auto only)
-   */
   async syncData() {
     try {
       await this.dataSyncService.syncData();
-      this.applyFilters(); // Refresh the view with new data
+      this.applyFilters();
       this.cdr.markForCheck();
     } catch (error) {
       console.error('Failed to sync data:', error);
