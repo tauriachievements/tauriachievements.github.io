@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, HostListener, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { HttpClient, HttpClientModule } from '@angular/common/http';
 import { PlayerAchievement } from './models/achievement.model';
@@ -32,6 +32,7 @@ export class AchievementLadderComponent implements OnInit {
   selectedClassLabel = 'All Classes';
   selectedClassIcon?: string;
   lastEdited?: Date;
+  showBackToTop = false;
   getClassIconPath = getClassIconPath;
   openArmory = openArmory;
   getArmoryUrl = getArmoryUrl;
@@ -81,6 +82,16 @@ export class AchievementLadderComponent implements OnInit {
     this.applyFilters();
     this.syncData();
     this.loadLastUpdated();
+  }
+
+  @HostListener('window:scroll')
+  onWindowScroll() {
+    const scrollTop = window.pageYOffset || document.documentElement.scrollTop || 0;
+    this.showBackToTop = scrollTop > 400;
+  }
+
+  scrollToTop() {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
   /**
