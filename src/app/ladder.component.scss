@@ -497,6 +497,7 @@
     display: block;
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
+    table-layout: fixed;
   }
 
   .wow-table th,
@@ -505,9 +506,22 @@
     font-size: 0.78rem;
   }
 
+  .wow-table th:nth-child(1),
+  .wow-table td:nth-child(1),
+  .wow-table th:nth-child(4),
+  .wow-table td:nth-child(4) {
+    display: none;
+  }
+
   .wow-table th:nth-child(5),
   .wow-table td:nth-child(5) {
     display: none;
+  }
+
+  .wow-table td:nth-child(2) {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 
   .back-to-top {
