@@ -59,14 +59,14 @@
         <td>
           <span class="metric-inline">
             <span
-              *ngIf="showAchievementProgress(player)"
+              *ngIf="showAchievementDelta(player)"
               class="metric-delta"
               [ngClass]="getAchievementDeltaClass(player)">
               {{ formatSignedValue(player.achievementPointsDelta) }}
             </span>
             <span class="metric-value gold-text">{{ player.achievementPoints | number }}</span>
             <span
-              *ngIf="showAchievementProgress(player)"
+              *ngIf="showAchievementRank(player)"
               class="metric-rank-pill"
               [ngClass]="getAchievementRankClass(player)"
               [title]="getAchievementRankTitle(player)">
@@ -77,14 +77,14 @@
         <td>
           <span class="metric-inline">
             <span
-              *ngIf="showHonorableKillProgress(player)"
+              *ngIf="showHonorableKillDelta(player)"
               class="metric-delta"
               [ngClass]="getHonorableKillDeltaClass(player)">
               {{ formatSignedValue(player.honorableKillsDelta) }}
             </span>
             <span class="metric-value">{{ player.honorableKills | number }}</span>
             <span
-              *ngIf="showHonorableKillProgress(player)"
+              *ngIf="showHonorableKillRank(player)"
               class="metric-rank-pill"
               [ngClass]="getHonorableKillRankClass(player)"
               [title]="getHonorableKillRankTitle(player)">

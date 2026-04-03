@@ -33,9 +33,25 @@ export class LeaderboardTableComponent {
       && (player.achievementPointsDelta !== 0 || player.achievementRankDelta !== 0);
   }
 
+  showAchievementDelta(player: LadderPlayerView): boolean {
+    return this.currentSort === 'achievementPoints' && player.achievementPointsDelta !== 0;
+  }
+
+  showAchievementRank(player: LadderPlayerView): boolean {
+    return this.currentSort === 'achievementPoints' && player.achievementRankDelta !== 0;
+  }
+
   showHonorableKillProgress(player: LadderPlayerView): boolean {
     return this.currentSort === 'honorableKills'
       && (player.honorableKillsDelta !== 0 || player.honorableKillsRankDelta !== 0);
+  }
+
+  showHonorableKillDelta(player: LadderPlayerView): boolean {
+    return this.currentSort === 'honorableKills' && player.honorableKillsDelta !== 0;
+  }
+
+  showHonorableKillRank(player: LadderPlayerView): boolean {
+    return this.currentSort === 'honorableKills' && player.honorableKillsRankDelta !== 0;
   }
 
   formatSignedValue(value: number): string {
