@@ -1,16 +1,3 @@
-export type SerializedLadderHistoryEntry = [
-  snapshotIndex: number,
-  achievementRank: number,
-  honorableRank: number,
-  achievementPoints: number,
-  honorableKills: number
-];
-
-export type SerializedLadderHistoryPlayerRecord = [
-  playerKey: string,
-  entries: SerializedLadderHistoryEntry[]
-];
-
 export type SerializedLadderHistoryMover = [
   playerKey: string,
   delta: number,
@@ -30,20 +17,12 @@ export type SerializedLadderHistoryMover = [
 export interface SerializedLadderHistorySnapshot {
   v: 1;
   g: string;
-  t: number;
+  c: number;
   s: string[];
-  p: SerializedLadderHistoryPlayerRecord[];
   m: {
     a: SerializedLadderHistoryMover[];
     h: SerializedLadderHistoryMover[];
   };
-}
-
-export interface LadderHistoryPlayerRanks {
-  achievementRanks: number[];
-  honorableRanks: number[];
-  achievementPoints: number[];
-  honorableKills: number[];
 }
 
 export interface LadderHistoryMoverView {
@@ -67,8 +46,7 @@ export interface LadderHistoryMoverView {
 export interface LadderHistoryData {
   generatedAt?: Date;
   snapshots: Date[];
-  trackedRankLimit: number;
-  players: ReadonlyMap<string, LadderHistoryPlayerRanks>;
+  trackedPlayerCount: number;
   movers: {
     achievementPoints: LadderHistoryMoverView[];
     honorableKills: LadderHistoryMoverView[];

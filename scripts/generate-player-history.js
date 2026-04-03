@@ -9,8 +9,7 @@ const outputDir = path.join(__dirname, "..", "src", "assets", "data");
 const outputPath = path.join(outputDir, "players.history.snapshot.json");
 
 const SNAPSHOT_DAY_LIMIT = 21;
-const TRACKED_RANK_LIMIT = 1500;
-const MOVERS_LIMIT = 10;
+const MOVERS_LIMIT = 20;
 const GIT_FILE_MAX_BUFFER = 1024 * 1024 * 64;
 
 function generatePlayerHistorySnapshot() {
@@ -21,11 +20,8 @@ function generatePlayerHistorySnapshot() {
   const payload = {
     v: 1,
     g: new Date().toISOString(),
-    t: TRACKED_RANK_LIMIT,
+    c: playerHistories.size,
     s: snapshotSources.map((source) => source.timestamp),
-    p: Array.from(playerHistories.entries())
-      .sort((left, right) => left[0].localeCompare(right[0]))
-      .map(([playerKey, history]) => [playerKey, history]),
     m: {
       a: movers.achievementPoints,
       h: movers.honorableKills,
@@ -135,20 +131,15 @@ function collectTrackedPlayerKeys(snapshotSources) {
 
   for (const source of snapshotSources) {
     const players = parsePlayersCsv(source.loadCsvText());
-    const achievementSorted = [...players].sort(compareAchievementPoints);
-    const honorableKillsSorted = [...players].sort(compareHonorableKills);
-
-    collectTopKeys(achievementSorted, trackedKeys);
-    collectTopKeys(honorableKillsSorted, trackedKeys);
+    collectAllKeys(players, trackedKeys);
   }
 
   return trackedKeys;
 }
 
-function collectTopKeys(players, trackedKeys) {
-  const limit = Math.min(TRACKED_RANK_LIMIT, players.length);
-  for (let index = 0; index < limit; index++) {
-    trackedKeys.add(getPlayerKey(players[index]));
+function collectAllKeys(players, trackedKeys) {
+  for (const player of players) {
+    trackedKeys.add(getPlayerKey(player));
   }
 }
 
@@ -165,29 +156,8 @@ function buildPlayerHistories(snapshotSources, trackedKeys) {
     assignRanks(playerHistories, trackedKeys, snapshotIndex, honorableKillsSorted, "honorableKills");
   }
 
-  const serializedHistories = new Map();
-  for (const [playerKey, history] of playerHistories.entries()) {
-    const entries = [];
-    for (let snapshotIndex = 0; snapshotIndex < snapshotCount; snapshotIndex++) {
-      const achievementRank = history.achievementRanks[snapshotIndex] ?? 0;
-      const honorableRank = history.honorableRanks[snapshotIndex] ?? 0;
-      const achievementPoints = history.achievementPoints[snapshotIndex] ?? 0;
-      const honorableKills = history.honorableKills[snapshotIndex] ?? 0;
-
-      if (!achievementRank && !honorableRank && !achievementPoints && !honorableKills) {
-        continue;
-      }
-
-      entries.push([snapshotIndex, achievementRank, honorableRank, achievementPoints, honorableKills]);
-    }
-
-    if (entries.length > 0) {
-      serializedHistories.set(playerKey, entries);
-    }
-  }
-
   return {
-    playerHistories: serializedHistories,
+    playerHistories,
     movers: {
       achievementPoints: computeTopMovers(playerHistories, "achievementRanks", "achievementPoints"),
       honorableKills: computeTopMovers(playerHistories, "honorableRanks", "honorableKills"),

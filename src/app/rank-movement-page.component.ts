@@ -26,7 +26,6 @@ export class TopGainersPageComponent implements OnInit {
   readonly lastEditedTimeZoneLabel = signal('Local time');
   readonly comparisonLabel = computed(() => buildHistoryComparisonLabel(this.history()?.snapshots ?? []));
   readonly snapshotCount = computed(() => this.history()?.snapshots.length ?? 0);
-  readonly trackedRankLimit = computed(() => this.history()?.trackedRankLimit ?? 0);
   readonly achievementMovers = computed(() => this.history()?.movers.achievementPoints ?? []);
   readonly honorableKillMovers = computed(() => this.history()?.movers.honorableKills ?? []);
   readonly historyAvailable = computed(() => this.snapshotCount() > 1);

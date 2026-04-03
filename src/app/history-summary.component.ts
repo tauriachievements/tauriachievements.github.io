@@ -15,8 +15,6 @@ import { LadderHistoryMoverView } from './ladder-history.types';
 })
 export class HistorySummaryComponent {
   @Input() comparisonLabel = '';
-  @Input() snapshotCount = 0;
-  @Input() trackedRankLimit = 0;
   @Input() achievementMovers: ReadonlyArray<LadderHistoryMoverView> = [];
   @Input() honorableKillMovers: ReadonlyArray<LadderHistoryMoverView> = [];
 

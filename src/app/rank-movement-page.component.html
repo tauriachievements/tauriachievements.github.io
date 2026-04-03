@@ -6,8 +6,6 @@
   <app-history-summary
     *ngIf="historyAvailable(); else historyUnavailable"
     [comparisonLabel]="comparisonLabel()"
-    [snapshotCount]="snapshotCount()"
-    [trackedRankLimit]="trackedRankLimit()"
     [achievementMovers]="achievementMovers()"
     [honorableKillMovers]="honorableKillMovers()" />
 </div>

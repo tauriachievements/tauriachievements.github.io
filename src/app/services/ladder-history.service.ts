@@ -4,9 +4,7 @@ import { Observable, catchError, map, of, shareReplay } from 'rxjs';
 import {
   LadderHistoryData,
   LadderHistoryMoverView,
-  LadderHistoryPlayerRanks,
   SerializedLadderHistoryMover,
-  SerializedLadderHistoryPlayerRecord,
   SerializedLadderHistorySnapshot
 } from '../ladder-history.types';
 import { splitLadderHistoryPlayerKey } from '../ladder-history.mapper';
@@ -28,60 +26,23 @@ export class LadderHistoryService {
   }
 
   private deserializeSnapshot(snapshot: SerializedLadderHistorySnapshot): LadderHistoryData | null {
-    if (!snapshot || !Array.isArray(snapshot.s) || !Array.isArray(snapshot.p)) {
+    if (!snapshot || !Array.isArray(snapshot.s)) {
       return null;
     }
 
     const snapshots = snapshot.s
       .map((value) => new Date(value))
       .filter((value) => !Number.isNaN(value.getTime()));
-    const players = new Map<string, LadderHistoryPlayerRanks>(
-      snapshot.p.map((record) => this.deserializePlayerRecord(record, snapshots.length))
-    );
 
     return {
       generatedAt: this.parseOptionalDate(snapshot.g),
       snapshots,
-      trackedRankLimit: snapshot.t,
-      players,
+      trackedPlayerCount: snapshot.c ?? 0,
       movers: {
         achievementPoints: (snapshot.m?.a ?? []).map((mover) => this.deserializeMover(mover)),
         honorableKills: (snapshot.m?.h ?? []).map((mover) => this.deserializeMover(mover))
       }
     };
-  }
-
-  private deserializePlayerRecord(
-    record: SerializedLadderHistoryPlayerRecord,
-    snapshotCount: number
-  ): [string, LadderHistoryPlayerRanks] {
-    const [playerKey, entries] = record;
-    const achievementRanks = Array.from({ length: snapshotCount }, () => 0);
-    const honorableRanks = Array.from({ length: snapshotCount }, () => 0);
-    const achievementPoints = Array.from({ length: snapshotCount }, () => 0);
-    const honorableKills = Array.from({ length: snapshotCount }, () => 0);
-
-    for (const entry of entries) {
-      const [snapshotIndex, achievementRank, honorableRank, snapshotAchievementPoints, snapshotHonorableKills] = entry;
-      if (snapshotIndex < 0 || snapshotIndex >= snapshotCount) {
-        continue;
-      }
-
-      achievementRanks[snapshotIndex] = achievementRank ?? 0;
-      honorableRanks[snapshotIndex] = honorableRank ?? 0;
-      achievementPoints[snapshotIndex] = snapshotAchievementPoints ?? 0;
-      honorableKills[snapshotIndex] = snapshotHonorableKills ?? 0;
-    }
-
-    return [
-      playerKey,
-      {
-        achievementRanks,
-        honorableRanks,
-        achievementPoints,
-        honorableKills
-      }
-    ];
   }
 
   private deserializeMover(mover: SerializedLadderHistoryMover): LadderHistoryMoverView {
