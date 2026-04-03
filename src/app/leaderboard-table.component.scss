@@ -175,6 +175,59 @@
   text-shadow: 0 0 10px rgba(255, 215, 0, 0.3);
 }
 
+.metric-inline {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  white-space: nowrap;
+}
+
+.metric-value {
+  display: inline-block;
+}
+
+.metric-delta {
+  font-size: 0.76rem;
+  font-weight: 800;
+  color: #d4d8e2;
+
+  &.positive {
+    color: #8ce89b;
+  }
+
+  &.negative {
+    color: #ff9a9a;
+  }
+}
+
+.metric-rank-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 34px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  border: 1px solid rgba(212, 216, 226, 0.2);
+  background: rgba(212, 216, 226, 0.08);
+  color: #d4d8e2;
+  font-size: 0.72rem;
+  font-weight: 800;
+  line-height: 1.2;
+
+  &.positive {
+    border-color: rgba(140, 232, 155, 0.34);
+    background: rgba(140, 232, 155, 0.12);
+    color: #8ce89b;
+  }
+
+  &.negative {
+    border-color: rgba(255, 154, 154, 0.34);
+    background: rgba(255, 154, 154, 0.12);
+    color: #ff9a9a;
+  }
+}
+
 @media (max-width: 640px) {
   .wow-table {
     min-width: 100%;

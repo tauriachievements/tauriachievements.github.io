@@ -56,8 +56,42 @@
             </ng-container>
           </a>
         </td>
-        <td class="gold-text">{{ player.achievementPoints | number }}</td>
-        <td>{{ player.honorableKills | number }}</td>
+        <td>
+          <span class="metric-inline">
+            <span
+              *ngIf="showAchievementProgress(player)"
+              class="metric-delta"
+              [ngClass]="getAchievementDeltaClass(player)">
+              {{ formatSignedValue(player.achievementPointsDelta) }}
+            </span>
+            <span class="metric-value gold-text">{{ player.achievementPoints | number }}</span>
+            <span
+              *ngIf="showAchievementProgress(player)"
+              class="metric-rank-pill"
+              [ngClass]="getAchievementRankClass(player)"
+              [title]="getAchievementRankTitle(player)">
+              {{ getAchievementRankLabel(player) }}
+            </span>
+          </span>
+        </td>
+        <td>
+          <span class="metric-inline">
+            <span
+              *ngIf="showHonorableKillProgress(player)"
+              class="metric-delta"
+              [ngClass]="getHonorableKillDeltaClass(player)">
+              {{ formatSignedValue(player.honorableKillsDelta) }}
+            </span>
+            <span class="metric-value">{{ player.honorableKills | number }}</span>
+            <span
+              *ngIf="showHonorableKillProgress(player)"
+              class="metric-rank-pill"
+              [ngClass]="getHonorableKillRankClass(player)"
+              [title]="getHonorableKillRankTitle(player)">
+              {{ getHonorableKillRankLabel(player) }}
+            </span>
+          </span>
+        </td>
       </tr>
     </tbody>
   </table>
