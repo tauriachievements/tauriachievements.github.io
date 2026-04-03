@@ -176,11 +176,28 @@
 }
 
 .metric-inline {
-  display: inline-flex;
+  display: inline-grid;
+  grid-template-columns: 72px max-content 72px;
   align-items: center;
   justify-content: center;
-  gap: 8px;
   white-space: nowrap;
+  width: 100%;
+}
+
+.metric-side {
+  display: inline-flex;
+  align-items: center;
+  min-width: 0;
+}
+
+.metric-side-start {
+  justify-content: flex-end;
+  padding-right: 8px;
+}
+
+.metric-side-end {
+  justify-content: flex-start;
+  padding-left: 8px;
 }
 
 .metric-value {
@@ -287,5 +304,23 @@
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+  }
+
+  .metric-inline {
+    grid-template-columns: 56px max-content 56px;
+  }
+
+  .metric-side-start {
+    padding-right: 6px;
+  }
+
+  .metric-side-end {
+    padding-left: 6px;
+  }
+
+  .metric-rank-pill {
+    min-width: 28px;
+    padding-left: 6px;
+    padding-right: 6px;
   }
 }
