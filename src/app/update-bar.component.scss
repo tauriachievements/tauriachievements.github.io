@@ -20,22 +20,19 @@
 }
 
 .update-bar-content {
-  --nav-width: 210px;
-  --actions-width: 136px;
   width: 100%;
-  display: flex;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
   align-items: center;
-  justify-content: space-between;
   gap: 10px;
 }
 
 .update-bar-nav {
-  width: var(--nav-width);
+  justify-self: start;
   padding-left: 6px;
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  flex-shrink: 0;
 }
 
 .update-nav-link {
@@ -63,13 +60,13 @@
 }
 
 .update-bar-text {
-  flex: 1;
-  min-width: 0;
+  justify-self: center;
   padding: 0 8px;
   text-align: center;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  max-width: min(100%, 520px);
 }
 
 .update-date,
@@ -100,13 +97,12 @@
 }
 
 .update-bar-actions {
-  width: var(--actions-width);
+  justify-self: end;
   padding-right: 6px;
   display: inline-flex;
   align-items: center;
   justify-content: flex-end;
   gap: 10px;
-  flex-shrink: 0;
 }
 
 .discord-link {
@@ -185,13 +181,10 @@
   }
 
   .update-bar-content {
-    --nav-width: 28px;
-    --actions-width: 34px;
     gap: 6px;
   }
 
   .update-bar-nav {
-    width: var(--nav-width);
     padding-left: 4px;
   }
 
@@ -217,7 +210,6 @@
   }
 
   .update-bar-actions {
-    width: var(--actions-width);
     padding-right: 4px;
     gap: 8px;
   }
