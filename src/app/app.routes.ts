@@ -1,6 +1,6 @@
 import { Routes } from '@angular/router';
 import { AchievementLadderComponent } from './ladder.component';
-import { RankMovementPageComponent } from './rank-movement-page.component';
+import { TopGainersPageComponent } from './rank-movement-page.component';
 
 export const routes: Routes = [
   {
@@ -8,8 +8,8 @@ export const routes: Routes = [
     component: AchievementLadderComponent
   },
   {
-    path: 'rank-movement',
-    component: RankMovementPageComponent
+    path: 'top-gainers',
+    component: TopGainersPageComponent
   },
   {
     path: '**',

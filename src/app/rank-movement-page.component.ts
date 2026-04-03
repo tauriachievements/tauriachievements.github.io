@@ -16,7 +16,7 @@ import { UpdateBarComponent } from './update-bar.component';
   imports: [CommonModule, UpdateBarComponent, HistorySummaryComponent],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class nerRankMovementPageComponent implements OnInit {
+export class TopGainersPageComponent implements OnInit {
   private readonly historyService = inject(LadderHistoryService);
   private readonly ladderLastUpdatedService = inject(LadderLastUpdatedService);
   private readonly destroyRef = inject(DestroyRef);
