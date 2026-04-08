@@ -43,12 +43,41 @@
   width: 240px;
 }
 
+.filter-group.reset-group {
+  width: auto;
+}
+
 .filter-label {
   color: #aab0bc;
   font-size: 0.74rem;
   font-weight: 800;
   letter-spacing: 0.65px;
   text-transform: uppercase;
+}
+
+.reset-button {
+  width: fit-content;
+  min-height: 38px;
+  padding: 0 16px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: linear-gradient(135deg, rgba(40, 40, 50, 0.9), rgba(25, 25, 32, 0.95));
+  color: #e0e0e0;
+  font-weight: 700;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+
+  &:hover {
+    border-color: rgba(247, 181, 0, 0.35);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.45);
+  }
+
+  &:active {
+    transform: translateY(1px);
+  }
 }
 
 .guild-presence-filter-summary {
@@ -307,6 +336,10 @@
 
   .filter-group {
     width: 100%;
+  }
+
+  .filter-group.reset-group {
+    width: auto;
   }
 
   .guild-presence-filter-summary {

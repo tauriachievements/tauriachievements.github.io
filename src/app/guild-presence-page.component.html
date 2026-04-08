@@ -5,6 +5,10 @@
 <div class="guild-presence-container">
   <section class="guild-presence-filters" aria-label="Guild ranking filters">
     <div class="guild-presence-controls">
+      <div class="filter-group reset-group">
+        <button type="button" class="reset-button" (click)="resetFilters()">Reset</button>
+      </div>
+
       <div class="filter-group">
         <label class="filter-label" for="guildSourceLimitTrigger">Sample Size</label>
         <app-filter-dropdown

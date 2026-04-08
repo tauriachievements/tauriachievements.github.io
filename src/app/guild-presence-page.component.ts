@@ -78,6 +78,13 @@ export class GuildPresencePageComponent implements OnInit {
     this.displayLimit.set(nextValue);
   }
 
+  resetFilters(): void {
+    this.dropdownCoordinator.closeAll();
+    this.sourceLimit.set(DEFAULT_GUILD_SOURCE_LIMIT);
+    this.displayLimit.set(DEFAULT_GUILD_DISPLAY_LIMIT);
+    this.guildPresencePageStore.setSourceLimit(DEFAULT_GUILD_SOURCE_LIMIT);
+  }
+
   trackGuild(_index: number, guild: GuildPresenceRankingEntry): string {
     return guild.key;
   }
