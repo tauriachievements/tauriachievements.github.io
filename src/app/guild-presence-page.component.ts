@@ -3,15 +3,17 @@ import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal } 
 import { BackToTopButtonComponent } from './back-to-top-button.component';
 import { FilterDropdownCoordinatorService } from './filter-dropdown-coordinator.service';
 import { FilterDropdownComponent } from './filter-dropdown.component';
-import { GUILD_DISPLAY_LIMIT_OPTIONS, GUILD_SOURCE_LIMIT_OPTIONS } from './guild-presence-options';
+import {
+  DEFAULT_GUILD_DISPLAY_LIMIT,
+  DEFAULT_GUILD_SOURCE_LIMIT,
+  GUILD_DISPLAY_LIMIT_OPTIONS,
+  GUILD_SOURCE_LIMIT_OPTIONS
+} from './guild-presence-options';
 import { GuildPresencePageStore } from './guild-presence-page.store';
 import { GuildPresenceRankingEntry } from './guild-presence.types';
 import { LadderSelectOption } from './ladder-options';
 import { UpdateBarComponent } from './update-bar.component';
 import { getGuildArmoryUrl } from '../utils/armory';
-
-const DEFAULT_SOURCE_LIMIT = 1000;
-const DEFAULT_DISPLAY_LIMIT = 10;
 
 @Component({
   selector: 'app-guild-presence-page',
@@ -28,8 +30,8 @@ export class GuildPresencePageComponent implements OnInit {
 
   readonly sourceLimitOptions = GUILD_SOURCE_LIMIT_OPTIONS;
   readonly displayLimitOptions = GUILD_DISPLAY_LIMIT_OPTIONS;
-  readonly sourceLimit = signal(DEFAULT_SOURCE_LIMIT);
-  readonly displayLimit = signal(DEFAULT_DISPLAY_LIMIT);
+  readonly sourceLimit = signal(DEFAULT_GUILD_SOURCE_LIMIT);
+  readonly displayLimit = signal(DEFAULT_GUILD_DISPLAY_LIMIT);
   readonly selectedSourceLimitLabel = computed(() => this.getSelectedLabel(this.sourceLimitOptions, this.sourceLimit(), 'Top 1000'));
   readonly selectedDisplayLimitLabel = computed(() => this.getSelectedLabel(this.displayLimitOptions, this.displayLimit(), 'Top 10'));
 
@@ -46,8 +48,6 @@ export class GuildPresencePageComponent implements OnInit {
   readonly honorableKillGuilds = computed(() => this.allHonorableKillGuilds().slice(0, this.displayLimit()));
   readonly achievementLeaderboardSize = computed(() => this.guildPresence()?.achievementLeaderboardSize ?? 0);
   readonly honorableKillLeaderboardSize = computed(() => this.guildPresence()?.honorableKillLeaderboardSize ?? 0);
-  readonly achievementShownCount = computed(() => this.achievementGuilds().length);
-  readonly honorableKillShownCount = computed(() => this.honorableKillGuilds().length);
   readonly showLoadingState = computed(() => this.isLoading() && !this.hasSourcePlayers());
   readonly showErrorState = computed(() => !this.isLoading() && !!this.loadError() && !this.hasSourcePlayers());
   readonly hasGuildRankings = computed(() => this.achievementGuilds().length > 0 || this.honorableKillGuilds().length > 0);
@@ -58,7 +58,6 @@ export class GuildPresencePageComponent implements OnInit {
   readonly getGuildArmoryUrl = getGuildArmoryUrl;
 
   ngOnInit(): void {
-    this.guildPresencePageStore.setSourceLimit(this.sourceLimit());
     this.guildPresencePageStore.initialize();
   }
 
@@ -67,14 +66,14 @@ export class GuildPresencePageComponent implements OnInit {
   }
 
   onSourceLimitSelection(value: string | number | undefined): void {
-    const nextValue = this.toPositiveNumber(value, DEFAULT_SOURCE_LIMIT);
+    const nextValue = this.toPositiveNumber(value, DEFAULT_GUILD_SOURCE_LIMIT);
     this.dropdownCoordinator.closeAll();
     this.sourceLimit.set(nextValue);
     this.guildPresencePageStore.setSourceLimit(nextValue);
   }
 
   onDisplayLimitSelection(value: string | number | undefined): void {
-    const nextValue = this.toPositiveNumber(value, DEFAULT_DISPLAY_LIMIT);
+    const nextValue = this.toPositiveNumber(value, DEFAULT_GUILD_DISPLAY_LIMIT);
     this.dropdownCoordinator.closeAll();
     this.displayLimit.set(nextValue);
   }

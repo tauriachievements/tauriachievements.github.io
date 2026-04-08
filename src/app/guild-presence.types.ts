@@ -8,8 +8,6 @@ export interface GuildPresenceRankingEntry {
   realm: string;
   faction: GuildPresenceFaction;
   playerCount: number;
-  shareOfLeaderboard: number;
-  metricTotal: number;
   topMemberName: string;
   topMemberMetricValue: number;
 }
