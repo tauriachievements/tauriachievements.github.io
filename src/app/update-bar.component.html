@@ -3,11 +3,18 @@
     <nav class="update-bar-nav" aria-label="Primary">
       <a
         class="update-nav-link"
+        data-short-label="L"
         routerLink="/"
         [routerLinkActiveOptions]="{ exact: true }"
         routerLinkActive="active">Ladder</a>
       <a
         class="update-nav-link"
+        data-short-label="G"
+        routerLink="/guilds"
+        routerLinkActive="active">Guilds</a>
+      <a
+        class="update-nav-link"
+        data-short-label="T"
         routerLink="/top-gainers"
         routerLinkActive="active">Top Gainers</a>
     </nav>

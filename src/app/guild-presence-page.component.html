@@ -1,0 +1,124 @@
+<app-update-bar
+  [lastEdited]="lastEdited()"
+  [lastEditedTimeZoneLabel]="lastEditedTimeZoneLabel()" />
+
+<div class="guild-presence-container">
+  <section class="guild-presence-intro">
+    <h1>Guild Presence In The Top 1000</h1>
+    <p>
+      These rankings count how many guild members appear in the current top 1000 characters for each ladder.
+      Only the top 50 guilds are shown for each ladder. Guilds are ranked by player count in that sample, with the total ladder metric used only as a tie-break.
+    </p>
+  </section>
+
+  <div class="guild-presence-status-banner info" *ngIf="showRefreshingBanner()">
+    <span>{{ syncMessage() || 'Refreshing guild rankings...' }}</span>
+  </div>
+
+  <div class="guild-presence-status-banner warning" *ngIf="showErrorBanner()">
+    <span>{{ loadError() }}</span>
+    <button type="button" class="status-action" (click)="syncData()">Try again</button>
+  </div>
+
+  <div class="guild-presence-feedback loading" *ngIf="showLoadingState()">
+    <div class="feedback-spinner" aria-hidden="true"></div>
+    <h2>Loading guild rankings...</h2>
+  </div>
+
+  <div class="guild-presence-feedback error" *ngIf="showErrorState()">
+    <h2>Could not load guild rankings</h2>
+    <p>{{ loadError() }}</p>
+    <button type="button" class="feedback-action" (click)="syncData()">Try again</button>
+  </div>
+
+  <div class="guild-presence-feedback empty" *ngIf="showEmptyState()">
+    <h2>No guild rankings available</h2>
+    <p>No guilded characters were found in the current top ladder samples.</p>
+  </div>
+
+  <div class="guild-presence-grid" *ngIf="hasGuildRankings()">
+    <article class="guild-presence-panel">
+      <div class="guild-presence-panel-header">
+        <h2>Achievement Top {{ achievementLeaderboardSize() | number }}</h2>
+        <span class="guild-presence-pill">Top {{ achievementShownCount() | number }}</span>
+      </div>
+
+      <div class="guild-presence-table-wrap" *ngIf="achievementGuilds().length > 0; else noAchievementGuilds">
+        <table class="guild-presence-table">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Guild</th>
+              <th>Realm</th>
+              <th>Players</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let guild of achievementGuilds(); trackBy: trackGuild" [ngClass]="guild.faction">
+              <td>{{ guild.rank }}</td>
+              <td>
+                <a
+                  class="guild-link"
+                  [href]="getGuildArmoryUrl(guild.guild, guild.realm)"
+                  target="_blank"
+                  rel="noopener noreferrer">
+                  {{ guild.guild }}
+                </a>
+                <span class="guild-meta">Best member: {{ guild.topMemberName }} ({{ guild.topMemberMetricValue | number }})</span>
+              </td>
+              <td>{{ guild.realm }}</td>
+              <td class="metric-cell">{{ guild.playerCount | number }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </article>
+
+    <article class="guild-presence-panel">
+      <div class="guild-presence-panel-header">
+        <h2>Honorable Kill Top {{ honorableKillLeaderboardSize() | number }}</h2>
+        <span class="guild-presence-pill">Top {{ honorableKillShownCount() | number }}</span>
+      </div>
+
+      <div class="guild-presence-table-wrap" *ngIf="honorableKillGuilds().length > 0; else noHonorableKillGuilds">
+        <table class="guild-presence-table">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Guild</th>
+              <th>Realm</th>
+              <th>Players</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let guild of honorableKillGuilds(); trackBy: trackGuild" [ngClass]="guild.faction">
+              <td>{{ guild.rank }}</td>
+              <td>
+                <a
+                  class="guild-link"
+                  [href]="getGuildArmoryUrl(guild.guild, guild.realm)"
+                  target="_blank"
+                  rel="noopener noreferrer">
+                  {{ guild.guild }}
+                </a>
+                <span class="guild-meta">Best member: {{ guild.topMemberName }} ({{ guild.topMemberMetricValue | number }})</span>
+              </td>
+              <td>{{ guild.realm }}</td>
+              <td class="metric-cell">{{ guild.playerCount | number }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </article>
+  </div>
+</div>
+
+<ng-template #noAchievementGuilds>
+  <p class="guild-presence-empty">No guilded characters were found in the achievement top sample.</p>
+</ng-template>
+
+<ng-template #noHonorableKillGuilds>
+  <p class="guild-presence-empty">No guilded characters were found in the honorable kill top sample.</p>
+</ng-template>
+
+<app-back-to-top-button />
