@@ -3,12 +3,41 @@
   [lastEditedTimeZoneLabel]="lastEditedTimeZoneLabel()" />
 
 <div class="guild-presence-container">
-  <section class="guild-presence-intro">
-    <h1>Guild Presence In The Top 1000</h1>
-    <p>
-      These rankings count how many guild members appear in the current top 1000 characters for each ladder.
-      Only the top 50 guilds are shown for each ladder. Guilds are ranked by player count in that sample, with the total ladder metric used only as a tie-break.
-    </p>
+  <section class="guild-presence-filters" aria-label="Guild ranking filters">
+    <div class="guild-presence-controls">
+      <div class="filter-group">
+        <label class="filter-label" for="guildSourceLimitTrigger">Sample Size</label>
+        <app-filter-dropdown
+          dropdownId="guildSourceLimit"
+          triggerId="guildSourceLimitTrigger"
+          ariaLabel="Choose ladder sample size"
+          [options]="sourceLimitOptions"
+          [selectedValue]="sourceLimit()"
+          [selectedLabel]="selectedSourceLimitLabel()"
+          (selectionChange)="onSourceLimitSelection($event)" />
+      </div>
+
+      <div class="filter-group">
+        <label class="filter-label" for="guildDisplayLimitTrigger">Guilds Shown</label>
+        <app-filter-dropdown
+          dropdownId="guildDisplayLimit"
+          triggerId="guildDisplayLimitTrigger"
+          ariaLabel="Choose how many guilds to display"
+          [options]="displayLimitOptions"
+          [selectedValue]="displayLimit()"
+          [selectedLabel]="selectedDisplayLimitLabel()"
+          (selectionChange)="onDisplayLimitSelection($event)" />
+      </div>
+    </div>
+
+    <div class="guild-presence-filter-summary" *ngIf="hasGuildRankings()">
+      <span class="guild-presence-summary-pill">
+        Achievement Guilds: {{ allAchievementGuilds().length | number }}
+      </span>
+      <span class="guild-presence-summary-pill">
+        HK Guilds: {{ allHonorableKillGuilds().length | number }}
+      </span>
+    </div>
   </section>
 
   <div class="guild-presence-status-banner info" *ngIf="showRefreshingBanner()">
@@ -40,7 +69,6 @@
     <article class="guild-presence-panel">
       <div class="guild-presence-panel-header">
         <h2>Achievement Top {{ achievementLeaderboardSize() | number }}</h2>
-        <span class="guild-presence-pill">Top {{ achievementShownCount() | number }}</span>
       </div>
 
       <div class="guild-presence-table-wrap" *ngIf="achievementGuilds().length > 0; else noAchievementGuilds">
@@ -77,7 +105,6 @@
     <article class="guild-presence-panel">
       <div class="guild-presence-panel-header">
         <h2>Honorable Kill Top {{ honorableKillLeaderboardSize() | number }}</h2>
-        <span class="guild-presence-pill">Top {{ honorableKillShownCount() | number }}</span>
       </div>
 
       <div class="guild-presence-table-wrap" *ngIf="honorableKillGuilds().length > 0; else noHonorableKillGuilds">

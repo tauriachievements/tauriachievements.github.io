@@ -1,7 +1,8 @@
 import { DestroyRef, Injectable, computed, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { GuildPresenceData } from './guild-presence.types';
+import { BehaviorSubject, distinctUntilChanged, switchMap } from 'rxjs';
 import { GuildPresenceService } from './guild-presence.service';
+import { GuildPresenceData } from './guild-presence.types';
 import { DataSyncService } from './services/data-sync.service';
 import { LadderLastUpdatedService } from './services/ladder-last-updated.service';
 
@@ -12,6 +13,7 @@ export class GuildPresencePageStore {
   private readonly ladderLastUpdatedService = inject(LadderLastUpdatedService);
   private readonly destroyRef = inject(DestroyRef);
   private readonly sourcePlayerCount = signal(this.dataSyncService.getCurrentPlayers().length);
+  private readonly sourceLimit$ = new BehaviorSubject<number>(1000);
   private hasStartedSync = false;
   private initialized = false;
 
@@ -59,6 +61,10 @@ export class GuildPresencePageStore {
     }
   }
 
+  setSourceLimit(limit: number): void {
+    this.sourceLimit$.next(limit);
+  }
+
   private bindSourcePlayers(): void {
     this.dataSyncService.getPlayers().pipe(
       takeUntilDestroyed(this.destroyRef)
@@ -85,7 +91,9 @@ export class GuildPresencePageStore {
   }
 
   private bindGuildPresence(): void {
-    this.guildPresenceService.getGuildPresence().pipe(
+    this.sourceLimit$.pipe(
+      distinctUntilChanged(),
+      switchMap((limit) => this.guildPresenceService.getGuildPresence(limit)),
       takeUntilDestroyed(this.destroyRef)
     ).subscribe((guildPresence) => {
       this.guildPresence.set(guildPresence);
