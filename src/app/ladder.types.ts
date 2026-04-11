@@ -1,4 +1,5 @@
 import { PlayerAchievement } from './models/achievement.model';
+import { RareAchievementMarker } from './rare-achievements.types';
 
 export type LadderSort = 'achievementPoints' | 'honorableKills';
 
@@ -19,4 +20,8 @@ export interface HighlightPart {
 export interface LadderPlayerView extends PlayerAchievement {
   nameParts: HighlightPart[];
   guildParts: HighlightPart[];
+  rareMarkers: ReadonlyArray<RareAchievementMarker>;
+  gladiatorTitleCount: number;
+  gladiatorMountCount: number;
+  rareAchievementSummaryLabel?: string;
 }

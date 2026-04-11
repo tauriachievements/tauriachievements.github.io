@@ -1,29 +1,45 @@
 import { getRaceIconPath } from '../utils/raceIconHelper';
+import { buildRareAchievementCharacterKey } from './rare-achievement-groups';
 import { LadderAchievement } from './ladder.service';
 import { HighlightPart, LadderPlayerView } from './ladder.types';
+import { RareAchievementSummary } from './rare-achievements.types';
 
-export function mapLadderPlayersToView(players: LadderAchievement[], searchQuery: string): LadderPlayerView[] {
+export function mapLadderPlayersToView(
+  players: LadderAchievement[],
+  searchQuery: string,
+  rareAchievementsByCharacter: ReadonlyMap<string, RareAchievementSummary> = new Map<string, RareAchievementSummary>()
+): LadderPlayerView[] {
   const normalizedSearchQuery = searchQuery.trim();
 
-  return players.map((player, index) => ({
-    rank: index + 1,
-    name: player.name,
-    realm: player.realm,
-    race: player.race,
-    gender: player.gender,
-    raceIcon: getRaceIconPath(player.race, player.gender),
-    classIcon: String(player.class),
-    guild: player.guild,
-    achievementPoints: player.achievementPoints,
-    achievementPointsDelta: player.achievementPointsDelta,
-    achievementRankDelta: player.achievementRankDelta,
-    honorableKills: player.honorableKills,
-    honorableKillsDelta: player.honorableKillsDelta,
-    honorableKillsRankDelta: player.honorableKillsRankDelta,
-    faction: player.faction,
-    nameParts: buildHighlightParts(player.name, normalizedSearchQuery),
-    guildParts: buildHighlightParts(player.guild, normalizedSearchQuery)
-  }));
+  return players.map((player, index) => {
+    const rareAchievementSummary = rareAchievementsByCharacter.get(
+      buildRareAchievementCharacterKey(player.name, player.realm)
+    );
+
+    return {
+      rank: index + 1,
+      name: player.name,
+      realm: player.realm,
+      race: player.race,
+      gender: player.gender,
+      raceIcon: getRaceIconPath(player.race, player.gender),
+      classIcon: String(player.class),
+      guild: player.guild,
+      achievementPoints: player.achievementPoints,
+      achievementPointsDelta: player.achievementPointsDelta,
+      achievementRankDelta: player.achievementRankDelta,
+      honorableKills: player.honorableKills,
+      honorableKillsDelta: player.honorableKillsDelta,
+      honorableKillsRankDelta: player.honorableKillsRankDelta,
+      faction: player.faction,
+      nameParts: buildHighlightParts(player.name, normalizedSearchQuery),
+      guildParts: buildHighlightParts(player.guild, normalizedSearchQuery),
+      rareMarkers: rareAchievementSummary?.markers ?? [],
+      gladiatorTitleCount: rareAchievementSummary?.gladiatorTitleCount ?? 0,
+      gladiatorMountCount: rareAchievementSummary?.gladiatorMountCount ?? 0,
+      rareAchievementSummaryLabel: buildRareAchievementSummaryLabel(rareAchievementSummary)
+    };
+  });
 }
 
 export function buildHighlightParts(value: string, query: string): HighlightPart[] {
@@ -60,4 +76,26 @@ export function buildHighlightParts(value: string, query: string): HighlightPart
   }
 
   return parts;
+}
+
+function buildRareAchievementSummaryLabel(summary: RareAchievementSummary | undefined): string | undefined {
+  if (!summary) {
+    return undefined;
+  }
+
+  const parts: string[] = [];
+
+  if (summary.gladiatorTitleCount > 0) {
+    parts.push(pluralize(summary.gladiatorTitleCount, 'Gladiator title'));
+  }
+
+  if (summary.gladiatorMountCount > 0) {
+    parts.push(pluralize(summary.gladiatorMountCount, 'Gladiator mount'));
+  }
+
+  return parts.join(' & ');
+}
+
+function pluralize(count: number, singularLabel: string): string {
+  return `${count.toLocaleString()} ${singularLabel}${count === 1 ? '' : 's'}`;
 }

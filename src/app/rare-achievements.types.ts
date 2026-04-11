@@ -8,6 +8,22 @@ export interface RareAchievementOwnership {
   obtainedAt: string | null;
 }
 
+export type RareAchievementMarkerType = 'gladiatorTitle' | 'gladiatorMount';
+
+export interface RareAchievementMarker {
+  key: string;
+  type: RareAchievementMarkerType;
+  shortLabel: string;
+  fullLabel: string;
+  ariaLabel: string;
+}
+
+export interface RareAchievementSummary {
+  gladiatorTitleCount: number;
+  gladiatorMountCount: number;
+  markers: RareAchievementMarker[];
+}
+
 export interface RareAchievementCharacter {
   name: string;
   realm: string;
