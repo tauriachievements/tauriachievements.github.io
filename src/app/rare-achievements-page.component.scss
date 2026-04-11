@@ -326,26 +326,7 @@
 }
 
 .rare-achievement-date {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 32px;
-  padding: 4px 10px;
-  border-radius: 999px;
-  border: 1px solid rgba(247, 181, 0, 0.2);
-  background: linear-gradient(135deg, rgba(247, 181, 0, 0.14), rgba(247, 181, 0, 0.05));
-  color: #ffe08c;
-  font-size: 0.8rem;
-  font-weight: 700;
-  letter-spacing: 0.15px;
   white-space: nowrap;
-  line-height: 1.2;
-
-  &.is-unknown {
-    border-color: rgba(255, 255, 255, 0.12);
-    background: rgba(255, 255, 255, 0.05);
-    color: #cfd4de;
-  }
 }
 
 @media (min-width: 768px) {
@@ -432,8 +413,6 @@
   }
 
   .rare-achievement-date {
-    min-height: 30px;
-    padding: 4px 8px;
-    font-size: 0.74rem;
+    white-space: nowrap;
   }
 }

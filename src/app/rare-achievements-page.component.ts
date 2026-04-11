@@ -213,7 +213,7 @@ export class RareAchievementsPageComponent implements OnInit {
       }
 
       if (left.obtainedAtSortValue !== right.obtainedAtSortValue) {
-        return left.obtainedAtSortValue - right.obtainedAtSortValue;
+        return right.obtainedAtSortValue - left.obtainedAtSortValue;
       }
     }
 
