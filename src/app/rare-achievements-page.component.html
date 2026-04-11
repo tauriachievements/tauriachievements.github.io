@@ -8,34 +8,17 @@
       <button type="button" class="reset-button" (click)="resetFilter()">Reset</button>
     </div>
 
-    <div class="filter-group filter-group--achievement">
+    <div
+      class="filter-group filter-group--achievement"
+      *ngFor="let dropdown of achievementDropdowns(); trackBy: trackAchievementDropdown">
       <app-filter-dropdown
-        dropdownId="rareAchievement"
-        triggerId="rareAchievementTrigger"
-        ariaLabel="Choose a rare achievement"
-        [options]="achievementOptions()"
-        [selectedValue]="selectedAchievementId()"
-        [selectedLabel]="selectedAchievementLabel()"
+        [dropdownId]="dropdown.dropdownId"
+        [triggerId]="dropdown.triggerId"
+        [ariaLabel]="dropdown.ariaLabel"
+        [options]="dropdown.options"
+        [selectedValue]="dropdown.selectedValue"
+        [selectedLabel]="dropdown.selectedLabel"
         (selectionChange)="onAchievementSelection($event)" />
-    </div>
-
-    <div class="filter-group filter-group--class">
-      <app-filter-dropdown
-        dropdownId="rareAchievementClass"
-        triggerId="rareAchievementClassTrigger"
-        ariaLabel="Class"
-        [options]="classOptions"
-        [selectedValue]="selectedClassId()"
-        [selectedLabel]="selectedClassLabel()"
-        [selectedIcon]="selectedClassIcon()"
-        [showIcons]="true"
-        (selectionChange)="onClassSelection($event)" />
-    </div>
-
-    <div class="rare-achievements-filter-summary" *ngIf="dataset()">
-      <span class="rare-achievements-summary-pill" *ngIf="hasSelection()">
-        Matches: {{ matchCount() | number }}
-      </span>
     </div>
   </section>
 
@@ -52,7 +35,7 @@
 
   <div class="ladder-feedback empty" *ngIf="showSelectionPrompt()">
     <h2>Select a rare achievement</h2>
-    <p>Choose one from the filter above to list every tracked character who owns it, along with the date it was obtained.</p>
+    <p>Choose one from the PvP dropdowns above to list every tracked character who owns it, along with the date it was obtained.</p>
   </div>
 
   <div class="ladder-feedback empty" *ngIf="showEmptyState()">

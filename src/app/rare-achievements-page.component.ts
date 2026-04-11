@@ -5,11 +5,9 @@ import { BackToTopButtonComponent } from './back-to-top-button.component';
 import { FilterDropdownCoordinatorService } from './filter-dropdown-coordinator.service';
 import { FilterDropdownComponent } from './filter-dropdown.component';
 import { FilterDropdownOption } from './filter-dropdown.types';
-import { CLASS_OPTIONS, LadderClassOption } from './ladder-options';
 import { RareAchievementsService } from './rare-achievements.service';
 import {
   RareAchievementCharacter,
-  RareAchievementDefinition,
   RareAchievementOwnership,
   RareAchievementsDataset
 } from './rare-achievements.types';
@@ -19,6 +17,7 @@ import { getClassIconPath } from '../utils/classIconHelper';
 import { getRaceIconPath } from '../utils/raceIconHelper';
 
 type CharacterFaction = 'Alliance' | 'Horde';
+type AchievementDropdownKey = 'r1Gladiators' | 'gladiatorMounts' | 'ratedBattlegroundHeroes';
 
 interface RareAchievementMatchView {
   rank: number;
@@ -36,8 +35,102 @@ interface RareAchievementMatchView {
   obtainedAtSortValue: number | undefined;
 }
 
+interface AchievementDropdownDefinition {
+  key: AchievementDropdownKey;
+  placeholderLabel: string;
+  dropdownId: string;
+  triggerId: string;
+  ariaLabel: string;
+  options: ReadonlyArray<FilterDropdownOption<number>>;
+}
+
+interface AchievementDropdownView extends AchievementDropdownDefinition {
+  selectedValue: number | undefined;
+  selectedLabel: string;
+}
+
 const DEFAULT_RACE_ICON_GENDER = 0;
 const ALLIANCE_RACE_IDS = new Set<number>([1, 3, 4, 7, 11, 22, 25]);
+const R1_GLADIATOR_OPTIONS: ReadonlyArray<FilterDropdownOption<number>> = [
+  { value: 8666, label: 'S15 - Prideful Gladiator' },
+  { value: 8643, label: 'S14 - Grievous Gladiator' },
+  { value: 8791, label: 'S13 - Tyrannical Gladiator' },
+  { value: 8214, label: 'S12 - Malevolent Gladiator' },
+  { value: 6938, label: 'S11 - Cataclysmic Gladiator' },
+  { value: 6124, label: 'S10 - Ruthless Gladiator' },
+  { value: 6002, label: 'S9 - Vicious Gladiator' },
+  { value: 4599, label: 'S8 - Wrathful Gladiator' },
+  { value: 3758, label: 'S7 - Relentless Gladiator' },
+  { value: 3436, label: 'S6 - Furious Gladiator' },
+  { value: 3336, label: 'S5 - Deadly Gladiator' },
+  { value: 420, label: 'S3 - Brutal Gladiator' },
+  { value: 419, label: 'S2 - Vengeful Gladiator' },
+  { value: 418, label: 'S1 - Merciless Gladiator' }
+];
+const GLADIATOR_MOUNT_OPTIONS: ReadonlyArray<FilterDropdownOption<number>> = [
+  { value: 8707, label: "S15 - Prideful Gladiator's Cloud Serpent" },
+  { value: 8705, label: "S14 - Grievous Gladiator's Cloud Serpent" },
+  { value: 8678, label: "S13 - Tyrannical Gladiator's Cloud Serpent" },
+  { value: 8216, label: "S12 - Malevolent Gladiator's Cloud Serpent" },
+  { value: 6741, label: "S11 - Cataclysmic Gladiator's Twilight Drake" },
+  { value: 6322, label: "S10 - Ruthless Gladiator's Twilight Drake" },
+  { value: 6003, label: "S9 - Vicious Gladiator's Twilight Drake" },
+  { value: 4600, label: "S8 - Wrathful Gladiator's Frost Wyrm" },
+  { value: 3757, label: "S7 - Relentless Gladiator's Frost Wyrm" },
+  { value: 3756, label: "S6 - Furious Gladiator's Frost Wyrm" },
+  { value: 3096, label: "S5 - Deadly Gladiator's Frost Wyrm" },
+  { value: 2316, label: 'S4 - Brutal Nether Drake' },
+  { value: 888, label: 'S3 - Vengeful Nether Drake' },
+  { value: 887, label: 'S2 - Merciless Nether Drake' },
+  { value: 886, label: 'S1 - Swift Nether Drake' }
+];
+const RATED_BATTLEGROUND_OPTIONS: ReadonlyArray<FilterDropdownOption<number>> = [
+  { value: 8659, label: 'Hero of the Horde: Prideful' },
+  { value: 8657, label: 'Hero of the Horde: Grievous' },
+  { value: 8653, label: 'Hero of the Horde: Tyrannical' },
+  { value: 8244, label: 'Hero of the Horde: Malevolent' },
+  { value: 6940, label: 'Hero of the Horde: Cataclysmic' },
+  { value: 6317, label: 'Hero of the Horde: Ruthless' },
+  { value: 5358, label: 'Hero of the Horde: Vicious' },
+  { value: 8658, label: 'Hero of the Alliance: Prideful' },
+  { value: 8654, label: 'Hero of the Alliance: Grievous' },
+  { value: 8652, label: 'Hero of the Alliance: Tyrannical' },
+  { value: 8243, label: 'Hero of the Alliance: Malevolent' },
+  { value: 6939, label: 'Hero of the Alliance: Cataclysmic' },
+  { value: 6316, label: 'Hero of the Alliance: Ruthless' },
+  { value: 5344, label: 'Hero of the Alliance: Vicious' }
+];
+const ACHIEVEMENT_DROPDOWN_DEFINITIONS: ReadonlyArray<AchievementDropdownDefinition> = [
+  {
+    key: 'r1Gladiators',
+    placeholderLabel: 'Choose Season Gladiator title',
+    dropdownId: 'rareAchievementR1Gladiators',
+    triggerId: 'rareAchievementR1GladiatorsTrigger',
+    ariaLabel: 'Choose a Season Gladiator title',
+    options: R1_GLADIATOR_OPTIONS
+  },
+  {
+    key: 'gladiatorMounts',
+    placeholderLabel: 'Choose Gladiator mount',
+    dropdownId: 'rareAchievementGladiatorMounts',
+    triggerId: 'rareAchievementGladiatorMountsTrigger',
+    ariaLabel: 'Choose a Gladiator mount',
+    options: GLADIATOR_MOUNT_OPTIONS
+  },
+  {
+    key: 'ratedBattlegroundHeroes',
+    placeholderLabel: 'Choose Rated Battleground title',
+    dropdownId: 'rareAchievementRatedBattlegroundHeroes',
+    triggerId: 'rareAchievementRatedBattlegroundHeroesTrigger',
+    ariaLabel: 'Choose a Rated Battleground title',
+    options: RATED_BATTLEGROUND_OPTIONS
+  }
+];
+const GROUPED_ACHIEVEMENT_LABELS = new Map<number, string>(
+  ACHIEVEMENT_DROPDOWN_DEFINITIONS.flatMap((dropdown) =>
+    dropdown.options.map((option) => [option.value, option.label] as const)
+  )
+);
 
 @Component({
   selector: 'app-rare-achievements-page',
@@ -62,31 +155,29 @@ export class RareAchievementsPageComponent implements OnInit {
   readonly isLoading = signal(true);
   readonly loadError = signal<string | undefined>(undefined);
   readonly selectedAchievementId = signal<number | undefined>(undefined);
-  readonly selectedClassId = signal<number | undefined>(undefined);
   readonly lastEdited = signal<Date | undefined>(undefined);
   readonly lastEditedTimeZoneLabel = signal('Local time');
-  readonly achievementOptions = computed<ReadonlyArray<FilterDropdownOption<number>>>(() =>
-    (this.dataset()?.achievements ?? []).map((achievement) => ({
-      value: achievement.id,
-      label: achievement.name
-    }))
-  );
-  readonly classOptions: ReadonlyArray<FilterDropdownOption<number | undefined>> = [
-    { value: undefined, label: 'All Classes' },
-    ...CLASS_OPTIONS.map((option) => ({
-      value: option.id,
-      label: option.name,
-      icon: option.icon
-    }))
-  ];
-  readonly selectedAchievement = computed(() => this.findAchievement(this.selectedAchievementId()));
-  readonly selectedAchievementLabel = computed(() => this.selectedAchievement()?.name ?? 'Select rare achievement');
-  readonly selectedClassOption = computed(() => this.findClassOption(this.selectedClassId()));
-  readonly selectedClassLabel = computed(() => this.selectedClassOption()?.name ?? 'All Classes');
-  readonly selectedClassIcon = computed(() => this.selectedClassOption()?.icon);
+  readonly achievementDropdowns = computed<ReadonlyArray<AchievementDropdownView>>(() => {
+    const selectedAchievementId = this.selectedAchievementId();
+
+    return ACHIEVEMENT_DROPDOWN_DEFINITIONS.map((dropdown) => {
+      const selectedOption = dropdown.options.find((option) => option.value === selectedAchievementId);
+
+      return {
+        ...dropdown,
+        selectedValue: selectedOption?.value,
+        selectedLabel: selectedOption?.label ?? dropdown.placeholderLabel
+      };
+    });
+  });
+  readonly selectedAchievementLabel = computed(() => {
+    const achievementId = this.selectedAchievementId();
+    return achievementId === undefined
+      ? 'Select rare achievement'
+      : GROUPED_ACHIEVEMENT_LABELS.get(achievementId) ?? 'Select rare achievement';
+  });
   readonly matchingCharacters = computed<ReadonlyArray<RareAchievementMatchView>>(() => {
     const achievementId = this.selectedAchievementId();
-    const selectedClassId = this.selectedClassId();
     if (achievementId === undefined) {
       return [];
     }
@@ -94,7 +185,6 @@ export class RareAchievementsPageComponent implements OnInit {
     return (this.dataset()?.characters ?? [])
       .map((character) => this.toMatchingCharacterView(character, achievementId))
       .filter((character): character is RareAchievementMatchView => character !== undefined)
-      .filter((character) => selectedClassId === undefined || character.classId === selectedClassId)
       .sort((left, right) => this.compareCharacters(left, right))
       .map((character, index) => ({
         ...character,
@@ -106,16 +196,7 @@ export class RareAchievementsPageComponent implements OnInit {
   readonly hasMatches = computed(() => this.matchCount() > 0);
   readonly showSelectionPrompt = computed(() => !this.isLoading() && !this.loadError() && !this.hasSelection());
   readonly showEmptyState = computed(() => !this.isLoading() && !this.loadError() && this.hasSelection() && !this.hasMatches());
-  readonly emptyStateMessage = computed(() => {
-    const achievementLabel = this.selectedAchievementLabel();
-    const classLabel = this.selectedClassLabel();
-
-    if (this.selectedClassId() === undefined) {
-      return `No tracked characters currently have ${achievementLabel}.`;
-    }
-
-    return `No tracked characters currently have ${achievementLabel} with the ${classLabel} filter.`;
-  });
+  readonly emptyStateMessage = computed(() => `No tracked characters currently have ${this.selectedAchievementLabel()}.`);
 
   readonly getArmoryUrl = getArmoryUrl;
   readonly getGuildArmoryUrl = getGuildArmoryUrl;
@@ -129,19 +210,17 @@ export class RareAchievementsPageComponent implements OnInit {
     this.selectedAchievementId.set(this.toAchievementId(value));
   }
 
-  onClassSelection(value: string | number | undefined): void {
-    this.dropdownCoordinator.closeAll();
-    this.selectedClassId.set(this.toAchievementId(value));
-  }
-
   resetFilter(): void {
     this.dropdownCoordinator.closeAll();
     this.selectedAchievementId.set(undefined);
-    this.selectedClassId.set(undefined);
   }
 
   retryLoad(): void {
     this.loadRareAchievements();
+  }
+
+  trackAchievementDropdown(_index: number, dropdown: AchievementDropdownView): AchievementDropdownKey {
+    return dropdown.key;
   }
 
   trackCharacter(_index: number, character: RareAchievementMatchView): string {
@@ -164,11 +243,6 @@ export class RareAchievementsPageComponent implements OnInit {
         this.dataset.set(dataset);
         this.lastEdited.set(this.parseDate(dataset.generatedAt));
         this.lastEditedTimeZoneLabel.set(this.getTimeZoneLabel(this.lastEdited()));
-
-        if (!dataset.achievements.some((achievement) => achievement.id === this.selectedAchievementId())) {
-          this.selectedAchievementId.set(undefined);
-        }
-
         this.isLoading.set(false);
       },
       error: (error: unknown) => {
@@ -180,22 +254,6 @@ export class RareAchievementsPageComponent implements OnInit {
         this.isLoading.set(false);
       }
     });
-  }
-
-  private findAchievement(achievementId: number | undefined): RareAchievementDefinition | undefined {
-    if (achievementId === undefined) {
-      return undefined;
-    }
-
-    return this.dataset()?.achievements.find((achievement) => achievement.id === achievementId);
-  }
-
-  private findClassOption(classId: number | undefined): LadderClassOption | undefined {
-    if (classId === undefined) {
-      return undefined;
-    }
-
-    return CLASS_OPTIONS.find((option) => option.id === classId);
   }
 
   private toAchievementId(value: string | number | undefined): number | undefined {
