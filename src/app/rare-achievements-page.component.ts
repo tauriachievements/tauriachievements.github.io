@@ -54,9 +54,7 @@ export class RareAchievementsPageComponent implements OnInit {
   private readonly obtainedAtFormatter = new Intl.DateTimeFormat(undefined, {
     year: 'numeric',
     month: 'short',
-    day: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit'
+    day: 'numeric'
   });
 
   readonly dataset = signal<RareAchievementsDataset | null>(null);
