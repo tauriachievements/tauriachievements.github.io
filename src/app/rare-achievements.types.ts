@@ -3,10 +3,19 @@ export interface RareAchievementDefinition {
   name: string;
 }
 
+export interface RareAchievementOwnership {
+  id: number;
+  obtainedAt: string | null;
+}
+
 export interface RareAchievementCharacter {
   name: string;
   realm: string;
+  race: number;
+  class: number;
+  guild: string;
   achievementIds: number[];
+  achievements: RareAchievementOwnership[];
 }
 
 export interface RareAchievementsDataset {
