@@ -34,10 +34,10 @@ export function mapLadderPlayersToView(
       faction: player.faction,
       nameParts: buildHighlightParts(player.name, normalizedSearchQuery),
       guildParts: buildHighlightParts(player.guild, normalizedSearchQuery),
-      rareMarkers: rareAchievementSummary?.markers ?? [],
       gladiatorTitleCount: rareAchievementSummary?.gladiatorTitleCount ?? 0,
       gladiatorMountCount: rareAchievementSummary?.gladiatorMountCount ?? 0,
       ratedBattlegroundHeroCount: rareAchievementSummary?.ratedBattlegroundHeroCount ?? 0,
+      realmFirstCount: rareAchievementSummary?.realmFirstCount ?? 0,
       rareAchievementSummaryLabel: buildRareAchievementSummaryLabel(rareAchievementSummary)
     };
   });
@@ -96,6 +96,10 @@ function buildRareAchievementSummaryLabel(summary: RareAchievementSummary | unde
 
   if (summary.ratedBattlegroundHeroCount > 0) {
     parts.push(pluralize(summary.ratedBattlegroundHeroCount, 'Rated battleground hero title'));
+  }
+
+  if (summary.realmFirstCount > 0) {
+    parts.push(pluralize(summary.realmFirstCount, 'Realm first achievement'));
   }
 
   return parts.join(' & ');

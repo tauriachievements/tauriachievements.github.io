@@ -3,36 +3,21 @@ import { Injectable, inject } from '@angular/core';
 import { Observable, catchError, map, shareReplay, throwError } from 'rxjs';
 import {
   GLADIATOR_MOUNT_OPTIONS,
+  REALM_FIRST_OPTIONS,
   R1_GLADIATOR_OPTIONS,
   RATED_BATTLEGROUND_OPTIONS,
-  buildRareAchievementCharacterKey,
-  extractAchievementSeasonLabel
+  buildRareAchievementCharacterKey
 } from './rare-achievement-groups';
 import {
   RareAchievementCharacter,
-  RareAchievementMarker,
-  RareAchievementMarkerType,
   RareAchievementSummary,
   RareAchievementsDataset
 } from './rare-achievements.types';
 
-interface RareAchievementMarkerDefinition {
-  id: number;
-  type: RareAchievementMarkerType;
-  fullLabel: string;
-  shortLabel: string;
-  ariaLabel: string;
-}
-
-const GLADIATOR_TITLE_MARKERS: ReadonlyArray<RareAchievementMarkerDefinition> = R1_GLADIATOR_OPTIONS.map((option) =>
-  createRareAchievementMarkerDefinition(option.value, 'gladiatorTitle', option.label)
-);
-
-const GLADIATOR_MOUNT_MARKERS: ReadonlyArray<RareAchievementMarkerDefinition> = GLADIATOR_MOUNT_OPTIONS.map((option) =>
-  createRareAchievementMarkerDefinition(option.value, 'gladiatorMount', option.label)
-);
-
+const GLADIATOR_TITLE_IDS = new Set<number>(R1_GLADIATOR_OPTIONS.map((option) => option.value));
+const GLADIATOR_MOUNT_IDS = new Set<number>(GLADIATOR_MOUNT_OPTIONS.map((option) => option.value));
 const RATED_BATTLEGROUND_HERO_IDS = new Set<number>(RATED_BATTLEGROUND_OPTIONS.map((option) => option.value));
+const REALM_FIRST_IDS = new Set<number>(REALM_FIRST_OPTIONS.map((option) => option.value));
 
 @Injectable({ providedIn: 'root' })
 export class RareAchievementsService {
@@ -76,35 +61,21 @@ export class RareAchievementsService {
 
   private toRareAchievementSummary(character: RareAchievementCharacter): RareAchievementSummary | undefined {
     const ownedAchievementIds = new Set(character.achievements.map((achievement) => achievement.id));
-    const titleMarkers = this.collectMarkers(ownedAchievementIds, GLADIATOR_TITLE_MARKERS);
-    const mountMarkers = this.collectMarkers(ownedAchievementIds, GLADIATOR_MOUNT_MARKERS);
+    const gladiatorTitleCount = this.countOwnedAchievements(ownedAchievementIds, GLADIATOR_TITLE_IDS);
+    const gladiatorMountCount = this.countOwnedAchievements(ownedAchievementIds, GLADIATOR_MOUNT_IDS);
     const ratedBattlegroundHeroCount = this.countOwnedAchievements(ownedAchievementIds, RATED_BATTLEGROUND_HERO_IDS);
+    const realmFirstCount = this.countOwnedAchievements(ownedAchievementIds, REALM_FIRST_IDS);
 
-    if (titleMarkers.length === 0 && mountMarkers.length === 0 && ratedBattlegroundHeroCount === 0) {
+    if (gladiatorTitleCount === 0 && gladiatorMountCount === 0 && ratedBattlegroundHeroCount === 0 && realmFirstCount === 0) {
       return undefined;
     }
 
     return {
-      gladiatorTitleCount: titleMarkers.length,
-      gladiatorMountCount: mountMarkers.length,
+      gladiatorTitleCount,
+      gladiatorMountCount,
       ratedBattlegroundHeroCount,
-      markers: [...titleMarkers, ...mountMarkers]
+      realmFirstCount
     };
-  }
-
-  private collectMarkers(
-    ownedAchievementIds: ReadonlySet<number>,
-    definitions: ReadonlyArray<RareAchievementMarkerDefinition>
-  ): RareAchievementMarker[] {
-    return definitions
-      .filter((definition) => ownedAchievementIds.has(definition.id))
-      .map((definition) => ({
-        key: `${definition.type}-${definition.id}`,
-        type: definition.type,
-        shortLabel: definition.shortLabel,
-        fullLabel: definition.fullLabel,
-        ariaLabel: definition.ariaLabel
-      }));
   }
 
   private countOwnedAchievements(ownedAchievementIds: ReadonlySet<number>, trackedAchievementIds: ReadonlySet<number>): number {
@@ -118,22 +89,4 @@ export class RareAchievementsService {
 
     return count;
   }
-}
-
-function createRareAchievementMarkerDefinition(
-  id: number,
-  type: RareAchievementMarkerType,
-  label: string
-): RareAchievementMarkerDefinition {
-  const seasonLabel = extractAchievementSeasonLabel(label);
-  const shortLabel = seasonLabel ?? 'S';
-  const markerTypeLabel = type === 'gladiatorTitle' ? 'Gladiator title' : 'Gladiator mount';
-
-  return {
-    id,
-    type,
-    fullLabel: label,
-    shortLabel,
-    ariaLabel: `${markerTypeLabel}: ${label}`
-  };
 }
