@@ -123,6 +123,7 @@
   position: relative;
   display: inline-block;
   padding-bottom: 1px;
+  isolation: isolate;
 
   &.clickable {
     cursor: pointer;
@@ -147,6 +148,97 @@
   align-items: center;
   min-height: 24px;
   min-width: 0;
+}
+
+.player-name-rbg-sigil {
+  position: absolute;
+  left: calc(100% + 4px);
+  top: 50%;
+  font-size: 0.78em;
+  line-height: 1;
+  transform: translateY(-52%);
+  pointer-events: none;
+  white-space: nowrap;
+}
+
+.player-name-rbg-sigil--alliance {
+  color: #92dcff;
+  text-shadow:
+    0 0 7px rgba(111, 214, 255, 0.78),
+    0 0 14px rgba(52, 152, 255, 0.32);
+}
+
+.player-name-rbg-sigil--horde {
+  color: #ff9b96;
+  text-shadow:
+    0 0 7px rgba(255, 129, 129, 0.78),
+    0 0 14px rgba(255, 66, 66, 0.32);
+}
+
+.player-name--rbg-hero-alliance,
+.player-name--rbg-hero-horde {
+  font-weight: 700;
+  letter-spacing: 0.01em;
+
+  &::before {
+    content: '';
+    position: absolute;
+    left: -5px;
+    right: -5px;
+    top: 58%;
+    height: 78%;
+    transform: translateY(-50%);
+    border-radius: 999px;
+    pointer-events: none;
+    z-index: -1;
+    opacity: 0.92;
+  }
+}
+
+.player-name--rbg-hero-alliance {
+  &::before {
+    background: radial-gradient(circle at 50% 52%, rgba(79, 192, 255, 0.28), rgba(44, 122, 224, 0.12) 48%, rgba(26, 72, 163, 0) 78%);
+  }
+
+  &:not(.player-name--gladiator-title):not(.player-name--gladiator-mount) {
+    color: #dff5ff;
+    text-shadow:
+      0 1px 2px rgba(0, 0, 0, 0.56),
+      0 0 9px rgba(108, 207, 255, 0.62),
+      0 0 18px rgba(67, 156, 255, 0.28);
+  }
+
+  &.clickable:hover:not(.player-name--gladiator-title):not(.player-name--gladiator-mount) {
+    color: #f3fbff;
+    text-shadow:
+      0 1px 2px rgba(0, 0, 0, 0.58),
+      0 0 10px rgba(129, 219, 255, 0.68),
+      0 0 20px rgba(74, 172, 255, 0.34);
+    text-decoration: none;
+  }
+}
+
+.player-name--rbg-hero-horde {
+  &::before {
+    background: radial-gradient(circle at 50% 52%, rgba(255, 112, 112, 0.28), rgba(219, 63, 63, 0.12) 48%, rgba(150, 22, 22, 0) 78%);
+  }
+
+  &:not(.player-name--gladiator-title):not(.player-name--gladiator-mount) {
+    color: #ffd4cf;
+    text-shadow:
+      0 1px 2px rgba(0, 0, 0, 0.56),
+      0 0 9px rgba(255, 124, 124, 0.58),
+      0 0 18px rgba(255, 74, 74, 0.24);
+  }
+
+  &.clickable:hover:not(.player-name--gladiator-title):not(.player-name--gladiator-mount) {
+    color: #ffe7e3;
+    text-shadow:
+      0 1px 2px rgba(0, 0, 0, 0.58),
+      0 0 10px rgba(255, 145, 145, 0.64),
+      0 0 20px rgba(255, 84, 84, 0.32);
+    text-decoration: none;
+  }
 }
 
 .player-name--gladiator-title {
@@ -461,5 +553,10 @@
 
   .player-name {
     padding-bottom: 0;
+  }
+
+  .player-name-rbg-sigil {
+    left: calc(100% + 3px);
+    font-size: 0.72em;
   }
 }

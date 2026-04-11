@@ -23,5 +23,6 @@ export interface LadderPlayerView extends PlayerAchievement {
   rareMarkers: ReadonlyArray<RareAchievementMarker>;
   gladiatorTitleCount: number;
   gladiatorMountCount: number;
+  ratedBattlegroundHeroCount: number;
   rareAchievementSummaryLabel?: string;
 }

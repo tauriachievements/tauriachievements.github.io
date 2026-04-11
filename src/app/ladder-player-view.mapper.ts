@@ -37,6 +37,7 @@ export function mapLadderPlayersToView(
       rareMarkers: rareAchievementSummary?.markers ?? [],
       gladiatorTitleCount: rareAchievementSummary?.gladiatorTitleCount ?? 0,
       gladiatorMountCount: rareAchievementSummary?.gladiatorMountCount ?? 0,
+      ratedBattlegroundHeroCount: rareAchievementSummary?.ratedBattlegroundHeroCount ?? 0,
       rareAchievementSummaryLabel: buildRareAchievementSummaryLabel(rareAchievementSummary)
     };
   });
@@ -91,6 +92,10 @@ function buildRareAchievementSummaryLabel(summary: RareAchievementSummary | unde
 
   if (summary.gladiatorMountCount > 0) {
     parts.push(pluralize(summary.gladiatorMountCount, 'Gladiator mount'));
+  }
+
+  if (summary.ratedBattlegroundHeroCount > 0) {
+    parts.push(pluralize(summary.ratedBattlegroundHeroCount, 'Rated battleground hero title'));
   }
 
   return parts.join(' & ');

@@ -4,6 +4,7 @@ import { Observable, catchError, map, shareReplay, throwError } from 'rxjs';
 import {
   GLADIATOR_MOUNT_OPTIONS,
   R1_GLADIATOR_OPTIONS,
+  RATED_BATTLEGROUND_OPTIONS,
   buildRareAchievementCharacterKey,
   extractAchievementSeasonLabel
 } from './rare-achievement-groups';
@@ -30,6 +31,8 @@ const GLADIATOR_TITLE_MARKERS: ReadonlyArray<RareAchievementMarkerDefinition> = 
 const GLADIATOR_MOUNT_MARKERS: ReadonlyArray<RareAchievementMarkerDefinition> = GLADIATOR_MOUNT_OPTIONS.map((option) =>
   createRareAchievementMarkerDefinition(option.value, 'gladiatorMount', option.label)
 );
+
+const RATED_BATTLEGROUND_HERO_IDS = new Set<number>(RATED_BATTLEGROUND_OPTIONS.map((option) => option.value));
 
 @Injectable({ providedIn: 'root' })
 export class RareAchievementsService {
@@ -75,14 +78,16 @@ export class RareAchievementsService {
     const ownedAchievementIds = new Set(character.achievements.map((achievement) => achievement.id));
     const titleMarkers = this.collectMarkers(ownedAchievementIds, GLADIATOR_TITLE_MARKERS);
     const mountMarkers = this.collectMarkers(ownedAchievementIds, GLADIATOR_MOUNT_MARKERS);
+    const ratedBattlegroundHeroCount = this.countOwnedAchievements(ownedAchievementIds, RATED_BATTLEGROUND_HERO_IDS);
 
-    if (titleMarkers.length === 0 && mountMarkers.length === 0) {
+    if (titleMarkers.length === 0 && mountMarkers.length === 0 && ratedBattlegroundHeroCount === 0) {
       return undefined;
     }
 
     return {
       gladiatorTitleCount: titleMarkers.length,
       gladiatorMountCount: mountMarkers.length,
+      ratedBattlegroundHeroCount,
       markers: [...titleMarkers, ...mountMarkers]
     };
   }
@@ -100,6 +105,18 @@ export class RareAchievementsService {
         fullLabel: definition.fullLabel,
         ariaLabel: definition.ariaLabel
       }));
+  }
+
+  private countOwnedAchievements(ownedAchievementIds: ReadonlySet<number>, trackedAchievementIds: ReadonlySet<number>): number {
+    let count = 0;
+
+    for (const achievementId of trackedAchievementIds) {
+      if (ownedAchievementIds.has(achievementId)) {
+        count++;
+      }
+    }
+
+    return count;
   }
 }
 

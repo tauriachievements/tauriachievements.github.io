@@ -21,6 +21,7 @@ export interface RareAchievementMarker {
 export interface RareAchievementSummary {
   gladiatorTitleCount: number;
   gladiatorMountCount: number;
+  ratedBattlegroundHeroCount: number;
   markers: RareAchievementMarker[];
 }
 
