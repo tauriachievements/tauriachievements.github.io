@@ -14,7 +14,6 @@ export interface RareAchievementCharacter {
   race: number;
   class: number;
   guild: string;
-  achievementIds: number[];
   achievements: RareAchievementOwnership[];
 }
 

@@ -170,7 +170,7 @@ export class RareAchievementsPageComponent implements OnInit {
     achievementId: number
   ): RareAchievementMatchView | undefined {
     const achievement = this.findCharacterAchievement(character, achievementId);
-    if (!achievement && !character.achievementIds.includes(achievementId)) {
+    if (!achievement) {
       return undefined;
     }
 

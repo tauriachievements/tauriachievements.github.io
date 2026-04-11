@@ -1,5 +1,5 @@
 {
-    "generatedAt": "2026-04-11T13:39:33.9342798+00:00",
+    "generatedAt": "2026-04-11T14:09:31.9995393+00:00",
     "achievements": [
         {
             "id": 416,
@@ -596,31 +596,11 @@
     ],
     "characters": [
         {
-            "name": "Ablakzsir\u00E1f",
-            "realm": "Tauri",
-            "race": 2,
-            "class": 3,
-            "guild": "Seekers of the Self",
-            "achievementIds": [
-                1426
-            ],
-            "achievements": [
-                {
-                    "id": 1426,
-                    "obtainedAt": "2010-01-11T01:09:25+00:00"
-                }
-            ]
-        },
-        {
             "name": "Adamantinus",
             "realm": "Evermoon",
             "race": 6,
             "class": 2,
             "guild": "Impact",
-            "achievementIds": [
-                420,
-                2316
-            ],
             "achievements": [
                 {
                     "id": 420,
@@ -633,60 +613,15 @@
             ]
         },
         {
-            "name": "Alibomaye",
-            "realm": "Tauri",
-            "race": 1,
-            "class": 2,
-            "guild": "Eternal Determination",
-            "achievementIds": [
-                4600,
-                6003,
-                6322
-            ],
-            "achievements": [
-                {
-                    "id": 4600,
-                    "obtainedAt": "2014-03-18T19:17:05+00:00"
-                },
-                {
-                    "id": 6003,
-                    "obtainedAt": "2015-09-22T08:34:59+00:00"
-                },
-                {
-                    "id": 6322,
-                    "obtainedAt": "2016-04-26T16:36:41+00:00"
-                }
-            ]
-        },
-        {
             "name": "Allindar",
             "realm": "Tauri",
             "race": 10,
             "class": 2,
             "guild": "Legends Never Die",
-            "achievementIds": [
-                6003
-            ],
             "achievements": [
                 {
                     "id": 6003,
                     "obtainedAt": "2015-09-22T06:36:04+00:00"
-                }
-            ]
-        },
-        {
-            "name": "Ameno",
-            "realm": "Tauri",
-            "race": 4,
-            "class": 11,
-            "guild": "",
-            "achievementIds": [
-                8678
-            ],
-            "achievements": [
-                {
-                    "id": 8678,
-                    "obtainedAt": "2019-06-26T15:49:02+00:00"
                 }
             ]
         },
@@ -696,9 +631,6 @@
             "race": 1,
             "class": 8,
             "guild": "",
-            "achievementIds": [
-                6003
-            ],
             "achievements": [
                 {
                     "id": 6003,
@@ -712,9 +644,6 @@
             "race": 10,
             "class": 2,
             "guild": "Public Enemies",
-            "achievementIds": [
-                2316
-            ],
             "achievements": [
                 {
                     "id": 2316,
@@ -728,9 +657,6 @@
             "race": 10,
             "class": 2,
             "guild": "",
-            "achievementIds": [
-                4078
-            ],
             "achievements": [
                 {
                     "id": 4078,
@@ -744,9 +670,6 @@
             "race": 4,
             "class": 11,
             "guild": "Fekete Hold",
-            "achievementIds": [
-                6322
-            ],
             "achievements": [
                 {
                     "id": 6322,
@@ -760,10 +683,6 @@
             "race": 6,
             "class": 2,
             "guild": "Redemption",
-            "achievementIds": [
-                3756,
-                3757
-            ],
             "achievements": [
                 {
                     "id": 3756,
@@ -781,39 +700,10 @@
             "race": 10,
             "class": 3,
             "guild": "Titan",
-            "achievementIds": [
-                5004
-            ],
             "achievements": [
                 {
                     "id": 5004,
                     "obtainedAt": "2014-07-09T12:01:40+00:00"
-                }
-            ]
-        },
-        {
-            "name": "Arsz",
-            "realm": "Tauri",
-            "race": 1,
-            "class": 8,
-            "guild": "",
-            "achievementIds": [
-                420,
-                2316,
-                4600
-            ],
-            "achievements": [
-                {
-                    "id": 420,
-                    "obtainedAt": "2010-04-21T13:19:59+00:00"
-                },
-                {
-                    "id": 2316,
-                    "obtainedAt": "2009-09-04T17:41:11+00:00"
-                },
-                {
-                    "id": 4600,
-                    "obtainedAt": "2014-03-18T16:17:41+00:00"
                 }
             ]
         },
@@ -823,10 +713,6 @@
             "race": 8,
             "class": 7,
             "guild": "Redemption",
-            "achievementIds": [
-                3336,
-                3096
-            ],
             "achievements": [
                 {
                     "id": 3336,
@@ -844,9 +730,6 @@
             "race": 5,
             "class": 8,
             "guild": "Insane",
-            "achievementIds": [
-                6741
-            ],
             "achievements": [
                 {
                     "id": 6741,
@@ -860,9 +743,6 @@
             "race": 5,
             "class": 8,
             "guild": "Who Cares",
-            "achievementIds": [
-                425
-            ],
             "achievements": [
                 {
                     "id": 425,
@@ -876,11 +756,6 @@
             "race": 1,
             "class": 5,
             "guild": "",
-            "achievementIds": [
-                6316,
-                5344,
-                6942
-            ],
             "achievements": [
                 {
                     "id": 6316,
@@ -902,10 +777,6 @@
             "race": 2,
             "class": 1,
             "guild": "Redemption",
-            "achievementIds": [
-                8216,
-                8678
-            ],
             "achievements": [
                 {
                     "id": 8216,
@@ -923,9 +794,6 @@
             "race": 5,
             "class": 5,
             "guild": "Insane",
-            "achievementIds": [
-                4600
-            ],
             "achievements": [
                 {
                     "id": 4600,
@@ -939,11 +807,6 @@
             "race": 2,
             "class": 1,
             "guild": "Infernum",
-            "achievementIds": [
-                3336,
-                3096,
-                4600
-            ],
             "achievements": [
                 {
                     "id": 3336,
@@ -965,9 +828,6 @@
             "race": 8,
             "class": 9,
             "guild": "STUNL\u00D8CK S\u00D8CIETY",
-            "achievementIds": [
-                6741
-            ],
             "achievements": [
                 {
                     "id": 6741,
@@ -981,9 +841,6 @@
             "race": 2,
             "class": 1,
             "guild": "",
-            "achievementIds": [
-                3757
-            ],
             "achievements": [
                 {
                     "id": 3757,
@@ -997,9 +854,6 @@
             "race": 1,
             "class": 2,
             "guild": "Leviathan",
-            "achievementIds": [
-                3756
-            ],
             "achievements": [
                 {
                     "id": 3756,
@@ -1013,11 +867,6 @@
             "race": 10,
             "class": 8,
             "guild": "Quantum",
-            "achievementIds": [
-                420,
-                2316,
-                3259
-            ],
             "achievements": [
                 {
                     "id": 420,
@@ -1034,54 +883,11 @@
             ]
         },
         {
-            "name": "Blackinsigne",
-            "realm": "Tauri",
-            "race": 6,
-            "class": 1,
-            "guild": "Titans",
-            "achievementIds": [
-                4600,
-                6003
-            ],
-            "achievements": [
-                {
-                    "id": 4600,
-                    "obtainedAt": "2014-03-19T11:38:07+00:00"
-                },
-                {
-                    "id": 6003,
-                    "obtainedAt": "2015-09-24T14:17:13+00:00"
-                }
-            ]
-        },
-        {
-            "name": "Bliser",
-            "realm": "Tauri",
-            "race": 2,
-            "class": 9,
-            "guild": "",
-            "achievementIds": [
-                4600
-            ],
-            "achievements": [
-                {
-                    "id": 4600,
-                    "obtainedAt": "2014-03-18T20:55:45+00:00"
-                }
-            ]
-        },
-        {
             "name": "Braindeadly",
             "realm": "Evermoon",
             "race": 2,
             "class": 3,
             "guild": "Certified Aura Farmers",
-            "achievementIds": [
-                3758,
-                3757,
-                4600,
-                6433
-            ],
             "achievements": [
                 {
                     "id": 3758,
@@ -1107,45 +913,10 @@
             "race": 10,
             "class": 2,
             "guild": "Unbound",
-            "achievementIds": [
-                3756
-            ],
             "achievements": [
                 {
                     "id": 3756,
                     "obtainedAt": "2011-07-30T05:18:28+00:00"
-                }
-            ]
-        },
-        {
-            "name": "B\u00FClb\u00E1",
-            "realm": "Tauri",
-            "race": 1,
-            "class": 2,
-            "guild": "Erd\u00E9lyi P\u00E1link\u00E1sok",
-            "achievementIds": [
-                3757
-            ],
-            "achievements": [
-                {
-                    "id": 3757,
-                    "obtainedAt": "2012-07-02T20:51:14+00:00"
-                }
-            ]
-        },
-        {
-            "name": "Cheega",
-            "realm": "Tauri",
-            "race": 5,
-            "class": 9,
-            "guild": "",
-            "achievementIds": [
-                3117
-            ],
-            "achievements": [
-                {
-                    "id": 3117,
-                    "obtainedAt": "2011-04-29T17:57:22+00:00"
                 }
             ]
         },
@@ -1155,11 +926,6 @@
             "race": 6,
             "class": 2,
             "guild": "Make Love Not Warcraft",
-            "achievementIds": [
-                8216,
-                6003,
-                6741
-            ],
             "achievements": [
                 {
                     "id": 8216,
@@ -1176,66 +942,15 @@
             ]
         },
         {
-            "name": "Conducticius",
-            "realm": "Tauri",
-            "race": 2,
-            "class": 6,
-            "guild": "Titans",
-            "achievementIds": [
-                3259
-            ],
-            "achievements": [
-                {
-                    "id": 3259,
-                    "obtainedAt": "2011-03-27T18:31:32+00:00"
-                }
-            ]
-        },
-        {
-            "name": "Coron\u00EDta",
-            "realm": "Tauri",
-            "race": 5,
-            "class": 9,
-            "guild": "",
-            "achievementIds": [
-                4600
-            ],
-            "achievements": [
-                {
-                    "id": 4600,
-                    "obtainedAt": "2014-04-24T20:58:50+00:00"
-                }
-            ]
-        },
-        {
             "name": "Csicskilda",
             "realm": "Tauri",
             "race": 8,
             "class": 5,
             "guild": "Insane",
-            "achievementIds": [
-                6322
-            ],
             "achievements": [
                 {
                     "id": 6322,
                     "obtainedAt": "2016-04-26T16:37:39+00:00"
-                }
-            ]
-        },
-        {
-            "name": "Csuros",
-            "realm": "Tauri",
-            "race": 10,
-            "class": 2,
-            "guild": "",
-            "achievementIds": [
-                6744
-            ],
-            "achievements": [
-                {
-                    "id": 6744,
-                    "obtainedAt": "2017-04-13T07:55:17+00:00"
                 }
             ]
         },
@@ -1245,10 +960,6 @@
             "race": 1,
             "class": 2,
             "guild": "Pandemonium",
-            "achievementIds": [
-                4600,
-                5382
-            ],
             "achievements": [
                 {
                     "id": 4600,
@@ -1266,11 +977,6 @@
             "race": 1,
             "class": 6,
             "guild": "",
-            "achievementIds": [
-                2316,
-                3096,
-                4600
-            ],
             "achievements": [
                 {
                     "id": 2316,
@@ -1292,9 +998,6 @@
             "race": 2,
             "class": 1,
             "guild": "",
-            "achievementIds": [
-                6741
-            ],
             "achievements": [
                 {
                     "id": 6741,
@@ -1308,16 +1011,6 @@
             "race": 6,
             "class": 11,
             "guild": "Elders of illuminat",
-            "achievementIds": [
-                3336,
-                3096,
-                3757,
-                3117,
-                1402,
-                4576,
-                4078,
-                456
-            ],
             "achievements": [
                 {
                     "id": 3336,
@@ -1354,37 +1047,11 @@
             ]
         },
         {
-            "name": "Damk\u00F6hler",
-            "realm": "Tauri",
-            "race": 1,
-            "class": 9,
-            "guild": "",
-            "achievementIds": [
-                6003,
-                6322
-            ],
-            "achievements": [
-                {
-                    "id": 6003,
-                    "obtainedAt": "2015-09-22T17:48:55+00:00"
-                },
-                {
-                    "id": 6322,
-                    "obtainedAt": "2016-04-28T10:14:18+00:00"
-                }
-            ]
-        },
-        {
             "name": "Damozx",
             "realm": "Evermoon",
             "race": 2,
             "class": 3,
             "guild": "Vistustan",
-            "achievementIds": [
-                6124,
-                6003,
-                6322
-            ],
             "achievements": [
                 {
                     "id": 6124,
@@ -1406,10 +1073,6 @@
             "race": 10,
             "class": 2,
             "guild": "Insane",
-            "achievementIds": [
-                8657,
-                6941
-            ],
             "achievements": [
                 {
                     "id": 8657,
@@ -1427,10 +1090,6 @@
             "race": 5,
             "class": 4,
             "guild": "Insane",
-            "achievementIds": [
-                4600,
-                6322
-            ],
             "achievements": [
                 {
                     "id": 4600,
@@ -1448,45 +1107,10 @@
             "race": 1,
             "class": 3,
             "guild": "",
-            "achievementIds": [
-                8678
-            ],
             "achievements": [
                 {
                     "id": 8678,
                     "obtainedAt": "2019-06-26T08:54:14+00:00"
-                }
-            ]
-        },
-        {
-            "name": "Destylol",
-            "realm": "Tauri",
-            "race": 10,
-            "class": 5,
-            "guild": "",
-            "achievementIds": [
-                4600
-            ],
-            "achievements": [
-                {
-                    "id": 4600,
-                    "obtainedAt": "2014-03-19T16:24:31+00:00"
-                }
-            ]
-        },
-        {
-            "name": "Divinedmage",
-            "realm": "Tauri",
-            "race": 1,
-            "class": 8,
-            "guild": "",
-            "achievementIds": [
-                5394
-            ],
-            "achievements": [
-                {
-                    "id": 5394,
-                    "obtainedAt": "2014-07-16T16:24:40+00:00"
                 }
             ]
         },
@@ -1496,29 +1120,10 @@
             "race": 1,
             "class": 2,
             "guild": "Pack of Lone Wolves",
-            "achievementIds": [
-                4078
-            ],
             "achievements": [
                 {
                     "id": 4078,
                     "obtainedAt": "2011-10-12T18:51:12+00:00"
-                }
-            ]
-        },
-        {
-            "name": "Dolly",
-            "realm": "Tauri",
-            "race": 1,
-            "class": 4,
-            "guild": "",
-            "achievementIds": [
-                6322
-            ],
-            "achievements": [
-                {
-                    "id": 6322,
-                    "obtainedAt": "2016-04-26T16:35:30+00:00"
                 }
             ]
         },
@@ -1528,9 +1133,6 @@
             "race": 11,
             "class": 2,
             "guild": "Nonsense",
-            "achievementIds": [
-                1414
-            ],
             "achievements": [
                 {
                     "id": 1414,
@@ -1544,10 +1146,6 @@
             "race": 22,
             "class": 6,
             "guild": "",
-            "achievementIds": [
-                6003,
-                6322
-            ],
             "achievements": [
                 {
                     "id": 6003,
@@ -1565,12 +1163,6 @@
             "race": 1,
             "class": 1,
             "guild": "Champion of Alliance",
-            "achievementIds": [
-                887,
-                457,
-                1408,
-                459
-            ],
             "achievements": [
                 {
                     "id": 887,
@@ -1596,11 +1188,6 @@
             "race": 6,
             "class": 11,
             "guild": "",
-            "achievementIds": [
-                4600,
-                3117,
-                4576
-            ],
             "achievements": [
                 {
                     "id": 4600,
@@ -1622,11 +1209,6 @@
             "race": 2,
             "class": 6,
             "guild": "Quantum",
-            "achievementIds": [
-                3436,
-                3756,
-                3117
-            ],
             "achievements": [
                 {
                     "id": 3436,
@@ -1648,9 +1230,6 @@
             "race": 10,
             "class": 4,
             "guild": "Darkey Mort",
-            "achievementIds": [
-                416
-            ],
             "achievements": [
                 {
                     "id": 416,
@@ -1664,10 +1243,6 @@
             "race": 10,
             "class": 9,
             "guild": "Redemption",
-            "achievementIds": [
-                3259,
-                5384
-            ],
             "achievements": [
                 {
                     "id": 3259,
@@ -1680,55 +1255,15 @@
             ]
         },
         {
-            "name": "Explosion",
-            "realm": "Tauri",
-            "race": 1,
-            "class": 1,
-            "guild": "RelaxBroImPro",
-            "achievementIds": [
-                6939,
-                6942
-            ],
-            "achievements": [
-                {
-                    "id": 6939,
-                    "obtainedAt": "2017-01-11T09:21:35+00:00"
-                },
-                {
-                    "id": 6942,
-                    "obtainedAt": "2017-02-12T19:08:13+00:00"
-                }
-            ]
-        },
-        {
             "name": "Flapjack",
             "realm": "Evermoon",
             "race": 2,
             "class": 6,
             "guild": "STUNL\u00D8CK S\u00D8CIETY",
-            "achievementIds": [
-                3757
-            ],
             "achievements": [
                 {
                     "id": 3757,
                     "obtainedAt": "2012-07-03T10:08:00+00:00"
-                }
-            ]
-        },
-        {
-            "name": "Flimaxone",
-            "realm": "Tauri",
-            "race": 1,
-            "class": 4,
-            "guild": "",
-            "achievementIds": [
-                5008
-            ],
-            "achievements": [
-                {
-                    "id": 5008,
-                    "obtainedAt": "2014-07-09T02:17:41+00:00"
                 }
             ]
         },
@@ -1738,65 +1273,10 @@
             "race": 11,
             "class": 7,
             "guild": "",
-            "achievementIds": [
-                2316
-            ],
             "achievements": [
                 {
                     "id": 2316,
                     "obtainedAt": "2009-09-04T10:30:33+00:00"
-                }
-            ]
-        },
-        {
-            "name": "Fluriusz",
-            "realm": "Tauri",
-            "race": 10,
-            "class": 5,
-            "guild": "Tropic Thunder",
-            "achievementIds": [
-                4599,
-                4600,
-                4576,
-                4078
-            ],
-            "achievements": [
-                {
-                    "id": 4599,
-                    "obtainedAt": "2014-03-08T19:58:55+00:00"
-                },
-                {
-                    "id": 4600,
-                    "obtainedAt": "2014-03-23T10:37:33+00:00"
-                },
-                {
-                    "id": 4576,
-                    "obtainedAt": "2012-12-03T21:00:18+00:00"
-                },
-                {
-                    "id": 4078,
-                    "obtainedAt": "2011-10-12T18:51:12+00:00"
-                }
-            ]
-        },
-        {
-            "name": "Frenet\u00EEq",
-            "realm": "Tauri",
-            "race": 5,
-            "class": 8,
-            "guild": "",
-            "achievementIds": [
-                3757,
-                5006
-            ],
-            "achievements": [
-                {
-                    "id": 3757,
-                    "obtainedAt": "2012-07-02T22:15:57+00:00"
-                },
-                {
-                    "id": 5006,
-                    "obtainedAt": "2014-07-09T02:54:58+00:00"
                 }
             ]
         },
@@ -1806,12 +1286,6 @@
             "race": 10,
             "class": 9,
             "guild": "Conclusion",
-            "achievementIds": [
-                6873,
-                6862,
-                6864,
-                6872
-            ],
             "achievements": [
                 {
                     "id": 6873,
@@ -1832,36 +1306,11 @@
             ]
         },
         {
-            "name": "Gehirn",
-            "realm": "Tauri",
-            "race": 1,
-            "class": 2,
-            "guild": "",
-            "achievementIds": [
-                6316,
-                6942
-            ],
-            "achievements": [
-                {
-                    "id": 6316,
-                    "obtainedAt": "2016-04-28T15:33:59+00:00"
-                },
-                {
-                    "id": 6942,
-                    "obtainedAt": "2017-02-22T23:28:43+00:00"
-                }
-            ]
-        },
-        {
             "name": "Goldenstab",
             "realm": "Evermoon",
             "race": 8,
             "class": 4,
             "guild": "The Echoes",
-            "achievementIds": [
-                6869,
-                6871
-            ],
             "achievements": [
                 {
                     "id": 6869,
@@ -1879,9 +1328,6 @@
             "race": 1,
             "class": 9,
             "guild": "Outlaws",
-            "achievementIds": [
-                4600
-            ],
             "achievements": [
                 {
                     "id": 4600,
@@ -1895,10 +1341,6 @@
             "race": 2,
             "class": 3,
             "guild": "",
-            "achievementIds": [
-                8216,
-                6741
-            ],
             "achievements": [
                 {
                     "id": 8216,
@@ -1916,9 +1358,6 @@
             "race": 2,
             "class": 7,
             "guild": "Sentinel",
-            "achievementIds": [
-                8216
-            ],
             "achievements": [
                 {
                     "id": 8216,
@@ -1932,10 +1371,6 @@
             "race": 2,
             "class": 7,
             "guild": "Public Enemies",
-            "achievementIds": [
-                3757,
-                3259
-            ],
             "achievements": [
                 {
                     "id": 3757,
@@ -1953,29 +1388,10 @@
             "race": 10,
             "class": 6,
             "guild": "DevilsArmy",
-            "achievementIds": [
-                3757
-            ],
             "achievements": [
                 {
                     "id": 3757,
                     "obtainedAt": "2012-07-11T15:49:17+00:00"
-                }
-            ]
-        },
-        {
-            "name": "Hasler",
-            "realm": "Tauri",
-            "race": 9,
-            "class": 8,
-            "guild": "",
-            "achievementIds": [
-                4078
-            ],
-            "achievements": [
-                {
-                    "id": 4078,
-                    "obtainedAt": "2011-10-12T18:51:12+00:00"
                 }
             ]
         },
@@ -1985,10 +1401,6 @@
             "race": 1,
             "class": 5,
             "guild": "Outlaws",
-            "achievementIds": [
-                8658,
-                6942
-            ],
             "achievements": [
                 {
                     "id": 8658,
@@ -2001,41 +1413,11 @@
             ]
         },
         {
-            "name": "Hyped",
-            "realm": "Tauri",
-            "race": 8,
-            "class": 5,
-            "guild": "Aljan\u00E9ps\u00E9g",
-            "achievementIds": [
-                8707,
-                8659,
-                6941
-            ],
-            "achievements": [
-                {
-                    "id": 8707,
-                    "obtainedAt": "2021-01-13T16:31:25+00:00"
-                },
-                {
-                    "id": 8659,
-                    "obtainedAt": "2021-05-19T15:16:33+00:00"
-                },
-                {
-                    "id": 6941,
-                    "obtainedAt": "2021-05-19T15:38:14+00:00"
-                }
-            ]
-        },
-        {
             "name": "Ilovelily",
             "realm": "Evermoon",
             "race": 4,
             "class": 11,
             "guild": "Crystal Castles",
-            "achievementIds": [
-                8216,
-                8678
-            ],
             "achievements": [
                 {
                     "id": 8216,
@@ -2053,9 +1435,6 @@
             "race": 2,
             "class": 1,
             "guild": "Cradle",
-            "achievementIds": [
-                6003
-            ],
             "achievements": [
                 {
                     "id": 6003,
@@ -2069,10 +1448,6 @@
             "race": 8,
             "class": 11,
             "guild": "Incendia",
-            "achievementIds": [
-                4576,
-                5396
-            ],
             "achievements": [
                 {
                     "id": 4576,
@@ -2085,33 +1460,11 @@
             ]
         },
         {
-            "name": "Jaimex",
-            "realm": "Tauri",
-            "race": 11,
-            "class": 7,
-            "guild": "",
-            "achievementIds": [
-                4600
-            ],
-            "achievements": [
-                {
-                    "id": 4600,
-                    "obtainedAt": "2014-03-18T12:10:43+00:00"
-                }
-            ]
-        },
-        {
             "name": "Jamesonx",
             "realm": "Evermoon",
             "race": 1,
             "class": 2,
             "guild": "Tempest",
-            "achievementIds": [
-                5344,
-                6003,
-                6322,
-                6942
-            ],
             "achievements": [
                 {
                     "id": 5344,
@@ -2132,87 +1485,15 @@
             ]
         },
         {
-            "name": "Janomage",
-            "realm": "Tauri",
-            "race": 7,
-            "class": 8,
-            "guild": "All In",
-            "achievementIds": [
-                5386
-            ],
-            "achievements": [
-                {
-                    "id": 5386,
-                    "obtainedAt": "2014-07-08T22:20:06+00:00"
-                }
-            ]
-        },
-        {
-            "name": "Jonby",
-            "realm": "Tauri",
-            "race": 1,
-            "class": 1,
-            "guild": "no mercy for your rating",
-            "achievementIds": [
-                6322
-            ],
-            "achievements": [
-                {
-                    "id": 6322,
-                    "obtainedAt": "2016-04-26T16:38:09+00:00"
-                }
-            ]
-        },
-        {
-            "name": "Just",
-            "realm": "Tauri",
-            "race": 10,
-            "class": 2,
-            "guild": "Insane",
-            "achievementIds": [
-                6003,
-                6741
-            ],
-            "achievements": [
-                {
-                    "id": 6003,
-                    "obtainedAt": "2015-09-25T16:16:35+00:00"
-                },
-                {
-                    "id": 6741,
-                    "obtainedAt": "2017-01-11T10:19:07+00:00"
-                }
-            ]
-        },
-        {
             "name": "Justorm",
             "realm": "Evermoon",
             "race": 1,
             "class": 2,
             "guild": "FallenAngels",
-            "achievementIds": [
-                4600
-            ],
             "achievements": [
                 {
                     "id": 4600,
                     "obtainedAt": "2014-03-18T16:32:55+00:00"
-                }
-            ]
-        },
-        {
-            "name": "Kondy",
-            "realm": "Tauri",
-            "race": 1,
-            "class": 8,
-            "guild": "Pandemonium",
-            "achievementIds": [
-                4600
-            ],
-            "achievements": [
-                {
-                    "id": 4600,
-                    "obtainedAt": "2014-03-18T19:05:45+00:00"
                 }
             ]
         },
@@ -2222,10 +1503,6 @@
             "race": 1,
             "class": 5,
             "guild": "Crystal Castles",
-            "achievementIds": [
-                6124,
-                6322
-            ],
             "achievements": [
                 {
                     "id": 6124,
@@ -2243,9 +1520,6 @@
             "race": 10,
             "class": 2,
             "guild": "Sentinel",
-            "achievementIds": [
-                3757
-            ],
             "achievements": [
                 {
                     "id": 3757,
@@ -2259,10 +1533,6 @@
             "race": 4,
             "class": 11,
             "guild": "Outlaws",
-            "achievementIds": [
-                8658,
-                6942
-            ],
             "achievements": [
                 {
                     "id": 8658,
@@ -2280,12 +1550,6 @@
             "race": 8,
             "class": 8,
             "guild": "",
-            "achievementIds": [
-                1405,
-                460,
-                5006,
-                6749
-            ],
             "achievements": [
                 {
                     "id": 1405,
@@ -2311,9 +1575,6 @@
             "race": 1,
             "class": 2,
             "guild": "League of Gladiators",
-            "achievementIds": [
-                1400
-            ],
             "achievements": [
                 {
                     "id": 1400,
@@ -2327,10 +1588,6 @@
             "race": 8,
             "class": 11,
             "guild": "",
-            "achievementIds": [
-                6317,
-                6941
-            ],
             "achievements": [
                 {
                     "id": 6317,
@@ -2348,11 +1605,6 @@
             "race": 1,
             "class": 8,
             "guild": "\u00C7onquerors",
-            "achievementIds": [
-                3436,
-                3756,
-                4576
-            ],
             "achievements": [
                 {
                     "id": 3436,
@@ -2374,9 +1626,6 @@
             "race": 10,
             "class": 3,
             "guild": "Warlords of Destruction",
-            "achievementIds": [
-                8216
-            ],
             "achievements": [
                 {
                     "id": 8216,
@@ -2390,9 +1639,6 @@
             "race": 10,
             "class": 8,
             "guild": "Pantheon",
-            "achievementIds": [
-                4600
-            ],
             "achievements": [
                 {
                     "id": 4600,
@@ -2406,9 +1652,6 @@
             "race": 11,
             "class": 7,
             "guild": "Outlaws",
-            "achievementIds": [
-                887
-            ],
             "achievements": [
                 {
                     "id": 887,
@@ -2422,10 +1665,6 @@
             "race": 6,
             "class": 11,
             "guild": "Ganksters Paradise",
-            "achievementIds": [
-                1402,
-                456
-            ],
             "achievements": [
                 {
                     "id": 1402,
@@ -2443,12 +1682,6 @@
             "race": 6,
             "class": 7,
             "guild": "Endless",
-            "achievementIds": [
-                8214,
-                8216,
-                6322,
-                6741
-            ],
             "achievements": [
                 {
                     "id": 8214,
@@ -2474,9 +1707,6 @@
             "race": 4,
             "class": 11,
             "guild": "Spellbook Clickerz",
-            "achievementIds": [
-                6003
-            ],
             "achievements": [
                 {
                     "id": 6003,
@@ -2490,10 +1720,6 @@
             "race": 2,
             "class": 6,
             "guild": "The Executioners Of Sargeras",
-            "achievementIds": [
-                8244,
-                6941
-            ],
             "achievements": [
                 {
                     "id": 8244,
@@ -2511,9 +1737,6 @@
             "race": 1,
             "class": 6,
             "guild": "Farming is ALL we do",
-            "achievementIds": [
-                6433
-            ],
             "achievements": [
                 {
                     "id": 6433,
@@ -2527,10 +1750,6 @@
             "race": 6,
             "class": 6,
             "guild": "Paranoid",
-            "achievementIds": [
-                4576,
-                5005
-            ],
             "achievements": [
                 {
                     "id": 4576,
@@ -2548,9 +1767,6 @@
             "race": 1,
             "class": 8,
             "guild": "Farming is ALL we do",
-            "achievementIds": [
-                4600
-            ],
             "achievements": [
                 {
                     "id": 4600,
@@ -2564,9 +1780,6 @@
             "race": 8,
             "class": 11,
             "guild": "",
-            "achievementIds": [
-                3757
-            ],
             "achievements": [
                 {
                     "id": 3757,
@@ -2580,50 +1793,10 @@
             "race": 8,
             "class": 9,
             "guild": "Paranoid",
-            "achievementIds": [
-                6003
-            ],
             "achievements": [
                 {
                     "id": 6003,
                     "obtainedAt": "2015-09-22T16:15:59+00:00"
-                }
-            ]
-        },
-        {
-            "name": "Mengel",
-            "realm": "Tauri",
-            "race": 2,
-            "class": 3,
-            "guild": "High Heavens",
-            "achievementIds": [
-                8659,
-                6941
-            ],
-            "achievements": [
-                {
-                    "id": 8659,
-                    "obtainedAt": "2021-05-19T15:16:33+00:00"
-                },
-                {
-                    "id": 6941,
-                    "obtainedAt": "2021-05-19T15:31:34+00:00"
-                }
-            ]
-        },
-        {
-            "name": "Mexon",
-            "realm": "Tauri",
-            "race": 5,
-            "class": 4,
-            "guild": "Public Enemies",
-            "achievementIds": [
-                2316
-            ],
-            "achievements": [
-                {
-                    "id": 2316,
-                    "obtainedAt": "2009-09-04T09:37:40+00:00"
                 }
             ]
         },
@@ -2633,11 +1806,6 @@
             "race": 2,
             "class": 8,
             "guild": "",
-            "achievementIds": [
-                8216,
-                8678,
-                6322
-            ],
             "achievements": [
                 {
                     "id": 8216,
@@ -2659,9 +1827,6 @@
             "race": 26,
             "class": 7,
             "guild": "Kamote",
-            "achievementIds": [
-                6867
-            ],
             "achievements": [
                 {
                     "id": 6867,
@@ -2675,10 +1840,6 @@
             "race": 2,
             "class": 7,
             "guild": "Endless",
-            "achievementIds": [
-                3436,
-                3756
-            ],
             "achievements": [
                 {
                     "id": 3436,
@@ -2696,10 +1857,6 @@
             "race": 1,
             "class": 2,
             "guild": "Killepitsch",
-            "achievementIds": [
-                5396,
-                6868
-            ],
             "achievements": [
                 {
                     "id": 5396,
@@ -2717,29 +1874,10 @@
             "race": 10,
             "class": 9,
             "guild": "",
-            "achievementIds": [
-                3756
-            ],
             "achievements": [
                 {
                     "id": 3756,
                     "obtainedAt": "2011-07-29T21:30:13+00:00"
-                }
-            ]
-        },
-        {
-            "name": "Neddy",
-            "realm": "Tauri",
-            "race": 10,
-            "class": 1,
-            "guild": "High Heavens",
-            "achievementIds": [
-                2316
-            ],
-            "achievements": [
-                {
-                    "id": 2316,
-                    "obtainedAt": "2009-09-05T20:50:11+00:00"
                 }
             ]
         },
@@ -2749,9 +1887,6 @@
             "race": 1,
             "class": 6,
             "guild": "Excluded",
-            "achievementIds": [
-                6003
-            ],
             "achievements": [
                 {
                     "id": 6003,
@@ -2765,10 +1900,6 @@
             "race": 1,
             "class": 8,
             "guild": "Outlaws",
-            "achievementIds": [
-                5344,
-                6942
-            ],
             "achievements": [
                 {
                     "id": 5344,
@@ -2786,45 +1917,10 @@
             "race": 1,
             "class": 5,
             "guild": "",
-            "achievementIds": [
-                2316
-            ],
             "achievements": [
                 {
                     "id": 2316,
                     "obtainedAt": "2009-09-04T15:33:50+00:00"
-                }
-            ]
-        },
-        {
-            "name": "Nomilkforya",
-            "realm": "Tauri",
-            "race": 4,
-            "class": 11,
-            "guild": "Pandemonium",
-            "achievementIds": [
-                6003
-            ],
-            "achievements": [
-                {
-                    "id": 6003,
-                    "obtainedAt": "2015-09-22T09:20:21+00:00"
-                }
-            ]
-        },
-        {
-            "name": "Ogresmith",
-            "realm": "Tauri",
-            "race": 1,
-            "class": 2,
-            "guild": "The Titans",
-            "achievementIds": [
-                1418
-            ],
-            "achievements": [
-                {
-                    "id": 1418,
-                    "obtainedAt": "2010-01-11T10:52:51+00:00"
                 }
             ]
         },
@@ -2834,15 +1930,6 @@
             "race": 1,
             "class": 8,
             "guild": "Joy Division",
-            "achievementIds": [
-                6124,
-                8214,
-                8216,
-                8791,
-                8678,
-                6322,
-                6741
-            ],
             "achievements": [
                 {
                     "id": 6124,
@@ -2880,9 +1967,6 @@
             "race": 26,
             "class": 5,
             "guild": "Beton Logok Szar Karikkal",
-            "achievementIds": [
-                6745
-            ],
             "achievements": [
                 {
                     "id": 6745,
@@ -2896,9 +1980,6 @@
             "race": 8,
             "class": 8,
             "guild": "Quantum",
-            "achievementIds": [
-                6322
-            ],
             "achievements": [
                 {
                     "id": 6322,
@@ -2912,9 +1993,6 @@
             "race": 5,
             "class": 5,
             "guild": "",
-            "achievementIds": [
-                6003
-            ],
             "achievements": [
                 {
                     "id": 6003,
@@ -2928,9 +2006,6 @@
             "race": 5,
             "class": 9,
             "guild": "Public Enemies",
-            "achievementIds": [
-                5386
-            ],
             "achievements": [
                 {
                     "id": 5386,
@@ -2944,9 +2019,6 @@
             "race": 11,
             "class": 7,
             "guild": "",
-            "achievementIds": [
-                6322
-            ],
             "achievements": [
                 {
                     "id": 6322,
@@ -2960,10 +2032,6 @@
             "race": 2,
             "class": 1,
             "guild": "Who Cares",
-            "achievementIds": [
-                8216,
-                8678
-            ],
             "achievements": [
                 {
                     "id": 8216,
@@ -2981,10 +2049,6 @@
             "race": 6,
             "class": 2,
             "guild": "Redemption",
-            "achievementIds": [
-                8216,
-                6741
-            ],
             "achievements": [
                 {
                     "id": 8216,
@@ -3002,11 +2066,6 @@
             "race": 5,
             "class": 8,
             "guild": "",
-            "achievementIds": [
-                6124,
-                6003,
-                6322
-            ],
             "achievements": [
                 {
                     "id": 6124,
@@ -3028,29 +2087,10 @@
             "race": 4,
             "class": 5,
             "guild": "Pandora",
-            "achievementIds": [
-                8216
-            ],
             "achievements": [
                 {
                     "id": 8216,
                     "obtainedAt": "2017-12-15T12:42:15+00:00"
-                }
-            ]
-        },
-        {
-            "name": "Radir",
-            "realm": "Tauri",
-            "race": 2,
-            "class": 1,
-            "guild": "Best of The Best",
-            "achievementIds": [
-                1413
-            ],
-            "achievements": [
-                {
-                    "id": 1413,
-                    "obtainedAt": "2010-01-12T07:44:55+00:00"
                 }
             ]
         },
@@ -3060,9 +2100,6 @@
             "race": 6,
             "class": 7,
             "guild": "The Executioners Of Sargeras",
-            "achievementIds": [
-                416
-            ],
             "achievements": [
                 {
                     "id": 416,
@@ -3076,29 +2113,10 @@
             "race": 2,
             "class": 1,
             "guild": "Competence Optional",
-            "achievementIds": [
-                3096
-            ],
             "achievements": [
                 {
                     "id": 3096,
                     "obtainedAt": "2018-06-27T00:20:06+00:00"
-                }
-            ]
-        },
-        {
-            "name": "Rapelesz",
-            "realm": "Tauri",
-            "race": 1,
-            "class": 1,
-            "guild": "",
-            "achievementIds": [
-                4600
-            ],
-            "achievements": [
-                {
-                    "id": 4600,
-                    "obtainedAt": "2014-03-20T21:55:42+00:00"
                 }
             ]
         },
@@ -3108,10 +2126,6 @@
             "race": 9,
             "class": 5,
             "guild": "Endless",
-            "achievementIds": [
-                8216,
-                6322
-            ],
             "achievements": [
                 {
                     "id": 8216,
@@ -3129,49 +2143,10 @@
             "race": 1,
             "class": 8,
             "guild": "Defiance",
-            "achievementIds": [
-                8216
-            ],
             "achievements": [
                 {
                     "id": 8216,
                     "obtainedAt": "2018-07-04T09:29:08+00:00"
-                }
-            ]
-        },
-        {
-            "name": "Remorseless",
-            "realm": "Tauri",
-            "race": 1,
-            "class": 1,
-            "guild": "Inspecteldafaszom",
-            "achievementIds": [
-                8216,
-                4600,
-                6003,
-                6741,
-                5007
-            ],
-            "achievements": [
-                {
-                    "id": 8216,
-                    "obtainedAt": "2017-12-13T11:44:33+00:00"
-                },
-                {
-                    "id": 4600,
-                    "obtainedAt": "2014-03-18T15:45:24+00:00"
-                },
-                {
-                    "id": 6003,
-                    "obtainedAt": "2015-09-22T10:07:09+00:00"
-                },
-                {
-                    "id": 6741,
-                    "obtainedAt": "2017-01-11T10:48:29+00:00"
-                },
-                {
-                    "id": 5007,
-                    "obtainedAt": "2014-07-09T03:06:55+00:00"
                 }
             ]
         },
@@ -3181,12 +2156,6 @@
             "race": 2,
             "class": 1,
             "guild": "Public Enemies",
-            "achievementIds": [
-                6003,
-                6322,
-                4576,
-                4078
-            ],
             "achievements": [
                 {
                     "id": 6003,
@@ -3212,9 +2181,6 @@
             "race": 8,
             "class": 11,
             "guild": "",
-            "achievementIds": [
-                6743
-            ],
             "achievements": [
                 {
                     "id": 6743,
@@ -3228,9 +2194,6 @@
             "race": 6,
             "class": 7,
             "guild": "Insane",
-            "achievementIds": [
-                6523
-            ],
             "achievements": [
                 {
                     "id": 6523,
@@ -3244,9 +2207,6 @@
             "race": 5,
             "class": 5,
             "guild": "Darkmist Vortex",
-            "achievementIds": [
-                6003
-            ],
             "achievements": [
                 {
                     "id": 6003,
@@ -3260,9 +2220,6 @@
             "race": 4,
             "class": 4,
             "guild": "",
-            "achievementIds": [
-                6322
-            ],
             "achievements": [
                 {
                     "id": 6322,
@@ -3276,9 +2233,6 @@
             "race": 6,
             "class": 11,
             "guild": "Outer Edges",
-            "achievementIds": [
-                6864
-            ],
             "achievements": [
                 {
                     "id": 6864,
@@ -3292,9 +2246,6 @@
             "race": 10,
             "class": 2,
             "guild": "Redemption",
-            "achievementIds": [
-                888
-            ],
             "achievements": [
                 {
                     "id": 888,
@@ -3308,50 +2259,10 @@
             "race": 1,
             "class": 2,
             "guild": "Bad Choice",
-            "achievementIds": [
-                4078
-            ],
             "achievements": [
                 {
                     "id": 4078,
                     "obtainedAt": "2011-10-12T18:51:12+00:00"
-                }
-            ]
-        },
-        {
-            "name": "Sampleqq",
-            "realm": "Tauri",
-            "race": 1,
-            "class": 8,
-            "guild": "",
-            "achievementIds": [
-                3756,
-                3757
-            ],
-            "achievements": [
-                {
-                    "id": 3756,
-                    "obtainedAt": "2011-07-29T21:51:17+00:00"
-                },
-                {
-                    "id": 3757,
-                    "obtainedAt": "2012-07-03T16:54:02+00:00"
-                }
-            ]
-        },
-        {
-            "name": "Schisme",
-            "realm": "Tauri",
-            "race": 1,
-            "class": 5,
-            "guild": "",
-            "achievementIds": [
-                5381
-            ],
-            "achievements": [
-                {
-                    "id": 5381,
-                    "obtainedAt": "2014-07-08T23:37:26+00:00"
                 }
             ]
         },
@@ -3361,29 +2272,10 @@
             "race": 11,
             "class": 7,
             "guild": "",
-            "achievementIds": [
-                6865
-            ],
             "achievements": [
                 {
                     "id": 6865,
                     "obtainedAt": "2017-04-12T20:11:17+00:00"
-                }
-            ]
-        },
-        {
-            "name": "Shadowpala",
-            "realm": "Tauri",
-            "race": 1,
-            "class": 2,
-            "guild": "The Crusade",
-            "achievementIds": [
-                5395
-            ],
-            "achievements": [
-                {
-                    "id": 5395,
-                    "obtainedAt": "2014-07-02T20:17:38+00:00"
                 }
             ]
         },
@@ -3393,10 +2285,6 @@
             "race": 4,
             "class": 11,
             "guild": "Offline",
-            "achievementIds": [
-                6316,
-                6942
-            ],
             "achievements": [
                 {
                     "id": 6316,
@@ -3409,30 +2297,11 @@
             ]
         },
         {
-            "name": "Silonix",
-            "realm": "Tauri",
-            "race": 2,
-            "class": 9,
-            "guild": "Hal\u00E1lSz\u00E1rny",
-            "achievementIds": [
-                4600
-            ],
-            "achievements": [
-                {
-                    "id": 4600,
-                    "obtainedAt": "2014-03-19T16:44:12+00:00"
-                }
-            ]
-        },
-        {
             "name": "Skativra",
             "realm": "Tauri",
             "race": 1,
             "class": 4,
             "guild": "Echo of Silence",
-            "achievementIds": [
-                6741
-            ],
             "achievements": [
                 {
                     "id": 6741,
@@ -3446,9 +2315,6 @@
             "race": 1,
             "class": 5,
             "guild": "",
-            "achievementIds": [
-                6322
-            ],
             "achievements": [
                 {
                     "id": 6322,
@@ -3462,10 +2328,6 @@
             "race": 6,
             "class": 3,
             "guild": "Endless",
-            "achievementIds": [
-                4576,
-                4078
-            ],
             "achievements": [
                 {
                     "id": 4576,
@@ -3483,9 +2345,6 @@
             "race": 8,
             "class": 5,
             "guild": "",
-            "achievementIds": [
-                4600
-            ],
             "achievements": [
                 {
                     "id": 4600,
@@ -3499,9 +2358,6 @@
             "race": 2,
             "class": 3,
             "guild": "The Executioners Of Sargeras",
-            "achievementIds": [
-                6003
-            ],
             "achievements": [
                 {
                     "id": 6003,
@@ -3515,9 +2371,6 @@
             "race": 10,
             "class": 8,
             "guild": "Public Enemies",
-            "achievementIds": [
-                6322
-            ],
             "achievements": [
                 {
                     "id": 6322,
@@ -3531,34 +2384,10 @@
             "race": 3,
             "class": 7,
             "guild": "Leviathan",
-            "achievementIds": [
-                6322
-            ],
             "achievements": [
                 {
                     "id": 6322,
                     "obtainedAt": "2021-11-10T14:47:55+00:00"
-                }
-            ]
-        },
-        {
-            "name": "Step",
-            "realm": "Tauri",
-            "race": 1,
-            "class": 4,
-            "guild": "",
-            "achievementIds": [
-                6322,
-                6741
-            ],
-            "achievements": [
-                {
-                    "id": 6322,
-                    "obtainedAt": "2016-04-26T16:40:00+00:00"
-                },
-                {
-                    "id": 6741,
-                    "obtainedAt": "2017-01-11T14:18:15+00:00"
                 }
             ]
         },
@@ -3568,12 +2397,6 @@
             "race": 8,
             "class": 5,
             "guild": "Insane",
-            "achievementIds": [
-                8216,
-                3757,
-                6741,
-                6433
-            ],
             "achievements": [
                 {
                     "id": 8216,
@@ -3599,10 +2422,6 @@
             "race": 5,
             "class": 4,
             "guild": "",
-            "achievementIds": [
-                6124,
-                6322
-            ],
             "achievements": [
                 {
                     "id": 6124,
@@ -3615,82 +2434,15 @@
             ]
         },
         {
-            "name": "S\u00E8yon",
-            "realm": "Tauri",
-            "race": 1,
-            "class": 8,
-            "guild": "",
-            "achievementIds": [
-                8216
-            ],
-            "achievements": [
-                {
-                    "id": 8216,
-                    "obtainedAt": "2017-12-13T14:18:03+00:00"
-                }
-            ]
-        },
-        {
-            "name": "S\u00F8s\u00FD\u00F8",
-            "realm": "Tauri",
-            "race": 2,
-            "class": 1,
-            "guild": "",
-            "achievementIds": [
-                5392
-            ],
-            "achievements": [
-                {
-                    "id": 5392,
-                    "obtainedAt": "2014-07-08T23:35:48+00:00"
-                }
-            ]
-        },
-        {
-            "name": "Tabszos",
-            "realm": "Tauri",
-            "race": 1,
-            "class": 1,
-            "guild": "",
-            "achievementIds": [
-                3757
-            ],
-            "achievements": [
-                {
-                    "id": 3757,
-                    "obtainedAt": "2012-07-02T20:50:46+00:00"
-                }
-            ]
-        },
-        {
             "name": "Tahal",
             "realm": "Tauri",
             "race": 6,
             "class": 1,
             "guild": "Yes TRY It",
-            "achievementIds": [
-                1400
-            ],
             "achievements": [
                 {
                     "id": 1400,
                     "obtainedAt": "2010-07-09T18:38:41+00:00"
-                }
-            ]
-        },
-        {
-            "name": "Throon",
-            "realm": "Tauri",
-            "race": 11,
-            "class": 7,
-            "guild": "Durability",
-            "achievementIds": [
-                1420
-            ],
-            "achievements": [
-                {
-                    "id": 1420,
-                    "obtainedAt": "2010-01-11T03:40:34+00:00"
                 }
             ]
         },
@@ -3700,10 +2452,6 @@
             "race": 8,
             "class": 8,
             "guild": "Mage Trainer",
-            "achievementIds": [
-                6322,
-                6741
-            ],
             "achievements": [
                 {
                     "id": 6322,
@@ -3716,36 +2464,11 @@
             ]
         },
         {
-            "name": "Trashcan",
-            "realm": "Tauri",
-            "race": 1,
-            "class": 2,
-            "guild": "Hammerite",
-            "achievementIds": [
-                6003
-            ],
-            "achievements": [
-                {
-                    "id": 6003,
-                    "obtainedAt": "2015-09-22T13:50:49+00:00"
-                }
-            ]
-        },
-        {
             "name": "Treefa",
             "realm": "Tauri",
             "race": 4,
             "class": 11,
             "guild": "",
-            "achievementIds": [
-                6938,
-                6939,
-                4600,
-                6003,
-                6322,
-                6741,
-                6942
-            ],
             "achievements": [
                 {
                     "id": 6938,
@@ -3778,77 +2501,11 @@
             ]
         },
         {
-            "name": "Tyreal",
-            "realm": "Tauri",
-            "race": 1,
-            "class": 1,
-            "guild": "",
-            "achievementIds": [
-                2316,
-                3336,
-                3436,
-                3758,
-                3096,
-                3756,
-                3757
-            ],
-            "achievements": [
-                {
-                    "id": 2316,
-                    "obtainedAt": "2009-09-04T04:52:33+00:00"
-                },
-                {
-                    "id": 3336,
-                    "obtainedAt": "2010-12-22T18:43:31+00:00"
-                },
-                {
-                    "id": 3436,
-                    "obtainedAt": "2011-07-30T09:07:33+00:00"
-                },
-                {
-                    "id": 3758,
-                    "obtainedAt": "2012-07-02T17:24:19+00:00"
-                },
-                {
-                    "id": 3096,
-                    "obtainedAt": "2010-12-22T18:43:52+00:00"
-                },
-                {
-                    "id": 3756,
-                    "obtainedAt": "2011-07-30T09:10:07+00:00"
-                },
-                {
-                    "id": 3757,
-                    "obtainedAt": "2012-07-02T20:50:33+00:00"
-                }
-            ]
-        },
-        {
-            "name": "Unownable",
-            "realm": "Tauri",
-            "race": 11,
-            "class": 7,
-            "guild": "Hammerite",
-            "achievementIds": [
-                6003
-            ],
-            "achievements": [
-                {
-                    "id": 6003,
-                    "obtainedAt": "2015-09-22T09:19:00+00:00"
-                }
-            ]
-        },
-        {
             "name": "Urdak",
             "realm": "Tauri",
             "race": 2,
             "class": 3,
             "guild": "Zugf\u00F6zde",
-            "achievementIds": [
-                416,
-                4576
-            ],
             "achievements": [
                 {
                     "id": 416,
@@ -3866,29 +2523,10 @@
             "race": 4,
             "class": 11,
             "guild": "Last Whisper",
-            "achievementIds": [
-                5388
-            ],
             "achievements": [
                 {
                     "id": 5388,
                     "obtainedAt": "2014-07-08T22:36:47+00:00"
-                }
-            ]
-        },
-        {
-            "name": "Varix",
-            "realm": "Tauri",
-            "race": 8,
-            "class": 8,
-            "guild": "Darkmist Vortex",
-            "achievementIds": [
-                3117
-            ],
-            "achievements": [
-                {
-                    "id": 3117,
-                    "obtainedAt": "2011-04-29T17:57:22+00:00"
                 }
             ]
         },
@@ -3898,11 +2536,6 @@
             "race": 1,
             "class": 2,
             "guild": "Tribunes of the Light",
-            "achievementIds": [
-                6124,
-                6322,
-                6741
-            ],
             "achievements": [
                 {
                     "id": 6124,
@@ -3924,10 +2557,6 @@
             "race": 1,
             "class": 8,
             "guild": "",
-            "achievementIds": [
-                6124,
-                6322
-            ],
             "achievements": [
                 {
                     "id": 6124,
@@ -3945,12 +2574,6 @@
             "race": 4,
             "class": 5,
             "guild": "WHERE THE DODGE BEGINS",
-            "achievementIds": [
-                6002,
-                6124,
-                6003,
-                6322
-            ],
             "achievements": [
                 {
                     "id": 6002,
@@ -3976,12 +2599,6 @@
             "race": 10,
             "class": 8,
             "guild": "Minus Twenty One",
-            "achievementIds": [
-                6938,
-                6317,
-                6741,
-                6941
-            ],
             "achievements": [
                 {
                     "id": 6938,
@@ -4007,13 +2624,6 @@
             "race": 6,
             "class": 11,
             "guild": "OnlyFans",
-            "achievementIds": [
-                3336,
-                3436,
-                3096,
-                3756,
-                3757
-            ],
             "achievements": [
                 {
                     "id": 3336,
@@ -4038,42 +2648,11 @@
             ]
         },
         {
-            "name": "Venomorph",
-            "realm": "Tauri",
-            "race": 6,
-            "class": 11,
-            "guild": "",
-            "achievementIds": [
-                416,
-                3117,
-                4078
-            ],
-            "achievements": [
-                {
-                    "id": 416,
-                    "obtainedAt": "2010-04-10T00:26:43+00:00"
-                },
-                {
-                    "id": 3117,
-                    "obtainedAt": "2011-04-27T20:45:38+00:00"
-                },
-                {
-                    "id": 4078,
-                    "obtainedAt": "2011-09-11T19:39:08+00:00"
-                }
-            ]
-        },
-        {
             "name": "Venomorphx",
             "realm": "Evermoon",
             "race": 8,
             "class": 11,
             "guild": "",
-            "achievementIds": [
-                6124,
-                3756,
-                6322
-            ],
             "achievements": [
                 {
                     "id": 6124,
@@ -4095,13 +2674,6 @@
             "race": 2,
             "class": 7,
             "guild": "Certified Aura Farmers",
-            "achievementIds": [
-                6938,
-                8216,
-                6003,
-                6322,
-                6741
-            ],
             "achievements": [
                 {
                     "id": 6938,
@@ -4126,82 +2698,11 @@
             ]
         },
         {
-            "name": "V\u00EEerre",
-            "realm": "Tauri",
-            "race": 10,
-            "class": 4,
-            "guild": "",
-            "achievementIds": [
-                6317,
-                6941
-            ],
-            "achievements": [
-                {
-                    "id": 6317,
-                    "obtainedAt": "2016-04-28T15:33:59+00:00"
-                },
-                {
-                    "id": 6941,
-                    "obtainedAt": "2017-02-11T12:49:30+00:00"
-                }
-            ]
-        },
-        {
-            "name": "Walkerroxx",
-            "realm": "Tauri",
-            "race": 2,
-            "class": 9,
-            "guild": "Disillusi\u00D8ned",
-            "achievementIds": [
-                4600
-            ],
-            "achievements": [
-                {
-                    "id": 4600,
-                    "obtainedAt": "2014-03-18T08:06:41+00:00"
-                }
-            ]
-        },
-        {
-            "name": "Werkk",
-            "realm": "Tauri",
-            "race": 8,
-            "class": 7,
-            "guild": "Infernum",
-            "achievementIds": [
-                420,
-                2316,
-                4600,
-                456
-            ],
-            "achievements": [
-                {
-                    "id": 420,
-                    "obtainedAt": "2010-04-21T13:05:04+00:00"
-                },
-                {
-                    "id": 2316,
-                    "obtainedAt": "2009-12-22T21:26:50+00:00"
-                },
-                {
-                    "id": 4600,
-                    "obtainedAt": "2014-03-18T17:49:04+00:00"
-                },
-                {
-                    "id": 456,
-                    "obtainedAt": "2010-07-07T15:14:14+00:00"
-                }
-            ]
-        },
-        {
             "name": "Whitec\u00E4t",
             "realm": "Evermoon",
             "race": 1,
             "class": 8,
             "guild": "",
-            "achievementIds": [
-                3757
-            ],
             "achievements": [
                 {
                     "id": 3757,
@@ -4215,12 +2716,6 @@
             "race": 6,
             "class": 2,
             "guild": "Redemption",
-            "achievementIds": [
-                4600,
-                6003,
-                6322,
-                6741
-            ],
             "achievements": [
                 {
                     "id": 4600,
@@ -4241,40 +2736,11 @@
             ]
         },
         {
-            "name": "Wy",
-            "realm": "Tauri",
-            "race": 5,
-            "class": 9,
-            "guild": "The Executioners Of Sargeras",
-            "achievementIds": [
-                3758,
-                3757,
-                4600
-            ],
-            "achievements": [
-                {
-                    "id": 3758,
-                    "obtainedAt": "2012-07-02T17:27:30+00:00"
-                },
-                {
-                    "id": 3757,
-                    "obtainedAt": "2012-07-02T21:08:42+00:00"
-                },
-                {
-                    "id": 4600,
-                    "obtainedAt": "2014-03-18T18:24:13+00:00"
-                }
-            ]
-        },
-        {
             "name": "W\u00EB\u00EBd\u00F8",
             "realm": "Tauri",
             "race": 4,
             "class": 11,
             "guild": "SPECTRAL",
-            "achievementIds": [
-                6003
-            ],
             "achievements": [
                 {
                     "id": 6003,
@@ -4288,34 +2754,10 @@
             "race": 8,
             "class": 11,
             "guild": "",
-            "achievementIds": [
-                6741
-            ],
             "achievements": [
                 {
                     "id": 6741,
                     "obtainedAt": "2017-01-11T14:16:55+00:00"
-                }
-            ]
-        },
-        {
-            "name": "W\u00F0danaz",
-            "realm": "Tauri",
-            "race": 4,
-            "class": 11,
-            "guild": "In Love and War",
-            "achievementIds": [
-                8243,
-                6942
-            ],
-            "achievements": [
-                {
-                    "id": 8243,
-                    "obtainedAt": "2017-12-13T10:06:11+00:00"
-                },
-                {
-                    "id": 6942,
-                    "obtainedAt": "2017-12-13T13:25:41+00:00"
                 }
             ]
         },
@@ -4325,10 +2767,6 @@
             "race": 1,
             "class": 8,
             "guild": "Pandemonium",
-            "achievementIds": [
-                6829,
-                6749
-            ],
             "achievements": [
                 {
                     "id": 6829,
@@ -4346,29 +2784,10 @@
             "race": 4,
             "class": 3,
             "guild": "Angel Rune",
-            "achievementIds": [
-                5393
-            ],
             "achievements": [
                 {
                     "id": 5393,
                     "obtainedAt": "2014-07-09T01:56:12+00:00"
-                }
-            ]
-        },
-        {
-            "name": "Yasamin",
-            "realm": "Tauri",
-            "race": 1,
-            "class": 9,
-            "guild": "Pandemonium",
-            "achievementIds": [
-                5003
-            ],
-            "achievements": [
-                {
-                    "id": 5003,
-                    "obtainedAt": "2014-07-09T17:09:58+00:00"
                 }
             ]
         },
@@ -4378,10 +2797,6 @@
             "race": 10,
             "class": 5,
             "guild": "Shadow Hunters",
-            "achievementIds": [
-                1402,
-                456
-            ],
             "achievements": [
                 {
                     "id": 1402,
@@ -4399,10 +2814,6 @@
             "race": 1,
             "class": 3,
             "guild": "Renegade",
-            "achievementIds": [
-                3756,
-                4600
-            ],
             "achievements": [
                 {
                     "id": 3756,
@@ -4420,14 +2831,6 @@
             "race": 1,
             "class": 9,
             "guild": "Ace Of Spades",
-            "achievementIds": [
-                3758,
-                4599,
-                3756,
-                3757,
-                4600,
-                6003
-            ],
             "achievements": [
                 {
                     "id": 3758,
@@ -4456,33 +2859,11 @@
             ]
         },
         {
-            "name": "\u00D8riginal",
-            "realm": "Tauri",
-            "race": 1,
-            "class": 6,
-            "guild": "Association",
-            "achievementIds": [
-                8216
-            ],
-            "achievements": [
-                {
-                    "id": 8216,
-                    "obtainedAt": "2017-12-13T14:45:16+00:00"
-                }
-            ]
-        },
-        {
             "name": "\u00DD\u00E2\u00F0\u00E6\u00DF\u00EA\u00E6\u00DF\u00F0\u00E6\u00F0\u00F0",
             "realm": "Evermoon",
             "race": 1,
             "class": 8,
             "guild": "S\u00DBP\u00CAR SERI\u00D8US TRYHAR\u00D0",
-            "achievementIds": [
-                3336,
-                8216,
-                3096,
-                3756
-            ],
             "achievements": [
                 {
                     "id": 3336,
