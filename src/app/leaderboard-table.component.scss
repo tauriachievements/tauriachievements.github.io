@@ -150,6 +150,7 @@
 }
 
 .player-name--gladiator-title {
+  font-weight: 700;
   color: #ffd497;
   text-shadow:
     0 1px 2px rgba(0, 0, 0, 0.55),
@@ -182,6 +183,7 @@
 }
 
 .player-name--gladiator-mount {
+  font-weight: 700;
   color: #c9ecff;
   text-shadow:
     0 1px 2px rgba(0, 0, 0, 0.55),
@@ -209,6 +211,30 @@
       0 1px 2px rgba(0, 0, 0, 0.58),
       0 0 9px rgba(126, 219, 255, 0.56),
       0 0 18px rgba(78, 162, 255, 0.25);
+    text-decoration: none;
+  }
+}
+
+.wow-table tr.Horde .player-name--gladiator-mount:not(.player-name--gladiator-title) {
+  color: #ffb0a4;
+  text-shadow:
+    0 1px 2px rgba(0, 0, 0, 0.56),
+    0 0 7px rgba(255, 118, 118, 0.5),
+    0 0 14px rgba(255, 58, 58, 0.22);
+
+  &::after {
+    background: linear-gradient(90deg, rgba(255, 190, 190, 0.18), rgba(255, 112, 112, 0.9), rgba(255, 52, 52, 0.36));
+    box-shadow:
+      0 0 8px rgba(255, 102, 102, 0.28),
+      0 0 12px rgba(255, 52, 52, 0.16);
+  }
+
+  &.clickable:hover {
+    color: #ffd3cc;
+    text-shadow:
+      0 1px 2px rgba(0, 0, 0, 0.58),
+      0 0 9px rgba(255, 144, 144, 0.58),
+      0 0 18px rgba(255, 74, 74, 0.28);
     text-decoration: none;
   }
 }
