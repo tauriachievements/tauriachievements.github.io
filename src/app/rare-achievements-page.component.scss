@@ -53,6 +53,10 @@
   min-width: 0;
 }
 
+.filter-group--class {
+  min-width: 0;
+}
+
 .reset-button {
   width: fit-content;
   align-self: flex-start;
@@ -331,7 +335,7 @@
 
 @media (min-width: 768px) {
   .rare-achievements-header {
-    grid-template-columns: auto minmax(320px, 1fr) auto;
+    grid-template-columns: auto minmax(320px, 1fr) minmax(220px, 260px) auto;
   }
 
   .rare-achievements-filter-summary {

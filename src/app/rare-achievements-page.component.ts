@@ -5,6 +5,7 @@ import { BackToTopButtonComponent } from './back-to-top-button.component';
 import { FilterDropdownCoordinatorService } from './filter-dropdown-coordinator.service';
 import { FilterDropdownComponent } from './filter-dropdown.component';
 import { FilterDropdownOption } from './filter-dropdown.types';
+import { CLASS_OPTIONS, LadderClassOption } from './ladder-options';
 import { RareAchievementsService } from './rare-achievements.service';
 import {
   RareAchievementCharacter,
@@ -61,6 +62,7 @@ export class RareAchievementsPageComponent implements OnInit {
   readonly isLoading = signal(true);
   readonly loadError = signal<string | undefined>(undefined);
   readonly selectedAchievementId = signal<number | undefined>(undefined);
+  readonly selectedClassId = signal<number | undefined>(undefined);
   readonly lastEdited = signal<Date | undefined>(undefined);
   readonly lastEditedTimeZoneLabel = signal('Local time');
   readonly achievementOptions = computed<ReadonlyArray<FilterDropdownOption<number>>>(() =>
@@ -69,10 +71,22 @@ export class RareAchievementsPageComponent implements OnInit {
       label: achievement.name
     }))
   );
+  readonly classOptions: ReadonlyArray<FilterDropdownOption<number | undefined>> = [
+    { value: undefined, label: 'All Classes' },
+    ...CLASS_OPTIONS.map((option) => ({
+      value: option.id,
+      label: option.name,
+      icon: option.icon
+    }))
+  ];
   readonly selectedAchievement = computed(() => this.findAchievement(this.selectedAchievementId()));
   readonly selectedAchievementLabel = computed(() => this.selectedAchievement()?.name ?? 'Select rare achievement');
+  readonly selectedClassOption = computed(() => this.findClassOption(this.selectedClassId()));
+  readonly selectedClassLabel = computed(() => this.selectedClassOption()?.name ?? 'All Classes');
+  readonly selectedClassIcon = computed(() => this.selectedClassOption()?.icon);
   readonly matchingCharacters = computed<ReadonlyArray<RareAchievementMatchView>>(() => {
     const achievementId = this.selectedAchievementId();
+    const selectedClassId = this.selectedClassId();
     if (achievementId === undefined) {
       return [];
     }
@@ -80,6 +94,7 @@ export class RareAchievementsPageComponent implements OnInit {
     return (this.dataset()?.characters ?? [])
       .map((character) => this.toMatchingCharacterView(character, achievementId))
       .filter((character): character is RareAchievementMatchView => character !== undefined)
+      .filter((character) => selectedClassId === undefined || character.classId === selectedClassId)
       .sort((left, right) => this.compareCharacters(left, right))
       .map((character, index) => ({
         ...character,
@@ -91,6 +106,16 @@ export class RareAchievementsPageComponent implements OnInit {
   readonly hasMatches = computed(() => this.matchCount() > 0);
   readonly showSelectionPrompt = computed(() => !this.isLoading() && !this.loadError() && !this.hasSelection());
   readonly showEmptyState = computed(() => !this.isLoading() && !this.loadError() && this.hasSelection() && !this.hasMatches());
+  readonly emptyStateMessage = computed(() => {
+    const achievementLabel = this.selectedAchievementLabel();
+    const classLabel = this.selectedClassLabel();
+
+    if (this.selectedClassId() === undefined) {
+      return `No tracked characters currently have ${achievementLabel}.`;
+    }
+
+    return `No tracked characters currently have ${achievementLabel} with the ${classLabel} filter.`;
+  });
 
   readonly getArmoryUrl = getArmoryUrl;
   readonly getGuildArmoryUrl = getGuildArmoryUrl;
@@ -104,9 +129,15 @@ export class RareAchievementsPageComponent implements OnInit {
     this.selectedAchievementId.set(this.toAchievementId(value));
   }
 
+  onClassSelection(value: string | number | undefined): void {
+    this.dropdownCoordinator.closeAll();
+    this.selectedClassId.set(this.toAchievementId(value));
+  }
+
   resetFilter(): void {
     this.dropdownCoordinator.closeAll();
     this.selectedAchievementId.set(undefined);
+    this.selectedClassId.set(undefined);
   }
 
   retryLoad(): void {
@@ -157,6 +188,14 @@ export class RareAchievementsPageComponent implements OnInit {
     }
 
     return this.dataset()?.achievements.find((achievement) => achievement.id === achievementId);
+  }
+
+  private findClassOption(classId: number | undefined): LadderClassOption | undefined {
+    if (classId === undefined) {
+      return undefined;
+    }
+
+    return CLASS_OPTIONS.find((option) => option.id === classId);
   }
 
   private toAchievementId(value: string | number | undefined): number | undefined {

@@ -19,13 +19,20 @@
         (selectionChange)="onAchievementSelection($event)" />
     </div>
 
-    <div class="rare-achievements-filter-summary" *ngIf="dataset() as data">
-      <span class="rare-achievements-summary-pill">
-        Tracked Achievements: {{ data.achievements.length | number }}
-      </span>
-      <span class="rare-achievements-summary-pill">
-        Tracked Characters: {{ data.characters.length | number }}
-      </span>
+    <div class="filter-group filter-group--class">
+      <app-filter-dropdown
+        dropdownId="rareAchievementClass"
+        triggerId="rareAchievementClassTrigger"
+        ariaLabel="Class"
+        [options]="classOptions"
+        [selectedValue]="selectedClassId()"
+        [selectedLabel]="selectedClassLabel()"
+        [selectedIcon]="selectedClassIcon()"
+        [showIcons]="true"
+        (selectionChange)="onClassSelection($event)" />
+    </div>
+
+    <div class="rare-achievements-filter-summary" *ngIf="dataset()">
       <span class="rare-achievements-summary-pill" *ngIf="hasSelection()">
         Matches: {{ matchCount() | number }}
       </span>
@@ -50,7 +57,7 @@
 
   <div class="ladder-feedback empty" *ngIf="showEmptyState()">
     <h2>No characters found</h2>
-    <p>No tracked characters currently have {{ selectedAchievementLabel() }}.</p>
+    <p>{{ emptyStateMessage() }}</p>
   </div>
 
   <div class="wow-table-scroll" *ngIf="hasMatches()">
