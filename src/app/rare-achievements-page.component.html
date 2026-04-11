@@ -57,13 +57,6 @@
   </div>
 
   <section class="rare-achievements-panel" *ngIf="hasMatches()">
-    <div class="rare-achievements-panel-header">
-      <div>
-        <h2>{{ selectedAchievementLabel() }}</h2>
-        <p>Achievement ID: {{ selectedAchievementId() }} | Characters found: {{ matchCount() | number }}</p>
-      </div>
-    </div>
-
     <div class="rare-achievements-table-wrap">
       <table class="rare-achievements-table">
         <thead>
