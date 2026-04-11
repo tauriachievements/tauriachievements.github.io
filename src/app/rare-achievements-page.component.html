@@ -1,0 +1,96 @@
+<app-update-bar
+  [lastEdited]="lastEdited()"
+  [lastEditedTimeZoneLabel]="lastEditedTimeZoneLabel()" />
+
+<div class="rare-achievements-container">
+  <section class="rare-achievements-filters" aria-label="Rare achievement filters">
+    <div class="rare-achievements-controls">
+      <div class="filter-group reset-group">
+        <button type="button" class="reset-button" (click)="resetFilter()">Reset</button>
+      </div>
+
+      <div class="filter-group">
+        <label class="filter-label" for="rareAchievementTrigger">Rare Achievement</label>
+        <app-filter-dropdown
+          dropdownId="rareAchievement"
+          triggerId="rareAchievementTrigger"
+          ariaLabel="Choose a rare achievement"
+          [options]="achievementOptions()"
+          [selectedValue]="selectedAchievementId()"
+          [selectedLabel]="selectedAchievementLabel()"
+          (selectionChange)="onAchievementSelection($event)" />
+      </div>
+    </div>
+
+    <div class="rare-achievements-filter-summary" *ngIf="dataset() as data">
+      <span class="rare-achievements-summary-pill">
+        Tracked Achievements: {{ data.achievements.length | number }}
+      </span>
+      <span class="rare-achievements-summary-pill">
+        Tracked Characters: {{ data.characters.length | number }}
+      </span>
+      <span class="rare-achievements-summary-pill" *ngIf="hasSelection()">
+        Matches: {{ matchCount() | number }}
+      </span>
+    </div>
+  </section>
+
+  <div class="rare-achievements-feedback loading" *ngIf="isLoading()">
+    <div class="feedback-spinner" aria-hidden="true"></div>
+    <h2>Loading rare achievement data...</h2>
+  </div>
+
+  <div class="rare-achievements-feedback error" *ngIf="!isLoading() && loadError()">
+    <h2>Could not load rare achievement data</h2>
+    <p>{{ loadError() }}</p>
+    <button type="button" class="feedback-action" (click)="retryLoad()">Try again</button>
+  </div>
+
+  <div class="rare-achievements-feedback empty" *ngIf="showSelectionPrompt()">
+    <h2>Select a rare achievement</h2>
+    <p>Choose one from the filter above to list every tracked character who owns it.</p>
+  </div>
+
+  <div class="rare-achievements-feedback empty" *ngIf="showEmptyState()">
+    <h2>No characters found</h2>
+    <p>No tracked characters currently have {{ selectedAchievementLabel() }}.</p>
+  </div>
+
+  <section class="rare-achievements-panel" *ngIf="hasMatches()">
+    <div class="rare-achievements-panel-header">
+      <div>
+        <h2>{{ selectedAchievementLabel() }}</h2>
+        <p>Achievement ID: {{ selectedAchievementId() }} | Characters found: {{ matchCount() | number }}</p>
+      </div>
+    </div>
+
+    <div class="rare-achievements-table-wrap">
+      <table class="rare-achievements-table">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Character</th>
+            <th>Realm</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let character of matchingCharacters(); let index = index; trackBy: trackCharacter">
+            <td>{{ index + 1 }}</td>
+            <td>
+              <a
+                class="character-link"
+                [href]="getArmoryUrl(character.name, character.realm)"
+                target="_blank"
+                rel="noopener noreferrer">
+                {{ character.name }}
+              </a>
+            </td>
+            <td>{{ character.realm }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+</div>
+
+<app-back-to-top-button />
