@@ -50,6 +50,7 @@ interface AchievementDropdownView extends AchievementDropdownDefinition {
 }
 
 const DEFAULT_RACE_ICON_GENDER = 0;
+const DEFAULT_SELECTED_ACHIEVEMENT_ID = 8666;
 const ALLIANCE_RACE_IDS = new Set<number>([1, 3, 4, 7, 11, 22, 25]);
 const R1_GLADIATOR_OPTIONS: ReadonlyArray<FilterDropdownOption<number>> = [
   { value: 8666, label: 'S15 - Prideful Gladiator' },
@@ -154,7 +155,7 @@ export class RareAchievementsPageComponent implements OnInit {
   readonly dataset = signal<RareAchievementsDataset | null>(null);
   readonly isLoading = signal(true);
   readonly loadError = signal<string | undefined>(undefined);
-  readonly selectedAchievementId = signal<number | undefined>(undefined);
+  readonly selectedAchievementId = signal<number | undefined>(DEFAULT_SELECTED_ACHIEVEMENT_ID);
   readonly lastEdited = signal<Date | undefined>(undefined);
   readonly lastEditedTimeZoneLabel = signal('Local time');
   readonly achievementDropdowns = computed<ReadonlyArray<AchievementDropdownView>>(() => {
