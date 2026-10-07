@@ -141,6 +141,26 @@
   .pager { margin-bottom: 0; }
 }
 
+// Above the pager while a character filter is on: their run count, large enough to read at a glance.
+.character-summary {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 10px;
+  margin: 0 0 12px;
+
+  .character-summary-count {
+    color: #f7b500;
+    font-size: 2rem;
+    font-weight: 700;
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .character-summary-label { color: #bdbdbd; font-size: 1rem; }
+  .character-summary-realm { color: #8a8a8a; }
+}
+
 .toolbar-title {
   display: flex;
   align-items: baseline;
