@@ -67,7 +67,7 @@ $plot-height: 180px;
     'icon identity score'
     'icon identity actions'
     'summary summary summary';
-  grid-template-columns: 72px minmax(0, 1fr) auto;
+  grid-template-columns: 88px minmax(0, 1fr) auto;
   gap: 8px 18px;
   padding: 18px 20px;
   border-radius: 4px;
@@ -75,12 +75,19 @@ $plot-height: 180px;
   box-shadow: 0 10px 30px rgba(0, 0, 0, .5);
 }
 
-.profile-class-icon {
+// The class crest on a soft glow of the class colour (--class-color, set from the template).
+.profile-crest {
+  display: grid;
+  width: 88px;
+  height: 88px;
+  place-items: center;
+  padding: 2px;
+  border: 1px solid color-mix(in srgb, var(--class-color) 40%, #333);
+  border-radius: 10px;
+  background: radial-gradient(circle at 50% 45%, color-mix(in srgb, var(--class-color) 24%, transparent), #111 70%);
   grid-area: icon;
-  width: 72px;
-  height: 72px;
-  border: 2px solid #333;
-  border-radius: 8px;
+
+  img { width: 100%; height: 100%; object-fit: contain; filter: drop-shadow(0 2px 6px rgba(0, 0, 0, .6)); }
 }
 
 .profile-identity {
@@ -647,12 +654,12 @@ svg.line {
       'score score'
       'actions actions'
       'summary summary';
-    grid-template-columns: 48px minmax(0, 1fr);
+    grid-template-columns: 60px minmax(0, 1fr);
     gap: 10px 12px;
     padding: 14px;
   }
 
-  .profile-class-icon { width: 48px; height: 48px; border-radius: 6px; }
+  .profile-crest { width: 60px; height: 60px; padding: 1px; border-radius: 8px; }
   .profile-identity h1 { font-size: 1.5rem; }
 
   .profile-score {

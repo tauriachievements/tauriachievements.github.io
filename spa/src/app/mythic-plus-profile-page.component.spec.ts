@@ -96,6 +96,7 @@ describe('MythicPlusProfilePageComponent', () => {
 
     expect(page.player()?.key).toBe('Progtrix|Evermoon');
     expect(element.querySelector('h1')?.textContent).toBe('Progtrix');
+    expect(element.querySelector('.profile-crest img')?.getAttribute('src')).toBe('assets/class-crests/10.webp');
     expect(element.querySelector('.profile-score-value')?.textContent).toBe('290.0');
     // Their top run was as Windwalker; Mistweaver comes after.
     expect([...element.querySelectorAll('.profile-specs li')]

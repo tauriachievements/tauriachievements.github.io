@@ -21,7 +21,9 @@
   <ng-container *ngIf="!isLoading() && !loadError()">
     <ng-container *ngIf="player() && member() as member; else noProfile">
       <header class="profile-header">
-        <img class="profile-class-icon" [src]="member.classIcon" [alt]="member.className" />
+        <span class="profile-crest" [style.--class-color]="member.color">
+          <img [src]="classCrest()" [alt]="member.className" width="256" height="256" />
+        </span>
         <div class="profile-identity">
           <h1 [style.color]="member.color">{{ member.name }}</h1>
           <p class="profile-meta">

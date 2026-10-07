@@ -13,6 +13,7 @@ import {
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Params, Router, RouterLink } from '@angular/router';
 import { forkJoin, map, switchMap } from 'rxjs';
+import { getClassCrestPath } from '../utils/classIconHelper';
 import { getLocalTimeZoneLabel } from '../utils/time-zone-label';
 import { BackToTopButtonComponent } from './back-to-top-button.component';
 import { injectCompactViewport } from './compact-viewport';
@@ -202,6 +203,10 @@ export class MythicPlusProfilePageComponent implements OnInit {
   readonly member = computed(() => {
     const player = this.player();
     return player && toMemberView(player.member);
+  });
+  readonly classCrest = computed(() => {
+    const player = this.player();
+    return player && getClassCrestPath(player.member.class);
   });
   /** The leaderboard's runs view, showing only this character's runs. */
   readonly showRunsParams = computed<Params>(() => {
