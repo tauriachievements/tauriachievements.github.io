@@ -34,6 +34,14 @@
       <app-mythic-plus-week-affixes *ngIf="weekAffixes().length" [affixes]="weekAffixes()" />
     </div>
 
+    <p class="last-visit" *ngIf="!lastVisitDismissed() && lastVisit() as visit" role="status">
+      <span class="last-visit-text"><strong>Since {{ visit.when }}:</strong> {{ visit.text }}</span>
+      <button type="button" class="last-visit-dismiss" aria-label="Dismiss what changed since your last visit"
+        (click)="lastVisitDismissed.set(true)">
+        <span aria-hidden="true">✕</span>
+      </button>
+    </p>
+
     <nav class="dungeon-picker" aria-label="Filter runs by dungeon">
       <button
         type="button"
@@ -95,6 +103,20 @@
               [class.active]="runOrder() === 'latest'"
               [attr.aria-pressed]="runOrder() === 'latest'"
               (click)="setRunOrder('latest')">Latest</button>
+          </div>
+          <div class="view-switch" role="group" aria-label="Show rank changes since" *ngIf="view() === 'players' && period() === 'season'">
+            <button
+              type="button"
+              [class.active]="movementBaseline() === 'day'"
+              [attr.aria-pressed]="movementBaseline() === 'day'"
+              (click)="setMovementBaseline('day')">Last 24 h</button>
+            <button
+              type="button"
+              [class.active]="movementBaseline() === 'reset'"
+              [attr.aria-pressed]="movementBaseline() === 'reset'"
+              [disabled]="!affixWeek()"
+              title="Rank changes since this week's affixes began"
+              (click)="setMovementBaseline('reset')">Since reset</button>
           </div>
           <button type="button" class="scoring-link compare-toggle" [class.active]="compareMode()" [attr.aria-pressed]="compareMode()"
             (click)="toggleCompareMode()">
@@ -249,7 +271,44 @@
         [highlightKey]="characterFilter()?.key"
         [pickMode]="compareMode()"
         [pickedKeys]="pickedKeys()"
-        (pick)="togglePick($event)" />
+        [movementColumn]="movementColumn()"
+        [jumpToMeRequest]="jumpToMeRequest()"
+        (pick)="togglePick($event)"
+        (meToggle)="toggleMe($event)" />
+
+      <!-- Sticks to the bottom of the screen while the list scrolls, and stops above the pager. -->
+      <aside class="me-bar" *ngIf="!compareMode() && meStatus() as status" aria-label="Your character">
+        <span class="me-bar-label">You</span>
+        <a class="me-bar-name" [routerLink]="status.me.profileLink" [style.color]="status.me.color">{{ status.me.name }}</a>
+        <ng-container *ngIf="status.rank; else absent">
+          <span class="me-bar-rank">#{{ status.rank | number }}</span>
+          <span
+            class="movement"
+            *ngIf="status.movement?.label"
+            [ngClass]="'movement-' + status.movement?.tone"
+            [title]="status.movement?.description">{{ status.movement?.label }}<span class="visually-hidden">. {{ status.movement?.description }}</span></span>
+          <span class="me-bar-score"><span aria-hidden="true">·</span> {{ status.score | number:'1.1-1' }}</span>
+          <button type="button" class="me-bar-jump" title="Jump to me" (click)="jumpToMe()">
+            <svg viewBox="0 0 16 16" aria-hidden="true" focusable="false">
+              <circle cx="8" cy="8" r="5" />
+              <circle class="dot" cx="8" cy="8" r="1.6" />
+              <path d="M8 .75v3M8 12.25v3M.75 8h3M12.25 8h3" />
+            </svg>
+            <span class="me-bar-jump-label">Jump to me</span>
+          </button>
+        </ng-container>
+        <ng-template #absent>
+          <span class="me-bar-absent">{{ status.absence }}</span>
+        </ng-template>
+        <button
+          type="button"
+          class="me-bar-remove"
+          [title]="'Not you? Forget ' + status.me.name + ', then pick your character with the person icon on its row'"
+          [attr.aria-label]="'Forget ' + status.me.name + ' as your character'"
+          (click)="forgetMe()">
+          <span aria-hidden="true">✕</span>
+        </button>
+      </aside>
 
       <ng-container *ngTemplateOutlet="pager; context: { $implicit: true }"></ng-container>
     </ng-container>

@@ -67,6 +67,7 @@ import {
 } from './mythic-plus-views';
 import { ScrollToEndDirective } from './scroll-to-end.directive';
 import { DataFileService } from './services/data-file.service';
+import { MythicPlusVisitorService } from './services/mythic-plus-visitor.service';
 import { TapTooltipDirective } from './tap-tooltip.directive';
 import { UpdateBarComponent } from './update-bar.component';
 
@@ -158,6 +159,7 @@ export class MythicPlusProfilePageComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly location = inject(Location);
+  private readonly visitor = inject(MythicPlusVisitorService);
 
   /** Narrow screens list the dungeons and runs as cards (MYTHIC_PLUS_CARDS_QUERY). */
   readonly cards = injectCompactViewport(MYTHIC_PLUS_CARDS_QUERY);
@@ -209,6 +211,16 @@ export class MythicPlusProfilePageComponent implements OnInit {
     const player = this.player();
     return player && getClassCrestPath(player.member.class);
   });
+  /** Whether the visitor saved this character as theirs ("This is me"). */
+  readonly isMe = computed(() => !!this.key() && this.visitor.meKey() === this.key());
+
+  toggleMe(): void {
+    const key = this.key();
+    if (key) {
+      this.visitor.toggleMe(key);
+    }
+  }
+
   /** The leaderboard's runs view, showing only this character's runs. */
   readonly showRunsParams = computed<Params>(() => {
     const member = this.player()?.member;

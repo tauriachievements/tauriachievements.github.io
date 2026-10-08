@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectionStrategy, Component, ElementRef, afterRenderEffect, inject, input, output } from '@angular/core';
+import { ChangeDetectionStrategy, Component, ElementRef, afterRenderEffect, computed, inject, input, output } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { MythicPlusDungeon, upgradeStars } from './mythic-plus';
 import { BestRunCell, PlayerRow } from './mythic-plus-views';
@@ -35,11 +35,22 @@ export class MythicPlusPlayersListComponent {
   /** `characterKey`s already picked. */
   readonly pickedKeys = input<ReadonlySet<string>>(new Set());
   readonly pick = output<PlayerRow>();
+  /** Header of the rank arrows column (`24h`), while there is a baseline to compare with. */
+  readonly movementColumn = input<{ label: string; title: string } | undefined>();
+  /** Bumped by the page's "Jump to me": scroll to the visitor's own row once it is on the page. */
+  readonly jumpToMeRequest = input(0);
+  /** The "This is me" button of a row. */
+  readonly meToggle = output<PlayerRow>();
+
+  /** The arrows column only shows while a row on this page has an arrow (the top MOVEMENT_RANK_LIMIT). */
+  readonly showMovement = computed(() => !!this.movementColumn() && this.rows().some(row => row.movement));
 
   readonly upgradeStars = upgradeStars;
 
   /** The highlighted player already scrolled to, so paging back to them doesn't scroll again. */
   private scrolledTo?: string;
+  /** The last "Jump to me" handled; the first value seen is the one the list was created with. */
+  private jumpedFor?: number;
 
   constructor() {
     // Bring the highlighted player into view once their row is on the page.
@@ -52,6 +63,33 @@ export class MythicPlusPlayersListComponent {
       this.scrolledTo = key;
       this.host.querySelector('.highlighted')?.scrollIntoView?.({ block: 'center' });
     });
+
+    afterRenderEffect(() => {
+      const request = this.jumpToMeRequest();
+      const first = this.jumpedFor === undefined;
+      if (request === this.jumpedFor) {
+        return;
+      }
+
+      // A list created after a jump (switching views) must not replay it.
+      this.jumpedFor = request;
+      if (!first && this.rows().some(row => row.isMe)) {
+        this.host.querySelector('.me')?.scrollIntoView?.({ block: 'center', behavior: 'smooth' });
+      }
+    });
+  }
+
+  /** The person icon of a row: saves it as the visitor's character, or forgets it. */
+  onMeToggle(event: Event, row: PlayerRow): void {
+    event.preventDefault();
+    event.stopPropagation();
+    this.meToggle.emit(row);
+  }
+
+  meLabel(row: PlayerRow): string {
+    return row.isMe
+      ? `${row.member.name} is saved as you. Forget it`
+      : `This is me: save ${row.member.name} (${row.member.realm}) as my character`;
   }
 
   /** A click anywhere on a table row; the name inside it is a link of its own. */

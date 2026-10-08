@@ -686,8 +686,9 @@ svg.line {
 
   .profile-score-value { font-size: 2rem; }
 
-  .profile-actions { justify-content: stretch; }
-  .action-link { flex: 1 1 0; text-align: center; }
+  // Four actions as a 2 × 2 grid, so none of them wraps to three lines or sits alone on a row.
+  .profile-actions { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); align-items: stretch; }
+  .action-link { text-align: center; }
 
   .profile-summary {
     display: grid;
@@ -726,6 +727,17 @@ svg.line {
 // Compare: the "compare with" search under the header's links, and a compare link per teammate.
 button.action-link { font: inherit; font-size: .8rem; font-weight: 600; cursor: pointer; }
 .action-link.active { border-color: $gold; color: #fff; }
+
+// "This is me": an outlined person, filled gold once saved.
+.me-action {
+  font: inherit;
+  font-size: .8rem;
+  font-weight: 600;
+  cursor: pointer;
+
+  svg { width: 14px; height: 14px; flex: none; fill: none; stroke: $gold; stroke-width: 1.4; }
+  &.active svg { fill: $gold; }
+}
 
 .compare-with {
   display: flex;

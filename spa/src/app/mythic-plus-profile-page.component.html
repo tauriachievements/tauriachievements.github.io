@@ -49,6 +49,19 @@
           <a class="action-link" [href]="member.armoryUrl" target="_blank" rel="noopener noreferrer">
             Armory <span aria-hidden="true">↗</span>
           </a>
+          <button
+            type="button"
+            class="action-link me-action"
+            [class.active]="isMe()"
+            [attr.aria-pressed]="isMe()"
+            [title]="isMe() ? 'Saved as you. Click to forget' : 'Follow your rank on the leaderboard'"
+            (click)="toggleMe()">
+            <svg viewBox="0 0 16 16" aria-hidden="true" focusable="false">
+              <circle cx="8" cy="5" r="2.75" />
+              <path d="M2.75 14c0-2.9 2.35-4.75 5.25-4.75s5.25 1.85 5.25 4.75z" />
+            </svg>
+            {{ isMe() ? 'This is you' : 'This is me' }}
+          </button>
         </div>
         <!-- Compare with: search a player, or pick several on the leaderboard. -->
         <div class="compare-with" *ngIf="compareOpen()">

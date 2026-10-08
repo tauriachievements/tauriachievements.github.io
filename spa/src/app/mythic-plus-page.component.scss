@@ -3,6 +3,7 @@
 :host { display: block; width: 100%; }
 
 @include visually-hidden;
+@include movement;
 
 .mplus-page {
   width: min(1240px, 100%);
@@ -18,8 +19,43 @@
   align-items: center;
   gap: 8px 16px;
   margin-bottom: 14px;
+}
 
-  .view-switch button:disabled { opacity: .45; cursor: not-allowed; }
+// "Since your last visit": one dismissible line above the dungeon picker.
+.last-visit {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin: 0 0 12px;
+  padding: 8px 6px 8px 12px;
+  border: 1px solid rgba(247, 181, 0, .35);
+  border-radius: 6px;
+  background: #18150c;
+  color: #e0e0e0;
+  font-size: .85rem;
+  line-height: 1.45;
+
+  strong { color: $gold; font-weight: 700; }
+}
+
+.last-visit-text { flex: 1 1 auto; min-width: 0; padding-top: 2px; }
+
+.last-visit-dismiss {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border: 0;
+  border-radius: 4px;
+  background: none;
+  color: #9a9a9a;
+  font: inherit;
+  font-size: .75rem;
+  cursor: pointer;
+
+  &:hover { background: #2a2416; color: #fff; }
+  &:focus-visible { outline: 2px solid $gold; outline-offset: -2px; }
 }
 
 // Dungeon picker — scopes both the chart and the leaderboard below it. `auto-fit` stretches the tiles
@@ -154,6 +190,7 @@
 
     &:hover { color: #fff; }
     &.active { background: #2e2716; color: $gold; }
+    &:disabled { opacity: .45; cursor: not-allowed; }
     &:focus-visible { outline: 2px solid $gold; outline-offset: 1px; }
   }
 }
@@ -481,3 +518,119 @@
 
 // Room under the last rows so the tray does not cover them.
 :host:has(.compare-tray) .mplus-page { padding-bottom: 110px; }
+
+// "This is me": the visitor's place on the players view. Sticky, so it rides along the bottom
+// of the screen while the list scrolls and settles above the bottom pager at the end.
+.me-bar {
+  position: sticky;
+  z-index: 40;
+  bottom: calc(8px + env(safe-area-inset-bottom, 0px));
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 10px;
+  margin-top: 10px;
+  padding: 6px 6px 6px 14px;
+  border: 1px solid rgba(247, 181, 0, .45);
+  border-radius: 8px;
+  background: #121212;
+  box-shadow: 0 8px 28px rgba(0, 0, 0, .7);
+  font-size: .9rem;
+}
+
+.me-bar-label {
+  padding: 2px 6px;
+  border-radius: 3px;
+  background: #2e2716;
+  color: $gold;
+  font-size: .7rem;
+  font-weight: 800;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+}
+
+.me-bar-name {
+  min-width: 0;
+  overflow: hidden;
+  font-weight: 700;
+  text-decoration: none;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+
+  &:hover, &:focus-visible { text-decoration: underline; }
+}
+
+.me-bar-rank { color: #fff; font-weight: 700; font-variant-numeric: tabular-nums; }
+.me-bar-score { color: #bdbdbd; font-variant-numeric: tabular-nums; }
+.me-bar-absent { color: #9a9a9a; font-size: .85rem; }
+
+.me-bar-jump {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  margin-left: auto;
+  padding: 6px 12px;
+  border: 1px solid $gold;
+  border-radius: 6px;
+  background: #231d0a;
+  color: #fff;
+  font: inherit;
+  font-size: .8rem;
+  font-weight: 700;
+  cursor: pointer;
+
+  &:hover { background: #2e2716; }
+  &:focus-visible { outline: 2px solid $gold; outline-offset: 2px; }
+
+  svg { width: 14px; height: 14px; fill: none; stroke: $gold; stroke-width: 1.5; }
+  .dot { fill: $gold; stroke: none; }
+}
+
+.me-bar-remove {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border: 0;
+  border-radius: 4px;
+  background: none;
+  color: #8a8a8a;
+  font: inherit;
+  font-size: .75rem;
+  cursor: pointer;
+
+  &:hover { background: #262626; color: #fff; }
+  &:focus-visible { outline: 2px solid $gold; outline-offset: -2px; }
+}
+
+// Without a Jump button (not in this list), the remove button goes to the end of the bar.
+.me-bar-absent + .me-bar-remove { margin-left: auto; }
+
+// Leave the back-to-top button (fixed bottom right) its corner wherever it would overlap the bar.
+@media (max-width: 1400px) {
+  .me-bar { margin-right: 56px; }
+}
+
+@media (pointer: coarse) {
+  .me-bar-jump, .me-bar-remove { min-height: 40px; }
+}
+
+// Phones: one line. The name gives way (ellipsis) and Jump to me becomes an icon button.
+@media (max-width: $phone-breakpoint) {
+  .me-bar { flex-wrap: nowrap; gap: 6px; margin-right: 52px; padding-left: 10px; font-size: .85rem; }
+  .me-bar-label, .me-bar-rank, .me-bar-score, .movement { flex: none; white-space: nowrap; }
+  .me-bar-absent { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .me-bar-jump { width: 40px; padding: 0; }
+  .me-bar-jump svg { width: 18px; height: 18px; }
+  .me-bar-jump-label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+  }
+}

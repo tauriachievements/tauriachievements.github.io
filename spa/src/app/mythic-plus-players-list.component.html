@@ -1,9 +1,16 @@
 <ng-container *ngIf="cards(); else table">
   <ol class="player-cards" aria-label="Mythic+ players ranked by score: the sum of their best run in each dungeon" *ngIf="rows().length; else empty">
-    <li *ngFor="let row of rows(); trackBy: trackPlayer" [class.highlighted]="row.key === highlightKey()" [class.picked]="pickedKeys().has(row.key)">
+    <li
+      *ngFor="let row of rows(); trackBy: trackPlayer"
+      [class.highlighted]="row.key === highlightKey()"
+      [class.me]="row.isMe"
+      [class.picked]="pickedKeys().has(row.key)">
       <a class="player-card" [class.picking]="pickMode()" [routerLink]="row.member.profileLink" (click)="onLink($event, row)">
         <span class="pick-box" *ngIf="pickMode()" aria-hidden="true"></span>
-        <span class="card-rank" [ngClass]="'q-' + row.quality"><span class="visually-hidden">Rank </span>{{ row.rank }}</span>
+        <span class="card-rank">
+          <span [ngClass]="'q-' + row.quality"><span class="visually-hidden">Rank </span>{{ row.rank }}</span>
+          <ng-container *ngTemplateOutlet="movementBadge; context: { $implicit: row.movement }"></ng-container>
+        </span>
         <span class="card-body">
           <span class="card-line">
             <img class="card-class-icon" [src]="row.member.classIcon" [alt]="row.member.className" />
@@ -31,6 +38,9 @@
         </span>
         <span class="card-score"><span class="visually-hidden">Score </span>{{ row.score | number:'1.1-1' }}</span>
       </a>
+      <ng-container *ngIf="!pickMode()">
+        <ng-container *ngTemplateOutlet="meButton; context: { $implicit: row }"></ng-container>
+      </ng-container>
     </li>
   </ol>
 </ng-container>
@@ -47,6 +57,9 @@
         <tr>
           <th scope="col" class="col-pick" *ngIf="pickMode()"><span class="visually-hidden">Picked</span></th>
           <th scope="col">Rank</th>
+          <th scope="col" class="col-move" *ngIf="showMovement()">
+            <span [title]="movementColumn()?.title">{{ movementColumn()?.label }}</span><span class="visually-hidden">: {{ movementColumn()?.title }}</span>
+          </th>
           <th scope="col" class="col-player">Player</th>
           <th scope="col" class="col-guild">Guild</th>
           <ng-container *ngIf="singleDungeon(); else dungeonColumns">
@@ -67,11 +80,15 @@
           *ngFor="let row of rows(); let odd = odd; trackBy: trackPlayer"
           [class.alt]="odd"
           [class.highlighted]="row.key === highlightKey()"
+          [class.me]="row.isMe"
           [class.picked]="pickedKeys().has(row.key)"
           [title]="pickMode() ? 'Pick ' + row.member.name + ' to compare' : 'Open the profile of ' + row.member.name"
           (click)="openProfile(row)">
           <td class="col-pick" *ngIf="pickMode()"><span class="pick-box" aria-hidden="true"></span></td>
           <td class="col-rank" [ngClass]="'q-' + row.quality">{{ row.rank }}</td>
+          <td class="col-move" *ngIf="showMovement()">
+            <ng-container *ngTemplateOutlet="movementBadge; context: { $implicit: row.movement }"></ng-container>
+          </td>
           <td class="col-player">
             <span class="player-identity">
               <img [src]="row.member.classIcon" [alt]="row.member.className" />
@@ -86,6 +103,9 @@
                   <span>{{ row.member.spec }} {{ row.member.className }}</span>
                 </span></a>
               <span class="player-realm">{{ row.member.realm }}</span>
+              <ng-container *ngIf="!pickMode()">
+                <ng-container *ngTemplateOutlet="meButton; context: { $implicit: row }"></ng-container>
+              </ng-container>
             </span>
           </td>
           <td class="col-guild">{{ row.member.guild }}</td>
@@ -118,4 +138,30 @@
       </tbody>
     </table>
   </div>
+</ng-template>
+
+<!-- ▲12 / ▼3 / NEW since the baseline; nothing when the rank didn't change. -->
+<ng-template #movementBadge let-movement>
+  <span
+    class="movement"
+    *ngIf="movement?.label"
+    [ngClass]="'movement-' + movement.tone"
+    [title]="movement.description">{{ movement.label }}<span class="visually-hidden">. {{ movement.description }}</span></span>
+</ng-template>
+
+<!-- "This is me": saves the row's character as the visitor's own. -->
+<ng-template #meButton let-row>
+  <button
+    type="button"
+    class="me-toggle"
+    [class.on]="row.isMe"
+    [attr.aria-pressed]="!!row.isMe"
+    [attr.aria-label]="meLabel(row)"
+    [title]="row.isMe ? 'Saved as you. Click to forget' : 'This is me'"
+    (click)="onMeToggle($event, row)">
+    <svg viewBox="0 0 16 16" aria-hidden="true" focusable="false">
+      <circle cx="8" cy="5" r="2.75" />
+      <path d="M2.75 14c0-2.9 2.35-4.75 5.25-4.75s5.25 1.85 5.25 4.75z" />
+    </svg>
+  </button>
 </ng-template>

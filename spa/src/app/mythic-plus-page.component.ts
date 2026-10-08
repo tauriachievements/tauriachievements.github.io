@@ -7,8 +7,10 @@ import {
   OnInit,
   ViewChild,
   computed,
+  effect,
   inject,
-  signal
+  signal,
+  untracked
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
@@ -45,7 +47,25 @@ import {
 } from './mythic-plus';
 import { MythicPlusPlayersListComponent } from './mythic-plus-players-list.component';
 import { COMPARE_LIMIT, compareParam, parseCompareParam } from './mythic-plus-compare';
-import { characterParam, characterProfileLink, findCharacters, parseCharacterParam, realmSlug } from './mythic-plus-profile';
+import {
+  MOVEMENT_RANK_LIMIT,
+  MovementBaseline,
+  RankAt,
+  RankMovement,
+  baselineCutoff,
+  baselinePhrase,
+  exportOf,
+  formatVisitTime,
+  lastVisitCutoff,
+  lastVisitParts,
+  lastVisitSummary,
+  parseCharacterKey,
+  rankIndex,
+  rankMovement,
+  runsUpTo,
+  shouldMarkSeen
+} from './mythic-plus-movement';
+import { characterParam, characterProfileLink, findCharacters, pageOfRank, parseCharacterParam, realmSlug } from './mythic-plus-profile';
 import { MythicPlusRunsListComponent } from './mythic-plus-runs-list.component';
 import { MythicPlusSpecChartComponent } from './mythic-plus-spec-chart.component';
 import { LEGION_SPECS } from './mythic-plus-stats';
@@ -53,9 +73,11 @@ import {
   MYTHIC_PLUS_CARDS_PAGE_SIZE,
   MYTHIC_PLUS_CARDS_QUERY,
   MYTHIC_PLUS_PAGE_SIZE,
+  MovementView,
   PlayerRow,
   RunRow,
   toMemberView,
+  toMovementView,
   toRunView
 } from './mythic-plus-views';
 import { MythicPlusWeekAffixesComponent } from './mythic-plus-week-affixes.component';
@@ -65,6 +87,7 @@ import { FilterDropdownOption, FilterDropdownValue } from './filter-dropdown.typ
 import { MobileFilterToggleComponent } from './mobile-filter-toggle.component';
 import { UpdateBarComponent } from './update-bar.component';
 import { DataFileService } from './services/data-file.service';
+import { MythicPlusVisitorService } from './services/mythic-plus-visitor.service';
 import { getClassColor } from './class-colors';
 
 interface RankedRun {
@@ -93,6 +116,28 @@ interface CharacterFilter {
   realm: string;
   color: string;
   profileLink: string[];
+}
+
+/** The visitor's saved character ("This is me"), as the export knows them. */
+interface SavedCharacter {
+  key: string;
+  name: string;
+  realm: string;
+  classId?: number;
+  color: string;
+  profileLink: string[];
+  /** False when the export has no run of theirs at all, e.g. saved last season. */
+  inExport: boolean;
+}
+
+/** The sticky "You" bar: their place in the list shown, or why they aren't in it. */
+interface MeStatus {
+  me: SavedCharacter;
+  rank?: number;
+  score?: number;
+  movement?: MovementView;
+  /** Why they aren't in the list shown, e.g. `has no Court of Stars run this week`. */
+  absence?: string;
 }
 
 function parsePage(value: string | null): number {
@@ -137,6 +182,7 @@ export class MythicPlusPageComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly location = inject(Location);
+  private readonly visitor = inject(MythicPlusVisitorService);
 
   @ViewChild('leaderboard') private leaderboardRef?: ElementRef<HTMLElement>;
 
@@ -171,6 +217,11 @@ export class MythicPlusPageComponent implements OnInit {
     parseSpecFilter(this.classFilter(), this.route.snapshot.queryParamMap.get('spec')));
   readonly period = signal<LeaderboardPeriod>(
     this.route.snapshot.queryParamMap.get('period') === 'week' ? 'week' : 'season');
+  /** Players view, Season: rank arrows count from 24 hours before the export, or from this week's reset. */
+  readonly movementBaseline = signal<MovementBaseline>(
+    this.route.snapshot.queryParamMap.get('since') === 'reset' ? 'reset' : 'day');
+  /** This week has only the 24 h baseline: at its reset nobody was ranked yet. */
+  readonly activeBaseline = computed<MovementBaseline>(() => this.period() === 'week' ? 'day' : this.movementBaseline());
 
   readonly classOptions: ReadonlyArray<FilterDropdownOption> = [
     { value: undefined, label: 'All classes' },
@@ -324,19 +375,81 @@ export class MythicPlusPageComponent implements OnInit {
     this.syncQueryParams();
   }
 
-  /** Characters in the selected scope by player score; only worked out once the players view is opened. */
-  private readonly rankedPlayers = computed<RankedPlayer[]>(() => {
+  /** The roster slots the realm / class / spec filters count; undefined counts them all. */
+  private readonly playerFilter = computed(() => {
     const realm = this.realmFilter();
     const classId = this.classFilter();
     const spec = this.specFilter();
     // A spec filter scores each character on the runs they played as that spec only.
-    const include = realm === undefined && classId === undefined
+    return realm === undefined && classId === undefined
       ? undefined
       : (member: MythicPlusMember) => (realm === undefined || realmSlug(member.realm) === realm)
         && (classId === undefined || (member.class === classId && (spec === undefined || member.spec === spec)));
-
-    return rankPlayers(this.dungeonRuns(), include).map((player, index) => ({ player, rank: index + 1 }));
   });
+
+  /** Characters in the selected scope by player score; only worked out once the players view is opened. */
+  private readonly rankedPlayers = computed<RankedPlayer[]>(() =>
+    rankPlayers(this.dungeonRuns(), this.playerFilter()).map((player, index) => ({ player, rank: index + 1 })));
+
+  /** When the export was read; older exports without a timestamp fall back to their newest run. */
+  private readonly exportedAtMs = computed(() => {
+    const exported = this.lastEdited()?.getTime();
+    if (exported !== undefined) {
+      return exported;
+    }
+
+    let newest: number | undefined;
+    for (const runs of this.runsByDungeon().values()) {
+      for (const run of runs) {
+        const at = Date.parse(run.completedAt);
+        newest = newest === undefined || at > newest ? at : newest;
+      }
+    }
+    return newest;
+  });
+
+  /** Baseline rankings already worked out, per scope and filters. Dropped when more runs load. */
+  private baselineCache = new Map<string, ReadonlyMap<string, RankAt> | null>();
+  private baselineCacheRuns?: ReadonlyMap<string, readonly MythicPlusRun[]>;
+
+  /**
+   * Each character's rank and score at the baseline, ranked the way the list is now (same
+   * dungeon, period and filters), so filtered ranks compare with filtered ranks. Undefined
+   * when there is no baseline, or nobody was ranked at it (every row would read NEW).
+   */
+  private readonly baselineRanks = computed<ReadonlyMap<string, RankAt> | undefined>(() => {
+    const exported = this.exportedAtMs();
+    const cutoff = exported === undefined ? undefined : baselineCutoff(this.activeBaseline(), exported, this.affixWeek()?.since);
+    const loaded = this.runsByDungeon();
+    if (cutoff === undefined || this.scopeRuns() === undefined) {
+      return undefined;
+    }
+
+    if (loaded !== this.baselineCacheRuns) {
+      this.baselineCache = new Map();
+      this.baselineCacheRuns = loaded;
+    }
+
+    const key = [this.selectedDungeon()?.id, this.period(), cutoff, this.realmFilter(), this.classFilter(), this.specFilter()].join('|');
+    let ranks = this.baselineCache.get(key);
+    if (ranks === undefined) {
+      const ranking = rankPlayers(runsUpTo(this.dungeonRuns(), cutoff), this.playerFilter());
+      ranks = ranking.length ? rankIndex(ranking) : null;
+      this.baselineCache.set(key, ranks);
+    }
+
+    return ranks ?? undefined;
+  });
+
+  private movementOf(key: string, rank: number, score: number): RankMovement | undefined {
+    const ranks = this.baselineRanks();
+    return ranks && rankMovement(rank, score, ranks.get(key));
+  }
+
+  /** Header of the arrows column, while the list has arrows. */
+  readonly movementColumn = computed(() => this.baselineRanks()
+    ? { label: this.activeBaseline() === 'reset' ? 'Reset' : '24h', title: `Rank change ${baselinePhrase(this.activeBaseline())}` }
+    : undefined);
 
   readonly filteredPlayers = computed<RankedPlayer[]>(() => {
     const query = this.search();
@@ -379,26 +492,167 @@ export class MythicPlusPageComponent implements OnInit {
     const start = (this.currentPage() - 1) * size;
     const dungeons = this.playerDungeons();
     const topScore = this.rankedPlayers()[0]?.player.score ?? 0;
+    const baseline = this.activeBaseline();
+    const meKey = this.visitor.meKey();
 
-    return this.filteredPlayers().slice(start, start + size).map(({ player, rank }) => ({
-      key: player.key,
-      rank,
-      member: toMemberView(player.member),
-      score: player.score,
-      quality: scoreQuality(player.score, topScore),
-      bests: dungeons.map(dungeon => {
-        const run = player.bestRuns.get(dungeon.id);
-        return run && {
-          dungeon,
-          keyLevel: run.keyLevel,
-          timed: keystoneUpgrades(run.clearTimeSeconds, dungeon.timerSeconds) > 0,
-          upgrades: keystoneUpgrades(run.clearTimeSeconds, dungeon.timerSeconds),
-          clearTime: formatDuration(run.clearTimeSeconds),
-          score: run.score
-        };
-      })
-    }));
+    return this.filteredPlayers().slice(start, start + size).map(({ player, rank }) => {
+      const movement = rank <= MOVEMENT_RANK_LIMIT ? this.movementOf(player.key, rank, player.score) : undefined;
+      return {
+        key: player.key,
+        rank,
+        member: toMemberView(player.member),
+        score: player.score,
+        quality: scoreQuality(player.score, topScore),
+        movement: movement && toMovementView(movement, baseline),
+        isMe: player.key === meKey,
+        bests: dungeons.map(dungeon => {
+          const run = player.bestRuns.get(dungeon.id);
+          return run && {
+            dungeon,
+            keyLevel: run.keyLevel,
+            timed: keystoneUpgrades(run.clearTimeSeconds, dungeon.timerSeconds) > 0,
+            upgrades: keystoneUpgrades(run.clearTimeSeconds, dungeon.timerSeconds),
+            clearTime: formatDuration(run.clearTimeSeconds),
+            score: run.score
+          };
+        })
+      };
+    });
   });
+
+  // "This is me": the visitor's own character, a sticky bar with their place, and jumping to it.
+  /** Bumped by "Jump to me" so the players list scrolls to the row again. */
+  readonly jumpToMeRequest = signal(0);
+
+  readonly savedCharacter = computed<SavedCharacter | undefined>(() => {
+    const key = this.visitor.meKey();
+    const wanted = parseCharacterKey(key);
+    if (!key || !wanted) {
+      return undefined;
+    }
+
+    const found = this.indexCharacters().find(character => characterKey(character) === key);
+    return {
+      key,
+      name: wanted.name,
+      realm: wanted.realm,
+      classId: found?.classId,
+      color: (found && getClassColor(found.classId)) ?? '#e0e0e0',
+      profileLink: characterProfileLink(wanted),
+      inExport: !!found
+    };
+  });
+
+  /** The sticky bar on the players view, while a character is saved. */
+  readonly meStatus = computed<MeStatus | undefined>(() => {
+    const me = this.savedCharacter();
+    if (!me || this.view() !== 'players') {
+      return undefined;
+    }
+
+    const entry = this.rankedPlayers().find(ranked => ranked.player.key === me.key);
+    if (!entry) {
+      return { me, absence: this.absenceOf(me) };
+    }
+
+    // The bar shows the visitor's movement at any rank, unlike the arrows in the list.
+    const movement = this.movementOf(me.key, entry.rank, entry.player.score);
+    return {
+      me,
+      rank: entry.rank,
+      score: entry.player.score,
+      movement: movement && toMovementView(movement, this.activeBaseline())
+    };
+  });
+
+  /** Why the saved character isn't in the list shown, most specific reason first. */
+  private absenceOf(me: SavedCharacter): string {
+    if (!me.inExport) {
+      return 'has no Mythic+ run this season';
+    }
+
+    const realm = this.realmFilter();
+    if (realm !== undefined && realmSlug(me.realm) !== realm) {
+      return `isn't on ${this.realmName()}`;
+    }
+
+    const classId = this.classFilter();
+    if (classId !== undefined && me.classId !== classId) {
+      return `isn't a ${CLASS_NAMES[classId]}`;
+    }
+
+    const dungeon = this.selectedDungeon();
+    const spec = this.specFilter();
+    return `has no ${dungeon ? `${dungeon.name} ` : ''}run${spec ? ` as ${spec}` : ''} ${this.period() === 'week' ? 'this week' : 'this season'}`;
+  }
+
+  toggleMe(row: PlayerRow): void {
+    this.visitor.toggleMe(row.key);
+  }
+
+  forgetMe(): void {
+    this.visitor.setMe(undefined);
+  }
+
+  /** Opens the page with the visitor's row on it and scrolls to it, clearing a search that hides it. */
+  jumpToMe(): void {
+    const key = this.savedCharacter()?.key;
+    if (!key) {
+      return;
+    }
+
+    if (this.search().trim() && !this.filteredPlayers().some(entry => entry.player.key === key)) {
+      this.search.set('');
+    }
+
+    const position = this.filteredPlayers().findIndex(entry => entry.player.key === key);
+    if (position < 0) {
+      return;
+    }
+
+    this.page.set(pageOfRank(position + 1, this.pageSize()));
+    this.syncQueryParams();
+    this.jumpToMeRequest.update(request => request + 1);
+  }
+
+  // "Since your last visit": what changed since the export the visitor saw last time.
+  /** Read before this visit marks the current export as seen. */
+  private readonly seenBefore = this.visitor.seenExport();
+  private readonly currentExport = computed(() => exportOf(this.index()));
+  readonly lastVisitDismissed = signal(false);
+
+  /** Every run of the season, once every dungeon file has loaded. */
+  private readonly seasonRuns = computed<readonly MythicPlusRun[] | undefined>(() => {
+    const loaded = this.runsByDungeon();
+    const dungeons = this.dungeons();
+    return dungeons.length && dungeons.every(dungeon => loaded.has(dungeon.id))
+      ? dungeons.flatMap(dungeon => loaded.get(dungeon.id) ?? [])
+      : undefined;
+  });
+
+  readonly lastVisit = computed(() => {
+    const since = lastVisitCutoff(this.seenBefore, this.currentExport());
+    const runs = this.seasonRuns();
+    if (since === undefined || !runs) {
+      return undefined;
+    }
+
+    // The saved character as the visit began: saving another one later doesn't rewrite the line.
+    const summary = lastVisitSummary(runs, this.dungeons(), since, untracked(this.visitor.meKey));
+    const parts = summary ? lastVisitParts(summary) : [];
+    return parts.length ? { when: formatVisitTime(since, Date.now()), text: parts.join(' · ') } : undefined;
+  });
+
+  constructor() {
+    // Marks the export seen once every file decoded against its tables. A reload for newer data
+    // never gets that far, so it can't mark an export seen before its line could be shown.
+    effect(() => {
+      const current = this.currentExport();
+      if (current && this.seasonRuns() && shouldMarkSeen(untracked(() => this.visitor.seenExport()), current)) {
+        this.visitor.markSeen(current);
+      }
+    });
+  }
 
   /** Runs view with a character filter: how many runs they have in the selected scope. */
   readonly characterSummary = computed(() => {
@@ -571,6 +825,15 @@ export class MythicPlusPageComponent implements OnInit {
     this.syncQueryParams();
   }
 
+  setMovementBaseline(baseline: MovementBaseline): void {
+    if (baseline === this.movementBaseline()) {
+      return;
+    }
+
+    this.movementBaseline.set(baseline);
+    this.syncQueryParams();
+  }
+
   setView(view: LeaderboardView): void {
     if (view === this.view()) {
       return;
@@ -651,6 +914,7 @@ export class MythicPlusPageComponent implements OnInit {
         realm: players ? this.realmFilter() ?? null : null,
         class: players ? this.classFilter() ?? null : null,
         spec: players ? this.specFilter() ?? null : null,
+        since: players && this.activeBaseline() === 'reset' ? 'reset' : null,
         character: character ? characterParam(character) : null,
         page: this.currentPage() > 1 ? this.currentPage() : null,
         compare: this.compareMode() ? compareParam(this.picked()) || null : null

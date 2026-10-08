@@ -17,6 +17,7 @@ import {
   sortRoster,
   upgradeCutoffs
 } from './mythic-plus';
+import { MovementBaseline, MovementTone, RankMovement, describeMovement, movementLabel, movementTone } from './mythic-plus-movement';
 import { characterProfileLink } from './mythic-plus-profile';
 import { specIconFor } from './mythic-plus-stats';
 
@@ -83,6 +84,14 @@ export interface BestRunCell {
   score: number;
 }
 
+/** A rank change as the players list shows it: `▲12` in green, with the details for a tooltip. */
+export interface MovementView {
+  /** `▲12`, `▼3`, `NEW`, or '' when the rank didn't change. */
+  label: string;
+  tone: MovementTone;
+  description: string;
+}
+
 export interface PlayerRow {
   key: string;
   rank: number;
@@ -91,6 +100,14 @@ export interface PlayerRow {
   quality: RunQuality;
   /** One per dungeon in scope, in tile order; undefined where the character has no run. */
   bests: Array<BestRunCell | undefined>;
+  /** Rank change since the baseline; undefined below MOVEMENT_RANK_LIMIT or without a baseline. */
+  movement?: MovementView;
+  /** The visitor's own character ("This is me"). */
+  isMe?: boolean;
+}
+
+export function toMovementView(movement: RankMovement, baseline: MovementBaseline): MovementView {
+  return { label: movementLabel(movement), tone: movementTone(movement), description: describeMovement(movement, baseline) };
 }
 
 export function toMemberView(member: MythicPlusMember): MemberView {

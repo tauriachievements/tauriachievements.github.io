@@ -41,6 +41,28 @@ $phone-breakpoint: 640px;
   .q-uncommon { color: #1eff00; }
 }
 
+// Rank change since the baseline: ▲12 green, ▼3 red, NEW as a gold tag.
+@mixin movement {
+  .movement {
+    font-size: .75rem;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
+
+  .movement-up { color: #4cd964; }
+  .movement-down { color: #ff6b6b; }
+
+  .movement-new {
+    padding: 1px 4px;
+    border-radius: 3px;
+    background: #2e2716;
+    color: $gold;
+    font-size: .65rem;
+    letter-spacing: .04em;
+  }
+}
+
 // "+18 ★★": fixed-width slots so every key number lines up, whether or not the run earned a star.
 @mixin key-level {
   .level {

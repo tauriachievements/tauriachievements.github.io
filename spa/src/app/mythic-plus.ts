@@ -362,7 +362,7 @@ export function rankPlayers(
         continue;
       }
 
-      const key = characterKey(member);
+      const key = memberKey(member);
       let player = players.get(key);
       if (!player) {
         player = { member, topRun: run, bestRuns: new Map() };
@@ -406,6 +406,20 @@ export function sortRoster<T extends Pick<MythicPlusMember, 'role'>>(roster: rea
 
 export function pageCount(totalItems: number, pageSize: number): number {
   return Math.max(1, Math.ceil(totalItems / pageSize));
+}
+
+// Decoded runs share their member objects, so each key is built once, not once per roster slot
+// per ranking: the players view ranks the season twice (now and at the movement baseline).
+const memberKeys = new WeakMap<object, string>();
+
+function memberKey(member: Pick<MythicPlusMember, 'name' | 'realm'>): string {
+  let key = memberKeys.get(member);
+  if (key === undefined) {
+    key = characterKey(member);
+    memberKeys.set(member, key);
+  }
+
+  return key;
 }
 
 // Decoded runs share their member objects, so each name is folded once, not once per run per keystroke.
