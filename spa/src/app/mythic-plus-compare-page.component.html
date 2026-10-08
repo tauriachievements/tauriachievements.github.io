@@ -73,20 +73,18 @@
           <thead>
             <tr>
               <th scope="col" class="col-label"><span class="visually-hidden">Stat</span></th>
-              <!-- Each head keeps its name across page changes, so adding or removing a player slides the
-                   others into their new columns, and picks from the leaderboard fly into theirs. -->
+              <!-- Crest and name keep their view-transition-name across page changes: adding or removing a
+                   player slides the others into their new columns, a leaderboard pick's name flies into its
+                   column, and a profile's crest and name fly in from (and back to) its header. -->
               <th scope="col" class="col-player" *ngFor="let player of players(); let column = index; trackBy: trackKey">
-                <div
-                  class="player-head"
-                  [style.--class-color]="player.member.color"
-                  [style.--col]="column"
-                  [style.view-transition-name]="player.transitionName">
+                <div class="player-head" [style.--class-color]="player.member.color" [style.--col]="column">
                   <!-- Down to one player there is nothing left to compare, so back to the leaderboard. -->
                   <a class="remove" [routerLink]="players().length > 2 ? '/mythic-plus/compare' : '/mythic-plus'"
                     [queryParams]="players().length > 2 ? removeParams(player.key) : null"
                     [attr.aria-label]="'Remove ' + player.member.name" title="Remove from the comparison">×</a>
-                  <span class="crest"><img [src]="player.crest" [alt]="player.member.className" /></span>
-                  <a class="player-name" [routerLink]="player.member.profileLink" [style.color]="player.member.color">{{ player.member.name }}</a>
+                  <span class="crest"><img [src]="player.crest" [alt]="player.member.className" [style.view-transition-name]="player.crestTransition" /></span>
+                  <a class="player-name" [routerLink]="player.member.profileLink" [style.color]="player.member.color"
+                    [style.view-transition-name]="player.nameTransition">{{ player.member.name }}</a>
                   <span class="player-meta">{{ player.member.realm }} · {{ player.member.spec }} {{ player.member.className }}</span>
                   <span class="player-guild" *ngIf="player.member.guild">&lt;{{ player.member.guild }}&gt;</span>
                 </div>

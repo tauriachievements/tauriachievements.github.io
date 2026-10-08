@@ -22,15 +22,17 @@ export function prefersReducedMotion(): boolean {
 }
 
 /**
- * A `view-transition-name` for a character, the same on every page that shows them, so a page change
- * can carry them from one place to the next. Character keys hold `#`, Cyrillic and other characters a
- * CSS name can't, so the name is a hash of the key (FNV-1a).
+ * A `view-transition-name` for part of a character (their crest or their name), the same on every
+ * page that shows it, so a page change carries it from one place to the next: a leaderboard pick's
+ * name into its compare column, a compare column's crest and name into the profile header and back.
+ * Character keys hold `#`, Cyrillic and other characters a CSS name can't, so the name is a hash of
+ * the key (FNV-1a).
  */
-export function characterTransitionName(key: string): string {
+export function characterTransitionName(key: string, part: 'crest' | 'name'): string {
   let hash = 0x811c9dc5;
   for (let index = 0; index < key.length; index++) {
     hash ^= key.charCodeAt(index);
     hash = Math.imul(hash, 0x01000193);
   }
-  return `mplus-character-${(hash >>> 0).toString(36)}`;
+  return `mplus-${part}-${(hash >>> 0).toString(36)}`;
 }

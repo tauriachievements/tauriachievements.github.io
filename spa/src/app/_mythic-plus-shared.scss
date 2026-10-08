@@ -146,6 +146,79 @@ $phone-breakpoint: 640px;
   }
 }
 
+// A soft glow in the class colour (--class-color) behind a crest. `crest-glow-lit` brightens and
+// widens it, e.g. while the crest or its column is pointed at. The parent needs `isolation: isolate`
+// so the glow sits under the crest but above the parent's own background. Don't move, scale or fade
+// the crest itself for long: that makes it a stacking context, which pulls the glow in front of the
+// crest's background. Animate the image inside it instead. A view-transition-name does the same, so
+// it goes on the image too.
+@mixin crest-glow($spread, $strength: 50%) {
+  position: relative;
+
+  &::before {
+    position: absolute;
+    z-index: -1;
+    inset: -$spread;
+    border-radius: 50%;
+    background: radial-gradient(closest-side, color-mix(in srgb, var(--class-color) $strength, transparent), transparent);
+    content: '';
+    filter: blur(6px);
+    opacity: .55;
+    pointer-events: none;
+  }
+
+  @include motion-safe {
+    &::before { transition: opacity var(--dur) ease, scale 420ms var(--ease-spring); }
+  }
+}
+
+@mixin crest-glow-lit($opacity: .95, $scale: 1.12) {
+  &::before { opacity: $opacity; scale: $scale; }
+}
+
+// Mouse only: the card's edge lights up gold where the pointer is (SpotlightDirective sets
+// --spot-x / --spot-y), with a faint glow inside, and the card lifts towards it.
+@mixin spotlight-card {
+  position: relative;
+  isolation: isolate;
+
+  @media (hover: hover) {
+    &::before,
+    &::after {
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      content: '';
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity var(--dur) ease;
+    }
+
+    &::before {
+      z-index: -1;
+      background: radial-gradient(360px circle at var(--spot-x, 50%) var(--spot-y, 0), rgba(247, 181, 0, .07), transparent 60%);
+    }
+
+    // A 1px ring: the gradient shows only between the padding box and the border box.
+    &::after {
+      z-index: 1;
+      padding: 1px;
+      background: radial-gradient(220px circle at var(--spot-x, 50%) var(--spot-y, 0), rgba(247, 181, 0, .75), transparent 70%);
+      mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+      mask-composite: exclude;
+    }
+
+    &:hover::before,
+    &:hover::after { opacity: 1; }
+
+    @include motion-safe {
+      transition: transform 420ms var(--ease-spring), box-shadow var(--dur) ease, border-color var(--dur-fast) ease;
+
+      &:hover { box-shadow: 0 16px 40px rgba(0, 0, 0, .6); transform: translateY(-2px); }
+    }
+  }
+}
+
 // A panel that opens and closes by height instead of popping in and out. Markup: the element the
 // *ngIf sits on carries `animate.leave="details-leaving"` and is (or, for a table row, holds) a
 // `.details-reveal`, whose one child `.details-clip` holds the content.

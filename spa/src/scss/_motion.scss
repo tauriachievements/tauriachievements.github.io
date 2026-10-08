@@ -100,5 +100,18 @@ $gold: #f7b500;
 }
 
 @keyframes mp-delta-in { from { opacity: 0; translate: -4px 0; } }
+
+// Character profile
+@keyframes mp-rise { from { opacity: 0; translate: 0 8px; } }
+@keyframes mp-dot-pop { from { opacity: 0; scale: 0; } }
+@keyframes mp-panel-in { from { opacity: 0; translate: 0 -6px; } }
+@keyframes mp-panel-out { to { opacity: 0; translate: 0 -6px; } }
+
+// A flash of the score's own (quality) colour as it lands.
+@keyframes mp-score-land {
+  0% { text-shadow: 0 0 0 transparent; }
+  30% { text-shadow: 0 0 24px currentColor; }
+  100% { text-shadow: 0 0 0 transparent; }
+}
 @keyframes mp-line-draw { from { clip-path: inset(-12px 100% -12px -12px); } to { clip-path: inset(-12px); } }
 @keyframes mp-fade-in { from { opacity: 0; } }

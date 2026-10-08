@@ -472,7 +472,7 @@ export class MythicPlusPageComponent implements OnInit {
         name: character.name,
         realm: character.realm,
         color: (found && getClassColor(found.classId)) ?? '#e0e0e0',
-        transitionName: characterTransitionName(key)
+        nameTransition: characterTransitionName(key, 'name')
       };
     });
   });

@@ -218,38 +218,28 @@ $plot-height: 220px;
   align-items: center;
   gap: 2px;
   min-width: 0;
-  // Carried between pages (characterTransitionName); see ::view-transition-group(*.character).
-  view-transition-class: character;
 }
+
+// Carried between pages (characterTransitionName); see ::view-transition-group(*.character).
+.crest img, .player-name { view-transition-class: character; }
 
 // A glow in the class colour behind each crest; brighter while the column is pointed at.
-.crest::before {
-  position: absolute;
-  z-index: -1;
-  inset: -16px;
-  border-radius: 50%;
-  background: radial-gradient(closest-side, color-mix(in srgb, var(--class-color) 50%, transparent), transparent);
-  content: '';
-  filter: blur(6px);
-  opacity: .55;
-  pointer-events: none;
-}
+.crest { @include crest-glow(16px); }
 
 @media (hover: hover) {
-  .player-head:hover .crest::before { opacity: .95; scale: 1.12; }
+  .player-head:hover .crest { @include crest-glow-lit; }
 }
 
 @include motion-safe {
-  .crest::before { transition: opacity var(--dur) ease, scale 420ms var(--ease-spring); }
-
   // Column by column: the crest rises in, then its glow blooms. `backwards`, so the hover above
-  // still eases once the entrance is over.
-  .crest { animation: mp-crest-in 620ms var(--ease-spring) backwards; animation-delay: calc(var(--col, 0) * 110ms); }
-  .crest::before { animation: mp-aura-in 900ms var(--ease-out) backwards; animation-delay: calc(var(--col, 0) * 110ms + 160ms); }
+  // still eases once the entrance is over. The frame only fades, and quickly: while it is see-through
+  // or moved it paints its own glow over its background, so the rise is on the image inside it.
+  .crest { animation: mp-fade-in 280ms ease backwards; animation-delay: calc(var(--col, 0) * 110ms); }
+  .crest img { animation: mp-crest-in 620ms var(--ease-spring) backwards; animation-delay: calc(var(--col, 0) * 110ms); }
+  .crest::before { animation: mp-aura-in 900ms var(--ease-out) backwards; animation-delay: calc(var(--col, 0) * 110ms + 300ms); }
 }
 
 .crest {
-  position: relative;
   display: grid;
   width: 64px;
   height: 64px;

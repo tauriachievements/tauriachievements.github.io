@@ -260,12 +260,9 @@
       Click up to {{ compareLimit }} players to compare<ng-container *ngIf="view() !== 'players'"> on the Players view</ng-container>.
     </p>
     <ul class="compare-picks" *ngIf="picked().length">
-      <!-- Named like the compare page's column heads, so Compare carries each name into its column. -->
-      <li
-        *ngFor="let pick of picked(); trackBy: trackPick"
-        animate.leave="chip-leaving"
-        [style.view-transition-name]="pick.transitionName">
-        <span [style.color]="pick.color">{{ pick.name }}</span>
+      <!-- Each name is named like its column's name on the compare page, so Compare carries it there. -->
+      <li *ngFor="let pick of picked(); trackBy: trackPick" animate.leave="chip-leaving">
+        <span class="compare-pick-name" [style.color]="pick.color" [style.view-transition-name]="pick.nameTransition">{{ pick.name }}</span>
         <button type="button" (click)="removePick(pick.key)" [attr.aria-label]="'Remove ' + pick.name">×</button>
       </li>
     </ul>

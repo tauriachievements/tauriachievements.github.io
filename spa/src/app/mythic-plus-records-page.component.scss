@@ -185,42 +185,7 @@ $depleted: #e06666;
   &.unclaimed { border-top-color: #333; }
 }
 
-// Mouse only: the card's edge lights up where the pointer is (SpotlightDirective sets --spot-x/y),
-// with a faint glow inside, and the card lifts towards it.
-@media (hover: hover) {
-  .record-card::before,
-  .record-card::after {
-    position: absolute;
-    inset: 0;
-    border-radius: inherit;
-    content: '';
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity var(--dur) ease;
-  }
-
-  .record-card::before {
-    z-index: -1;
-    background: radial-gradient(360px circle at var(--spot-x, 50%) var(--spot-y, 0), rgba(247, 181, 0, .07), transparent 60%);
-  }
-
-  // A 1px ring: the gradient shows only between the padding box and the border box.
-  .record-card::after {
-    z-index: 1;
-    padding: 1px;
-    background: radial-gradient(220px circle at var(--spot-x, 50%) var(--spot-y, 0), rgba(247, 181, 0, .75), transparent 70%);
-    mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
-    mask-composite: exclude;
-  }
-
-  .record-card:hover::before,
-  .record-card:hover::after { opacity: 1; }
-
-  @include motion-safe {
-    .record-card { transition: transform 420ms var(--ease-spring), box-shadow var(--dur) ease; }
-    .record-card:hover { box-shadow: 0 16px 40px rgba(0, 0, 0, .6); transform: translateY(-2px); }
-  }
-}
+.record-card { @include spotlight-card; }
 
 // The level in gold that catches the light once as the card comes in (a highlight swept across
 // text-clipped gold); at rest it's plain gold.

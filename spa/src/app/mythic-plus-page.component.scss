@@ -477,8 +477,8 @@
   .compare-count-value { animation: mp-count-bump 420ms var(--ease-spring); }
 }
 
-// Carried into the compare page's column heads; see characterTransitionName.
-.compare-picks li { view-transition-class: character; }
+// Carried into the compare page's column names; see characterTransitionName.
+.compare-pick-name { view-transition-class: character; }
 
 .compare-cancel {
   padding: 7px 12px;

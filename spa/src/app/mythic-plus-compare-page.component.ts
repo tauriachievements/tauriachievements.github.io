@@ -50,8 +50,9 @@ interface ComparedPlayer {
   quality: string;
   /** Their runs, newest first. */
   runs: MythicPlusRun[];
-  /** Their column head's `view-transition-name` (characterTransitionName). */
-  transitionName: string;
+  /** `view-transition-name`s of their crest and name (characterTransitionName). */
+  crestTransition: string;
+  nameTransition: string;
 }
 
 /** One line of the summary table: a cell per player, the best one marked. */
@@ -176,7 +177,8 @@ export class MythicPlusComparePageComponent implements OnInit {
       quality: scoreQuality(player.score, top),
       runs: this.allRuns().filter(run => runIncludesCharacter(run, player.key))
         .sort((a, b) => a.completedAt < b.completedAt ? 1 : a.completedAt > b.completedAt ? -1 : 0),
-      transitionName: characterTransitionName(player.key)
+      crestTransition: characterTransitionName(player.key, 'crest'),
+      nameTransition: characterTransitionName(player.key, 'name')
     }));
   });
   readonly missing = computed(() => {
