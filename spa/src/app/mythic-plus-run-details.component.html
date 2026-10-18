@@ -40,7 +40,12 @@
   </section>
 
   <section class="details-roster">
-    <h3>Group</h3>
+    <h3>
+      Group
+      <span class="talents-missing" *ngIf="talents() === null" title="Nobody in this group uploaded the key with Legion Key History, so its talents are unknown">Talents unavailable · Addon not detected</span>
+    </h3>
+    <!-- The talent icons name themselves in app-icon-tips. -->
+    <app-icon-tips>
     <ul class="roster-list">
       <li
         class="roster-card"
@@ -54,7 +59,24 @@
         </span>
         <span class="roster-meta">{{ member.spec }} {{ member.className }}</span>
         <a class="roster-meta roster-guild" *ngIf="member.guildLink" [routerLink]="member.guildLink" title="Open the guild's Mythic+ ladder">&lt;{{ member.guild }}&gt;</a>
+        <span class="roster-talents" *ngIf="talentsOf(member) as loadout" [attr.aria-label]="member.name + '\'s talents in this key'">
+          <ng-container *ngFor="let talent of loadout.tiers">
+            <a
+              *ngIf="talent; else emptyTier"
+              class="talent"
+              [href]="spellUrl(talent.spellId)"
+              target="_blank"
+              rel="noopener"
+              [attr.aria-label]="talent.name"
+              [attr.data-tip]="talent.name">
+              <img [src]="icon(talent.icon, 'medium')" [srcset]="iconSrcset(talent.icon)" sizes="22px" width="22" height="22" alt="" loading="lazy" />
+            </a>
+          </ng-container>
+        </span>
       </li>
     </ul>
+    </app-icon-tips>
   </section>
+
+  <ng-template #emptyTier><span class="talent empty" aria-label="No talent picked"></span></ng-template>
 </div>

@@ -57,6 +57,8 @@ export interface RunView {
   dungeon: MythicPlusDungeon;
   keyLevel: number;
   upgrades: number;
+  /** The clear time as the Tauri leaderboard gives it; with completedAt it identifies the run. */
+  clearTimeMs: number;
   clearTime: string;
   clearClock: string;
   timerClock: string;
@@ -153,6 +155,7 @@ export function toRunView(
     dungeon,
     keyLevel: run.keyLevel,
     upgrades,
+    clearTimeMs: Math.round(run.clearTimeSeconds * 1000),
     clearTime: formatDuration(run.clearTimeSeconds),
     clearClock: formatClock(run.clearTimeSeconds),
     timerClock: formatClock(dungeon.timerSeconds),
