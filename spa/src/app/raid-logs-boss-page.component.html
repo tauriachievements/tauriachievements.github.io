@@ -1,8 +1,3 @@
-<app-update-bar
-  [showLastUpdated]="!!lastEdited()"
-  [lastEdited]="lastEdited()"
-  [lastEditedTimeZoneLabel]="lastEditedTimeZoneLabel()" />
-
 <main class="raid-page">
   <a class="back-link" routerLink="/raid-logs" [queryParams]="{ difficulty: difficulty()?.slug }">
     <span aria-hidden="true">‹</span> Back to Raid Logs
@@ -277,5 +272,3 @@
     </section>
   }
 </main>
-
-<app-back-to-top-button />

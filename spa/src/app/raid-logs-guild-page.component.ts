@@ -3,8 +3,6 @@ import { ChangeDetectionStrategy, Component, DestroyRef, computed, inject, signa
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { getGuildArmoryUrl } from '../utils/armory';
-import { getLocalTimeZoneLabel } from '../utils/time-zone-label';
-import { BackToTopButtonComponent } from './back-to-top-button.component';
 import { RaidDifficultySwitchComponent } from './raid-difficulty-switch.component';
 import {
   RaidBoss,
@@ -25,9 +23,9 @@ import {
   realmSlug
 } from './raid-logs';
 import { RaidLogsDataService } from './services/raid-logs-data.service';
-import { UpdateBarComponent } from './update-bar.component';
 import { injectReplaceUrl } from './url-state';
 import { LoadStateComponent } from './load-state.component';
+import { setPageHeader } from './page-header';
 
 interface BossRow {
   boss: RaidBoss;
@@ -46,7 +44,7 @@ const HISTORY_PREVIEW = 25;
 
 @Component({
   selector: 'app-raid-logs-guild-page',
-  imports: [RouterLink, UpdateBarComponent, BackToTopButtonComponent, RaidDifficultySwitchComponent, DatePipe, LoadStateComponent],
+  imports: [RouterLink, RaidDifficultySwitchComponent, DatePipe, LoadStateComponent],
   templateUrl: './raid-logs-guild-page.component.html',
   styleUrl: './raid-logs-guild-page.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush
@@ -67,7 +65,6 @@ export class RaidLogsGuildPageComponent {
   readonly now = signal(Date.now());
   readonly showAllKills = signal(false);
   readonly lastEdited = computed(() => this.index()?.generatedAt);
-  readonly lastEditedTimeZoneLabel = computed(() => getLocalTimeZoneLabel(this.lastEdited()));
   private readonly requestedDifficulty = signal(this.route.snapshot.queryParamMap.get('difficulty') ?? undefined);
 
   readonly guildKills = computed<RaidKill[]>(() => {
@@ -164,6 +161,7 @@ export class RaidLogsGuildPageComponent {
   readonly historyPreview = HISTORY_PREVIEW;
 
   constructor() {
+    setPageHeader(() => ({ lastEdited: this.lastEdited() }));
     this.loadData();
   }
 

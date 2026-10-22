@@ -2,8 +2,6 @@ import { DatePipe, DecimalPipe } from '@angular/common';
 import { ChangeDetectionStrategy, Component, DestroyRef, OnInit, computed, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, RouterLink } from '@angular/router';
-import { getLocalTimeZoneLabel } from '../utils/time-zone-label';
-import { BackToTopButtonComponent } from './back-to-top-button.component';
 import { FilterDropdownComponent } from './filter-dropdown.component';
 import { FilterDropdownCoordinatorService } from './filter-dropdown-coordinator.service';
 import { FilterDropdownOption, FilterDropdownValue } from './filter-dropdown.types';
@@ -22,10 +20,10 @@ import {
   realmSlug
 } from './raid-logs';
 import { RaidLogsDataService } from './services/raid-logs-data.service';
-import { UpdateBarComponent } from './update-bar.component';
 import { REALMS } from './wow';
 import { injectReplaceUrl } from './url-state';
 import { LoadStateComponent } from './load-state.component';
+import { setPageHeader } from './page-header';
 
 const FACTIONS: ReadonlyArray<{ slug: string; id: number; label: string }> = [
   { slug: 'horde', id: 1, label: 'Horde' },
@@ -34,7 +32,7 @@ const FACTIONS: ReadonlyArray<{ slug: string; id: number; label: string }> = [
 
 @Component({
   selector: 'app-raid-logs-progression-page',
-  imports: [RouterLink, UpdateBarComponent, BackToTopButtonComponent, RaidDifficultySwitchComponent, FilterDropdownComponent, DatePipe, DecimalPipe, LoadStateComponent],
+  imports: [RouterLink, RaidDifficultySwitchComponent, FilterDropdownComponent, DatePipe, DecimalPipe, LoadStateComponent],
   templateUrl: './raid-logs-progression-page.component.html',
   styleUrl: './raid-logs-progression-page.component.scss',
   providers: [FilterDropdownCoordinatorService],
@@ -52,7 +50,6 @@ export class RaidLogsProgressionPageComponent implements OnInit {
   readonly isLoading = signal(true);
   readonly loadError = signal<string | undefined>(undefined);
   readonly lastEdited = computed(() => this.index()?.generatedAt);
-  readonly lastEditedTimeZoneLabel = computed(() => getLocalTimeZoneLabel(this.lastEdited()));
 
   private readonly query = this.route.snapshot.queryParamMap;
   private readonly requestedDifficulty = signal(this.query.get('difficulty') ?? this.data.lastDifficulty());
@@ -91,6 +88,10 @@ export class RaidLogsProgressionPageComponent implements OnInit {
   }));
 
   readonly guildLink = raidGuildLink;
+
+  constructor() {
+    setPageHeader(() => ({ lastEdited: this.lastEdited() }));
+  }
 
   ngOnInit(): void {
     this.data.lastDifficulty.set(this.requestedDifficulty());

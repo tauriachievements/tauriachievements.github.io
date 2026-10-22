@@ -4,8 +4,6 @@ import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { getClassIconPath } from '../utils/classIconHelper';
-import { getLocalTimeZoneLabel } from '../utils/time-zone-label';
-import { BackToTopButtonComponent } from './back-to-top-button.component';
 import { getClassColor } from './class-colors';
 import { FilterDropdownComponent } from './filter-dropdown.component';
 import { FilterDropdownCoordinatorService } from './filter-dropdown-coordinator.service';
@@ -48,10 +46,10 @@ import {
   spellUrl
 } from './raid-logs';
 import { RaidLogsDataService } from './services/raid-logs-data.service';
-import { UpdateBarComponent } from './update-bar.component';
 import { CLASS_FILTER_OPTIONS, REALMS } from './wow';
 import { injectReplaceUrl, parseInteger, parsePage } from './url-state';
 import { LoadStateComponent } from './load-state.component';
+import { setPageHeader } from './page-header';
 
 type BossTab = 'dps' | 'hps' | 'fastest' | 'latest';
 
@@ -81,8 +79,6 @@ interface SummaryTile {
   selector: 'app-raid-logs-boss-page',
   imports: [
     RouterLink,
-    UpdateBarComponent,
-    BackToTopButtonComponent,
     FilterDropdownComponent,
     RaidDifficultySwitchComponent,
     GlideDirective,
@@ -117,7 +113,6 @@ export class RaidLogsBossPageComponent {
   readonly loadError = signal<string | undefined>(undefined);
   readonly now = signal(Date.now());
   readonly lastEdited = computed(() => this.index()?.generatedAt);
-  readonly lastEditedTimeZoneLabel = computed(() => getLocalTimeZoneLabel(this.lastEdited()));
 
   private readonly requestedDifficulty = signal(this.query.get('difficulty') ?? undefined);
   readonly tab = signal<BossTab>(parseTab(this.query.get('tab')));
@@ -251,6 +246,7 @@ export class RaidLogsBossPageComponent {
   private shownBoss?: string;
 
   constructor() {
+    setPageHeader(() => ({ lastEdited: this.lastEdited() }));
     this.loadData();
     this.data.talents()
       .pipe(takeUntilDestroyed(this.destroyRef))

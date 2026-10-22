@@ -1,6 +1,5 @@
 :host {
-  display: block;
-  height: calc(var(--update-bar-height) - 36px);
+  display: contents;
 }
 
 .update-bar {
@@ -584,10 +583,6 @@
 }
 
 @media (max-width: 640px) {
-  :host {
-    height: calc(var(--update-bar-height) - 30px);
-  }
-
   .update-bar {
     font-size: 0.7rem;
   }

@@ -2,8 +2,6 @@ import { DecimalPipe } from '@angular/common';
 import { ChangeDetectionStrategy, Component, DestroyRef, OnInit, computed, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, RouterLink } from '@angular/router';
-import { getLocalTimeZoneLabel } from '../utils/time-zone-label';
-import { BackToTopButtonComponent } from './back-to-top-button.component';
 import {
   MythicPlusAffix,
   MythicPlusIndex,
@@ -38,10 +36,10 @@ import { RevealDirective } from './reveal.directive';
 import { ScrollToEndDirective } from './scroll-to-end.directive';
 import { MythicPlusDataService, mythicPlusLoadError } from './services/mythic-plus-data.service';
 import { TapTooltipDirective } from './tap-tooltip.directive';
-import { UpdateBarComponent } from './update-bar.component';
 import { Role } from './wow';
 import { injectReplaceUrl } from './url-state';
 import { LoadStateComponent } from './load-state.component';
+import { setPageHeader } from './page-header';
 
 type StatsPeriod = 'season' | 'week';
 type DaySplit = 'level' | 'result';
@@ -92,8 +90,6 @@ const isMiddle = (position: number, count: number) => position >= count / 3 && p
   selector: 'app-mythic-plus-stats-page',
   imports: [
     RouterLink,
-    UpdateBarComponent,
-    BackToTopButtonComponent,
     TapTooltipDirective,
     FilterDropdownComponent,
     MythicPlusWeekAffixesComponent,
@@ -125,7 +121,6 @@ export class MythicPlusStatsPageComponent implements OnInit {
 
   readonly index = signal<MythicPlusIndex | undefined>(undefined);
   readonly lastEdited = computed(() => exportedAt(this.index()));
-  readonly lastEditedTimeZoneLabel = computed(() => getLocalTimeZoneLabel(this.lastEdited()));
   readonly allRuns = signal<readonly MythicPlusRun[]>([]);
   readonly isLoading = signal(true);
   readonly loadError = signal<string | undefined>(undefined);
@@ -289,6 +284,10 @@ export class MythicPlusStatsPageComponent implements OnInit {
   });
 
   readonly affixTooltip = signal<{ text: string; left: number; top?: number; bottom?: number } | undefined>(undefined);
+
+  constructor() {
+    setPageHeader(() => ({ lastEdited: this.lastEdited() }));
+  }
 
   ngOnInit(): void {
     this.loadData();

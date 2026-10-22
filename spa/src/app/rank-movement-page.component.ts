@@ -1,6 +1,5 @@
 import { ChangeDetectionStrategy, Component, DestroyRef, OnInit, computed, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { BackToTopButtonComponent } from './back-to-top-button.component';
 import { FilterDropdownComponent } from './filter-dropdown.component';
 import { FilterDropdownCoordinatorService } from './filter-dropdown-coordinator.service';
 import { FilterDropdownOption, FilterDropdownValue } from './filter-dropdown.types';
@@ -11,7 +10,7 @@ import { LadderHistoryData, LadderHistoryMoverView } from './ladder-history.type
 import { CLASS_OPTIONS, PAGE_SIZE_OPTIONS, REALM_OPTIONS } from './ladder-options';
 import { LadderHistoryService } from './services/ladder-history.service';
 import { LadderLastUpdatedService } from './services/ladder-last-updated.service';
-import { UpdateBarComponent } from './update-bar.component';
+import { setPageHeader } from './page-header';
 
 type TopGainersDropdownKey = 'limit' | 'realm' | 'class';
 
@@ -60,7 +59,7 @@ const APPEARANCE_SOURCE_LIMIT_OPTIONS: ReadonlyArray<FilterDropdownOption<number
   selector: 'app-rank-movement-page',
   templateUrl: './rank-movement-page.component.html',
   styleUrls: ['./rank-movement-page.component.scss'],
-  imports: [UpdateBarComponent, BackToTopButtonComponent, FilterDropdownComponent, HistorySummaryComponent, MobileFilterToggleComponent],
+  imports: [FilterDropdownComponent, HistorySummaryComponent, MobileFilterToggleComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   providers: [FilterDropdownCoordinatorService]
 })
@@ -72,7 +71,6 @@ export class TopGainersPageComponent implements OnInit {
 
   readonly history = signal<LadderHistoryData | null>(null);
   readonly lastEdited = signal<Date | undefined>(undefined);
-  readonly lastEditedTimeZoneLabel = signal('Local time');
   readonly topGainersLimit = signal(DEFAULT_TOP_GAINERS_LIMIT);
   readonly filtersOpen = signal(false);
   readonly achievementSourceLimit = signal<number | undefined>(DEFAULT_ACHIEVEMENT_SOURCE_LIMIT);
@@ -138,6 +136,10 @@ export class TopGainersPageComponent implements OnInit {
     ? 'No appearance climbers match the selected filters.'
     : 'No appearance climbers available yet.'
   );
+
+  constructor() {
+    setPageHeader(() => ({ lastEdited: this.lastEdited() }));
+  }
 
   get dropdowns(): ReadonlyArray<TopGainersDropdownConfig> {
     return [
@@ -233,7 +235,6 @@ export class TopGainersPageComponent implements OnInit {
       }
 
       this.lastEdited.set(lastUpdated.date);
-      this.lastEditedTimeZoneLabel.set(lastUpdated.timeZoneLabel);
     });
   }
 

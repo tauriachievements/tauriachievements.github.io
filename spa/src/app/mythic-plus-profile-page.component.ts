@@ -14,8 +14,6 @@ import {
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Params, RouterLink } from '@angular/router';
 import { getClassCrestPath } from '../utils/classIconHelper';
-import { getLocalTimeZoneLabel } from '../utils/time-zone-label';
-import { BackToTopButtonComponent } from './back-to-top-button.component';
 import { injectCompactViewport } from './compact-viewport';
 import {
   MythicPlusAffix,
@@ -69,11 +67,11 @@ import { ScrollToEndDirective } from './scroll-to-end.directive';
 import { MythicPlusDataService, mythicPlusLoadError } from './services/mythic-plus-data.service';
 import { SpotlightDirective } from './spotlight.directive';
 import { TapTooltipDirective } from './tap-tooltip.directive';
-import { UpdateBarComponent } from './update-bar.component';
 import { CLASS_NAMES, Role } from './wow';
 import { specIconFor, specRoleFor } from './wow-specs';
 import { injectReplaceUrl } from './url-state';
 import { LoadStateComponent } from './load-state.component';
+import { setPageHeader } from './page-header';
 
 const TEAMMATE_COUNT = 8;
 const SEARCH_RESULT_COUNT = 20;
@@ -144,8 +142,6 @@ const formatScore = (score: number) => score.toLocaleString('en-GB', { minimumFr
   selector: 'app-mythic-plus-profile-page',
   imports: [
     RouterLink,
-    UpdateBarComponent,
-    BackToTopButtonComponent,
     TapTooltipDirective,
     ScrollToEndDirective,
     MythicPlusRunsListComponent,
@@ -173,7 +169,6 @@ export class MythicPlusProfilePageComponent implements OnInit {
 
   readonly index = signal<MythicPlusIndex | undefined>(undefined);
   readonly lastEdited = computed(() => exportedAt(this.index()));
-  readonly lastEditedTimeZoneLabel = computed(() => getLocalTimeZoneLabel(this.lastEdited()));
   readonly allRuns = signal<readonly MythicPlusRun[]>([]);
   readonly isLoading = signal(true);
   readonly loadError = signal<string | undefined>(undefined);
@@ -567,6 +562,7 @@ export class MythicPlusProfilePageComponent implements OnInit {
   }
 
   constructor() {
+    setPageHeader(() => ({ lastEdited: this.lastEdited() }));
     effect(() => {
       const member = this.player()?.member;
       if (member && (member.name !== this.urlName() || realmSlug(member.realm) !== this.urlRealm())) {

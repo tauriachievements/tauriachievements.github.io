@@ -4,8 +4,6 @@ import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { getClassIconPath } from '../utils/classIconHelper';
-import { getLocalTimeZoneLabel } from '../utils/time-zone-label';
-import { BackToTopButtonComponent } from './back-to-top-button.component';
 import { getClassColor } from './class-colors';
 import { GlideDirective } from './glide.directive';
 import {
@@ -29,9 +27,9 @@ import {
 } from './raid-logs';
 import { RevealDirective } from './reveal.directive';
 import { RaidLogsDataService } from './services/raid-logs-data.service';
-import { UpdateBarComponent } from './update-bar.component';
 import { Role } from './wow';
 import { LoadStateComponent } from './load-state.component';
+import { setPageHeader } from './page-header';
 
 type LogMetric = 'damage' | 'healing' | 'taken';
 
@@ -65,7 +63,7 @@ interface SummaryTile {
 
 @Component({
   selector: 'app-raid-log-page',
-  imports: [RouterLink, UpdateBarComponent, BackToTopButtonComponent, GlideDirective, RevealDirective, DatePipe, DecimalPipe, LoadStateComponent],
+  imports: [RouterLink, GlideDirective, RevealDirective, DatePipe, DecimalPipe, LoadStateComponent],
   templateUrl: './raid-log-page.component.html',
   styleUrl: './raid-log-page.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush
@@ -87,7 +85,6 @@ export class RaidLogPageComponent {
   readonly loadError = signal<string | undefined>(undefined);
   readonly metric = signal<LogMetric>('damage');
   readonly lastEdited = computed(() => this.index()?.generatedAt);
-  readonly lastEditedTimeZoneLabel = computed(() => getLocalTimeZoneLabel(this.lastEdited()));
 
   readonly rows = computed<MemberRow[]>(() => {
     const kill = this.kill();
@@ -163,6 +160,7 @@ export class RaidLogPageComponent {
   private subscription?: Subscription;
 
   constructor() {
+    setPageHeader(() => ({ lastEdited: this.lastEdited() }));
     effect(() => {
       const params = this.params();
       untracked(() => this.load(params.get('realm') ?? '', Number(params.get('id'))));

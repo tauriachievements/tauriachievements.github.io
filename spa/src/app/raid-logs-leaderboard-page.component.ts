@@ -5,8 +5,6 @@ import { ActivatedRoute, RouterLink } from '@angular/router';
 import { Subscription, forkJoin, of } from 'rxjs';
 import { getClassIconPath } from '../utils/classIconHelper';
 import { getRaceIconPath } from '../utils/raceIconHelper';
-import { getLocalTimeZoneLabel } from '../utils/time-zone-label';
-import { BackToTopButtonComponent } from './back-to-top-button.component';
 import { getClassColor } from './class-colors';
 import { FilterDropdownComponent } from './filter-dropdown.component';
 import { FilterDropdownCoordinatorService } from './filter-dropdown-coordinator.service';
@@ -41,10 +39,10 @@ import {
   scoreCharacters
 } from './raid-logs';
 import { RaidLogsDataService } from './services/raid-logs-data.service';
-import { UpdateBarComponent } from './update-bar.component';
 import { CLASS_FILTER_OPTIONS, CLASS_NAMES, REALMS } from './wow';
 import { injectReplaceUrl, parseInteger, parsePage } from './url-state';
 import { LoadStateComponent } from './load-state.component';
+import { setPageHeader } from './page-header';
 
 interface Loaded {
   difficulty: RaidDifficulty;
@@ -65,8 +63,6 @@ const METRICS: ReadonlyArray<{ id: RaidMetric; label: string }> = [
   selector: 'app-raid-logs-leaderboard-page',
   imports: [
     RouterLink,
-    UpdateBarComponent,
-    BackToTopButtonComponent,
     FilterDropdownComponent,
     RaidDifficultySwitchComponent,
     GlideDirective,
@@ -96,7 +92,6 @@ export class RaidLogsLeaderboardPageComponent {
   readonly isLoading = signal(true);
   readonly loadError = signal<string | undefined>(undefined);
   readonly lastEdited = computed(() => this.index()?.generatedAt);
-  readonly lastEditedTimeZoneLabel = computed(() => getLocalTimeZoneLabel(this.lastEdited()));
 
   private readonly requestedDifficulty = signal(this.query.get('difficulty') ?? this.data.lastDifficulty());
   readonly metric = signal<RaidMetric>(this.query.get('metric') === 'hps' ? 'hps' : 'dps');
@@ -220,6 +215,7 @@ export class RaidLogsLeaderboardPageComponent {
   private subscription?: Subscription;
 
   constructor() {
+    setPageHeader(() => ({ lastEdited: this.lastEdited() }));
     this.data.lastDifficulty.set(this.requestedDifficulty());
     this.loadData();
   }

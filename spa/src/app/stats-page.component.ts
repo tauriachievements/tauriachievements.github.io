@@ -33,9 +33,8 @@ import {
   ServerStatsSnapshot,
   ServerStatsSnapshotCollection
 } from './services/server-stats.service';
-import { BackToTopButtonComponent } from './back-to-top-button.component';
-import { UpdateBarComponent } from './update-bar.component';
 import { CLASS_NAMES, RACE_NAMES, REALMS, Realm } from './wow';
+import { setPageHeader } from './page-header';
 
 Chart.register(BarController, BarElement, CategoryScale, LinearScale, DoughnutController, ArcElement, Tooltip, Legend);
 Chart.defaults.color = '#9fa6b4';
@@ -123,7 +122,7 @@ export function emptyStats(): ServerStats {
   selector: 'app-stats-page',
   templateUrl: './stats-page.component.html',
   styleUrls: ['./stats-page.component.scss'],
-  imports: [UpdateBarComponent, BackToTopButtonComponent, DecimalPipe],
+  imports: [DecimalPipe],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class StatsPageComponent {
@@ -136,7 +135,6 @@ export class StatsPageComponent {
   private statsSnapshots?: ServerStatsSnapshotCollection;
 
   readonly lastEdited = signal<Date | undefined>(undefined);
-  readonly lastEditedTimeZoneLabel = signal('Local time');
   readonly isLoading = signal(true);
   readonly loadError = signal<string | undefined>(undefined);
   readonly realmOptions = STATS_REALM_OPTIONS;
@@ -158,6 +156,7 @@ export class StatsPageComponent {
   readonly raceCanvasRef = viewChild<ElementRef<HTMLCanvasElement>>('raceCanvas');
 
   constructor() {
+    setPageHeader(() => ({ lastEdited: this.lastEdited() }));
     this.destroyRef.onDestroy(() => this.destroyAllCharts());
     this.loadLastUpdated();
     void this.initData();
@@ -232,7 +231,6 @@ export class StatsPageComponent {
     ).subscribe((lastUpdated) => {
       if (!lastUpdated) return;
       this.lastEdited.set(lastUpdated.date);
-      this.lastEditedTimeZoneLabel.set(lastUpdated.timeZoneLabel);
     });
   }
 

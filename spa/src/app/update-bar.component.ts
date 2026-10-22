@@ -7,13 +7,13 @@ import {
   computed,
   inject,
   signal,
-  viewChild,
-  input
+  viewChild
 } from '@angular/core';
-import { toSignal } from '@angular/core/rxjs-interop';
-import { NavigationEnd, Router, RouterLink, RouterLinkActive } from '@angular/router';
+import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
+import { NavigationEnd, NavigationStart, Router, RouterLink, RouterLinkActive } from '@angular/router';
 import { filter, map } from 'rxjs';
 import { DISCORD_INVITE_URL, NAV_SECTIONS, NavSection, findNavLocation } from './nav-sections';
+import { PageHeaderService } from './page-header';
 
 @Component({
   selector: 'app-update-bar',
@@ -23,11 +23,11 @@ import { DISCORD_INVITE_URL, NAV_SECTIONS, NavSection, findNavLocation } from '.
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class UpdateBarComponent {
-  readonly lastEdited = input<Date>();
-  readonly lastEditedLabel = input('Last updated:');
-  readonly lastEditedTimeZoneLabel = input('Local time');
-  readonly lastEditedTimeZone = input<string>();
-  readonly showLastUpdated = input(true);
+  private readonly pageHeader = inject(PageHeaderService);
+  protected readonly lastEdited = this.pageHeader.lastEdited;
+  protected readonly lastEditedLabel = this.pageHeader.label;
+  protected readonly lastEditedTimeZoneLabel = this.pageHeader.timeZoneLabel;
+  protected readonly lastEditedTimeZone = this.pageHeader.timeZone;
 
   protected readonly sections = NAV_SECTIONS;
   protected readonly discordUrl = DISCORD_INVITE_URL;
@@ -57,6 +57,18 @@ export class UpdateBarComponent {
 
   protected readonly menuText = computed(() => this.location()?.page.label ?? 'Menu');
   protected readonly menuLabel = computed(() => (this.location() ? `Menu: ${this.menuText()}` : null));
+
+  constructor() {
+    this.router.events.pipe(
+      filter((event): event is NavigationStart => event instanceof NavigationStart),
+      takeUntilDestroyed()
+    ).subscribe(() => {
+      this.closeMenu();
+      if (this.drawerOpen()) {
+        this.closeDrawer();
+      }
+    });
+  }
 
   openDrawer(): void {
     const dialog = this.drawer().nativeElement;

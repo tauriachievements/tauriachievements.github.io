@@ -6,14 +6,13 @@ import { take } from 'rxjs';
 import { getArmoryUrl, getGuildArmoryUrl } from '../utils/armory';
 import { getClassIconPath } from '../utils/classIconHelper';
 import { getRaceIconPath } from '../utils/raceIconHelper';
-import { BackToTopButtonComponent } from './back-to-top-button.component';
 import { getClassColor } from './class-colors';
 import { ComparisonResult, ComparisonRow, buildPlayerComparison } from './compare';
 import { LadderService, RankedLadderPlayer } from './ladder.service';
 import { Player } from './models/character.model';
 import { DataSyncService } from './services/data-sync.service';
 import { LadderLastUpdatedService } from './services/ladder-last-updated.service';
-import { UpdateBarComponent } from './update-bar.component';
+import { setPageHeader } from './page-header';
 
 type SlotId = 'a' | 'b';
 
@@ -24,7 +23,7 @@ const MIN_SEARCH_LENGTH = 2;
   selector: 'app-compare-page',
   templateUrl: './compare-page.component.html',
   styleUrls: ['./compare-page.component.scss'],
-  imports: [UpdateBarComponent, BackToTopButtonComponent, DecimalPipe],
+  imports: [DecimalPipe],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class ComparePageComponent implements OnInit {
@@ -38,7 +37,6 @@ export class ComparePageComponent implements OnInit {
   readonly isLoading = signal(true);
   readonly loadError = signal<string | undefined>(undefined);
   readonly lastEdited = signal<Date | undefined>(undefined);
-  readonly lastEditedTimeZoneLabel = signal('Local time');
 
   private readonly allPlayers = signal<ReadonlyArray<Player>>([]);
   readonly slotA = signal<RankedLadderPlayer | undefined>(undefined);
@@ -60,6 +58,10 @@ export class ComparePageComponent implements OnInit {
   readonly getClassIconPath = getClassIconPath;
   readonly getRaceIconPath = getRaceIconPath;
   readonly getClassColor = getClassColor;
+
+  constructor() {
+    setPageHeader(() => ({ lastEdited: this.lastEdited() }));
+  }
 
   ngOnInit(): void {
     this.bindPlayers();
@@ -246,7 +248,6 @@ export class ComparePageComponent implements OnInit {
       }
 
       this.lastEdited.set(lastUpdated.date);
-      this.lastEditedTimeZoneLabel.set(lastUpdated.timeZoneLabel);
     });
   }
 }

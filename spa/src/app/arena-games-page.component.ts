@@ -4,7 +4,6 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { getArmoryUrl } from '../utils/armory';
-import { getLocalTimeZoneLabel } from '../utils/time-zone-label';
 import {
   ARENA_BRACKETS,
   ARENA_TITLES,
@@ -23,11 +22,10 @@ import {
   sortArenaRows,
   toArenaRows
 } from './arena-games';
-import { BackToTopButtonComponent } from './back-to-top-button.component';
 import { GlideDirective } from './glide.directive';
 import { DataFileService } from './services/data-file.service';
 import { getClassColor } from './class-colors';
-import { UpdateBarComponent } from './update-bar.component';
+import { setPageHeader } from './page-header';
 
 const MIN_GAMES = 50;
 
@@ -57,7 +55,7 @@ interface RatedArenaGames {
   selector: 'app-arena-games-page',
   templateUrl: './arena-games-page.component.html',
   styleUrls: ['./arena-games-page.component.scss'],
-  imports: [BackToTopButtonComponent, GlideDirective, UpdateBarComponent, DatePipe, DecimalPipe, PercentPipe],
+  imports: [GlideDirective, DatePipe, DecimalPipe, PercentPipe],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class ArenaGamesPageComponent implements OnInit {
@@ -120,10 +118,13 @@ export class ArenaGamesPageComponent implements OnInit {
     const latest = this.dataset()?.lastMatchStart;
     return latest ? new Date(latest) : undefined;
   });
-  readonly lastEditedTimeZoneLabel = computed(() => getLocalTimeZoneLabel(this.lastEdited()));
 
   readonly getArmoryUrl = getArmoryUrl;
   readonly formatTitleShare = formatTitleShare;
+
+  constructor() {
+    setPageHeader(() => ({ lastEdited: this.lastEdited(), label: 'Latest game:' }));
+  }
 
   ngOnInit(): void {
     this.route.queryParamMap

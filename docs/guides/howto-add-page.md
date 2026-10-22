@@ -28,25 +28,29 @@ In `spa/src/app/`:
   selector: 'app-<name>-page',
   templateUrl: './<name>-page.component.html',
   styleUrls: ['./<name>-page.component.scss'],
-  imports: [UpdateBarComponent /* , DecimalPipe, … */],
+  imports: [LoadStateComponent /* , DecimalPipe, … */],
   // Only when the page uses app-filter-dropdown:
   providers: [FilterDropdownCoordinatorService],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class <Name>PageComponent {
   private readonly dataFiles = inject(DataFileService);
+  private readonly replaceUrl = injectReplaceUrl();
   // State in signals; derived values in computed().
+
+  constructor() {
+    setPageHeader(() => ({ lastEdited: this.lastEdited() }));
+  }
 }
 ```
 
-The template starts with the site header:
+The shell renders the site header and the back-to-top button; the page only hands the header
+its timestamp ([frontend.md](../frontend.md#the-app-shell-and-the-header-height-contract)).
+The template starts with the page's own content, and its loading and error states use
+`<app-load-state>`.
 
-```html
-<app-update-bar [lastEdited]="lastEdited()" lastEditedLabel="Last updated:" />
-```
-
-- Load data only through `DataFileService`.
-- Write in-page state to the URL with `Location.replaceState`, never `router.navigate`
+- Load data only through `DataFileService`, or the area's data service when it has one.
+- Write in-page state to the URL with `injectReplaceUrl()`, never `router.navigate`
   ([frontend.md](../frontend.md#url-state)).
 - Reuse the shared building blocks and SCSS mixins ([frontend.md](../frontend.md#shared-building-blocks)).
 

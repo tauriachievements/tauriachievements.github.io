@@ -13,8 +13,6 @@ import {
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Params, RouterLink } from '@angular/router';
 import { getGuildArmoryUrl } from '../utils/armory';
-import { getLocalTimeZoneLabel } from '../utils/time-zone-label';
-import { BackToTopButtonComponent } from './back-to-top-button.component';
 import { injectCompactViewport } from './compact-viewport';
 import { FilterDropdownComponent } from './filter-dropdown.component';
 import { FilterDropdownCoordinatorService } from './filter-dropdown-coordinator.service';
@@ -66,11 +64,11 @@ import {
 } from './mythic-plus-views';
 import { MythicPlusWeekAffixesComponent } from './mythic-plus-week-affixes.component';
 import { MythicPlusDataService, mythicPlusLoadError } from './services/mythic-plus-data.service';
-import { UpdateBarComponent } from './update-bar.component';
 import { CLASS_FILTER_OPTIONS, CLASS_NAMES, parseClassId, parseRole, Role } from './wow';
 import { LEGION_SPECS, parseSpecName } from './wow-specs';
 import { injectReplaceUrl } from './url-state';
 import { LoadStateComponent } from './load-state.component';
+import { setPageHeader } from './page-header';
 
 type LadderPeriod = 'season' | 'week';
 
@@ -88,8 +86,6 @@ const TOP_OVERALL = 100;
   selector: 'app-mythic-plus-guild-page',
   imports: [
     RouterLink,
-    UpdateBarComponent,
-    BackToTopButtonComponent,
     MythicPlusPlayersListComponent,
     MythicPlusWeekAffixesComponent,
     FilterDropdownComponent,
@@ -115,7 +111,6 @@ export class MythicPlusGuildPageComponent implements OnInit {
 
   readonly index = signal<MythicPlusIndex | undefined>(undefined);
   readonly lastEdited = computed(() => exportedAt(this.index()));
-  readonly lastEditedTimeZoneLabel = computed(() => getLocalTimeZoneLabel(this.lastEdited()));
   readonly allRuns = signal<readonly MythicPlusRun[]>([]);
   readonly isLoading = signal(true);
   readonly loadError = signal<string | undefined>(undefined);
@@ -366,6 +361,7 @@ export class MythicPlusGuildPageComponent implements OnInit {
   });
 
   constructor() {
+    setPageHeader(() => ({ lastEdited: this.lastEdited() }));
     effect(() => {
       const guild = this.guild();
       if (guild && (guild.name !== this.urlGuild() || realmSlug(guild.realm) !== this.urlRealm())) {

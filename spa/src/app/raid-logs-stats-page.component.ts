@@ -1,21 +1,19 @@
 import { ChangeDetectionStrategy, Component, DestroyRef, OnInit, computed, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute } from '@angular/router';
-import { getLocalTimeZoneLabel } from '../utils/time-zone-label';
-import { BackToTopButtonComponent } from './back-to-top-button.component';
 import { RaceBySpecComponent } from './race-by-spec.component';
 import { RaceSample } from './race-popularity';
 import { RaidDifficulty, RaidKillDetails, RaidLogsIndex, RoleFilter, defaultDifficulty, parseRoleFilter } from './raid-logs';
 import { ChartView, RaidSpecPopularityChartComponent, parseChartView } from './raid-spec-popularity-chart.component';
 import { RaidLogsDataService } from './services/raid-logs-data.service';
-import { UpdateBarComponent } from './update-bar.component';
 import { Role } from './wow';
 import { injectReplaceUrl } from './url-state';
 import { LoadStateComponent } from './load-state.component';
+import { setPageHeader } from './page-header';
 
 @Component({
   selector: 'app-raid-logs-stats-page',
-  imports: [UpdateBarComponent, BackToTopButtonComponent, RaidSpecPopularityChartComponent, RaceBySpecComponent, LoadStateComponent],
+  imports: [RaidSpecPopularityChartComponent, RaceBySpecComponent, LoadStateComponent],
   templateUrl: './raid-logs-stats-page.component.html',
   styleUrl: './raid-logs-stats-page.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush
@@ -43,7 +41,6 @@ export class RaidLogsStatsPageComponent implements OnInit {
       race: member.character.race
     }] : [])));
   readonly lastEdited = computed(() => this.index()?.generatedAt);
-  readonly lastEditedTimeZoneLabel = computed(() => getLocalTimeZoneLabel(this.lastEdited()));
 
   private readonly requestedDifficulty = signal(this.route.snapshot.queryParamMap.get('difficulty') ?? this.data.lastDifficulty());
   readonly chartView = signal<ChartView>(parseChartView(this.route.snapshot.queryParamMap.get('view')));
@@ -56,6 +53,10 @@ export class RaidLogsStatsPageComponent implements OnInit {
   });
 
   private popularityRequest = 0;
+
+  constructor() {
+    setPageHeader(() => ({ lastEdited: this.lastEdited() }));
+  }
 
   ngOnInit(): void {
     this.data.lastDifficulty.set(this.requestedDifficulty());

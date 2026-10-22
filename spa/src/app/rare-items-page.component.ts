@@ -2,7 +2,6 @@ import { DecimalPipe } from '@angular/common';
 import { ChangeDetectionStrategy, Component, DestroyRef, OnInit, computed, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { getArmoryUrl } from '../utils/armory';
-import { BackToTopButtonComponent } from './back-to-top-button.component';
 import { DataFileService } from './services/data-file.service';
 import { getClassColor } from './class-colors';
 import { Realm } from './wow';
@@ -34,7 +33,7 @@ type RealmFilter = 'all' | Realm;
   selector: 'app-rare-items-page',
   templateUrl: './rare-items-page.component.html',
   styleUrls: ['./rare-items-page.component.scss'],
-  imports: [BackToTopButtonComponent, DecimalPipe],
+  imports: [DecimalPipe],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class RareItemsPageComponent implements OnInit {

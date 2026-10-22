@@ -21,7 +21,6 @@ export class GuildPresencePageStore {
   readonly syncMessage = signal('Loading guild rankings...');
   readonly loadError = signal<string | undefined>(undefined);
   readonly lastEdited = signal<Date | undefined>(undefined);
-  readonly lastEditedTimeZoneLabel = signal('Local time');
   readonly hasSourcePlayers = computed(() => this.snapshot() !== null);
 
   initialize(): void {
@@ -73,7 +72,6 @@ export class GuildPresencePageStore {
       }
 
       this.lastEdited.set(lastUpdated.date);
-      this.lastEditedTimeZoneLabel.set(lastUpdated.timeZoneLabel);
     });
   }
 }

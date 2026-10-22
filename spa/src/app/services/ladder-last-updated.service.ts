@@ -1,11 +1,9 @@
 import { Injectable, inject } from '@angular/core';
 import { Observable, catchError, map, of } from 'rxjs';
 import { DataFileService } from './data-file.service';
-import { getLocalTimeZoneLabel } from '../../utils/time-zone-label';
 
 export interface LadderLastUpdated {
   date: Date;
-  timeZoneLabel: string;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -29,9 +27,6 @@ export class LadderLastUpdatedService {
       return null;
     }
 
-    return {
-      date: parsed,
-      timeZoneLabel: getLocalTimeZoneLabel(parsed)
-    };
+    return { date: parsed };
   }
 }

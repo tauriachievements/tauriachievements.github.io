@@ -1,3 +1,7 @@
+:host {
+  display: contents;
+}
+
 .back-to-top {
   position: fixed;
   right: calc(22px + env(safe-area-inset-right, 0px));

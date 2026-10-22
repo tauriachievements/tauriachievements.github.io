@@ -1,6 +1,5 @@
 import { DecimalPipe } from '@angular/common';
 import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal } from '@angular/core';
-import { BackToTopButtonComponent } from './back-to-top-button.component';
 import { FilterDropdownCoordinatorService } from './filter-dropdown-coordinator.service';
 import { FilterDropdownComponent } from './filter-dropdown.component';
 import {
@@ -11,14 +10,14 @@ import {
 } from './guild-presence-options';
 import { GuildPresencePageStore } from './guild-presence-page.store';
 import { LadderSelectOption } from './ladder-options';
-import { UpdateBarComponent } from './update-bar.component';
 import { getGuildArmoryUrl } from '../utils/armory';
+import { setPageHeader } from './page-header';
 
 @Component({
   selector: 'app-guild-presence-page',
   templateUrl: './guild-presence-page.component.html',
   styleUrls: ['./guild-presence-page.component.scss'],
-  imports: [UpdateBarComponent, BackToTopButtonComponent, FilterDropdownComponent, DecimalPipe],
+  imports: [FilterDropdownComponent, DecimalPipe],
   changeDetection: ChangeDetectionStrategy.OnPush,
   providers: [GuildPresencePageStore, FilterDropdownCoordinatorService]
 })
@@ -38,7 +37,6 @@ export class GuildPresencePageComponent implements OnInit {
   readonly syncMessage = this.guildPresencePageStore.syncMessage;
   readonly loadError = this.guildPresencePageStore.loadError;
   readonly lastEdited = this.guildPresencePageStore.lastEdited;
-  readonly lastEditedTimeZoneLabel = this.guildPresencePageStore.lastEditedTimeZoneLabel;
   readonly hasSourcePlayers = this.guildPresencePageStore.hasSourcePlayers;
   readonly allAchievementGuilds = computed(() => this.guildPresence()?.achievementGuilds ?? []);
   readonly allHonorableKillGuilds = computed(() => this.guildPresence()?.honorableKillGuilds ?? []);
@@ -54,6 +52,10 @@ export class GuildPresencePageComponent implements OnInit {
   readonly showErrorBanner = computed(() => !!this.loadError() && this.hasSourcePlayers());
 
   readonly getGuildArmoryUrl = getGuildArmoryUrl;
+
+  constructor() {
+    setPageHeader(() => ({ lastEdited: this.lastEdited() }));
+  }
 
   ngOnInit(): void {
     this.guildPresencePageStore.initialize();

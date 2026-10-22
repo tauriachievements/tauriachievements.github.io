@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, HostListener } from '@angular/core';
+import { ChangeDetectionStrategy, Component, HostListener, signal } from '@angular/core';
 
 @Component({
   selector: 'app-back-to-top-button',
@@ -7,21 +7,12 @@ import { ChangeDetectionStrategy, ChangeDetectorRef, Component, HostListener } f
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class BackToTopButtonComponent {
-  isVisible = false;
-
-  constructor(private cdr: ChangeDetectorRef) {}
+  readonly isVisible = signal(false);
 
   @HostListener('window:scroll')
   onWindowScroll(): void {
     const scrollTop = window.pageYOffset || document.documentElement.scrollTop || 0;
-    const shouldBeVisible = scrollTop > 400;
-
-    if (shouldBeVisible === this.isVisible) {
-      return;
-    }
-
-    this.isVisible = shouldBeVisible;
-    this.cdr.markForCheck();
+    this.isVisible.set(scrollTop > 400);
   }
 
   scrollToTop(): void {

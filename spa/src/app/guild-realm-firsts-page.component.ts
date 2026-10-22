@@ -1,7 +1,5 @@
 import { ChangeDetectionStrategy, Component, DestroyRef, OnInit, computed, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { BackToTopButtonComponent } from './back-to-top-button.component';
-import { UpdateBarComponent } from './update-bar.component';
 import { DataFileService } from './services/data-file.service';
 
 interface GuildRealmFirstResult {
@@ -89,7 +87,7 @@ const POGCHAMP_EMOTE_URL = 'assets/pogchamp.png';
   selector: 'app-guild-realm-firsts-page',
   templateUrl: './guild-realm-firsts-page.component.html',
   styleUrls: ['./guild-realm-firsts-page.component.scss'],
-  imports: [UpdateBarComponent, BackToTopButtonComponent],
+  imports: [],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class GuildRealmFirstsPageComponent implements OnInit {

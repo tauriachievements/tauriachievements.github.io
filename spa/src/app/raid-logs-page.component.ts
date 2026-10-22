@@ -2,8 +2,6 @@ import { DatePipe, DecimalPipe } from '@angular/common';
 import { ChangeDetectionStrategy, Component, DestroyRef, OnInit, computed, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, RouterLink } from '@angular/router';
-import { getLocalTimeZoneLabel } from '../utils/time-zone-label';
-import { BackToTopButtonComponent } from './back-to-top-button.component';
 import { getClassColor } from './class-colors';
 import { RaidDifficultySwitchComponent } from './raid-difficulty-switch.component';
 import {
@@ -24,9 +22,9 @@ import {
 } from './raid-logs';
 import { RevealDirective } from './reveal.directive';
 import { RaidLogsDataService } from './services/raid-logs-data.service';
-import { UpdateBarComponent } from './update-bar.component';
 import { injectReplaceUrl } from './url-state';
 import { LoadStateComponent } from './load-state.component';
+import { setPageHeader } from './page-header';
 
 interface BossCard {
   boss: RaidBoss;
@@ -40,7 +38,7 @@ const RECENT_KILLS = 12;
 
 @Component({
   selector: 'app-raid-logs-page',
-  imports: [RouterLink, UpdateBarComponent, BackToTopButtonComponent, RaidDifficultySwitchComponent, RevealDirective, DatePipe, DecimalPipe, LoadStateComponent],
+  imports: [RouterLink, RaidDifficultySwitchComponent, RevealDirective, DatePipe, DecimalPipe, LoadStateComponent],
   templateUrl: './raid-logs-page.component.html',
   styleUrl: './raid-logs-page.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush
@@ -58,7 +56,6 @@ export class RaidLogsPageComponent implements OnInit {
   readonly loadError = signal<string | undefined>(undefined);
   readonly now = signal(Date.now());
   readonly lastEdited = computed(() => this.index()?.generatedAt);
-  readonly lastEditedTimeZoneLabel = computed(() => getLocalTimeZoneLabel(this.lastEdited()));
 
   private readonly requestedDifficulty = signal(this.route.snapshot.queryParamMap.get('difficulty') ?? this.data.lastDifficulty());
 
@@ -93,6 +90,10 @@ export class RaidLogsPageComponent implements OnInit {
   readonly logLink = raidLogLink;
   readonly formatFightTime = formatFightTime;
   readonly formatPerSecond = formatPerSecond;
+
+  constructor() {
+    setPageHeader(() => ({ lastEdited: this.lastEdited() }));
+  }
 
   ngOnInit(): void {
     this.data.lastDifficulty.set(this.requestedDifficulty());

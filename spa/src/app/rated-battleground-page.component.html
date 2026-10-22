@@ -1,8 +1,3 @@
-<app-update-bar
-  [lastEdited]="lastEdited()"
-  lastEditedLabel="Latest match:"
-  [lastEditedTimeZoneLabel]="lastEditedTimeZoneLabel()" />
-
 <main class="rated-shell">
   @if (showLoading()) {
     <div class="rated-feedback loading">
@@ -405,5 +400,3 @@
     [history]="selectedPlayerHistory()"
     (closeHistory)="closePlayerHistory()" />
 }
-
-<app-back-to-top-button />

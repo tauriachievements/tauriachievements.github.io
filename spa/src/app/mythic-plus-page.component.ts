@@ -12,8 +12,6 @@ import {
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, RouterLink } from '@angular/router';
-import { getLocalTimeZoneLabel } from '../utils/time-zone-label';
-import { BackToTopButtonComponent } from './back-to-top-button.component';
 import { injectCompactViewport } from './compact-viewport';
 import {
   MythicPlusAffix,
@@ -59,7 +57,6 @@ import { FilterDropdownComponent } from './filter-dropdown.component';
 import { FilterDropdownCoordinatorService } from './filter-dropdown-coordinator.service';
 import { FilterDropdownOption, FilterDropdownValue } from './filter-dropdown.types';
 import { MobileFilterToggleComponent } from './mobile-filter-toggle.component';
-import { UpdateBarComponent } from './update-bar.component';
 import { MythicPlusDataService, NewerExportError } from './services/mythic-plus-data.service';
 import { getClassColor } from './class-colors';
 import { GlideDirective } from './glide.directive';
@@ -68,6 +65,7 @@ import { CLASS_FILTER_OPTIONS, CLASS_NAMES, parseClassId, parseRole, Role } from
 import { LEGION_SPECS, parseSpecName } from './wow-specs';
 import { injectReplaceUrl, parsePage } from './url-state';
 import { LoadStateComponent } from './load-state.component';
+import { setPageHeader } from './page-header';
 
 interface RankedRun {
   run: MythicPlusRun;
@@ -100,8 +98,6 @@ interface CharacterFilter {
   selector: 'app-mythic-plus-page',
   imports: [
     RouterLink,
-    UpdateBarComponent,
-    BackToTopButtonComponent,
     MythicPlusSpecChartComponent,
     MythicPlusWeekAffixesComponent,
     MythicPlusRunsListComponent,
@@ -132,7 +128,6 @@ export class MythicPlusPageComponent implements OnInit {
 
   readonly index = signal<MythicPlusIndex | undefined>(undefined);
   readonly lastEdited = computed(() => exportedAt(this.index()));
-  readonly lastEditedTimeZoneLabel = computed(() => getLocalTimeZoneLabel(this.lastEdited()));
   readonly runsByDungeon = signal<ReadonlyMap<string, readonly MythicPlusRun[]>>(new Map());
   readonly isLoading = signal(true);
   readonly loadError = signal<string | undefined>(undefined);
@@ -278,6 +273,10 @@ export class MythicPlusPageComponent implements OnInit {
       ? [...rows].sort((a, b) => Date.parse(b.run.completedAt) - Date.parse(a.run.completedAt) || a.rank - b.rank)
       : rows;
   });
+
+  constructor() {
+    setPageHeader(() => ({ lastEdited: this.lastEdited() }));
+  }
 
   setRunOrder(order: 'best' | 'latest'): void {
     if (order === this.runOrder()) {

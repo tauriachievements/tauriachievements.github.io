@@ -1,8 +1,3 @@
-<app-update-bar
-  [showLastUpdated]="!!lastEdited()"
-  [lastEdited]="lastEdited()"
-  [lastEditedTimeZoneLabel]="lastEditedTimeZoneLabel()" />
-
 <main class="guild-page">
   <a class="back-link" routerLink="/mythic-plus" [queryParams]="{ view: 'players' }">
     <span aria-hidden="true">‹</span> Back to the M+ Leaderboard
@@ -228,6 +223,4 @@
     }
   }
 </main>
-
-<app-back-to-top-button />
 

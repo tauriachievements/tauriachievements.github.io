@@ -2,7 +2,6 @@ import { ChangeDetectionStrategy, Component, DestroyRef, OnInit, computed, injec
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Subject, debounceTime, distinctUntilChanged, map } from 'rxjs';
-import { BackToTopButtonComponent } from './back-to-top-button.component';
 import { FilterBarComponent } from './filter-bar.component';
 import {
   CLASS_OPTIONS,
@@ -20,13 +19,13 @@ import {
 import { LadderPageStore } from './ladder-page.store';
 import { LeaderboardTableComponent } from './leaderboard-table.component';
 import { LadderFilterState, LadderSort } from './ladder.types';
-import { UpdateBarComponent } from './update-bar.component';
+import { setPageHeader } from './page-header';
 
 @Component({
   selector: 'app-achievement-ladder',
   templateUrl: './ladder.component.html',
   styleUrls: ['./ladder.component.scss'],
-  imports: [UpdateBarComponent, FilterBarComponent, LeaderboardTableComponent, BackToTopButtonComponent],
+  imports: [FilterBarComponent, LeaderboardTableComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   providers: [LadderPageStore]
 })
@@ -54,7 +53,6 @@ export class AchievementLadderComponent implements OnInit {
   readonly syncMessage = this.ladderPageStore.syncMessage;
   readonly loadError = this.ladderPageStore.loadError;
   readonly lastEdited = this.ladderPageStore.lastEdited;
-  readonly lastEditedTimeZoneLabel = this.ladderPageStore.lastEditedTimeZoneLabel;
   readonly hasSourcePlayers = this.ladderPageStore.hasSourcePlayers;
   readonly isAwaitingCompleteDataset = this.ladderPageStore.isAwaitingCompleteDataset;
   readonly isSearchingAllPlayers = this.ladderPageStore.isSearchingAllPlayers;
@@ -117,6 +115,10 @@ export class AchievementLadderComponent implements OnInit {
     return '';
   });
   readonly hasNarrowingFilters = computed(() => this.hasActiveFilters() || this.hasSearchQuery());
+
+  constructor() {
+    setPageHeader(() => ({ lastEdited: this.lastEdited() }));
+  }
 
   ngOnInit(): void {
     const initialFilterState = parseLadderFilterState(this.route.snapshot.queryParamMap);

@@ -155,7 +155,8 @@ export const routes: Routes = [
   {
     path: 'ap-chest-looters',
     loadComponent: () => import('./ap-chest-looters-page.component')
-      .then(module => module.ApChestLootersPageComponent)
+      .then(module => module.ApChestLootersPageComponent),
+    data: { backToTop: false }
   },
   {
     path: 'compare',
@@ -170,13 +171,14 @@ export const routes: Routes = [
   {
     path: 'k7m2q9v4x8p3n6z',
     loadComponent: () => import('./rare-items-page.component')
-      .then(module => module.RareItemsPageComponent)
+      .then(module => module.RareItemsPageComponent),
+    data: { header: false }
   },
   ...GUILD_PAGES.map(guild => ({
     path: guildPagePath(guild),
     loadComponent: () => import('./guild-analysis-page.component')
       .then(module => module.GuildAnalysisPageComponent),
-    data: { guild },
+    data: { guild, backToTop: false },
     resolve: { analysis: guildAnalysisResolver }
   })),
   {

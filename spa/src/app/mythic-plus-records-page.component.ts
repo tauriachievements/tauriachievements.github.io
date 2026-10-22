@@ -2,8 +2,6 @@ import { DatePipe, DecimalPipe, NgTemplateOutlet } from '@angular/common';
 import { ChangeDetectionStrategy, Component, DestroyRef, OnInit, computed, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { getLocalTimeZoneLabel } from '../utils/time-zone-label';
-import { BackToTopButtonComponent } from './back-to-top-button.component';
 import { FilterDropdownComponent } from './filter-dropdown.component';
 import { FilterDropdownCoordinatorService } from './filter-dropdown-coordinator.service';
 import { FilterDropdownOption, FilterDropdownValue } from './filter-dropdown.types';
@@ -36,9 +34,9 @@ import { CountUpDirective } from './count-up.directive';
 import { RevealDirective } from './reveal.directive';
 import { MythicPlusDataService, mythicPlusLoadError } from './services/mythic-plus-data.service';
 import { SpotlightDirective } from './spotlight.directive';
-import { UpdateBarComponent } from './update-bar.component';
 import { injectReplaceUrl } from './url-state';
 import { LoadStateComponent } from './load-state.component';
+import { setPageHeader } from './page-header';
 
 type RecordsSection = 'record' | 'first';
 
@@ -87,8 +85,6 @@ interface SummaryTile {
   selector: 'app-mythic-plus-records-page',
   imports: [
     RouterLink,
-    UpdateBarComponent,
-    BackToTopButtonComponent,
     FilterDropdownComponent,
     MythicPlusRunDetailsComponent,
     RevealDirective,
@@ -113,13 +109,16 @@ export class MythicPlusRecordsPageComponent implements OnInit {
 
   readonly firstsFromLevel = FIRSTS_FROM_LEVEL;
 
+  constructor() {
+    setPageHeader(() => ({ lastEdited: this.lastEdited() }));
+  }
+
   starSlots(upgrades: number): readonly number[] {
     return STAR_SLOTS[upgrades] ?? STAR_SLOTS[0];
   }
 
   readonly index = signal<MythicPlusIndex | undefined>(undefined);
   readonly lastEdited = computed(() => exportedAt(this.index()));
-  readonly lastEditedTimeZoneLabel = computed(() => getLocalTimeZoneLabel(this.lastEdited()));
   readonly runs = signal<readonly MythicPlusRun[]>([]);
   readonly isLoading = signal(true);
   readonly loadError = signal<string | undefined>(undefined);

@@ -1,5 +1,4 @@
 import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
-import { UpdateBarComponent } from './update-bar.component';
 import { getArmoryUrl } from '../utils/armory';
 import { DataFileService } from './services/data-file.service';
 import { getClassColor } from './class-colors';
@@ -14,7 +13,7 @@ interface ApChestLooter {
 
 @Component({
   selector: 'app-ap-chest-looters-page',
-  imports: [UpdateBarComponent],
+  imports: [],
   templateUrl: './ap-chest-looters-page.component.html',
   styleUrls: ['./ap-chest-looters-page.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush

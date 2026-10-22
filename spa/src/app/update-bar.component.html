@@ -18,7 +18,7 @@
     </button>
 
     <div class="update-bar-status">
-      @if (showLastUpdated() && lastEdited(); as edited) {
+      @if (lastEdited(); as edited) {
         <span
           class="update-status"
           [attr.aria-label]="lastEditedLabel() + ' ' + (edited | date:'MMM d, y, HH:mm':lastEditedTimeZone()) + ' ' + lastEditedTimeZoneLabel()"

@@ -22,7 +22,6 @@ import { getArmoryUrl } from '../utils/armory';
 import { getClassIconPath } from '../utils/classIconHelper';
 import { getRaceIconPath } from '../utils/raceIconHelper';
 import { ArtifactSpecTraits, artifactSpecTraits } from './guild-artifact-specs';
-import { UpdateBarComponent } from './update-bar.component';
 import { FilterDropdownComponent } from './filter-dropdown.component';
 import { FilterDropdownCoordinatorService } from './filter-dropdown-coordinator.service';
 import { FilterDropdownOption, FilterDropdownValue } from './filter-dropdown.types';
@@ -31,6 +30,7 @@ import { injectCompactViewport } from './compact-viewport';
 import { MobileFilterToggleComponent } from './mobile-filter-toggle.component';
 import { TapTooltipDirective } from './tap-tooltip.directive';
 import { CLASS_NAMES } from './wow';
+import { setPageHeader } from './page-header';
 
 const MOBILE_ROSTER_PAGE_SIZE = 25;
 
@@ -83,7 +83,6 @@ const SORT_COLUMNS = new Set<SortColumn>([
 @Component({
   selector: 'app-guild-analysis-page',
   imports: [
-    UpdateBarComponent,
     FilterDropdownComponent,
     MobileFilterToggleComponent,
     TapTooltipDirective,
@@ -166,6 +165,7 @@ export class GuildAnalysisPageComponent {
   private readonly tableScroll = viewChild<ElementRef<HTMLElement>>('tableScroll');
 
   constructor() {
+    setPageHeader(() => ({ lastEdited: this.lastEdited, timeZone: this.lastEditedTimeZone, timeZoneLabel: this.lastEditedTimeZoneLabel }));
     this.applySort();
     afterNextRender(() => this.watchTableWidth());
   }

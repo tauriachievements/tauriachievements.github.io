@@ -39,7 +39,6 @@ export class LadderPageStore {
   readonly syncMessage = signal(this.isLoading() ? 'Loading ladder data...' : '');
   readonly loadError = signal<string | undefined>(undefined);
   readonly lastEdited = signal<Date | undefined>(undefined);
-  readonly lastEditedTimeZoneLabel = signal('Local time');
   readonly hasSourcePlayers = computed(() => this.sourcePlayerCount() > 0);
   readonly isDatasetComplete = signal(this.dataSyncService.isCurrentDatasetComplete());
   readonly totalPlayerCount = signal(0);
@@ -221,7 +220,6 @@ export class LadderPageStore {
       }
 
       this.lastEdited.set(lastUpdated.date);
-      this.lastEditedTimeZoneLabel.set(lastUpdated.timeZoneLabel);
     });
   }
 }

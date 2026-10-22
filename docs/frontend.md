@@ -149,7 +149,7 @@ decision (ask first).
 
 | Building block | Use it for |
 |---|---|
-| `app-update-bar` (`update-bar.component`) | the site header; every page renders it. `lastEditedLabel` / `lastEdited` set the timestamp on the right |
+| `app-update-bar` (`update-bar.component`) | the site header, rendered once by the shell ([below](#the-app-shell-and-the-header-height-contract)). A page sets the timestamp on the right with `setPageHeader()` |
 | `nav-sections.ts` | the header's sections and pages, and route matching for deep routes (`includes`) |
 | `app-filter-dropdown` + `filter-dropdown.types.ts` | every dropdown filter. The page must list `FilterDropdownCoordinatorService` in its own `providers`, or it fails with NG0201. Pass `widthLabels` (every label it can ever show) to keep the trigger as wide as the longest one, so picking never cuts a name short or moves the toolbar; its container must then size to its content |
 | `wow.ts` | the game's tables: `CLASS_NAMES`, `CLASSES_BY_NAME` (A–Z), `RACE_NAMES` (the three Pandaren ids all read "Pandaren"), `REALMS` and the `Realm` and `Role` types. Never copy one of them into a page |
@@ -195,11 +195,32 @@ decision (ask first).
 - A scroll (the page's or the table's own sideways one) closes a mouse tooltip. A keyboard
   focus tooltip follows its icon instead, since focusing the icon is often what scrolled it.
 
-## The header-height contract
+## The app shell and the header-height contract
 
+- `AppComponent` is the shell: the header (`app-update-bar`), the `router-outlet`, and the
+  back-to-top button. Pages don't render either; both hosts are `display: contents`.
+- A page shows its timestamp with `setPageHeader()` (`page-header.ts`), called in its
+  constructor:
+
+  ```ts
+  constructor() {
+    setPageHeader(() => ({ lastEdited: this.lastEdited(), label: 'Latest game:' }));
+  }
+  ```
+
+  `label` defaults to "Last updated:", and the time zone label to the reader's own
+  (`getLocalTimeZoneLabel`). Pass `timeZone` and `timeZoneLabel` only for a time that isn't
+  local (the guild pages show the scan's own zone). The header shows a timestamp only while
+  `lastEdited` is set, and it clears when the page is destroyed.
+- Route `data` can switch the shell off for one page: `header: false` (the Rare Items page has
+  no header) and `backToTop: false` (the guild pages and the Hall of Fame).
+- The header persists across navigation, so it closes its dropdown and drawer on every
+  `NavigationStart`.
 - The header is fixed. Its height is `--update-bar-height` (44 px, in `styles.scss`).
-- Pages were designed for a 36 px header (30 px at ≤640 px). `app-update-bar`'s host takes the
-  difference as its height, which pushes every page down by the right amount.
+- Pages were designed for a 36 px header (30 px at ≤640 px). A `::before` on the routed page's
+  host (`app-root > router-outlet + *::before` in `styles.scss`) takes the difference as its
+  height, which pushes every page down by the right amount inside its own host, so a page's
+  background still starts at the top.
 - Sticky elements and `scroll-margin-top` use `var(--update-bar-height)`, never a hardcoded
   pixel value.
 - `.update-bar` has a `view-transition-name`, which makes it a backdrop root: a

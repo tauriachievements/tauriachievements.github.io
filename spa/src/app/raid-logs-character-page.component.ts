@@ -5,8 +5,6 @@ import { ActivatedRoute, RouterLink } from '@angular/router';
 import { Subscription, forkJoin, of } from 'rxjs';
 import { getArmoryUrl } from '../utils/armory';
 import { getClassCrestPath, getClassIconPath } from '../utils/classIconHelper';
-import { getLocalTimeZoneLabel } from '../utils/time-zone-label';
-import { BackToTopButtonComponent } from './back-to-top-button.component';
 import { getClassColor } from './class-colors';
 import { GlideDirective } from './glide.directive';
 import { RaidDifficultySwitchComponent } from './raid-difficulty-switch.component';
@@ -36,10 +34,10 @@ import {
   scoreCharacters
 } from './raid-logs';
 import { RaidLogsDataService } from './services/raid-logs-data.service';
-import { UpdateBarComponent } from './update-bar.component';
 import { CLASS_NAMES } from './wow';
 import { injectReplaceUrl } from './url-state';
 import { LoadStateComponent } from './load-state.component';
+import { setPageHeader } from './page-header';
 
 interface Appearance {
   kill: RaidKillDetails;
@@ -74,7 +72,7 @@ const RECENT_KILLS = 20;
 
 @Component({
   selector: 'app-raid-logs-character-page',
-  imports: [RouterLink, UpdateBarComponent, BackToTopButtonComponent, RaidDifficultySwitchComponent, GlideDirective, DatePipe, DecimalPipe, LoadStateComponent],
+  imports: [RouterLink, RaidDifficultySwitchComponent, GlideDirective, DatePipe, DecimalPipe, LoadStateComponent],
   templateUrl: './raid-logs-character-page.component.html',
   styleUrl: './raid-logs-character-page.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush
@@ -94,7 +92,6 @@ export class RaidLogsCharacterPageComponent {
   readonly isLoading = signal(true);
   readonly loadError = signal<string | undefined>(undefined);
   readonly lastEdited = computed(() => this.index()?.generatedAt);
-  readonly lastEditedTimeZoneLabel = computed(() => getLocalTimeZoneLabel(this.lastEdited()));
 
   private readonly requestedDifficulty = signal(this.route.snapshot.queryParamMap.get('difficulty') ?? undefined);
   private readonly pickedMetric = signal<RaidMetric | undefined>(parseMetric(this.route.snapshot.queryParamMap.get('metric')));
@@ -232,6 +229,7 @@ export class RaidLogsCharacterPageComponent {
   private subscription?: Subscription;
 
   constructor() {
+    setPageHeader(() => ({ lastEdited: this.lastEdited() }));
     effect(() => {
       this.params();
       untracked(() => this.loadData());

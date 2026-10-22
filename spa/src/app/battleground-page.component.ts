@@ -1,7 +1,6 @@
 import { DecimalPipe } from '@angular/common';
 import { ChangeDetectionStrategy, Component, HostListener, OnInit, computed, inject, signal } from '@angular/core';
 import { catchError, of } from 'rxjs';
-import { BackToTopButtonComponent } from './back-to-top-button.component';
 import {
   BattlegroundDayRow,
   BattlegroundEra,
@@ -15,8 +14,7 @@ import { BattlegroundCollectorState, BattlegroundsService } from './battleground
 import { FilterDropdownCoordinatorService } from './filter-dropdown-coordinator.service';
 import { FilterDropdownComponent } from './filter-dropdown.component';
 import { FilterDropdownValue } from './filter-dropdown.types';
-import { UpdateBarComponent } from './update-bar.component';
-import { getLocalTimeZoneLabel } from '../utils/time-zone-label';
+import { setPageHeader } from './page-header';
 
 interface BattlegroundStartEntry {
   id: string;
@@ -40,7 +38,7 @@ const BATTLEGROUND_ERA_OPTIONS: ReadonlyArray<{ value: BattlegroundEra; label: s
   selector: 'app-battleground-page',
   templateUrl: './battleground-page.component.html',
   styleUrls: ['./battleground-page.component.scss'],
-  imports: [UpdateBarComponent, BackToTopButtonComponent, FilterDropdownComponent, DecimalPipe],
+  imports: [FilterDropdownComponent, DecimalPipe],
   providers: [FilterDropdownCoordinatorService],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
@@ -56,7 +54,6 @@ export class BattlegroundPageComponent implements OnInit {
   readonly selectedDay = signal('');
   readonly selectedBattlegroundName = signal<string | undefined>(undefined);
   readonly lastEdited = signal<Date | undefined>(undefined);
-  readonly lastEditedTimeZoneLabel = signal('Local time');
 
   readonly dateBounds = computed(() => getCompletedBattlegroundDateBounds(this.battlegrounds()));
   readonly hasData = computed(() => this.battlegrounds().length > 0);
@@ -80,6 +77,10 @@ export class BattlegroundPageComponent implements OnInit {
       groups
     };
   });
+
+  constructor() {
+    setPageHeader(() => ({ lastEdited: this.lastEdited() }));
+  }
 
   ngOnInit(): void {
     this.loadBattlegrounds();
@@ -200,7 +201,6 @@ export class BattlegroundPageComponent implements OnInit {
   private applyCollectorState(state: BattlegroundCollectorState | null): void {
     const parsedDate = this.parseDate(state?.lastScanUtc);
     this.lastEdited.set(parsedDate);
-    this.lastEditedTimeZoneLabel.set(getLocalTimeZoneLabel(parsedDate));
   }
 
   private parseDate(value: string | undefined): Date | undefined {

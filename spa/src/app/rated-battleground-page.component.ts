@@ -3,7 +3,6 @@ import { ChangeDetectionStrategy, Component, DestroyRef, ElementRef, OnInit, com
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute } from '@angular/router';
 import { getClassIconPath } from '../utils/classIconHelper';
-import { BackToTopButtonComponent } from './back-to-top-button.component';
 import { FilterDropdownCoordinatorService } from './filter-dropdown-coordinator.service';
 import { FilterDropdownComponent } from './filter-dropdown.component';
 import { FilterDropdownValue } from './filter-dropdown.types';
@@ -32,9 +31,8 @@ import {
   RatedBattlegroundContentView,
   RatedBattlegroundViewSwitcherComponent
 } from './rated-battleground-view-switcher.component';
-import { UpdateBarComponent } from './update-bar.component';
-import { getLocalTimeZoneLabel } from '../utils/time-zone-label';
 import { injectReplaceUrl } from './url-state';
+import { setPageHeader } from './page-header';
 
 const METRIC_OPTIONS: ReadonlyArray<{ value: RatedLeaderboardMetric; label: string }> = [
   { value: 'rating', label: 'Net rating change' },
@@ -58,8 +56,6 @@ const LEADERBOARD_PAGE_SIZE = 25;
   templateUrl: './rated-battleground-page.component.html',
   styleUrls: ['./rated-battleground-page.component.scss'],
   imports: [
-    UpdateBarComponent,
-    BackToTopButtonComponent,
     FilterDropdownComponent,
     RatedBattlegroundPlayerHistoryComponent,
     RatedBattlegroundViewSwitcherComponent,
@@ -147,7 +143,6 @@ export class RatedBattlegroundPageComponent implements OnInit {
     const latest = this.matches().at(-1)?.starttime;
     return latest ? new Date(latest * 1000) : undefined;
   });
-  readonly lastEditedTimeZoneLabel = computed(() => getLocalTimeZoneLabel(this.lastEdited()));
   readonly hasData = computed(() => this.matches().length > 0);
   readonly showLoading = computed(() => this.isLoading() && !this.hasData());
   readonly showError = computed(() => !this.isLoading() && !!this.loadError() && !this.hasData());
@@ -163,6 +158,10 @@ export class RatedBattlegroundPageComponent implements OnInit {
   readonly formatCompact = formatCompact;
   readonly formatDuration = formatDuration;
   readonly formatUnixDateTime = formatUnixDateTime;
+
+  constructor() {
+    setPageHeader(() => ({ lastEdited: this.lastEdited(), label: 'Latest match:' }));
+  }
 
   ngOnInit(): void {
     this.route.queryParamMap

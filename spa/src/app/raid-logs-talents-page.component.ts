@@ -3,8 +3,6 @@ import { ChangeDetectionStrategy, Component, DestroyRef, computed, effect, injec
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { Subscription } from 'rxjs';
-import { getLocalTimeZoneLabel } from '../utils/time-zone-label';
-import { BackToTopButtonComponent } from './back-to-top-button.component';
 import { getClassColor } from './class-colors';
 import { FilterDropdownComponent } from './filter-dropdown.component';
 import { FilterDropdownCoordinatorService } from './filter-dropdown-coordinator.service';
@@ -60,10 +58,10 @@ import {
   topPlayerEdge
 } from './raid-talents';
 import { RaidLogsDataService } from './services/raid-logs-data.service';
-import { UpdateBarComponent } from './update-bar.component';
 import { CLASS_FILTER_OPTIONS, CLASS_NAMES, parseClassId, Role } from './wow';
 import { injectReplaceUrl, parseInteger } from './url-state';
 import { LoadStateComponent } from './load-state.component';
+import { setPageHeader } from './page-header';
 
 const SHOWN_BUILDS = 10;
 
@@ -144,8 +142,6 @@ interface SpecCard extends SpecTalentSummary {
   selector: 'app-raid-logs-talents-page',
   imports: [
     RouterLink,
-    UpdateBarComponent,
-    BackToTopButtonComponent,
     FilterDropdownComponent,
     RaidDifficultySwitchComponent,
     IconTipsComponent,
@@ -174,7 +170,6 @@ export class RaidLogsTalentsPageComponent {
   private readonly talentTable = signal<RaidTalentTable>(new Map());
   readonly talentTooltips = signal<RaidTalentTooltips>(new Map());
   readonly lastEdited = computed(() => this.index()?.generatedAt);
-  readonly lastEditedTimeZoneLabel = computed(() => getLocalTimeZoneLabel(this.lastEdited()));
 
   private readonly requestedDifficulty = signal(this.route.snapshot.queryParamMap.get('difficulty') ?? this.data.lastDifficulty());
   readonly specId = signal<number | undefined>(undefined);
@@ -493,6 +488,7 @@ export class RaidLogsTalentsPageComponent {
   private killsSubscription?: Subscription;
 
   constructor() {
+    setPageHeader(() => ({ lastEdited: this.lastEdited() }));
     this.data.lastDifficulty.set(this.requestedDifficulty());
     this.loadData();
     this.data.talents()

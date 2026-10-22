@@ -1,8 +1,3 @@
-<app-update-bar
-  [showLastUpdated]="!!lastEdited()"
-  [lastEdited]="lastEdited()"
-  [lastEditedTimeZoneLabel]="lastEditedTimeZoneLabel()" />
-
 <main class="raid-page">
   <h1 class="visually-hidden">Raid statistics, {{ index()?.raid?.name ?? 'The Emerald Nightmare' }}</h1>
 
@@ -35,5 +30,3 @@
     }
   }
 </main>
-
-<app-back-to-top-button />

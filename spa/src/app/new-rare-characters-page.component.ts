@@ -5,7 +5,6 @@ import { forkJoin } from 'rxjs';
 import { getArmoryUrl, getGuildArmoryUrl } from '../utils/armory';
 import { getClassIconPath } from '../utils/classIconHelper';
 import { getRaceIconPath } from '../utils/raceIconHelper';
-import { BackToTopButtonComponent } from './back-to-top-button.component';
 import { buildRareAchievementCharacterKey } from './rare-achievement-groups';
 import {
   buildRareAchievementNamesById,
@@ -22,7 +21,7 @@ import {
 import { Player } from './models/character.model';
 import { DataSyncService } from './services/data-sync.service';
 import { LadderLastUpdatedService } from './services/ladder-last-updated.service';
-import { UpdateBarComponent } from './update-bar.component';
+import { setPageHeader } from './page-header';
 
 interface NewRareCharacterView {
   rank: number;
@@ -51,7 +50,7 @@ const KEYSTONE_MASTER_ACHIEVEMENT_IDS: ReadonlySet<number> = new Set([11224]);
   selector: 'app-new-rare-characters-page',
   templateUrl: './new-rare-characters-page.component.html',
   styleUrls: ['./new-rare-characters-page.component.scss'],
-  imports: [UpdateBarComponent, BackToTopButtonComponent, DecimalPipe],
+  imports: [DecimalPipe],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class NewRareCharactersPageComponent implements OnInit {
@@ -66,7 +65,6 @@ export class NewRareCharactersPageComponent implements OnInit {
   readonly isLoading = signal(true);
   readonly loadError = signal<string | undefined>(undefined);
   readonly lastEdited = signal<Date | undefined>(undefined);
-  readonly lastEditedTimeZoneLabel = signal('Local time');
   readonly newRareCharacters = computed<ReadonlyArray<NewRareCharacterView>>(() => {
     const dataset = this.rareAchievementsDataset();
     if (!dataset) {
@@ -93,6 +91,10 @@ export class NewRareCharactersPageComponent implements OnInit {
 
   readonly getArmoryUrl = getArmoryUrl;
   readonly getGuildArmoryUrl = getGuildArmoryUrl;
+
+  constructor() {
+    setPageHeader(() => ({ lastEdited: this.lastEdited() }));
+  }
 
   ngOnInit(): void {
     this.loadData();
@@ -128,7 +130,6 @@ export class NewRareCharactersPageComponent implements OnInit {
         this.rareAchievementsDataset.set(rareAchievementsDataset);
         this.summaries.set(summaries);
         this.lastEdited.set(lastUpdated?.date);
-        this.lastEditedTimeZoneLabel.set(lastUpdated?.timeZoneLabel ?? 'Local time');
         this.isLoading.set(false);
       },
       error: (error: unknown) => {

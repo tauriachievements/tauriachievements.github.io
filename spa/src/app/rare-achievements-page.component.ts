@@ -3,7 +3,6 @@ import { ChangeDetectionStrategy, Component, DestroyRef, OnInit, computed, injec
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Subject, debounceTime, distinctUntilChanged, forkJoin, map } from 'rxjs';
-import { BackToTopButtonComponent } from './back-to-top-button.component';
 import { FilterDropdownCoordinatorService } from './filter-dropdown-coordinator.service';
 import { FilterDropdownComponent } from './filter-dropdown.component';
 import { FilterDropdownOption } from './filter-dropdown.types';
@@ -42,11 +41,10 @@ import {
   RareAchievementsDataset,
   RareAchievementSummary
 } from './rare-achievements.types';
-import { UpdateBarComponent } from './update-bar.component';
 import { getGuildArmoryUrl, getArmoryUrl } from '../utils/armory';
 import { getClassIconPath } from '../utils/classIconHelper';
 import { getRaceIconPath } from '../utils/raceIconHelper';
-import { getLocalTimeZoneLabel } from '../utils/time-zone-label';
+import { setPageHeader } from './page-header';
 
 type CharacterFaction = 'Alliance' | 'Horde';
 type CountRankingMetric = 'gladiatorTitleCount' | 'gladiatorMountCount';
@@ -159,7 +157,7 @@ const GROUPED_ACHIEVEMENT_LABELS = new Map<AchievementFilterValue, string>([
   selector: 'app-rare-achievements-page',
   templateUrl: './rare-achievements-page.component.html',
   styleUrls: ['./rare-achievements-page.component.scss'],
-  imports: [UpdateBarComponent, BackToTopButtonComponent, FilterDropdownComponent],
+  imports: [FilterDropdownComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   providers: [FilterDropdownCoordinatorService]
 })
@@ -187,7 +185,6 @@ export class RareAchievementsPageComponent implements OnInit {
   readonly selectedClassId = signal<number | undefined>(undefined);
   readonly searchQuery = signal('');
   readonly lastEdited = signal<Date | undefined>(undefined);
-  readonly lastEditedTimeZoneLabel = signal('Local time');
   readonly realmFilterOptions = REALM_FILTER_OPTIONS;
   readonly classFilterOptions = CLASS_FILTER_OPTIONS;
   readonly achievementDropdowns = computed<ReadonlyArray<AchievementDropdownView>>(() => {
@@ -262,6 +259,10 @@ export class RareAchievementsPageComponent implements OnInit {
 
   readonly getArmoryUrl = getArmoryUrl;
   readonly getGuildArmoryUrl = getGuildArmoryUrl;
+
+  constructor() {
+    setPageHeader(() => ({ lastEdited: this.lastEdited() }));
+  }
 
   ngOnInit(): void {
     const initialFilterState = parseRareAchievementsFilterState(this.route.snapshot.queryParamMap);
@@ -355,14 +356,12 @@ export class RareAchievementsPageComponent implements OnInit {
         this.dataset.set(dataset);
         this.summaries.set(summaries);
         this.lastEdited.set(this.parseDate(dataset.generatedAt));
-        this.lastEditedTimeZoneLabel.set(getLocalTimeZoneLabel(this.lastEdited()));
         this.isLoading.set(false);
       },
       error: (error: unknown) => {
         console.error('Failed to load rare achievements:', error);
         this.dataset.set(null);
         this.lastEdited.set(undefined);
-        this.lastEditedTimeZoneLabel.set('Local time');
         this.loadError.set('We could not load the rare achievement data right now. Please try again in a moment.');
         this.isLoading.set(false);
       }

@@ -2,7 +2,6 @@ import { NgTemplateOutlet } from '@angular/common';
 import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { getArmoryUrl } from '../utils/armory';
-import { BackToTopButtonComponent } from './back-to-top-button.component';
 import { getClassColor } from './class-colors';
 import { DecodeDirective } from './decode.directive';
 import { characterProfileLink } from './mythic-plus-profile';
@@ -18,7 +17,6 @@ import {
   quoteSpans,
   testimonialSourceLabel
 } from './support';
-import { UpdateBarComponent } from './update-bar.component';
 
 const QUOTE_SPANS = quoteSpans(TESTIMONIALS.map(({ quote }) => quote));
 
@@ -35,8 +33,6 @@ function shownName({ name, classId, realm, mythicPlusProfile }: PlayerName) {
   selector: 'app-support-page',
   imports: [
     RouterLink,
-    UpdateBarComponent,
-    BackToTopButtonComponent,
     DecodeDirective,
     RevealDirective,
     ScrollRiseDirective,

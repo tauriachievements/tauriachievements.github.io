@@ -3,8 +3,6 @@ import { ChangeDetectionStrategy, Component, DestroyRef, OnInit, computed, injec
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { getClassCrestPath } from '../utils/classIconHelper';
-import { getLocalTimeZoneLabel } from '../utils/time-zone-label';
-import { BackToTopButtonComponent } from './back-to-top-button.component';
 import { injectCompactViewport } from './compact-viewport';
 import { CountUpDirective } from './count-up.directive';
 import { GlideDirective } from './glide.directive';
@@ -29,9 +27,9 @@ import { MemberView, RunView, toMemberView, toRunView } from './mythic-plus-view
 import { ScrollToEndDirective } from './scroll-to-end.directive';
 import { MythicPlusDataService, mythicPlusLoadError } from './services/mythic-plus-data.service';
 import { TapTooltipDirective } from './tap-tooltip.directive';
-import { UpdateBarComponent } from './update-bar.component';
 import { CLASS_NAMES } from './wow';
 import { LoadStateComponent } from './load-state.component';
+import { setPageHeader } from './page-header';
 
 const SEARCH_RESULT_COUNT = 8;
 const RECENT_DAYS = 7;
@@ -96,8 +94,6 @@ const GAP_TICKS = [0, 1, 2, 5, 10, 20, 50, 100, 200, 500, 1000, 2000];
   selector: 'app-mythic-plus-compare-page',
   imports: [
     RouterLink,
-    UpdateBarComponent,
-    BackToTopButtonComponent,
     TapTooltipDirective,
     ScrollToEndDirective,
     GlideDirective,
@@ -120,7 +116,6 @@ export class MythicPlusComparePageComponent implements OnInit {
 
   readonly index = signal<MythicPlusIndex | undefined>(undefined);
   readonly lastEdited = computed(() => exportedAt(this.index()));
-  readonly lastEditedTimeZoneLabel = computed(() => getLocalTimeZoneLabel(this.lastEdited()));
   readonly allRuns = signal<readonly MythicPlusRun[]>([]);
   readonly isLoading = signal(true);
   readonly loadError = signal<string | undefined>(undefined);
@@ -386,6 +381,10 @@ export class MythicPlusComparePageComponent implements OnInit {
   });
 
   readonly upgradeStars = upgradeStars;
+
+  constructor() {
+    setPageHeader(() => ({ lastEdited: this.lastEdited() }));
+  }
 
   ngOnInit(): void {
     this.loadData();
