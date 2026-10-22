@@ -42,6 +42,7 @@
     </nav>
 
     <div class="controls">
+      <h2 class="meta-title">Talent meta · {{ difficulty()?.name }} · {{ boss()?.shortName ?? 'All bosses' }}</h2>
       <app-raid-difficulty-switch
         [difficulties]="loaded.difficulties"
         [selected]="difficulty()?.slug"
@@ -84,7 +85,7 @@
       <ng-container *ngIf="!spec(); else specView">
         <section class="section">
           <div class="role-group" *ngFor="let group of specGroups()">
-            <h2>{{ group.title }}</h2>
+            <h3>{{ group.title }}</h3>
             <ul class="spec-grid">
               <li *ngFor="let card of group.cards; trackBy: trackSpec">
                 <a

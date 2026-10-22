@@ -23,11 +23,11 @@ $down: #ff6b6b;
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  justify-content: space-between;
   gap: 10px 16px;
 }
 
-.filters { display: flex; align-items: center; gap: 8px; }
+.meta-title { margin: 0; color: #fff; font-size: 1.15rem; }
+.filters { display: flex; align-items: center; gap: 8px; margin-left: auto; }
 .class-slot { width: 200px; }
 
 // All bosses, then the seven portraits in raid order: the boss page's picker.
@@ -91,7 +91,7 @@ $down: #ff6b6b;
 .insight-title { color: #fff; font-size: 1.02rem; line-height: 1.3; }
 .insight-text { color: #bdbdbd; font-size: .8rem; line-height: 1.45; }
 
-.role-group h2 { margin: 6px 0 8px; color: #fff; font-size: .95rem; }
+.role-group h3 { margin: 6px 0 8px; color: #fff; font-size: .95rem; }
 
 .spec-grid {
   display: grid;
