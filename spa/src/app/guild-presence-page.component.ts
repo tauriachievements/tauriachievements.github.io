@@ -10,7 +10,6 @@ import {
   GUILD_SOURCE_LIMIT_OPTIONS
 } from './guild-presence-options';
 import { GuildPresencePageStore } from './guild-presence-page.store';
-import { GuildPresenceRankingEntry } from './guild-presence.types';
 import { LadderSelectOption } from './ladder-options';
 import { UpdateBarComponent } from './update-bar.component';
 import { getGuildArmoryUrl } from '../utils/armory';

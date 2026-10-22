@@ -10,7 +10,6 @@ import { FilterDropdownOption, FilterDropdownValue } from './filter-dropdown.typ
 import { RaidDifficultySwitchComponent } from './raid-difficulty-switch.component';
 import {
   GuildProgress,
-  RAID_REALMS,
   RaidBoss,
   RaidKill,
   RaidLogsIndex,
@@ -24,6 +23,7 @@ import {
 } from './raid-logs';
 import { RaidLogsDataService } from './services/raid-logs-data.service';
 import { UpdateBarComponent } from './update-bar.component';
+import { REALMS } from './wow';
 
 const FACTIONS: ReadonlyArray<{ slug: string; id: number; label: string }> = [
   { slug: 'horde', id: 1, label: 'Horde' },
@@ -56,7 +56,7 @@ export class RaidLogsProgressionPageComponent implements OnInit {
   private readonly query = this.route.snapshot.queryParamMap;
   private readonly requestedDifficulty = signal(this.query.get('difficulty') ?? this.data.lastDifficulty());
   readonly factionFilter = signal(FACTIONS.find(faction => faction.slug === this.query.get('faction'))?.slug);
-  readonly realmFilter = signal(RAID_REALMS.map(realmSlug).find(realm => realm === this.query.get('realm')));
+  readonly realmFilter = signal(REALMS.map(realmSlug).find(realm => realm === this.query.get('realm')));
   readonly hasFilters = computed(() => this.factionFilter() !== undefined || this.realmFilter() !== undefined);
 
   readonly factionOptions: ReadonlyArray<FilterDropdownOption> = [
@@ -65,7 +65,7 @@ export class RaidLogsProgressionPageComponent implements OnInit {
   ];
   readonly realmOptions: ReadonlyArray<FilterDropdownOption> = [
     { value: undefined, label: 'All realms' },
-    ...RAID_REALMS.map(realm => ({ value: realmSlug(realm), label: realm }))
+    ...REALMS.map(realm => ({ value: realmSlug(realm), label: realm }))
   ];
   readonly factionWidthLabels = this.factionOptions.map(option => option.label);
   readonly realmWidthLabels = this.realmOptions.map(option => option.label);

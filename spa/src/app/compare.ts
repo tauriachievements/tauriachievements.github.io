@@ -1,4 +1,4 @@
-import { CLASS_OPTIONS } from './ladder-options';
+import { CLASS_NAMES } from './wow';
 import { RankedLadderPlayer } from './ladder.service';
 import { getClassColor } from './class-colors';
 
@@ -33,10 +33,8 @@ export interface ComparisonResult {
   verdict: ComparisonOutcome;
 }
 
-const CLASS_NAME_BY_ID = new Map<number, string>(CLASS_OPTIONS.map((option) => [option.id, option.name]));
-
 export function getClassName(classId: number): string {
-  return CLASS_NAME_BY_ID.get(classId) ?? `Class ${classId}`;
+  return CLASS_NAMES[classId] ?? `Class ${classId}`;
 }
 
 export function buildPlayerComparison(a: RankedLadderPlayer, b: RankedLadderPlayer): ComparisonResult {

@@ -12,13 +12,12 @@ import { FilterDropdownComponent } from './filter-dropdown.component';
 import { FilterDropdownCoordinatorService } from './filter-dropdown-coordinator.service';
 import { FilterDropdownOption, FilterDropdownValue } from './filter-dropdown.types';
 import { GlideDirective } from './glide.directive';
-import { CLASS_FILTER_OPTIONS, CLASS_NAMES, RunQuality, scoreQuality } from './mythic-plus';
+import { RunQuality, scoreQuality } from './mythic-plus';
 import { RaidDifficultySwitchComponent } from './raid-difficulty-switch.component';
 import {
   FACTION_NAMES,
   MAX_SCORE,
   RAID_PAGE_SIZE,
-  RAID_REALMS,
   RaidBoss,
   RaidCharacter,
   RaidDifficulty,
@@ -43,6 +42,7 @@ import {
 } from './raid-logs';
 import { RaidLogsDataService } from './services/raid-logs-data.service';
 import { UpdateBarComponent } from './update-bar.component';
+import { CLASS_FILTER_OPTIONS, CLASS_NAMES, REALMS } from './wow';
 
 interface Loaded {
   difficulty: RaidDifficulty;
@@ -202,7 +202,7 @@ export class RaidLogsLeaderboardPageComponent {
 
   readonly realmOptions: ReadonlyArray<FilterDropdownOption> = [
     { value: undefined, label: 'All realms' },
-    ...RAID_REALMS.map(realm => ({ value: realmSlug(realm), label: realm }))
+    ...REALMS.map(realm => ({ value: realmSlug(realm), label: realm }))
   ];
 
   readonly classWidthLabels: ReadonlyArray<string> = ['All classes', ...Object.values(CLASS_NAMES)];

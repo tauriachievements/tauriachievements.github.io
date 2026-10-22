@@ -1,4 +1,6 @@
 import { getClassColor as getSharedClassColor } from './class-colors';
+import { CLASS_NAMES, Role } from './wow';
+import { specById } from './wow-specs';
 
 export interface RatedBattlegroundCharacter {
   charname: string;
@@ -165,26 +167,7 @@ export interface RatedSpecDefinition {
   role: 'Tank' | 'Healer' | 'Damage';
 }
 
-const CLASS_NAMES: Readonly<Record<number, string>> = {
-  1: 'Warrior', 2: 'Paladin', 3: 'Hunter', 4: 'Rogue',
-  5: 'Priest', 6: 'Death Knight', 7: 'Shaman', 8: 'Mage',
-  9: 'Warlock', 10: 'Monk', 11: 'Druid', 12: 'Demon Hunter'
-};
-
-const SPECIFICATIONS: Readonly<Record<number, RatedSpecDefinition>> = {
-  62: { name: 'Arcane', role: 'Damage' }, 63: { name: 'Fire', role: 'Damage' }, 64: { name: 'Frost', role: 'Damage' },
-  65: { name: 'Holy', role: 'Healer' }, 66: { name: 'Protection', role: 'Tank' }, 70: { name: 'Retribution', role: 'Damage' },
-  71: { name: 'Arms', role: 'Damage' }, 72: { name: 'Fury', role: 'Damage' }, 73: { name: 'Protection', role: 'Tank' },
-  102: { name: 'Balance', role: 'Damage' }, 103: { name: 'Feral', role: 'Damage' }, 104: { name: 'Guardian', role: 'Tank' }, 105: { name: 'Restoration', role: 'Healer' },
-  250: { name: 'Blood', role: 'Tank' }, 251: { name: 'Frost', role: 'Damage' }, 252: { name: 'Unholy', role: 'Damage' },
-  253: { name: 'Beast Mastery', role: 'Damage' }, 254: { name: 'Marksmanship', role: 'Damage' }, 255: { name: 'Survival', role: 'Damage' },
-  256: { name: 'Discipline', role: 'Healer' }, 257: { name: 'Holy', role: 'Healer' }, 258: { name: 'Shadow', role: 'Damage' },
-  259: { name: 'Assassination', role: 'Damage' }, 260: { name: 'Outlaw', role: 'Damage' }, 261: { name: 'Subtlety', role: 'Damage' },
-  262: { name: 'Elemental', role: 'Damage' }, 263: { name: 'Enhancement', role: 'Damage' }, 264: { name: 'Restoration', role: 'Healer' },
-  265: { name: 'Affliction', role: 'Damage' }, 266: { name: 'Demonology', role: 'Damage' }, 267: { name: 'Destruction', role: 'Damage' },
-  268: { name: 'Brewmaster', role: 'Tank' }, 269: { name: 'Windwalker', role: 'Damage' }, 270: { name: 'Mistweaver', role: 'Healer' },
-  577: { name: 'Havoc', role: 'Damage' }, 581: { name: 'Vengeance', role: 'Tank' }
-};
+const RATED_ROLES: Readonly<Record<Role, RatedSpecDefinition['role']>> = { tank: 'Tank', healer: 'Healer', dps: 'Damage' };
 
 const OBJECTIVE_LABELS: Readonly<Record<string, ReadonlyArray<string>>> = {
   'Warsong Gulch': ['Flags captured', 'Flags returned'],
@@ -316,7 +299,10 @@ export function getObjectives(match: RatedBattlegroundMatch, member: RatedBattle
 }
 
 export function getSpec(specId: number): RatedSpecDefinition {
-  return SPECIFICATIONS[specId] ?? { name: specId > 0 ? `Spec ${specId}` : 'Unknown spec', role: 'Damage' };
+  const spec = specById(specId);
+  return spec
+    ? { name: spec.spec, role: RATED_ROLES[spec.role] }
+    : { name: specId > 0 ? `Spec ${specId}` : 'Unknown spec', role: 'Damage' };
 }
 
 export function getClassName(classId: number): string {

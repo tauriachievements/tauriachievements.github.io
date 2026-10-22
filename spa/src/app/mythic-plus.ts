@@ -1,8 +1,5 @@
-import { getClassIconPath } from '../utils/classIconHelper';
-import { getClassColor } from './class-colors';
-import { FilterDropdownOption } from './filter-dropdown.types';
+import { Role } from './wow';
 
-export type MythicPlusRole = 'tank' | 'healer' | 'dps';
 export type RunQuality = 'artifact' | 'legendary' | 'epic' | 'rare' | 'uncommon';
 
 export interface MythicPlusSeason {
@@ -39,7 +36,7 @@ export interface MythicPlusMember {
   race: number;
   gender: number;
   spec: string;
-  role: MythicPlusRole;
+  role: Role;
 }
 
 export interface MythicPlusRun {
@@ -58,7 +55,7 @@ export const MYTHIC_PLUS_DATA_DIR = 'mythic-plus-data';
 export interface MythicPlusSpecEntry {
   class: number;
   name: string;
-  role: MythicPlusRole;
+  role: Role;
 }
 
 export type MythicPlusPlayerEntry = [name: string, realm: string, guild: string, classId: number, race: number, gender: number];
@@ -160,31 +157,13 @@ export const UPGRADE_CUTOFFS: ReadonlyArray<UpgradeCutoff> = [
   { upgrades: 1, percent: 100 }
 ];
 
-export const ROLE_LABELS: Readonly<Record<MythicPlusRole, string>> = {
+export const ROLE_LABELS: Readonly<Record<Role, string>> = {
   tank: 'Tank',
   healer: 'Healer',
   dps: 'DPS'
 };
 
-const ROLE_ORDER: Readonly<Record<MythicPlusRole, number>> = { tank: 0, healer: 1, dps: 2 };
-
-export const CLASS_NAMES: Readonly<Record<number, string>> = {
-  1: 'Warrior', 2: 'Paladin', 3: 'Hunter', 4: 'Rogue',
-  5: 'Priest', 6: 'Death Knight', 7: 'Shaman', 8: 'Mage',
-  9: 'Warlock', 10: 'Monk', 11: 'Druid', 12: 'Demon Hunter'
-};
-
-export const CLASS_FILTER_OPTIONS: ReadonlyArray<FilterDropdownOption> = [
-  { value: undefined, label: 'All classes' },
-  ...Object.entries(CLASS_NAMES)
-    .sort(([, a], [, b]) => a.localeCompare(b))
-    .map(([id, name]) => ({
-      value: Number(id),
-      label: name,
-      icon: getClassIconPath(Number(id)),
-      color: getClassColor(Number(id))
-    }))
-];
+const ROLE_ORDER: Readonly<Record<Role, number>> = { tank: 0, healer: 1, dps: 2 };
 
 export function keystoneUpgrades(clearTimeSeconds: number, timerSeconds: number): number {
   if (!(clearTimeSeconds > 0) || !(timerSeconds > 0)) {

@@ -19,7 +19,6 @@ import { getLocalTimeZoneLabel } from '../utils/time-zone-label';
 import { BackToTopButtonComponent } from './back-to-top-button.component';
 import { injectCompactViewport } from './compact-viewport';
 import {
-  CLASS_NAMES,
   MYTHIC_PLUS_DATA_DIR,
   MythicPlusAffix,
   MythicPlusDungeonFile,
@@ -39,8 +38,7 @@ import {
   seasonScoreColors,
   sharesTables,
   upgradeStars,
-  ROLE_LABELS,
-  MythicPlusRole
+  ROLE_LABELS
 } from './mythic-plus';
 import { affixWeeks, countTicks, dungeonTimers, isTimed, localDay, weekIndexAt } from './mythic-plus-activity';
 import {
@@ -60,7 +58,6 @@ import {
 import { compareParam } from './mythic-plus-compare';
 import { guildLadderLink, guildOf, inGuild } from './mythic-plus-guild';
 import { MythicPlusRunsListComponent } from './mythic-plus-runs-list.component';
-import { specIconFor, specRoleFor } from './mythic-plus-stats';
 import {
   MYTHIC_PLUS_CARDS_PAGE_SIZE,
   MYTHIC_PLUS_CARDS_QUERY,
@@ -79,6 +76,8 @@ import { DataFileService } from './services/data-file.service';
 import { SpotlightDirective } from './spotlight.directive';
 import { TapTooltipDirective } from './tap-tooltip.directive';
 import { UpdateBarComponent } from './update-bar.component';
+import { CLASS_NAMES, Role } from './wow';
+import { specIconFor, specRoleFor } from './wow-specs';
 
 const TEAMMATE_COUNT = 8;
 const SEARCH_RESULT_COUNT = 20;
@@ -88,7 +87,7 @@ interface RankTile {
   label: string;
   link: string[];
   icon?: string;
-  role?: MythicPlusRole;
+  role?: Role;
   rank: number;
   total: number;
   top: string;

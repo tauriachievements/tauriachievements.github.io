@@ -6,10 +6,11 @@ import { getLocalTimeZoneLabel } from '../utils/time-zone-label';
 import { BackToTopButtonComponent } from './back-to-top-button.component';
 import { RaceBySpecComponent } from './race-by-spec.component';
 import { RaceSample } from './race-popularity';
-import { RaidDifficulty, RaidKillDetails, RaidLogsIndex, RaidRole, RoleFilter, defaultDifficulty, parseRoleFilter } from './raid-logs';
+import { RaidDifficulty, RaidKillDetails, RaidLogsIndex, RoleFilter, defaultDifficulty, parseRoleFilter } from './raid-logs';
 import { ChartView, RaidSpecPopularityChartComponent, parseChartView } from './raid-spec-popularity-chart.component';
 import { RaidLogsDataService } from './services/raid-logs-data.service';
 import { UpdateBarComponent } from './update-bar.component';
+import { Role } from './wow';
 
 @Component({
   selector: 'app-raid-logs-stats-page',
@@ -31,7 +32,7 @@ export class RaidLogsStatsPageComponent implements OnInit {
   readonly popularityKills = signal<readonly RaidKillDetails[]>([]);
   readonly popularityLoading = signal(false);
   readonly popularityError = signal<string | undefined>(undefined);
-  readonly raceRoles: readonly RaidRole[] = ['dps', 'tank', 'healer'];
+  readonly raceRoles: readonly Role[] = ['dps', 'tank', 'healer'];
   readonly rosterSlots = computed(() => this.popularityKills().flatMap(kill => kill.members.flatMap((member): RaceSample[] =>
     member.spec ? [{
       name: member.character.name,

@@ -5,6 +5,7 @@ import { getArmoryUrl } from '../utils/armory';
 import { BackToTopButtonComponent } from './back-to-top-button.component';
 import { DataFileService } from './services/data-file.service';
 import { getClassColor } from './class-colors';
+import { Realm } from './wow';
 
 interface RareItem {
   id: number;
@@ -27,7 +28,7 @@ interface RareItemsDataset {
   characters: ReadonlyArray<RareItemCharacter>;
 }
 
-type RealmFilter = 'all' | 'Evermoon' | 'Tauri' | 'WoD';
+type RealmFilter = 'all' | Realm;
 
 @Component({
   selector: 'app-rare-items-page',

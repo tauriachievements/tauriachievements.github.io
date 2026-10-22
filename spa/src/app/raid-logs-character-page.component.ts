@@ -9,7 +9,6 @@ import { getLocalTimeZoneLabel } from '../utils/time-zone-label';
 import { BackToTopButtonComponent } from './back-to-top-button.component';
 import { getClassColor } from './class-colors';
 import { GlideDirective } from './glide.directive';
-import { CLASS_NAMES } from './mythic-plus';
 import { RaidDifficultySwitchComponent } from './raid-difficulty-switch.component';
 import {
   ITEM_QUALITY_COLORS,
@@ -38,6 +37,7 @@ import {
 } from './raid-logs';
 import { RaidLogsDataService } from './services/raid-logs-data.service';
 import { UpdateBarComponent } from './update-bar.component';
+import { CLASS_NAMES } from './wow';
 
 interface Appearance {
   kill: RaidKillDetails;

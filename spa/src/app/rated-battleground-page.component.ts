@@ -9,9 +9,7 @@ import { FilterDropdownComponent } from './filter-dropdown.component';
 import { FilterDropdownValue } from './filter-dropdown.types';
 import {
   RatedBattlegroundMatch,
-  RatedBattlegroundMember,
   RatedLeaderboardMetric,
-  RatedMapSummary,
   RatedPlayerMatchHistoryEntry,
   RatedPlayerSummary,
   RatedTeamSummary,

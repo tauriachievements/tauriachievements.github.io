@@ -11,7 +11,6 @@ import { CountUpDirective } from './count-up.directive';
 import { GlideDirective } from './glide.directive';
 import { characterTransitionName } from './motion';
 import {
-  CLASS_NAMES,
   MYTHIC_PLUS_DATA_DIR,
   MythicPlusAffix,
   MythicPlusDungeonFile,
@@ -37,6 +36,7 @@ import { ScrollToEndDirective } from './scroll-to-end.directive';
 import { DataFileService } from './services/data-file.service';
 import { TapTooltipDirective } from './tap-tooltip.directive';
 import { UpdateBarComponent } from './update-bar.component';
+import { CLASS_NAMES } from './wow';
 
 const SEARCH_RESULT_COUNT = 8;
 const RECENT_DAYS = 7;

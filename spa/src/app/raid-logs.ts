@@ -1,6 +1,8 @@
 import { getClassColor } from './class-colors';
-import { CLASS_NAMES, formatClock } from './mythic-plus';
-import { LEGION_SPECS, SpecDefinition, compareSpecLists } from './mythic-plus-stats';
+import { formatClock } from './mythic-plus';
+import { compareSpecLists } from './mythic-plus-stats';
+import { CLASS_NAMES, Role } from './wow';
+import { LEGION_SPECS, SpecDefinition } from './wow-specs';
 
 export const RAID_LOGS_DATA_DIR = 'raid-log-data';
 
@@ -10,9 +12,8 @@ export const RAID_TALENT_TOOLTIPS_PATH = `${RAID_LOGS_DATA_DIR}/talent-tooltips.
 
 export const RAID_GENDERS_PATH = 'assets/data/raid-genders.json';
 
-export type RaidRole = 'tank' | 'healer' | 'dps';
 export type RaidMetric = 'dps' | 'hps';
-export type RoleFilter = RaidRole | 'all';
+export type RoleFilter = Role | 'all';
 
 export interface RaidDifficultyEntry {
   id: number;
@@ -32,7 +33,7 @@ export interface RaidSpecEntry {
   id: number;
   class: number;
   name: string;
-  role: RaidRole;
+  role: Role;
 }
 
 export type RaidGuildEntry = [name: string, realm: string, faction: number, id: number];
@@ -163,7 +164,7 @@ export interface RaidSpec {
   id: number;
   classId: number;
   name: string;
-  role: RaidRole;
+  role: Role;
   icon?: string;
 }
 
@@ -300,9 +301,8 @@ export function bossesInKillOrder<T extends Pick<RaidBoss, 'slug' | 'index'>>(bo
 
 export const FACTION_NAMES: Readonly<Record<number, string>> = { 0: 'Alliance', 1: 'Horde' };
 
-export const RAID_REALMS: ReadonlyArray<string> = ['Evermoon', 'Tauri', 'WoD'];
 
-export const ROLE_NAMES: Readonly<Record<RaidRole, string>> = { tank: 'Tank', healer: 'Healer', dps: 'Damage' };
+export const ROLE_NAMES: Readonly<Record<Role, string>> = { tank: 'Tank', healer: 'Healer', dps: 'Damage' };
 
 export const ITEM_QUALITY_COLORS: ReadonlyArray<string> = [
   '#9d9d9d', '#ffffff', '#1eff00', '#0070dd', '#a335ee', '#ff8000', '#e6cc80', '#00ccff'
@@ -503,7 +503,7 @@ export interface RankingFilter {
   classId?: number;
   specId?: number;
   realm?: string;
-  role?: RaidRole;
+  role?: Role;
 }
 
 export interface RankedPerformance {
@@ -797,7 +797,7 @@ export interface SpecPerformanceSummary {
 
 export function specPerformance(
   scores: ReadonlyMap<RaidSpec, readonly SpecCharacterScore[]>,
-  role?: RaidRole
+  role?: Role
 ): SpecPerformanceSummary {
   const bySpec = new Map([...scores].map(([spec, entries]) => [`${spec.classId}|${spec.name}`, entries]));
   const groups = new Map<number, { group: ClassPerformance; characters: Map<string, number> }>();

@@ -1,72 +1,14 @@
 import { getClassColor } from './class-colors';
-import { CLASS_NAMES, MythicPlusMember, MythicPlusRole } from './mythic-plus';
-
-export interface SpecDefinition {
-  classId: number;
-  spec: string;
-  role: MythicPlusRole;
-  icon?: string;
-}
-
-const specIcon = (name: string): string => `https://legion-static.tauri.hu/images/icons/large/${name}.png`;
-
-export const LEGION_SPECS: ReadonlyArray<SpecDefinition> = [
-  { classId: 1, spec: 'Arms', role: 'dps', icon: specIcon('ability_warrior_savageblow') },
-  { classId: 1, spec: 'Fury', role: 'dps', icon: specIcon('ability_warrior_innerrage') },
-  { classId: 1, spec: 'Protection', role: 'tank', icon: specIcon('ability_warrior_defensivestance') },
-  { classId: 2, spec: 'Holy', role: 'healer', icon: specIcon('spell_holy_holybolt') },
-  { classId: 2, spec: 'Protection', role: 'tank', icon: specIcon('ability_paladin_shieldofthetemplar') },
-  { classId: 2, spec: 'Retribution', role: 'dps', icon: specIcon('spell_holy_auraoflight') },
-  { classId: 3, spec: 'Beast Mastery', role: 'dps', icon: specIcon('ability_hunter_bestialdiscipline') },
-  { classId: 3, spec: 'Marksmanship', role: 'dps', icon: specIcon('ability_hunter_focusedaim') },
-  { classId: 3, spec: 'Survival', role: 'dps', icon: specIcon('ability_hunter_camouflage') },
-  { classId: 4, spec: 'Assassination', role: 'dps', icon: specIcon('ability_rogue_deadlybrew') },
-  { classId: 4, spec: 'Outlaw', role: 'dps', icon: specIcon('inv_sword_30') },
-  { classId: 4, spec: 'Subtlety', role: 'dps', icon: specIcon('ability_stealth') },
-  { classId: 5, spec: 'Discipline', role: 'healer', icon: specIcon('spell_holy_powerwordshield') },
-  { classId: 5, spec: 'Holy', role: 'healer', icon: specIcon('spell_holy_guardianspirit') },
-  { classId: 5, spec: 'Shadow', role: 'dps', icon: specIcon('spell_shadow_shadowwordpain') },
-  { classId: 6, spec: 'Blood', role: 'tank', icon: specIcon('spell_deathknight_bloodpresence') },
-  { classId: 6, spec: 'Frost', role: 'dps', icon: specIcon('spell_deathknight_frostpresence') },
-  { classId: 6, spec: 'Unholy', role: 'dps', icon: specIcon('spell_deathknight_unholypresence') },
-  { classId: 7, spec: 'Elemental', role: 'dps', icon: specIcon('spell_nature_lightning') },
-  { classId: 7, spec: 'Enhancement', role: 'dps', icon: specIcon('spell_shaman_improvedstormstrike') },
-  { classId: 7, spec: 'Restoration', role: 'healer', icon: specIcon('spell_nature_magicimmunity') },
-  { classId: 8, spec: 'Arcane', role: 'dps', icon: specIcon('spell_holy_magicalsentry') },
-  { classId: 8, spec: 'Fire', role: 'dps', icon: specIcon('spell_fire_firebolt02') },
-  { classId: 8, spec: 'Frost', role: 'dps', icon: specIcon('spell_frost_frostbolt02') },
-  { classId: 9, spec: 'Affliction', role: 'dps', icon: specIcon('spell_shadow_deathcoil') },
-  { classId: 9, spec: 'Demonology', role: 'dps', icon: specIcon('spell_shadow_metamorphosis') },
-  { classId: 9, spec: 'Destruction', role: 'dps', icon: specIcon('spell_shadow_rainoffire') },
-  { classId: 10, spec: 'Brewmaster', role: 'tank', icon: specIcon('spell_monk_brewmaster_spec') },
-  { classId: 10, spec: 'Mistweaver', role: 'healer', icon: specIcon('spell_monk_mistweaver_spec') },
-  { classId: 10, spec: 'Windwalker', role: 'dps', icon: specIcon('spell_monk_windwalker_spec') },
-  { classId: 11, spec: 'Balance', role: 'dps', icon: specIcon('spell_nature_starfall') },
-  { classId: 11, spec: 'Feral', role: 'dps', icon: specIcon('ability_druid_catform') },
-  { classId: 11, spec: 'Guardian', role: 'tank', icon: specIcon('ability_racial_bearform') },
-  { classId: 11, spec: 'Restoration', role: 'healer', icon: specIcon('spell_nature_healingtouch') },
-  { classId: 12, spec: 'Havoc', role: 'dps', icon: specIcon('ability_demonhunter_specdps') },
-  { classId: 12, spec: 'Vengeance', role: 'tank', icon: specIcon('ability_demonhunter_spectank') }
-];
+import { MythicPlusMember } from './mythic-plus';
+import { CLASS_NAMES, Role } from './wow';
+import { LEGION_SPECS, SpecDefinition, specFor } from './wow-specs';
 
 const specKey = (classId: number, spec: string): string => `${classId}:${spec}`;
-const KNOWN_SPEC_KEYS = new Set(LEGION_SPECS.map(definition => specKey(definition.classId, definition.spec)));
-const SPEC_ICONS = new Map(LEGION_SPECS.map(definition => [specKey(definition.classId, definition.spec), definition.icon]));
-
-export function specIconFor(classId: number, spec: string): string | undefined {
-  return SPEC_ICONS.get(specKey(classId, spec));
-}
-
-const SPEC_ROLES = new Map(LEGION_SPECS.map(definition => [specKey(definition.classId, definition.spec), definition.role]));
-
-export function specRoleFor(classId: number, spec: string): MythicPlusRole | undefined {
-  return SPEC_ROLES.get(specKey(classId, spec));
-}
 
 type PopularityMember = Pick<MythicPlusMember, 'name' | 'realm' | 'class' | 'spec' | 'role'>;
 
 export interface SpecPopularityOptions {
-  role?: MythicPlusRole;
+  role?: Role;
   uniqueCharacters?: boolean;
 }
 
@@ -117,7 +59,7 @@ export function specPopularity(
       counts.set(key, (counts.get(key) ?? 0) + 1);
       total++;
 
-      if (!KNOWN_SPEC_KEYS.has(key) && !unlistedSpecs.has(key)) {
+      if (!specFor(member.class, member.spec) && !unlistedSpecs.has(key)) {
         unlistedSpecs.set(key, { classId: member.class, spec: member.spec, role: member.role });
       }
     }

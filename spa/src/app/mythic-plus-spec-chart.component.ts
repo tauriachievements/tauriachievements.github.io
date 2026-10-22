@@ -1,15 +1,16 @@
 import { ChangeDetectionStrategy, Component, computed, input, output, signal } from '@angular/core';
 import { getClassIconPath } from '../utils/classIconHelper';
 import { injectCompactViewport } from './compact-viewport';
-import { MythicPlusRole, MythicPlusRun } from './mythic-plus';
+import { MythicPlusRun } from './mythic-plus';
 import { ClassShare, SpecShare, formatShare, shareTicks, specPopularity } from './mythic-plus-stats';
 import { FlipDirective } from './flip.directive';
 import { GlideDirective } from './glide.directive';
 import { MYTHIC_PLUS_CARDS_QUERY } from './mythic-plus-views';
 import { RevealDirective } from './reveal.directive';
 import { TapTooltipDirective } from './tap-tooltip.directive';
+import { Role } from './wow';
 
-type RoleFilter = MythicPlusRole | 'all';
+type RoleFilter = Role | 'all';
 type CountMode = 'runs' | 'characters';
 
 interface SpecBar extends SpecShare {

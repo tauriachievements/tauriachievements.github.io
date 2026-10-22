@@ -1,8 +1,8 @@
 import { describe, it, expect } from 'vitest';
-import { MythicPlusRole } from './mythic-plus';
 import { RaceSample, racesBySpec } from './race-popularity';
+import { Role } from './wow';
 
-const sample = (name: string, classId: number, spec: string, race: number, role: MythicPlusRole = 'dps'): RaceSample =>
+const sample = (name: string, classId: number, spec: string, race: number, role: Role = 'dps'): RaceSample =>
   ({ name, realm: 'Evermoon', class: classId, spec, role, race });
 
 const fire = (name: string, race: number) => sample(name, 8, 'Fire', race);

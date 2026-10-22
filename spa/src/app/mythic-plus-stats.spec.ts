@@ -1,8 +1,8 @@
 import { describe, it, expect } from 'vitest';
-import { MythicPlusRole } from './mythic-plus';
-import { formatShare, shareTicks, specIconFor, specPopularity } from './mythic-plus-stats';
+import { formatShare, shareTicks, specPopularity } from './mythic-plus-stats';
+import { Role } from './wow';
 
-const member = (name: string, classId: number, spec: string, role: MythicPlusRole) =>
+const member = (name: string, classId: number, spec: string, role: Role) =>
   ({ name, realm: 'Evermoon', class: classId, spec, role });
 
 const runs = [
@@ -123,17 +123,5 @@ describe('formatShare', () => {
     expect(formatShare(0.064)).toBe('6.4%');
     expect(formatShare(0)).toBe('0.0%');
     expect(formatShare(1)).toBe('100.0%');
-  });
-});
-
-describe('specIconFor', () => {
-  it('looks the icon up by class and spec, so same-named specs stay distinct', () => {
-    expect(specIconFor(6, 'Blood')).toContain('spell_deathknight_bloodpresence');
-    expect(specIconFor(2, 'Holy')).toContain('spell_holy_holybolt');
-    expect(specIconFor(5, 'Holy')).toContain('spell_holy_guardianspirit');
-  });
-
-  it('returns nothing for a spec it does not know', () => {
-    expect(specIconFor(6, 'Frostfire')).toBeUndefined();
   });
 });

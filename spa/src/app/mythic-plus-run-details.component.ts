@@ -2,7 +2,7 @@ import { DatePipe } from '@angular/common';
 import { ChangeDetectionStrategy, Component, input } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { ROLE_LABELS, UPGRADE_CUTOFFS } from './mythic-plus';
-import { MemberView, RunView } from './mythic-plus-views';
+import { RunView } from './mythic-plus-views';
 
 @Component({
   selector: 'app-mythic-plus-run-details',

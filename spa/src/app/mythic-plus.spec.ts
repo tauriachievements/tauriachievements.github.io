@@ -1,6 +1,5 @@
 import { describe, it, expect } from 'vitest';
 import {
-  CLASS_FILTER_OPTIONS,
   runScoreColor,
   scoreColor,
   scoreTiers,
@@ -24,6 +23,7 @@ import {
   upgradeCutoffs,
   upgradeStars
 } from './mythic-plus';
+import { CLASS_FILTER_OPTIONS } from './wow';
 
 describe('upgradeStars', () => {
   it('draws one star per upgrade and none for a depleted key', () => {

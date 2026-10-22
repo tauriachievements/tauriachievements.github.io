@@ -2,10 +2,10 @@ import { DecimalPipe } from '@angular/common';
 import { ChangeDetectionStrategy, Component, computed, input, signal } from '@angular/core';
 import { getRaceIconPath } from '../utils/raceIconHelper';
 import { GlideDirective } from './glide.directive';
-import { MythicPlusRole } from './mythic-plus';
 import { RaceFactionFilter, RaceSample, RaceShare, racesBySpec } from './race-popularity';
 import { RevealDirective } from './reveal.directive';
 import { TapTooltipDirective } from './tap-tooltip.directive';
+import { Role } from './wow';
 
 interface RaceView extends RaceShare {
   icon: string;
@@ -36,7 +36,7 @@ const SHOWN_RACES = 3;
 
 const shareLabel = (share: number): string => `${Math.round(share * 100)}%`;
 
-const ROLE_TITLES: Readonly<Record<MythicPlusRole, string>> = { dps: 'DPS', tank: 'tank', healer: 'healer' };
+const ROLE_TITLES: Readonly<Record<Role, string>> = { dps: 'DPS', tank: 'tank', healer: 'healer' };
 
 @Component({
   selector: 'app-race-by-spec',
@@ -47,7 +47,7 @@ const ROLE_TITLES: Readonly<Record<MythicPlusRole, string>> = { dps: 'DPS', tank
 })
 export class RaceBySpecComponent {
   readonly samples = input.required<readonly RaceSample[]>();
-  readonly role = input.required<MythicPlusRole>();
+  readonly role = input.required<Role>();
   readonly context = input.required<string>();
   readonly loading = input(false);
 

@@ -10,7 +10,6 @@ import {
   MythicPlusAffix,
   MythicPlusDungeonFile,
   MythicPlusIndex,
-  MythicPlusRole,
   MythicPlusRun,
   NEWER_DATA_MESSAGE,
   createRunDecoder,
@@ -46,6 +45,7 @@ import { ScrollToEndDirective } from './scroll-to-end.directive';
 import { DataFileService } from './services/data-file.service';
 import { TapTooltipDirective } from './tap-tooltip.directive';
 import { UpdateBarComponent } from './update-bar.component';
+import { Role } from './wow';
 
 type StatsPeriod = 'season' | 'week';
 type DaySplit = 'level' | 'result';
@@ -161,7 +161,7 @@ export class MythicPlusStatsPageComponent implements OnInit {
     return since === undefined ? runs : runs.filter(run => Date.parse(run.completedAt) >= since);
   });
 
-  readonly raceRoles: readonly MythicPlusRole[] = ['dps', 'tank', 'healer'];
+  readonly raceRoles: readonly Role[] = ['dps', 'tank', 'healer'];
   readonly rosterSlots = computed(() => this.runs().flatMap(run => run.roster));
 
   readonly summary = computed(() => {

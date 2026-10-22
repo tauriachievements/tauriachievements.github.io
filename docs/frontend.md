@@ -134,7 +134,9 @@ decision (ask first).
 | `app-update-bar` (`update-bar.component`) | the site header; every page renders it. `lastEditedLabel` / `lastEdited` set the timestamp on the right |
 | `nav-sections.ts` | the header's sections and pages, and route matching for deep routes (`includes`) |
 | `app-filter-dropdown` + `filter-dropdown.types.ts` | every dropdown filter. The page must list `FilterDropdownCoordinatorService` in its own `providers`, or it fails with NG0201. Pass `widthLabels` (every label it can ever show) to keep the trigger as wide as the longest one, so picking never cuts a name short or moves the toolbar; its container must then size to its content |
-| `CLASS_FILTER_OPTIONS` (`mythic-plus.ts`) | a class dropdown's options: "All classes", then every class A–Z with its icon and colour. Filter it when a page offers fewer classes (the raid leaderboard on HPS) |
+| `wow.ts` | the game's tables: `CLASS_NAMES`, `CLASSES_BY_NAME` (A–Z), `RACE_NAMES` (the three Pandaren ids all read "Pandaren"), `REALMS` and the `Realm` and `Role` types. Never copy one of them into a page |
+| `CLASS_FILTER_OPTIONS` (`wow.ts`) | a class dropdown's options: "All classes", then every class A–Z with its icon and colour. Filter it when a page offers fewer classes (the raid leaderboard on HPS) |
+| `wow-specs.ts` | every Legion spec in the game's order with its id, class, role and icon (`LEGION_SPECS`), and `specFor`, `specById`, `specIconFor`, `specRoleFor`. It's apart from `wow.ts` so the ladder, which loads up front, doesn't carry it |
 | `app-mobile-filter-toggle` | folds a page's filters behind one button on phones |
 | `injectCompactViewport()` (`compact-viewport.ts`) | a signal that's true on phone-sized screens (`(max-width: 640px)`, or a wider query you pass) |
 | `appTapTooltip` | makes a hover tooltip open on tap on touch screens |
@@ -145,7 +147,7 @@ decision (ask first).
 | `class-colors.ts` | the one class-colour table: `getClassColor()` in code, `var(--class-<id>)` in SCSS |
 | `utils/armory.ts` | `getArmoryUrl()` for every armory link |
 | `utils/time-zone-label.ts` | the "GMT+2"-style label beside local times |
-| `raid-logs.ts` helpers | `nameMatches`, `realmSlug`, `RAID_REALMS` for name search and realm URLs; `parseRoleFilter` for `?role=` (`tank`, `healer`, `dps`); `bossShortName` (a boss's `shortName`) for tiles, table cells and other tight spots: the name up to its first comma, or a shorter name from `BOSS_SHORT_NAMES` ("Elerethe", "Dragons"). A long boss name in a new raid gets an entry there |
+| `raid-logs.ts` helpers | `nameMatches` and `realmSlug` for name search and realm URLs; `parseRoleFilter` for `?role=` (`tank`, `healer`, `dps`); `bossShortName` (a boss's `shortName`) for tiles, table cells and other tight spots: the name up to its first comma, or a shorter name from `BOSS_SHORT_NAMES` ("Elerethe", "Dragons"). A long boss name in a new raid gets an entry there |
 | `_mythic-plus-shared.scss` | mixins such as `tooltip-box`, `quality-colors`, `visually-hidden`, `motion-safe`, `glide-pill`, `table-scroll`, `details-reveal` ([motion](motion-and-rendering.md)). `crest-glow` needs `isolation: isolate` on the crest's parent, so the glow sits under the crest and above the parent's background. `spotlight-card` takes the card's `::before` and `::after` |
 | `_raid-logs-shared.scss` | forwards the M+ mixins, and adds `raid-table`, `ranking-toolbar`, `filter-reset`, `pager`, `difficulty-switch`, and `segmented-switch` (the difficulty switch's pill look, for any other switch beside it) |
 | `.tap-area` (global) | an empty span inside a small link that grows its tap target |

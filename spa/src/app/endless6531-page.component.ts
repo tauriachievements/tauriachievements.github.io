@@ -31,6 +31,7 @@ import { getClassColor } from './class-colors';
 import { injectCompactViewport } from './compact-viewport';
 import { MobileFilterToggleComponent } from './mobile-filter-toggle.component';
 import { TapTooltipDirective } from './tap-tooltip.directive';
+import { CLASS_NAMES } from './wow';
 
 const MOBILE_ROSTER_PAGE_SIZE = 25;
 
@@ -90,12 +91,6 @@ interface ClassCountEntry {
 }
 
 type CombatRole = 'Tank' | 'Heal' | 'Ranged' | 'Melee';
-
-const CLASS_NAMES: Readonly<Record<number, string>> = {
-  1: 'Warrior', 2: 'Paladin', 3: 'Hunter', 4: 'Rogue',
-  5: 'Priest', 6: 'Death Knight', 7: 'Shaman', 8: 'Mage',
-  9: 'Warlock', 10: 'Monk', 11: 'Druid', 12: 'Demon Hunter'
-};
 
 const LEGACY_GUILD_RANK_ORDER = [
   'Guild Master',

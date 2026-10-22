@@ -4,7 +4,7 @@ import { getGuildArmoryUrl, getArmoryUrl } from '../utils/armory';
 import { getClassIconPath } from '../utils/classIconHelper';
 import { formatCharacterAge } from './character-age';
 import { formatPlayedTime, formatSignedPlayedTime } from './played-time';
-import { HighlightPart, LadderPlayerView, LadderSort } from './ladder.types';
+import { LadderPlayerView, LadderSort } from './ladder.types';
 import { COMPACT_VIEWPORT_QUERY } from './compact-viewport';
 
 export interface PlayerDetailMetric {

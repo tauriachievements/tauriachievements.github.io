@@ -11,14 +11,12 @@ import { FilterDropdownCoordinatorService } from './filter-dropdown-coordinator.
 import { FilterDropdownValue } from './filter-dropdown.types';
 import { GlideDirective } from './glide.directive';
 import { IconTipsComponent } from './icon-tips.component';
-import { CLASS_FILTER_OPTIONS, CLASS_NAMES } from './mythic-plus';
 import { RaidDifficultySwitchComponent } from './raid-difficulty-switch.component';
 import {
   RaidBoss,
   RaidDifficulty,
   RaidKillDetails,
   RaidLogsIndex,
-  RaidRole,
   RaidTalent,
   RaidTalentTable,
   RaidTalentTooltips,
@@ -63,6 +61,7 @@ import {
 } from './raid-talents';
 import { RaidLogsDataService } from './services/raid-logs-data.service';
 import { UpdateBarComponent } from './update-bar.component';
+import { CLASS_FILTER_OPTIONS, CLASS_NAMES, Role } from './wow';
 
 const SHOWN_BUILDS = 10;
 
@@ -74,7 +73,7 @@ const EDGE_POINTS = .05;
 
 const SPEC_COLUMNS = 3;
 
-const ROLE_GROUPS: ReadonlyArray<{ role: RaidRole; title: string; noun: string }> = [
+const ROLE_GROUPS: ReadonlyArray<{ role: Role; title: string; noun: string }> = [
   { role: 'dps', title: 'Damage', noun: 'damage' },
   { role: 'tank', title: 'Tanks', noun: 'tank' },
   { role: 'healer', title: 'Healers', noun: 'healer' }

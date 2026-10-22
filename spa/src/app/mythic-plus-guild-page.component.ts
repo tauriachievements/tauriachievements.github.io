@@ -23,15 +23,11 @@ import { FilterDropdownOption, FilterDropdownValue } from './filter-dropdown.typ
 import { GlideDirective } from './glide.directive';
 import { MobileFilterToggleComponent } from './mobile-filter-toggle.component';
 import {
-  CLASS_FILTER_OPTIONS,
-  CLASS_NAMES,
   MYTHIC_PLUS_DATA_DIR,
   MythicPlusAffix,
-  MythicPlusDungeon,
   MythicPlusDungeonFile,
   MythicPlusIndex,
   MythicPlusMember,
-  MythicPlusRole,
   MythicPlusRun,
   MythicPlusStandingEntry,
   NEWER_DATA_MESSAGE,
@@ -66,7 +62,6 @@ import {
   parseCharacterParam,
   realmSlug
 } from './mythic-plus-profile';
-import { LEGION_SPECS } from './mythic-plus-stats';
 import {
   MYTHIC_PLUS_CARDS_PAGE_SIZE,
   MYTHIC_PLUS_CARDS_QUERY,
@@ -78,6 +73,8 @@ import {
 import { MythicPlusWeekAffixesComponent } from './mythic-plus-week-affixes.component';
 import { DataFileService } from './services/data-file.service';
 import { UpdateBarComponent } from './update-bar.component';
+import { CLASS_FILTER_OPTIONS, CLASS_NAMES, Role } from './wow';
+import { LEGION_SPECS } from './wow-specs';
 
 type LadderPeriod = 'season' | 'week';
 
@@ -91,7 +88,7 @@ interface SummaryTile {
 
 const TOP_OVERALL = 100;
 
-function parseRole(value: string | null): MythicPlusRole | undefined {
+function parseRole(value: string | null): Role | undefined {
   return value === 'tank' || value === 'healer' || value === 'dps' ? value : undefined;
 }
 
@@ -148,14 +145,14 @@ export class MythicPlusGuildPageComponent implements OnInit {
   private readonly query = this.route.snapshot.queryParamMap;
   readonly period = signal<LadderPeriod>(this.query.get('period') === 'week' ? 'week' : 'season');
   readonly selectedDungeonId = signal<string | undefined>(this.query.get('dungeon') ?? undefined);
-  readonly roleFilter = signal<MythicPlusRole | undefined>(parseRole(this.query.get('role')));
+  readonly roleFilter = signal<Role | undefined>(parseRole(this.query.get('role')));
   readonly classFilter = signal<number | undefined>(this.roleFilter() ? undefined : parseClass(this.query.get('class')));
   readonly specFilter = signal<string | undefined>(parseSpec(this.classFilter(), this.query.get('spec')));
   readonly search = signal('');
   private readonly highlightParam = signal(parseCharacterParam(this.query.get('character')));
   private readonly limit = signal(this.pageSize());
 
-  readonly roles: readonly MythicPlusRole[] = ['tank', 'healer', 'dps'];
+  readonly roles: readonly Role[] = ['tank', 'healer', 'dps'];
   readonly roleLabels = ROLE_LABELS;
 
   readonly classOptions = CLASS_FILTER_OPTIONS;
@@ -425,7 +422,7 @@ export class MythicPlusGuildPageComponent implements OnInit {
     this.resetRows();
   }
 
-  setRole(role: MythicPlusRole): void {
+  setRole(role: Role): void {
     if (role === this.roleFilter()) {
       return;
     }

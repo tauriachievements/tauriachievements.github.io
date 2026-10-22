@@ -3,7 +3,7 @@ import { ChangeDetectionStrategy, Component, computed, input, model, output } fr
 import { getClassIconPath } from '../utils/classIconHelper';
 import { FlipDirective } from './flip.directive';
 import { GlideDirective } from './glide.directive';
-import { SpecDefinition, formatShare, shareTicks, specPopularity } from './mythic-plus-stats';
+import { formatShare, shareTicks, specPopularity } from './mythic-plus-stats';
 import {
   RaidBoss,
   RaidDifficulty,
@@ -18,6 +18,7 @@ import {
 } from './raid-logs';
 import { RevealDirective } from './reveal.directive';
 import { TapTooltipDirective } from './tap-tooltip.directive';
+import { SpecDefinition } from './wow-specs';
 
 interface SpecBar extends SpecDefinition {
   count: number;

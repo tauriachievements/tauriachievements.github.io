@@ -4,7 +4,6 @@ import { getClassIconPath } from '../utils/classIconHelper';
 import { getRaceIconPath } from '../utils/raceIconHelper';
 import { getClassColor } from './class-colors';
 import {
-  CLASS_NAMES,
   MythicPlusAffix,
   MythicPlusDungeon,
   MythicPlusMember,
@@ -20,7 +19,8 @@ import {
 } from './mythic-plus';
 import { guildLadderLink, guildOf } from './mythic-plus-guild';
 import { characterProfileLink } from './mythic-plus-profile';
-import { specIconFor } from './mythic-plus-stats';
+import { CLASS_NAMES } from './wow';
+import { specIconFor } from './wow-specs';
 
 export const MYTHIC_PLUS_CARDS_QUERY = '(max-width: 900px)';
 

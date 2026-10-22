@@ -1,14 +1,7 @@
 import { getClassColor } from './class-colors';
-import { CLASS_NAMES, MythicPlusRole } from './mythic-plus';
-import { LEGION_SPECS } from './mythic-plus-stats';
 import { raceFaction } from './raid-logs';
-
-const RACE_NAMES: Readonly<Record<number, string>> = {
-  1: 'Human', 2: 'Orc', 3: 'Dwarf', 4: 'Night Elf',
-  5: 'Undead', 6: 'Tauren', 7: 'Gnome', 8: 'Troll',
-  9: 'Goblin', 10: 'Blood Elf', 11: 'Draenei', 22: 'Worgen',
-  24: 'Pandaren', 25: 'Pandaren', 26: 'Pandaren'
-};
+import { CLASS_NAMES, RACE_NAMES, Role } from './wow';
+import { LEGION_SPECS } from './wow-specs';
 
 const PANDAREN = 24;
 const canonicalRace = (race: number): number => race === 25 || race === 26 ? PANDAREN : race;
@@ -20,7 +13,7 @@ export interface RaceSample {
   realm: string;
   class: number;
   spec: string;
-  role: MythicPlusRole;
+  role: Role;
   race: number;
 }
 
@@ -50,7 +43,7 @@ const FACTION_IDS: Readonly<Record<Exclude<RaceFactionFilter, 'all'>, number>> =
 
 export function racesBySpec(
   samples: Iterable<RaceSample>,
-  role: MythicPlusRole,
+  role: Role,
   faction: RaceFactionFilter = 'all'
 ): RacesBySpec {
   const factionId = faction === 'all' ? undefined : FACTION_IDS[faction];

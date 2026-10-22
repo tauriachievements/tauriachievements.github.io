@@ -12,7 +12,6 @@ import { FilterDropdownCoordinatorService } from './filter-dropdown-coordinator.
 import { FilterDropdownOption, FilterDropdownValue } from './filter-dropdown.types';
 import { GlideDirective } from './glide.directive';
 import { IconTipsComponent } from './icon-tips.component';
-import { CLASS_FILTER_OPTIONS } from './mythic-plus';
 import { RaidDifficultySwitchComponent } from './raid-difficulty-switch.component';
 import {
   ITEM_QUALITY_COLORS,
@@ -50,6 +49,7 @@ import {
 } from './raid-logs';
 import { RaidLogsDataService } from './services/raid-logs-data.service';
 import { UpdateBarComponent } from './update-bar.component';
+import { CLASS_FILTER_OPTIONS, REALMS } from './wow';
 
 type BossTab = 'dps' | 'hps' | 'fastest' | 'latest';
 
@@ -60,7 +60,6 @@ const TABS: ReadonlyArray<{ id: BossTab; label: string }> = [
   { id: 'latest', label: 'Latest kills' }
 ];
 
-const REALMS: ReadonlyArray<string> = ['Evermoon', 'Tauri', 'WoD'];
 
 interface KillRow {
   rank: number;

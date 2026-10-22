@@ -35,31 +35,21 @@ import {
 } from './services/server-stats.service';
 import { BackToTopButtonComponent } from './back-to-top-button.component';
 import { UpdateBarComponent } from './update-bar.component';
+import { CLASS_NAMES, RACE_NAMES, REALMS, Realm } from './wow';
 
 Chart.register(BarController, BarElement, CategoryScale, LinearScale, DoughnutController, ArcElement, Tooltip, Legend);
 Chart.defaults.color = '#9fa6b4';
 Chart.defaults.font.family = "'Arial', sans-serif";
 
-const CLASS_NAMES: Record<number, string> = {
-  1: 'Warrior', 2: 'Paladin', 3: 'Hunter', 4: 'Rogue',
-  5: 'Priest', 6: 'Death Knight', 7: 'Shaman', 8: 'Mage',
-  9: 'Warlock', 10: 'Monk', 11: 'Druid', 12: 'Demon Hunter'
-};
-
-const RACE_NAMES: Record<number, string> = {
-  1: 'Human', 2: 'Orc', 3: 'Dwarf', 4: 'Night Elf',
-  5: 'Undead', 6: 'Tauren', 7: 'Gnome', 8: 'Troll',
-  9: 'Goblin', 10: 'Blood Elf', 11: 'Draenei', 22: 'Worgen',
-  24: 'Pandaren', 25: 'Pandaren (H)', 26: 'Pandaren (A)'
-};
+const PANDAREN_FACTION_LABELS: Readonly<Record<number, string>> = { 25: 'Pandaren (H)', 26: 'Pandaren (A)' };
 
 const UNKNOWN_CLASS_COLOR = '#888';
 
-const STATS_REALM_OPTIONS = ['All realms', 'Evermoon', 'Tauri', 'WoD'] as const;
+export type StatsRealmFilter = 'All realms' | Realm;
+
+const STATS_REALM_OPTIONS: ReadonlyArray<StatsRealmFilter> = ['All realms', ...REALMS];
 const STATS_LEVEL_OPTIONS = ['110', '100', '90', '80', 'All levels'] as const;
 const DEFAULT_STATS_LEVEL = '110' as const;
-
-export type StatsRealmFilter = typeof STATS_REALM_OPTIONS[number];
 export type StatsLevelFilter = typeof STATS_LEVEL_OPTIONS[number];
 
 export interface ServerStats {
@@ -101,7 +91,7 @@ export function toServerStats(snapshot: ServerStatsSnapshot): ServerStats {
     classLabels: snapshot.classes.map((entry) => CLASS_NAMES[entry.id] ?? `Class ${entry.id}`),
     classCounts: snapshot.classes.map((entry) => entry.count),
     classColors: snapshot.classes.map((entry) => getClassColor(entry.id) ?? UNKNOWN_CLASS_COLOR),
-    raceLabels: snapshot.races.map((entry) => RACE_NAMES[entry.id] ?? `Race ${entry.id}`),
+    raceLabels: snapshot.races.map((entry) => PANDAREN_FACTION_LABELS[entry.id] ?? RACE_NAMES[entry.id] ?? `Race ${entry.id}`),
     raceCounts: snapshot.races.map((entry) => entry.count),
     guildLabels: snapshot.guilds.map((guild) => guild.name),
     guildCounts: snapshot.guilds.map((guild) => guild.count),

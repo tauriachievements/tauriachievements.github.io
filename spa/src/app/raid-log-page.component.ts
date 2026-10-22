@@ -16,7 +16,6 @@ import {
   RaidLogsIndex,
   RaidMember,
   ROLE_NAMES,
-  RaidRole,
   characterKey,
   formatAmount,
   formatFightTime,
@@ -31,6 +30,7 @@ import {
 import { RevealDirective } from './reveal.directive';
 import { RaidLogsDataService } from './services/raid-logs-data.service';
 import { UpdateBarComponent } from './update-bar.component';
+import { Role } from './wow';
 
 type LogMetric = 'damage' | 'healing' | 'taken';
 
@@ -40,7 +40,7 @@ const METRICS: ReadonlyArray<{ id: LogMetric; label: string }> = [
   { id: 'taken', label: 'Damage taken' }
 ];
 
-const ROLE_ORDER: ReadonlyArray<RaidRole> = ['tank', 'healer', 'dps'];
+const ROLE_ORDER: ReadonlyArray<Role> = ['tank', 'healer', 'dps'];
 
 interface MemberRow {
   member: RaidMember;

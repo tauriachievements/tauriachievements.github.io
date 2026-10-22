@@ -16,15 +16,11 @@ import { getLocalTimeZoneLabel } from '../utils/time-zone-label';
 import { BackToTopButtonComponent } from './back-to-top-button.component';
 import { injectCompactViewport } from './compact-viewport';
 import {
-  CLASS_FILTER_OPTIONS,
-  CLASS_NAMES,
   MYTHIC_PLUS_DATA_DIR,
   MythicPlusAffix,
-  MythicPlusDungeon,
   MythicPlusDungeonFile,
   MythicPlusIndex,
   MythicPlusMember,
-  MythicPlusRole,
   MythicPlusRun,
   NEWER_DATA_MESSAGE,
   ROLE_LABELS,
@@ -52,7 +48,6 @@ import { COMPARE_LIMIT, compareParam, parseCompareParam } from './mythic-plus-co
 import { characterParam, characterProfileLink, findCharacters, parseCharacterParam, realmSlug } from './mythic-plus-profile';
 import { MythicPlusRunsListComponent } from './mythic-plus-runs-list.component';
 import { MythicPlusSpecChartComponent } from './mythic-plus-spec-chart.component';
-import { LEGION_SPECS } from './mythic-plus-stats';
 import {
   MYTHIC_PLUS_CARDS_PAGE_SIZE,
   MYTHIC_PLUS_CARDS_QUERY,
@@ -73,6 +68,8 @@ import { DataFileService } from './services/data-file.service';
 import { getClassColor } from './class-colors';
 import { GlideDirective } from './glide.directive';
 import { characterTransitionName } from './motion';
+import { CLASS_FILTER_OPTIONS, CLASS_NAMES, Role } from './wow';
+import { LEGION_SPECS } from './wow-specs';
 
 interface RankedRun {
   run: MythicPlusRun;
@@ -106,7 +103,7 @@ function parsePage(value: string | null): number {
   return Number.isInteger(page) && page > 0 ? page : 1;
 }
 
-function parseRoleFilter(value: string | null): MythicPlusRole | undefined {
+function parseRoleFilter(value: string | null): Role | undefined {
   return value === 'tank' || value === 'healer' || value === 'dps' ? value : undefined;
 }
 
@@ -172,9 +169,9 @@ export class MythicPlusPageComponent implements OnInit {
   readonly classFilter = signal<number | undefined>(parseClassFilter(this.route.snapshot.queryParamMap.get('class')));
   readonly specFilter = signal<string | undefined>(
     parseSpecFilter(this.classFilter(), this.route.snapshot.queryParamMap.get('spec')));
-  readonly roleFilter = signal<MythicPlusRole | undefined>(
+  readonly roleFilter = signal<Role | undefined>(
     this.view() === 'players' ? parseRoleFilter(this.route.snapshot.queryParamMap.get('role')) : undefined);
-  readonly roles: readonly MythicPlusRole[] = ['tank', 'healer', 'dps'];
+  readonly roles: readonly Role[] = ['tank', 'healer', 'dps'];
   readonly roleLabels = ROLE_LABELS;
   readonly period = signal<LeaderboardPeriod>(
     this.route.snapshot.queryParamMap.get('period') === 'week' ? 'week' : 'season');
@@ -633,7 +630,7 @@ export class MythicPlusPageComponent implements OnInit {
     this.syncQueryParams();
   }
 
-  setRole(role: MythicPlusRole): void {
+  setRole(role: Role): void {
     if (role === this.roleFilter()) {
       return;
     }

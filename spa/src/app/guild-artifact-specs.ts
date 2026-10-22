@@ -1,5 +1,5 @@
 import { GuildAnalysisPlayer } from './guild-analysis';
-import { LEGION_SPECS } from './mythic-plus-stats';
+import { LEGION_SPECS } from './wow-specs';
 
 export interface ArtifactSpecTraits {
   spec: string;

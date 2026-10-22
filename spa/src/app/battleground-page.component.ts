@@ -3,10 +3,7 @@ import { ChangeDetectionStrategy, Component, HostListener, OnInit, computed, inj
 import { catchError, of } from 'rxjs';
 import { BackToTopButtonComponent } from './back-to-top-button.component';
 import {
-  BattlegroundDayGroup,
   BattlegroundDayRow,
-  BattlegroundDurationGroup,
-  BattlegroundDurationRow,
   BattlegroundEra,
   NormalizedBattleground,
   computeBattlegroundStats,

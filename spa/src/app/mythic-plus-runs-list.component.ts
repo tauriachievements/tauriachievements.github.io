@@ -3,7 +3,7 @@ import { ChangeDetectionStrategy, Component, DestroyRef, inject, input, output, 
 import { RouterLink } from '@angular/router';
 import { upgradeStars } from './mythic-plus';
 import { MythicPlusRunDetailsComponent } from './mythic-plus-run-details.component';
-import { MemberView, RunRow } from './mythic-plus-views';
+import { RunRow } from './mythic-plus-views';
 
 @Component({
   selector: 'app-mythic-plus-runs-list',
