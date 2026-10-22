@@ -86,7 +86,7 @@ decision (ask first).
 | `app-mobile-filter-toggle` | folds a page's filters behind one button on phones |
 | `injectCompactViewport()` (`compact-viewport.ts`) | a signal that's true on phone-sized screens (`(max-width: 640px)`, or a wider query you pass) |
 | `appTapTooltip` | makes a hover tooltip open on tap on touch screens |
-| `app-icon-tips` | one fixed tooltip for every icon in a table (talents, trinkets) |
+| `app-icon-tips` | one fixed tooltip for every talent or trinket icon inside it ([below](#app-icon-tips)) |
 | `app-raid-difficulty-switch`, `app-race-by-spec` | the raid difficulty switch; the most-popular-race boxes |
 | `app-back-to-top-button` | the floating back-to-top button |
 | `class-colors.ts` | the one class-colour table: `getClassColor()` in code, `var(--class-<id>)` in SCSS |
@@ -98,6 +98,26 @@ decision (ask first).
 | `.tap-area` (global) | an empty span inside a small link that grows its tap target |
 
 `app-filter-bar` and `app-leaderboard-table` belong to the ladder page.
+
+### `app-icon-tips`
+
+- It shows one tooltip for whichever `data-tip` element inside it the mouse is over, or
+  keyboard focus is on:
+  - the name (`data-tip`), in `data-tip-color` if set;
+  - a `data-tip-note` line;
+  - for a talent, the element's `data-tip-spell` looked up in the `[spells]` input: its details
+    line and description, from `talent-tooltips.json`
+    ([data-pipeline.md](data-pipeline.md#talent-tooltips)).
+- Every talent icon on the Raids pages carries `data-tip-spell`. A page passes its
+  `talentTooltips()` signal to `[spells]`; until the file loads, tooltips show the name only.
+- One element serves every icon, so a table of 25 rows doesn't carry hundreds of hidden
+  tooltips.
+- The tooltip is fixed to the viewport, at z-index 2001 over the header, because the tables it
+  sits in scroll sideways and would clip it.
+- Touch screens get no tooltip: the icons link to TauriShoot, which describes them in full.
+  Screen readers read the links' own labels; the tooltip is hidden from them.
+- Its listeners run outside Angular and only touch the tooltip's DOM, so moving the mouse
+  across a table runs no change detection.
 
 ## The header-height contract
 

@@ -13,6 +13,8 @@ export const RAID_LOGS_DATA_DIR = 'raid-log-data';
 /** Every spec's talent tiers, which members' `talents` columns pick from. */
 export const RAID_TALENTS_PATH = `${RAID_LOGS_DATA_DIR}/talents.json`;
 
+export const RAID_TALENT_TOOLTIPS_PATH = `${RAID_LOGS_DATA_DIR}/talent-tooltips.json`;
+
 /** Written at build time by scripts/generate-raid-genders.js. */
 export const RAID_GENDERS_PATH = 'assets/data/raid-genders.json';
 
@@ -135,6 +137,13 @@ export interface RaidTalentsFile {
   specs: Array<[specId: number, tiers: Array<Array<RaidTalentEntry | null>>]>;
 }
 
+export type RaidTalentTooltipEntry = [spellId: number, details: string[], description: string];
+
+export interface RaidTalentTooltipsFile {
+  version: number;
+  spells: RaidTalentTooltipEntry[];
+}
+
 /** `[realm, logId, killedAtUnix, fightMs, guild, faction, wipes, deaths, resurrects, members, items]` */
 export type RaidBossLogEntry = [
   realm: string,
@@ -231,6 +240,13 @@ export interface RaidTalent {
 
 /** By spec id: the tiers top to bottom, each with its choices left to right. */
 export type RaidTalentTable = ReadonlyMap<number, ReadonlyArray<ReadonlyArray<RaidTalent | undefined>>>;
+
+export interface RaidTalentTooltip {
+  details: string;
+  description: string;
+}
+
+export type RaidTalentTooltips = ReadonlyMap<number, RaidTalentTooltip>;
 
 /** A kill as the index lists it. */
 export interface RaidKill {
@@ -498,6 +514,10 @@ export function decodeTalents(file: RaidTalentsFile): RaidTalentTable {
     specId,
     tiers.map(choices => choices.map(choice => choice ? { id: choice[0], name: choice[1], icon: choice[2] } : undefined))
   ]));
+}
+
+export function decodeTalentTooltips(file: RaidTalentTooltipsFile): RaidTalentTooltips {
+  return new Map(file.spells.map(([spellId, details, description]) => [spellId, { details: details.join(' · '), description }]));
 }
 
 /**

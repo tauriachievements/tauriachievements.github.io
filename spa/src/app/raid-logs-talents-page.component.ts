@@ -21,6 +21,7 @@ import {
   RaidRole,
   RaidTalent,
   RaidTalentTable,
+  RaidTalentTooltips,
   RoleFilter,
   defaultDifficulty,
   formatPerSecond,
@@ -94,7 +95,7 @@ interface Insight {
   label: string;
   title: string;
   text: string;
-  icon?: string;
+  talent?: RaidTalent;
   tone?: 'up' | 'down';
 }
 
@@ -181,6 +182,7 @@ export class RaidLogsTalentsPageComponent {
   readonly killsError = signal<string | undefined>(undefined);
   /** Empty until talents.json loads, or if it doesn't: talents then show unnamed. */
   private readonly talentTable = signal<RaidTalentTable>(new Map());
+  readonly talentTooltips = signal<RaidTalentTooltips>(new Map());
   readonly lastEdited = computed(() => this.index()?.generatedAt);
   readonly lastEditedTimeZoneLabel = computed(() => getLocalTimeZoneLabel(this.lastEdited()));
 
@@ -363,7 +365,7 @@ export class RaidLogsTalentsPageComponent {
         id: 'favoured',
         label: 'Top players favour',
         title: favoured.choice.talent?.name ?? 'Unknown talent',
-        icon: favoured.choice.talent?.icon,
+        talent: favoured.choice.talent,
         tone: 'up',
         text: `${formatShare(favoured.choice.topShare)} of the top 10% take it at level ${favoured.tier.level}, against ${formatShare(favoured.choice.share)} of everyone.`
       });
@@ -375,7 +377,7 @@ export class RaidLogsTalentsPageComponent {
         id: 'avoided',
         label: 'Top players avoid',
         title: avoided.choice.talent?.name ?? 'Unknown talent',
-        icon: avoided.choice.talent?.icon,
+        talent: avoided.choice.talent,
         tone: 'down',
         text: `Only ${formatShare(avoided.choice.topShare)} of the top 10% take it, against ${formatShare(avoided.choice.share)} of everyone.`
       });
@@ -387,7 +389,7 @@ export class RaidLogsTalentsPageComponent {
         id: 'contested',
         label: 'Closest call',
         title: `Level ${contested.level}`,
-        icon: contested.leader.talent?.icon,
+        talent: contested.leader.talent,
         text: contested.choices
           .filter(choice => choice.count)
           .sort((a, b) => b.count - a.count)
@@ -402,7 +404,7 @@ export class RaidLogsTalentsPageComponent {
         id: 'settled',
         label: 'Most agreed',
         title: settled.leader.talent?.name ?? 'Unknown talent',
-        icon: settled.leader.talent?.icon,
+        talent: settled.leader.talent,
         text: `${formatShare(settled.leader.share)} of ${plural} take it at level ${settled.level}.`
       });
     }
@@ -416,7 +418,7 @@ export class RaidLogsTalentsPageComponent {
         id: 'boss',
         label: `Picked for ${boss.shortName}`,
         title: talent?.name ?? 'Unknown talent',
-        icon: talent?.icon,
+        talent,
         tone: 'up',
         text: `${formatShare(notable.share)} take it on ${boss.shortName}, against ${formatShare(notable.elsewhere)} on the other bosses.`
       });
@@ -657,6 +659,7 @@ export class RaidLogsTalentsPageComponent {
         next: kills => {
           this.kills.set(kills);
           this.killsLoading.set(false);
+          this.loadTalentTooltips();
         },
         error: error => {
           console.error('Failed to load the raid rosters:', error);
@@ -664,6 +667,12 @@ export class RaidLogsTalentsPageComponent {
           this.killsLoading.set(false);
         }
       });
+  }
+
+  private loadTalentTooltips(): void {
+    this.data.talentTooltips()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(tooltips => this.talentTooltips.set(tooltips));
   }
 
   private applyFilters(): void {

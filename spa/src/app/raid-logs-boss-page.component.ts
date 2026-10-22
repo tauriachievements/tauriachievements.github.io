@@ -24,6 +24,7 @@ import {
   RaidMetric,
   RaidTalent,
   RaidTalentTable,
+  RaidTalentTooltips,
   RankedPerformance,
   characterKey,
   defaultDifficulty,
@@ -116,6 +117,7 @@ export class RaidLogsBossPageComponent {
   readonly kills = signal<RaidKillDetails[]>([]);
   /** Empty until talents.json loads, or if it doesn't: the rows then show no talents. */
   private readonly talentTable = signal<RaidTalentTable>(new Map());
+  readonly talentTooltips = signal<RaidTalentTooltips>(new Map());
   readonly isLoading = signal(true);
   readonly loadError = signal<string | undefined>(undefined);
   readonly now = signal(Date.now());
@@ -395,6 +397,7 @@ export class RaidLogsBossPageComponent {
           this.kills.set(kills);
           this.now.set(Date.now());
           this.isLoading.set(false);
+          this.loadTalentTooltips();
         },
         error: error => {
           console.error('Failed to load the boss kills:', error);
@@ -402,6 +405,12 @@ export class RaidLogsBossPageComponent {
           this.isLoading.set(false);
         }
       });
+  }
+
+  private loadTalentTooltips(): void {
+    this.data.talentTooltips()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(tooltips => this.talentTooltips.set(tooltips));
   }
 
   /** In-page filters keep the scroll position: no navigation, only the address bar changes. */

@@ -12,6 +12,7 @@ import {
   decodeBossFile,
   decodeGenders,
   decodeIndex,
+  decodeTalentTooltips,
   decodeTalents,
   memberTalents,
   bossShortName,
@@ -213,6 +214,22 @@ describe('memberTalents', () => {
     expect(memberTalents({ spec: frost, talents: '' }, table)).toEqual([]);
     expect(memberTalents({ spec: index.specs.get(63), talents: '01' }, table)).toEqual([]);
     expect(memberTalents({ spec: undefined, talents: '01' }, table)).toEqual([]);
+  });
+});
+
+describe('decodeTalentTooltips', () => {
+  it('joins the details into one line and keeps the description by spell', () => {
+    const tooltips = decodeTalentTooltips({
+      version: 1,
+      spells: [
+        [123986, ['40 yd range', '1 sec cast', '30 sec cooldown'], 'Hurls a torrent of Chi energy.'],
+        [202297, [], '']
+      ]
+    });
+
+    expect(tooltips.get(123986)).toEqual({ details: '40 yd range · 1 sec cast · 30 sec cooldown', description: 'Hurls a torrent of Chi energy.' });
+    expect(tooltips.get(202297)).toEqual({ details: '', description: '' });
+    expect(tooltips.get(1)).toBeUndefined();
   });
 });
 
