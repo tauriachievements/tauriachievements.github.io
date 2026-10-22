@@ -20,7 +20,7 @@ import {
  */
 
 /** The best tenth of a spec's ranking on a boss: the players the "top" figures describe. */
-export const TOP_SHARE = 0.1;
+const TOP_SHARE = 0.1;
 
 /** A talent picked this many points more on a boss than on the others is marked as picked for it. */
 export const NOTABLE_DIFFERENCE = 0.1;

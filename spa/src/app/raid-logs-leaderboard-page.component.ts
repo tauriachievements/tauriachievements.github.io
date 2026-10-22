@@ -237,7 +237,6 @@ export class RaidLogsLeaderboardPageComponent {
   readonly classIcon = getClassIconPath;
   readonly formatPerSecond = formatPerSecond;
   readonly factionName = (faction: number) => FACTION_NAMES[faction] ?? '';
-  readonly pageSize = RAID_PAGE_SIZE;
 
   private subscription?: Subscription;
 

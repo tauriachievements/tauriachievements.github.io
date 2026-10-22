@@ -7,7 +7,7 @@ export interface CharacterAgeParts {
 const MS_PER_DAY = 24 * 60 * 60 * 1000;
 
 /** Today as whole days since 1970-01-01 (UTC), the unit player snapshots store dates in. */
-export function currentEpochDay(now: number = Date.now()): number {
+function currentEpochDay(now: number = Date.now()): number {
   return Math.floor(now / MS_PER_DAY);
 }
 

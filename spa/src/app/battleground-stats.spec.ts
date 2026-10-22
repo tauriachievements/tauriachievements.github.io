@@ -169,30 +169,6 @@ describe('computeBattlegroundStats', () => {
       'Black Rook Hold Arena'
     );
   });
-
-  it('recommends queue windows for Alterac Valley and Isle of Conquest from historical starts', () => {
-    const records = [
-      ...sampleRecords,
-      battleground('Alterac Valley', '2026.06.29 19.05'),
-      battleground('Alterac Valley', '2026.06.30 20.10'),
-      battleground('Alterac Valley', '2026.07.01 19.30'),
-      battleground('Alterac Valley', '2026.07.02 22.00'),
-      battleground('Isle of Conquest', '2026.06.29 14.10'),
-      battleground('Isle of Conquest', '2026.06.30 15.20')
-    ];
-    const stats = computeBattlegroundStats(records, '2026-06-30');
-    const alterac = stats.queueRecommendations.find((recommendation) =>
-      recommendation.battlegroundName === 'Alterac Valley'
-    );
-    const isle = stats.queueRecommendations.find((recommendation) =>
-      recommendation.battlegroundName === 'Isle of Conquest'
-    );
-
-    expect(alterac?.bestWindowLabel).toBe('19:00-21:00');
-    expect(alterac?.bestWindowCount).toBe(3);
-    expect(isle?.bestWindowLabel).toBe('14:00-16:00');
-    expect(isle?.bestWindowCount).toBe(2);
-  });
 });
 
 describe('getBattlegroundDateBounds', () => {

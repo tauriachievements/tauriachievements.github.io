@@ -88,7 +88,6 @@ export class RatedBattlegroundPageComponent implements OnInit {
   readonly selectedPlayer = signal<RatedPlayerSummary | undefined>(undefined);
   readonly selectedView = signal<RatedBattlegroundContentView>('players');
   readonly leaderboardPage = signal(1);
-  readonly leaderboardPageSize = LEADERBOARD_PAGE_SIZE;
 
   readonly metricOptions = METRIC_OPTIONS;
   readonly allAnalytics = computed(() => buildRatedBattlegroundAnalytics(this.matches()));

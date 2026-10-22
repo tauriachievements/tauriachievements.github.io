@@ -89,7 +89,6 @@ export class RaidSpecPopularityChartComponent {
     { value: 'dps', label: 'DPS' }
   ];
   readonly role = model<RoleFilter>('all');
-  readonly topScores = SPEC_TOP_SCORES;
 
   readonly shownDifficulties = computed(() => this.difficulties().filter(difficulty =>
     difficulty.kills > 0 && ['normal', 'heroic', 'mythic'].includes(difficulty.slug)));

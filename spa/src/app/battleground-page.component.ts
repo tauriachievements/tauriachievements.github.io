@@ -8,7 +8,6 @@ import {
   BattlegroundDurationGroup,
   BattlegroundDurationRow,
   BattlegroundEra,
-  BattlegroundHourlyChartPoint,
   NormalizedBattleground,
   computeBattlegroundStats,
   decodeBattlegroundSnapshot,
@@ -33,13 +32,6 @@ interface BattlegroundStartGroup {
   label: string;
   count: number;
   entries: BattlegroundStartEntry[];
-}
-
-interface BattlegroundStartDetails {
-  name: string;
-  selectedDayLabel: string;
-  total: number;
-  groups: BattlegroundStartGroup[];
 }
 
 const BATTLEGROUND_ERA_OPTIONS: ReadonlyArray<{ value: BattlegroundEra; label: string }> = [
@@ -144,10 +136,6 @@ export class BattlegroundPageComponent implements OnInit {
 
   trackBattlegroundDayGroup(_index: number, group: BattlegroundDayGroup): string {
     return group.label;
-  }
-
-  trackHourlyChartPoint(_index: number, point: BattlegroundHourlyChartPoint): string {
-    return point.hour.toString();
   }
 
   trackDurationRow(_index: number, row: BattlegroundDurationRow): string {

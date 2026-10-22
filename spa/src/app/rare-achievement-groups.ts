@@ -1,7 +1,7 @@
 import { FilterDropdownOption } from './filter-dropdown.types';
 
 export const SCARAB_LORD_ACHIEVEMENT_ID = 416;
-export const REALM_FIRST_KEYSTONE_MASTER_ACHIEVEMENT_ID = 11224;
+const REALM_FIRST_KEYSTONE_MASTER_ACHIEVEMENT_ID = 11224;
 
 export const KEYSTONE_MASTER_OPTIONS: ReadonlyArray<FilterDropdownOption<number>> = [
   { value: REALM_FIRST_KEYSTONE_MASTER_ACHIEVEMENT_ID, label: 'Realm First! Keystone Master' }
@@ -165,9 +165,4 @@ export const REALM_FIRST_OPTIONS: ReadonlyArray<FilterDropdownOption<number>> = 
 
 export function buildRareAchievementCharacterKey(name: string, realm: string): string {
   return `${realm.trim().toLowerCase()}::${name.trim().toLowerCase()}`;
-}
-
-export function extractAchievementSeasonLabel(label: string): string | undefined {
-  const match = /^((?:S)\d+)/i.exec(label.trim());
-  return match?.[1]?.toUpperCase();
 }

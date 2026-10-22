@@ -165,7 +165,7 @@ export interface RatedSpecDefinition {
   role: 'Tank' | 'Healer' | 'Damage';
 }
 
-export const CLASS_NAMES: Readonly<Record<number, string>> = {
+const CLASS_NAMES: Readonly<Record<number, string>> = {
   1: 'Warrior', 2: 'Paladin', 3: 'Hunter', 4: 'Rogue',
   5: 'Priest', 6: 'Death Knight', 7: 'Shaman', 8: 'Mage',
   9: 'Warlock', 10: 'Monk', 11: 'Druid', 12: 'Demon Hunter'
@@ -353,7 +353,7 @@ export function formatDuration(milliseconds: number): string {
   return hours > 0 ? `${hours}:${minutes.toString().padStart(2, '0')}:${remainder}` : `${minutes}:${remainder}`;
 }
 
-export function formatUnixDate(timestamp: number): string {
+function formatUnixDate(timestamp: number): string {
   return new Intl.DateTimeFormat(undefined, { month: 'short', day: 'numeric', year: 'numeric' })
     .format(new Date(timestamp * 1000));
 }
@@ -366,11 +366,6 @@ export function formatUnixDateTime(timestamp: number): string {
 
 export function formatCompact(value: number): string {
   return new Intl.NumberFormat(undefined, { notation: 'compact', maximumFractionDigits: 1 }).format(value);
-}
-
-export function formatPlayedTime(seconds: number): string {
-  const days = Math.floor(Math.max(0, seconds) / 86_400);
-  return days > 0 ? `${days.toLocaleString()}d played` : `${Math.floor(Math.max(0, seconds) / 3600)}h played`;
 }
 
 function buildPlayerSummary(

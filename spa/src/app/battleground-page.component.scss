@@ -10,7 +10,6 @@
   color: #e7eaf0;
 }
 
-.eyebrow,
 .metric-label {
   color: #79d9c9;
   font-size: 0.72rem;
@@ -88,7 +87,6 @@
   min-width: 0;
 }
 
-.console-button,
 .feedback-action {
   min-height: 40px;
   padding: 0 14px;
@@ -207,155 +205,8 @@
   }
 }
 
-.panel-title-inline {
-  color: #79d9c9;
-  font-size: 0.82rem;
-  font-weight: 900;
-  letter-spacing: 0;
-}
-
-.bg-count-toolbar {
-  align-items: flex-end;
-}
-
-.panel-total {
-  display: flex;
-  align-items: baseline;
-  gap: 7px;
-  text-align: right;
-
-  strong {
-    color: #f6c453;
-    font-size: 1.35rem;
-    font-weight: 900;
-    font-variant-numeric: tabular-nums;
-    line-height: 1;
-  }
-
-  span {
-    color: #7f899a !important;
-    font-size: 0.7rem !important;
-    font-weight: 800;
-    text-transform: uppercase;
-  }
-}
-
 .duration-heading {
   align-items: flex-end;
-}
-
-.recommendation-list {
-  display: grid;
-  gap: 10px;
-}
-
-.recommendation-panel--compact {
-  display: flex;
-  flex-direction: column;
-  align-self: stretch;
-  min-height: 0;
-
-  .panel-heading {
-    margin-bottom: 12px;
-  }
-
-  .recommendation-list {
-    flex: 1;
-    grid-template-columns: 1fr;
-    grid-template-rows: repeat(2, minmax(0, 1fr));
-  }
-}
-
-.recommendation-card {
-  display: grid;
-  align-content: center;
-  gap: 10px;
-  min-width: 0;
-  min-height: 0;
-  padding: 12px 12px 12px 14px;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-left-color: rgba(246, 196, 83, 0.62);
-  border-left-width: 3px;
-  border-radius: 8px;
-  background:
-    linear-gradient(135deg, rgba(246, 196, 83, 0.055), rgba(121, 217, 201, 0.035)),
-    rgba(255, 255, 255, 0.03);
-
-  small {
-    color: #9da5b5;
-    font-size: 0.78rem;
-    line-height: 1.35;
-  }
-}
-
-.recommendation-main {
-  min-width: 0;
-
-  span {
-    display: block;
-    max-width: 100%;
-    overflow: hidden;
-    color: #9da5b5;
-    font-size: 0.72rem;
-    font-weight: 800;
-    letter-spacing: 0;
-    text-overflow: ellipsis;
-    text-transform: uppercase;
-    white-space: nowrap;
-  }
-
-  strong {
-    display: block;
-    margin-top: 3px;
-    color: #f6c453;
-    font-size: 1.16rem;
-    font-weight: 900;
-    line-height: 1.05;
-    white-space: nowrap;
-  }
-}
-
-.queue-hours {
-  display: grid;
-  gap: 7px;
-}
-
-.queue-hour {
-  display: grid;
-  grid-template-columns: 50px minmax(64px, 1fr) 28px;
-  gap: 8px;
-  align-items: center;
-
-  > span {
-    color: #c9d0dc;
-    font-size: 0.74rem;
-    font-weight: 750;
-  }
-
-  > strong {
-    color: #eef2f7;
-    font-size: 0.76rem;
-    font-variant-numeric: tabular-nums;
-    text-align: right;
-  }
-}
-
-.queue-hour-track {
-  overflow: hidden;
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.07);
-
-  span {
-    display: block;
-    height: 100%;
-    min-width: 3px;
-    border-radius: inherit;
-    background: linear-gradient(90deg, #f6c453, #79d9c9);
-  }
-}
-
-.queue-hour-track {
-  height: 7px;
 }
 
 .analysis-grid {
@@ -865,8 +716,7 @@
     padding: 44px 12px 24px;
   }
 
-  .date-console,
-  .recommendation-list {
+  .date-console {
     grid-template-columns: 1fr;
   }
 
@@ -914,10 +764,6 @@
 }
 
 @media (max-width: 460px) {
-  .recommendation-main {
-    grid-template-columns: 1fr;
-  }
-
   .hourly-stat-summary {
     grid-template-columns: 1fr;
   }

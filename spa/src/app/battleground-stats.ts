@@ -70,23 +70,6 @@ export interface BattlegroundDurationGroup {
   rows: BattlegroundDurationRow[];
 }
 
-export interface BattlegroundQueueHour {
-  hour: number;
-  label: string;
-  count: number;
-  totalShare: number;
-}
-
-export interface BattlegroundQueueRecommendation {
-  battlegroundName: string;
-  totalStarts: number;
-  bestWindowLabel: string;
-  bestWindowCount: number;
-  bestWindowShare: number;
-  confidenceLabel: string;
-  topHours: BattlegroundQueueHour[];
-}
-
 export interface BattlegroundHourlyChartPoint {
   hour: number;
   label: string;
@@ -120,7 +103,6 @@ export interface BattlegroundStats {
   durationRangeStartLabel: string | undefined;
   durationRangeEndLabel: string | undefined;
   hasDurationData: boolean;
-  queueRecommendations: BattlegroundQueueRecommendation[];
   mostStartedBg: BattlegroundDayRow | undefined;
   busiestHour: BattlegroundHourlyTotal | undefined;
   hasSelectedDayData: boolean;
@@ -141,7 +123,6 @@ const HOURS = Array.from({ length: 24 }, (_value, hour) => hour);
 const HOURLY_CHART_WIDTH = 240;
 const HOURLY_CHART_HEIGHT = 64;
 const HOURLY_CHART_PADDING = 4;
-const QUEUE_RECOMMENDATION_TARGETS = ['Alterac Valley', 'Isle of Conquest'] as const;
 const BATTLEGROUND_DURATION_GROUPS = [
   {
     label: '10 man BGs',
@@ -365,7 +346,6 @@ export function computeBattlegroundStats(
     durationRangeStartLabel: bounds ? formatDateLabel(bounds.min) : undefined,
     durationRangeEndLabel: bounds ? formatDateLabel(bounds.max) : undefined,
     hasDurationData: durationRows.length > 0,
-    queueRecommendations: QUEUE_RECOMMENDATION_TARGETS.map((target) => buildQueueRecommendation(records, target)),
     mostStartedBg: battlegroundRows[0],
     busiestHour,
     hasSelectedDayData: selectedDayCount > 0
@@ -389,7 +369,7 @@ export function formatDuration(durationMs: number | undefined): string {
   return `${minutes}m ${seconds.toString().padStart(2, '0')}s`;
 }
 
-export function formatDateLabel(date: string): string {
+function formatDateLabel(date: string): string {
   const parsedDate = parseIsoDateAsUtc(date);
   return parsedDate ? DATE_LABEL_FORMATTER.format(parsedDate) : date || 'No date';
 }
@@ -485,71 +465,6 @@ function buildDurationRow(accumulator: BattlegroundAccumulator): BattlegroundDur
   };
 }
 
-function buildQueueRecommendation(
-  records: ReadonlyArray<NormalizedBattleground>,
-  battlegroundName: string
-): BattlegroundQueueRecommendation {
-  const counts = Array.from({ length: 24 }, () => 0);
-  let totalStarts = 0;
-
-  for (const record of records) {
-    if (record.name !== battlegroundName || record.startHour === undefined) {
-      continue;
-    }
-
-    counts[record.startHour]++;
-    totalStarts++;
-  }
-
-  const maxHourCount = Math.max(0, ...counts);
-  const topHours = counts
-    .map((count, hour) => ({
-      hour,
-      label: formatHourLabel(hour),
-      count,
-      totalShare: maxHourCount ? Math.round((count / maxHourCount) * 100) : 0
-    }))
-    .filter((hour) => hour.count > 0)
-    .sort((left, right) => right.count - left.count || left.hour - right.hour)
-    .slice(0, 3);
-
-  if (totalStarts === 0) {
-    return {
-      battlegroundName,
-      totalStarts,
-      bestWindowLabel: 'No data',
-      bestWindowCount: 0,
-      bestWindowShare: 0,
-      confidenceLabel: 'No data',
-      topHours
-    };
-  }
-
-  let bestWindowStart = 0;
-  let bestWindowCount = 0;
-
-  for (const hour of HOURS) {
-    const windowCount = counts[hour] + counts[(hour + 1) % 24];
-
-    if (windowCount > bestWindowCount) {
-      bestWindowStart = hour;
-      bestWindowCount = windowCount;
-    }
-  }
-
-  const bestWindowShare = Math.round((bestWindowCount / totalStarts) * 100);
-
-  return {
-    battlegroundName,
-    totalStarts,
-    bestWindowLabel: `${formatHourLabel(bestWindowStart)}-${formatHourLabel((bestWindowStart + 2) % 24)}`,
-    bestWindowCount,
-    bestWindowShare,
-    confidenceLabel: getQueueConfidenceLabel(totalStarts, bestWindowShare),
-    topHours
-  };
-}
-
 function buildHourlyChart(hourlyTotals: ReadonlyArray<BattlegroundHourlyTotal>): BattlegroundHourlyChart {
   const maxCount = Math.max(0, ...hourlyTotals.map((hourTotal) => hourTotal.count));
   const graphWidth = HOURLY_CHART_WIDTH - HOURLY_CHART_PADDING * 2;
@@ -611,33 +526,6 @@ function buildSmoothPath(points: ReadonlyArray<BattlegroundHourlyChartPoint>): s
 
   return path;
 }
-
-function getQueueConfidenceLabel(totalStarts: number, bestWindowShare: number): string {
-  if (totalStarts < 8) {
-    return 'Low data';
-  }
-
-  if (bestWindowShare >= 20) {
-    return 'Strong signal';
-  }
-
-  if (bestWindowShare >= 12) {
-    return 'Good signal';
-  }
-
-  return 'Spread out';
-}
-
-
-
-
-
-
-
-
-
-
-
 
 function getOrCreateAccumulator(
   accumulators: Map<string, BattlegroundAccumulator>,

@@ -1,7 +1,8 @@
 # Frontend (spa/)
 
-Angular 21 with standalone components, signals and `OnPush`. `zone.js` isn't in the polyfills,
-so the app is zoneless. It builds to static files that GitHub Pages serves.
+Angular 21 with standalone components, signals and `OnPush`. The app is zoneless: `zone.js`
+isn't installed, and there are no polyfills. It builds to static files that GitHub Pages
+serves.
 
 ## Where things go
 

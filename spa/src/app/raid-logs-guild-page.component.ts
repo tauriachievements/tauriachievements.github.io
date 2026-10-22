@@ -200,10 +200,6 @@ export class RaidLogsGuildPageComponent {
     this.location.replaceState(this.router.serializeUrl(url));
   }
 
-  ago(kill: RaidKill): string {
-    return formatAgo(kill.killedAt, this.now());
-  }
-
   trackBoss(index: number, row: BossRow): string {
     return row.boss.slug;
   }

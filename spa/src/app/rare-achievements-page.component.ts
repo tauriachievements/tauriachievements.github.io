@@ -11,7 +11,6 @@ import { CLASS_OPTIONS, REALM_OPTIONS } from './ladder-options';
 import {
   GLADIATOR_MOUNT_OPTIONS,
   KEYSTONE_MASTER_OPTIONS,
-  REALM_FIRST_OPTIONS,
   R1_GLADIATOR_OPTIONS,
   RATED_BATTLEGROUND_OPTIONS,
   SCARAB_LORD_ACHIEVEMENT_ID,
@@ -52,7 +51,6 @@ import { getLocalTimeZoneLabel } from '../utils/time-zone-label';
 type CharacterFaction = 'Alliance' | 'Horde';
 type CountRankingMetric = 'gladiatorTitleCount' | 'gladiatorMountCount';
 type AchievementDropdownKey = 'r1Gladiators' | 'gladiatorMounts' | 'ratedBattlegroundHeroes' | 'keystoneMasters';
-type AdditionalFilterDropdownKey = 'realm' | 'class';
 
 interface RareAchievementMatchView {
   rank: number;
@@ -335,10 +333,6 @@ export class RareAchievementsPageComponent implements OnInit {
 
   trackAchievementDropdown(_index: number, dropdown: AchievementDropdownView): AchievementDropdownKey {
     return dropdown.key;
-  }
-
-  trackAdditionalFilterDropdown(_index: number, dropdownKey: AdditionalFilterDropdownKey): AdditionalFilterDropdownKey {
-    return dropdownKey;
   }
 
   trackCharacter(_index: number, character: RareAchievementMatchView): string {

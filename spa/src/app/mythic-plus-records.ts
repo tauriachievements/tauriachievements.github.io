@@ -10,7 +10,7 @@ import { DungeonTimers, dungeonTimers, isTimed } from './mythic-plus-activity';
 type RecordRun = Pick<MythicPlusRun, 'id' | 'dungeon' | 'keyLevel' | 'clearTimeSeconds' | 'completedAt'>;
 
 /** The lowest keystone level: the bounty of a dungeon nobody has timed. */
-export const LOWEST_KEY_LEVEL = 2;
+const LOWEST_KEY_LEVEL = 2;
 
 /** Server firsts start at +10. The levels below all fell on the season's first evening. */
 export const FIRSTS_FROM_LEVEL = 10;
@@ -19,7 +19,7 @@ export const FIRSTS_FROM_LEVEL = 10;
 export const CLAIM_SHOWN_FOR_MS = 7 * 24 * 60 * 60 * 1000;
 
 /** How many characters the most-runs list shows. */
-export const MOST_RUNS_SHOWN = 10;
+const MOST_RUNS_SHOWN = 10;
 
 const HOUR_MS = 60 * 60 * 1000;
 const DAY_MS = 24 * HOUR_MS;

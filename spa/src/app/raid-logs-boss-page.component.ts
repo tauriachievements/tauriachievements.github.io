@@ -242,7 +242,6 @@ export class RaidLogsBossPageComponent {
   readonly iconSrcset = iconSrcset;
   readonly itemUrl = itemUrl;
   readonly spellUrl = spellUrl;
-  readonly pageSize = RAID_PAGE_SIZE;
 
   /** The query string a boss picker link keeps: the same view of another boss. */
   readonly bossQueryParams = computed(() => ({

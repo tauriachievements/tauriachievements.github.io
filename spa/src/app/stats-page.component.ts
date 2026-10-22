@@ -55,9 +55,9 @@ const RACE_NAMES: Record<number, string> = {
 
 const UNKNOWN_CLASS_COLOR = '#888';
 
-export const STATS_REALM_OPTIONS = ['All realms', 'Evermoon', 'Tauri', 'WoD'] as const;
-export const STATS_LEVEL_OPTIONS = ['110', '100', '90', '80', 'All levels'] as const;
-export const DEFAULT_STATS_LEVEL = '110' as const;
+const STATS_REALM_OPTIONS = ['All realms', 'Evermoon', 'Tauri', 'WoD'] as const;
+const STATS_LEVEL_OPTIONS = ['110', '100', '90', '80', 'All levels'] as const;
+const DEFAULT_STATS_LEVEL = '110' as const;
 
 export type StatsRealmFilter = typeof STATS_REALM_OPTIONS[number];
 export type StatsLevelFilter = typeof STATS_LEVEL_OPTIONS[number];

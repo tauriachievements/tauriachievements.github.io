@@ -3,7 +3,7 @@ import { CLASS_NAMES, MythicPlusRole } from './mythic-plus';
 import { LEGION_SPECS } from './mythic-plus-stats';
 import { raceFaction } from './raid-logs';
 
-export const RACE_NAMES: Readonly<Record<number, string>> = {
+const RACE_NAMES: Readonly<Record<number, string>> = {
   1: 'Human', 2: 'Orc', 3: 'Dwarf', 4: 'Night Elf',
   5: 'Undead', 6: 'Tauren', 7: 'Gnome', 8: 'Troll',
   9: 'Goblin', 10: 'Blood Elf', 11: 'Draenei', 22: 'Worgen',

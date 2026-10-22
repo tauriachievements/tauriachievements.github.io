@@ -1,7 +1,3 @@
-export function getLadderHistoryPlayerKey(name: string, realm: string): string {
-  return `${realm}::${name}`;
-}
-
 export function splitLadderHistoryPlayerKey(playerKey: string): { realm: string; name: string } {
   const separatorIndex = playerKey.indexOf('::');
   if (separatorIndex === -1) {

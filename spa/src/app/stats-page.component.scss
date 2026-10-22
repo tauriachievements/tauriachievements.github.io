@@ -272,12 +272,6 @@
   margin-bottom: 4px;
 }
 
-.chart-subtitle {
-  font-size: 0.76rem;
-  color: #7c8494;
-  margin-bottom: 12px;
-}
-
 .chart-canvas-wrap {
   position: relative;
 
@@ -318,10 +312,6 @@
 
   .charts-grid {
     grid-template-columns: 1fr;
-  }
-
-  .chart-panel--full {
-    grid-column: 1;
   }
 }
 

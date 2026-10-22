@@ -103,7 +103,7 @@ export function testimonialSourceLabel(from: TestimonialSource): string {
 }
 
 /** The quote grid has six columns, so quotes can sit two (three columns each) or three (two) to a row. */
-export const QUOTE_COLUMNS = 6;
+const QUOTE_COLUMNS = 6;
 
 /**
  * How many columns each quote takes: a long one the whole row, a one-liner a third, the rest half.
