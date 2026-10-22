@@ -134,7 +134,7 @@
           </div>
 
           <p class="method-note">
-            Each character counts once per boss, with the talents of their best kill there. Agreement is how often players take a tier's most picked talent, averaged over the seven tiers.
+            Each character counts once per boss, with the talents of their best kill there. Agreement is how often players take a tier's most picked talent, averaged over the seven tiers.<ng-container *ngIf="!classFilterName()"> Each role lists its specs by their <a routerLink="/raid-logs/stats" [queryParams]="{ difficulty: difficulty()?.slug, view: 'performance' }">{{ difficulty()?.name }} performance</a>, best first.</ng-container>
           </p>
         </section>
       </ng-container>

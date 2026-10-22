@@ -29,6 +29,7 @@ import {
   parseRoleFilter,
   raidCharacterLink,
   raidLogLink,
+  scoresBySpec,
   specMetric,
   spellUrl
 } from './raid-logs';
@@ -47,6 +48,7 @@ import {
   mostContestedTier,
   mostSettledTier,
   notablePicks,
+  sortByPerformance,
   specTalentSummaries,
   specTiers,
   specsMatching,
@@ -219,6 +221,11 @@ export class RaidLogsTalentsPageComponent {
   private readonly samples = computed(() => talentSamples(this.kills()));
   /** The bosses with kills on the difficulty; a boss without any can't be picked. */
   readonly bossesWithKills = computed(() => new Set(this.kills().map(kill => kill.boss)));
+  private readonly specScores = computed(() => {
+    const kills = this.kills();
+    const bosses = this.index()?.bosses ?? [];
+    return scoresBySpec(bosses, bosses.map(boss => kills.filter(kill => kill.boss.slug === boss.slug)));
+  });
 
   readonly specGroups = computed(() => {
     const boss = this.boss();
@@ -238,8 +245,14 @@ export class RaidLogsTalentsPageComponent {
     if (className) {
       return [{ key: 'class', title: className, columns: Math.max(SPEC_COLUMNS, cards.length), cards }];
     }
+    const specScores = this.specScores();
     return ROLE_GROUPS
-      .map(group => ({ key: group.role, title: group.title, columns: SPEC_COLUMNS, cards: cards.filter(card => card.spec.role === group.role) }))
+      .map(group => ({
+        key: group.role,
+        title: group.title,
+        columns: SPEC_COLUMNS,
+        cards: sortByPerformance(cards.filter(card => card.spec.role === group.role), specScores)
+      }))
       .filter(group => group.cards.length);
   });
 

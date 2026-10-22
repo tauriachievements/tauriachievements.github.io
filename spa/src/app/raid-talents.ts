@@ -1,4 +1,17 @@
-import { RaidBoss, RaidCharacter, RaidKillDetails, RaidMember, RaidSpec, RaidTalent, RaidTalentTable, RoleFilter, characterKey, specMetric } from './raid-logs';
+import {
+  RaidBoss,
+  RaidCharacter,
+  RaidKillDetails,
+  RaidMember,
+  RaidSpec,
+  RaidTalent,
+  RaidTalentTable,
+  RoleFilter,
+  SpecCharacterScore,
+  characterKey,
+  specMetric,
+  topAverage
+} from './raid-logs';
 
 /*
  * /raid-logs/talents: which talents raiders pick, from the talents every member of a kill played
@@ -487,6 +500,14 @@ export function specTalentSummaries(samples: readonly TalentSample[], specs: rea
 
 export function specsMatching(specs: readonly RaidSpec[], classId: number | undefined, role: RoleFilter): RaidSpec[] {
   return specs.filter(spec => (classId === undefined || spec.classId === classId) && (role === 'all' || spec.role === role));
+}
+
+export function sortByPerformance<T extends { spec: RaidSpec }>(
+  items: readonly T[],
+  scores: ReadonlyMap<RaidSpec, readonly SpecCharacterScore[]>
+): T[] {
+  const performance = new Map([...scores].map(([spec, entries]) => [spec, topAverage(entries.map(entry => entry.score))]));
+  return [...items].sort((a, b) => (performance.get(b.spec) ?? 0) - (performance.get(a.spec) ?? 0));
 }
 
 // --- Formatting -------------------------------------------------------------------------

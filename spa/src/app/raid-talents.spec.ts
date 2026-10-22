@@ -10,6 +10,7 @@ import {
   mostContestedTier,
   mostSettledTier,
   notablePicks,
+  sortByPerformance,
   specTalentSummaries,
   specTiers,
   specsMatching,
@@ -264,6 +265,27 @@ describe('specsMatching', () => {
     expect(names(undefined, 'dps')).toEqual(['Fire', 'Retribution']);
     expect(names(2, 'healer')).toEqual(['Holy']);
     expect(names(8, 'healer')).toEqual([]);
+  });
+});
+
+describe('sortByPerformance', () => {
+  const retribution: RaidSpec = { id: 70, classId: 2, name: 'Retribution', role: 'dps' };
+  const arcane: RaidSpec = { id: 62, classId: 8, name: 'Arcane', role: 'dps' };
+  const frost: RaidSpec = { id: 64, classId: 8, name: 'Frost', role: 'dps' };
+  const scored = (...values: number[]) => values.map((score, index) => ({ character: character(`Scored${score}x${index}`), score }));
+  const names = (items: Array<{ spec: RaidSpec }>) => items.map(item => item.spec.name);
+
+  it('orders by the average of each spec\'s top ten scores, not its single best', () => {
+    const scores = new Map([
+      [fire, scored(6969, ...Array<number>(10).fill(1000))],
+      [retribution, scored(5000)]
+    ]);
+    expect(names(sortByPerformance([{ spec: fire }, { spec: retribution }], scores))).toEqual(['Retribution', 'Fire']);
+  });
+
+  it('puts unscored specs last and keeps the given order on a tie', () => {
+    const scores = new Map([[arcane, scored(3000)], [fire, scored(3000)]]);
+    expect(names(sortByPerformance([{ spec: frost }, { spec: arcane }, { spec: fire }], scores))).toEqual(['Arcane', 'Fire', 'Frost']);
   });
 });
 
