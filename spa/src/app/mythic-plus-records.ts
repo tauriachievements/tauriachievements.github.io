@@ -1,30 +1,19 @@
 import { MythicPlusDungeon, MythicPlusMember, MythicPlusRun, characterKey } from './mythic-plus';
 import { DungeonTimers, dungeonTimers, isTimed } from './mythic-plus-activity';
 
-/*
- * The pure parts of /mythic-plus/records: the highest key timed in each dungeon, the first group
- * to time each key level, the levels nobody has timed yet, and the characters with the most runs.
- * "Timed" is `isTimed`, as on the leaderboard and the stats page, so all of them agree.
- */
-
 type RecordRun = Pick<MythicPlusRun, 'id' | 'dungeon' | 'keyLevel' | 'clearTimeSeconds' | 'completedAt'>;
 
-/** The lowest keystone level: the bounty of a dungeon nobody has timed. */
 const LOWEST_KEY_LEVEL = 2;
 
-/** Server firsts start at +10. The levels below all fell on the season's first evening. */
 export const FIRSTS_FROM_LEVEL = 10;
 
-/** A claimed bounty stays on the page for a week after the run that claimed it. */
 export const CLAIM_SHOWN_FOR_MS = 7 * 24 * 60 * 60 * 1000;
 
-/** How many characters the most-runs list shows. */
 const MOST_RUNS_SHOWN = 10;
 
 const HOUR_MS = 60 * 60 * 1000;
 const DAY_MS = 24 * HOUR_MS;
 
-/** Higher key first; at the same key the faster clear, then the earlier one. */
 export function compareRecords(a: RecordRun, b: RecordRun): number {
   return b.keyLevel - a.keyLevel
     || a.clearTimeSeconds - b.clearTimeSeconds
@@ -32,7 +21,6 @@ export function compareRecords(a: RecordRun, b: RecordRun): number {
     || compareText(a.id, b.id);
 }
 
-/** The best run finished in time (compareRecords), or undefined when none was. */
 export function bestTimedRun<T extends RecordRun>(runs: readonly T[], timers: DungeonTimers): T | undefined {
   let best: T | undefined;
   for (const run of runs) {
@@ -46,15 +34,9 @@ export function bestTimedRun<T extends RecordRun>(runs: readonly T[], timers: Du
 
 export interface DungeonRecord<T> {
   dungeon: MythicPlusDungeon;
-  /** Undefined until someone times the dungeon. */
   run?: T;
 }
 
-/**
- * Each dungeon's record: its highest timed key, at the same key the faster clear, then the
- * earlier one. Highest record first; at the same key the run that used less of its timer leads,
- * then the dungeons' own order. Dungeons nobody has timed come last.
- */
 export function dungeonRecords<T extends RecordRun>(
   runs: readonly T[],
   dungeons: readonly MythicPlusDungeon[]
@@ -79,10 +61,6 @@ export interface LevelFirst<T> {
   run: T;
 }
 
-/**
- * The first timed run at each key level from `fromLevel` up, highest level first. A level
- * nobody has timed is left out. Of two runs finished in the same second, the faster clear wins.
- */
 export function serverFirsts<T extends RecordRun>(
   runs: readonly T[],
   timers: DungeonTimers,
@@ -104,20 +82,12 @@ export function serverFirsts<T extends RecordRun>(
 }
 
 export interface Bounty<T> {
-  /** One above the highest timed key: nobody has timed it yet. */
   level: number;
-  /** Runs at or above `level`. None of them was timed, so each is an attempt that ran out of time. */
   attempts: number;
-  /** The attempt that finished closest to its timer; at the same margin the higher key, then the earlier one. */
   closest?: T;
-  /**
-   * The first timed run at the level below, while it finished no more than `CLAIM_SHOWN_FOR_MS`
-   * before `now`: it claimed the previous bounty.
-   */
   claimed?: T;
 }
 
-/** The next key level nobody has timed in these runs, and how close anyone came. */
 export function openBounty<T extends RecordRun>(runs: readonly T[], timers: DungeonTimers, now: number): Bounty<T> {
   const best = bestTimedRun(runs, timers);
   const level = best ? best.keyLevel + 1 : LOWEST_KEY_LEVEL;
@@ -144,10 +114,6 @@ export interface DungeonBounty<T> extends Bounty<T> {
   dungeon: MythicPlusDungeon;
 }
 
-/**
- * Each dungeon's open bounty, the lowest level first. At the same level the dungeon whose best
- * attempt came closest leads, then the ones nobody has tried, in the dungeons' own order.
- */
 export function dungeonBounties<T extends RecordRun>(
   runs: readonly T[],
   dungeons: readonly MythicPlusDungeon[],
@@ -165,21 +131,13 @@ export function dungeonBounties<T extends RecordRun>(
 }
 
 export interface RunCount {
-  /** `characterKey`: a character, whichever spec they played. */
   key: string;
-  /** The character as they appear in their most-played spec; of two, the one that got there first. */
   member: MythicPlusMember;
-  /** Every run they finished, in time or not. */
   runs: number;
   timed: number;
-  /** Undefined while none of their runs was timed. */
   highestTimed?: number;
 }
 
-/**
- * The characters with the most runs, timed or not, most first. At the same count the one with
- * more timed runs leads, then by name.
- */
 export function mostRuns(
   runs: readonly Pick<MythicPlusRun, 'dungeon' | 'keyLevel' | 'clearTimeSeconds' | 'roster'>[],
   timers: DungeonTimers,
@@ -229,7 +187,6 @@ export function mostRuns(
     .slice(0, limit);
 }
 
-/** How long a record has stood, from when it was set to `now` (both epoch ms): `held for 11 days`. */
 export function formatHeldFor(since: number, now: number): string {
   const elapsed = Math.max(0, now - since);
   const days = Math.floor(elapsed / DAY_MS);

@@ -24,9 +24,6 @@
 
   @if (!isLoading() && !loadError()) {
     @if (player() && member(); as member) {
-      <!-- Comes in as one piece: the crest rises with its class-colour glow (brighter on hover), the
-           name and specs follow, the numbers count up and the score flashes in its colour as it
-           lands. The crest and name fly in from, and back to, a compare column (characterTransitionName). -->
       <header class="profile-header" [style.--class-color]="member.color">
         <span class="profile-crest">
           <img [src]="classCrest()" [alt]="member.className" width="256" height="256" [style.view-transition-name]="crestTransition()" />
@@ -39,8 +36,6 @@
               <a class="guild-link" [routerLink]="member.guildLink" title="Open the guild's Mythic+ ladder">&lt;{{ member.guild }}&gt;</a>
             }
           </p>
-          <!-- With two specs or more each pill shows the profile in that spec only, and All in every
-               spec; only the pressed pill is outlined. A single spec stays a plain pill with a gold edge. -->
           <ul class="profile-specs" aria-label="Specs played">
             @if (specs().length > 1) {
               <li [style.--i]="0">
@@ -105,7 +100,6 @@
           Armory <span aria-hidden="true">↗</span>
         </a>
       </div>
-      <!-- Compare with: search a player, or pick several on the leaderboard. -->
       @if (compareOpen()) {
         <div class="compare-with" animate.leave="panel-leaving">
           <label class="character-search">
@@ -151,7 +145,6 @@
       </dl>
     </header>
 
-    <!-- The tiles rise in one after another; under the mouse their edge lights up and they lift. -->
     <nav class="ranks" aria-label="Ranks, each opening the players leaderboard where it is">
       @for (tile of ranks(); track tile.scope; let index = $index) {
         <a
@@ -331,9 +324,6 @@
           <button type="button" class="more-runs clear-day" (click)="selectDay(undefined)">Clear</button>
         }
       </header>
-      <!-- Wider than a phone in a long season: opens on the newest days, at the right end. -->
-      <!-- The first time it's on screen the line draws in from the left, and each day they played
-           pops its dot as the line reaches it. -->
       <div class="chart-scroll" [appScrollToEnd]="chart.points.length">
         <div class="line-chart" [style.--columns]="chart.points.length" [appReveal]="2000">
           <div class="y-axis" aria-hidden="true">
@@ -467,7 +457,6 @@
 </main>
 
 <app-back-to-top-button />
-
 
 <ng-template #characterList let-characters>
   <ul class="character-results">

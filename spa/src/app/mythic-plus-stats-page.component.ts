@@ -47,11 +47,8 @@ import { DataFileService } from './services/data-file.service';
 import { TapTooltipDirective } from './tap-tooltip.directive';
 import { UpdateBarComponent } from './update-bar.component';
 
-/** Season: every run. Week: only runs with the current week's affixes (as on /mythic-plus). */
 type StatsPeriod = 'season' | 'week';
-/** How the runs-per-day bars are split. */
 type DaySplit = 'level' | 'result';
-/** How the runs-per-dungeon bars are split. */
 type DungeonSplit = 'result' | 'week';
 
 interface Segment {
@@ -66,15 +63,11 @@ interface DayBar {
   label: string;
   longLabel: string;
   showLabel: boolean;
-  /** Today: the day is not over yet. */
   partial: boolean;
   heightPercent: number;
-  /** Bottom to top. */
   segments: Segment[];
   flip: boolean;
-  /** In the middle third: on a phone its tooltip opens centred over it (see `.middle`). */
   middle: boolean;
-  /** One of only one or two columns, each as wide as half the chart: its tooltip opens centred over it. */
   wide: boolean;
 }
 

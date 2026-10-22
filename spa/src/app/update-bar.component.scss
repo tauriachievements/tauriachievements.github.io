@@ -1,13 +1,5 @@
-// The site header: sections with their page dropdowns.
-//
-// Up to 960 px wide the sections give way to a menu button that opens every page in a side
-// drawer. The drawer is a modal <dialog>, so it sits in the top layer: nothing a page draws can
-// cover it, and no ancestor's transform or overflow can clip it.
-
 :host {
   display: block;
-  // Pages leave room for the 36 px one-row header they were designed with. The header is fixed,
-  // so this height moves each page down by the rest of --update-bar-height.
   height: calc(var(--update-bar-height) - 36px);
 }
 
@@ -25,7 +17,6 @@
   letter-spacing: 0.4px;
   z-index: 600;
 
-  // Above the backdrop and anything a page floats over its content.
   &.is-menu-open {
     z-index: 1200;
   }
@@ -45,15 +36,12 @@
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 }
 
-// Page-specific freshness lives in the left rail, opposite the utility links.
 .update-bar-status {
   display: flex;
   align-items: center;
   justify-self: start;
   min-width: 0;
 }
-
-// --- Sections ------------------------------------------------------------------------------------
 
 .site-nav {
   position: relative;
@@ -142,8 +130,6 @@
   text-transform: uppercase;
 }
 
-// --- Dropdown ------------------------------------------------------------------------------------
-
 .site-nav-panel {
   position: absolute;
   top: 100%;
@@ -228,8 +214,6 @@
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-
-// --- Menu button and drawer (960 px and narrower) ------------------------------------------------
 
 .site-menu-toggle {
   display: none;
@@ -360,7 +344,6 @@
   }
 }
 
-// Positioned, so a page row's offsetTop is measured from here when the current one is scrolled into view.
 .site-drawer-nav {
   position: relative;
   flex: 1 1 auto;
@@ -456,8 +439,6 @@
   }
 }
 
-// --- Support and Discord -------------------------------------------------------------------------
-
 .update-bar-actions {
   display: inline-flex;
   align-items: center;
@@ -552,7 +533,6 @@
   background: #29251a;
 }
 
-// Discord shrinks to its logo; Support has no icon, so it keeps its word.
 @media (max-width: 1499px) {
   .update-bar-actions {
     gap: 3px;
@@ -585,9 +565,6 @@
   }
 }
 
-// --- Narrow screens: a menu button and the drawer -------------------------------------------------
-
-// Above this the sections, both side columns and the header buttons need about 950 px in one row.
 @media (max-width: 960px) {
   .site-bar {
     grid-template-columns: minmax(0, 1fr) max-content max-content;
@@ -606,10 +583,7 @@
   }
 }
 
-// --- Phones: Support and Discord move into the drawer ---------------------------------------------
-
 @media (max-width: 640px) {
-  // Phone pages were designed for a 30 px header.
   :host {
     height: calc(var(--update-bar-height) - 30px);
   }

@@ -1,6 +1,5 @@
 import { Player } from '../models/character.model';
 
-/** A complete Player with neutral values; specs override only the fields they care about. */
 export function makePlayer(overrides: Partial<Player> = {}): Player {
   return {
     name: 'Anon',

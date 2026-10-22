@@ -28,7 +28,6 @@
   app-raid-difficulty-switch { margin-left: auto; }
 }
 
-// The guild's initial on its faction's colour: guilds have no portrait to show.
 .crest {
   display: grid;
   width: 64px;
@@ -67,7 +66,6 @@
 .boss-cell img { @include boss-portrait(30px); }
 tr.alive td { color: $raid-muted; }
 
-// Kill history
 .history {
   display: flex;
   flex-direction: column;

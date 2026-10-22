@@ -36,7 +36,6 @@
       (roleChange)="setChartRole($event)"
       (retry)="retryPopularity()" />
 
-    <!-- Races by spec. The spec chart above shows a failed roster load and its retry. -->
     @if (!popularityError()) {
       @for (role of raceRoles; track role) {
         <app-race-by-spec

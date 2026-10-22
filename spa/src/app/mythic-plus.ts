@@ -13,7 +13,6 @@ export interface MythicPlusSeason {
 }
 
 export interface MythicPlusDungeon {
-  /** URL slug, used as the `?dungeon=` value. */
   id: string;
   challengeId: number;
   shortName: string;
@@ -25,10 +24,8 @@ export interface MythicPlusDungeon {
 }
 
 export interface MythicPlusAffix {
-  /** The game's affix id. */
   id: number;
   name: string;
-  /** Keystone level the affix activates at (4, 7 or 10 in Legion). */
   level: number;
   icon: string;
   description: string;
@@ -56,15 +53,6 @@ export interface MythicPlusRun {
   roster: MythicPlusMember[];
 }
 
-/*
- * The files api/MythicPlusExporter writes to src/mythic-plus-data/ (see MythicPlusFileWriter.cs).
- * index.json holds the season, the dungeons, the affixes and the player and spec tables that
- * every dungeon file points into. The page reads the index first, then only the dungeon files
- * it shows.
- */
-
-// Not 'mythic-plus': a folder named like the /mythic-plus route makes GitHub Pages serve the
-// folder instead of the app.
 export const MYTHIC_PLUS_DATA_DIR = 'mythic-plus-data';
 
 export interface MythicPlusSpecEntry {
@@ -73,28 +61,16 @@ export interface MythicPlusSpecEntry {
   role: MythicPlusRole;
 }
 
-/** `[name, realm, guild ('' when guildless), class, race, gender]` */
 export type MythicPlusPlayerEntry = [string, string, string, number, number, number];
 
-/**
- * Aligned with `players`: current score, current rank, then changes since the previous scan.
- * A new player (or the first export) has no change values. Positive rank change means climbed.
- */
 export type MythicPlusStandingEntry = [number, number, number?, number?];
 
-/**
- * `[keyLevel, clearTimeMs, completedAt (Unix seconds), score, affixIds, [[player, spec], ...]]`,
- * where player and spec are positions in the index's tables.
- */
 export type MythicPlusRunEntry = [number, number, number, number, number[], Array<[number, number]>];
 
 export interface MythicPlusIndex {
   version: number;
-  /** When the exporter read the leaderboards, UTC ISO 8601. Missing in older exports. */
   generatedAt?: string;
-  /** The scan the optional standing changes compare with. Missing when there is no baseline. */
   previousGeneratedAt?: string;
-  /** Fingerprint of the player and spec tables. Missing in older exports. */
   tables?: string;
   season: MythicPlusSeason;
   dungeons: MythicPlusDungeon[];
@@ -104,7 +80,6 @@ export interface MythicPlusIndex {
   standings?: MythicPlusStandingEntry[];
 }
 
-/** When the data was exported, or undefined when the index has no valid timestamp. */
 export function exportedAt(index: Pick<MythicPlusIndex, 'generatedAt'> | undefined): Date | undefined {
   if (!index?.generatedAt) {
     return undefined;
@@ -116,17 +91,10 @@ export function exportedAt(index: Pick<MythicPlusIndex, 'generatedAt'> | undefin
 export interface MythicPlusDungeonFile {
   version: number;
   dungeon: string;
-  /** The `tables` of the index whose positions the runs use. Missing in older exports. */
   tables?: string;
   runs: MythicPlusRunEntry[];
 }
 
-/**
- * Whether a dungeon file's player and spec positions mean the same characters in this index.
- * The player table is sorted by name, so every export with a new player renumbers it. A tab
- * kept open across a deploy holds the old index while it fetches new dungeon files, and those
- * would decode to the wrong characters.
- */
 export function sharesTables(
   index: Pick<MythicPlusIndex, 'tables'>,
   file: Pick<MythicPlusDungeonFile, 'tables'>
@@ -136,10 +104,6 @@ export function sharesTables(
 
 export const NEWER_DATA_MESSAGE = 'The Mythic+ leaderboard is being updated. Try again in a minute.';
 
-/**
- * Turns dungeon files into runs. Members are shared: a character who played one spec in a
- * hundred runs is one object, which keeps a season of tens of thousands of runs small.
- */
 export function createRunDecoder(
   index: Pick<MythicPlusIndex, 'players' | 'specs'>
 ): (file: MythicPlusDungeonFile) => MythicPlusRun[] {

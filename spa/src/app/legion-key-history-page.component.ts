@@ -6,11 +6,9 @@ import { ScrollRiseDirective } from './scroll-rise.directive';
 import { SpotlightDirective } from './spotlight.directive';
 import { UpdateBarComponent } from './update-bar.component';
 
-/** The newest release of the addon; GitHub serves it as a download, so the page stays open. */
 export const LEGION_KEY_HISTORY_DOWNLOAD_URL =
   'https://github.com/bez-wow/legionkeyhistory/releases/latest/download/LegionKeyHistory.zip';
 
-/** The addon's GitHub page, whose README has the install steps this page leaves out. */
 const REPO_URL = 'https://github.com/bez-wow/legionkeyhistory';
 
 interface Screenshot {
@@ -26,7 +24,6 @@ interface Feature {
   readonly text: string;
 }
 
-/** The wide in-game views, shown one at a time under the download button. Taken from the addon's README. */
 const SCREENSHOTS: readonly Screenshot[] = [
   {
     label: 'Leaderboard',
@@ -85,10 +82,6 @@ const FEATURES: readonly Feature[] = [
   }
 ];
 
-/**
- * /legion-key-history-addon: what the Legion Key History addon does, with a download button.
- * Plain information for players; the install steps stay on GitHub.
- */
 @Component({
   selector: 'app-legion-key-history-page',
   imports: [RouterLink, UpdateBarComponent, BackToTopButtonComponent, ScrollRiseDirective, SpotlightDirective, NgTemplateOutlet],

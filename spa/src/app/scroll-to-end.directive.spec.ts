@@ -14,7 +14,6 @@ class HostComponent {
 function render() {
   const fixture = TestBed.createComponent(HostComponent);
   const scroller: HTMLElement = fixture.nativeElement.querySelector('.scroller');
-  // jsdom does no layout: fake a 1000 px wide content in a 300 px box.
   Object.defineProperty(scroller, 'scrollWidth', { configurable: true, get: () => 1000 });
   return { fixture, scroller };
 }

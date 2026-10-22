@@ -81,7 +81,6 @@ interface RankedRun {
 
 type LeaderboardView = 'runs' | 'players';
 
-/** Season: every run. Week: only runs with the current week's affixes. */
 type LeaderboardPeriod = 'season' | 'week';
 
 interface RankedPlayer {
@@ -94,12 +93,7 @@ interface PlayerStandingChange {
   rank: number;
 }
 
-/**
- * One character, from `?character=Name-Realm` (a profile's "Show runs" or rank links). The runs
- * view shows only their runs; the players view picks out their row.
- */
 interface CharacterFilter {
-  /** `characterKey` of the character. */
   key: string;
   name: string;
   realm: string;
@@ -112,7 +106,6 @@ function parsePage(value: string | null): number {
   return Number.isInteger(page) && page > 0 ? page : 1;
 }
 
-/** `?role=` on the players view: tank, healer or dps. */
 function parseRoleFilter(value: string | null): MythicPlusRole | undefined {
   return value === 'tank' || value === 'healer' || value === 'dps' ? value : undefined;
 }
@@ -122,7 +115,6 @@ function parseClassFilter(value: string | null): number | undefined {
   return value && CLASS_NAMES[classId] ? classId : undefined;
 }
 
-/** A spec from the URL only counts when it belongs to the class filter. */
 function parseSpecFilter(classId: number | undefined, value: string | null): string | undefined {
   return LEGION_SPECS.find(spec => spec.classId === classId && spec.spec === value)?.spec;
 }
@@ -145,7 +137,6 @@ function parseSpecFilter(classId: number | undefined, value: string | null): str
 ],
   templateUrl: './mythic-plus-page.component.html',
   styleUrls: ['./mythic-plus-page.component.scss'],
-  // Keeps one of this page's dropdowns open at a time.
   providers: [FilterDropdownCoordinatorService],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
@@ -158,16 +149,13 @@ export class MythicPlusPageComponent implements OnInit {
 
   private readonly leaderboardRef = viewChild<ElementRef<HTMLElement>>('leaderboard');
 
-  /** Narrow screens list runs and players as cards (MYTHIC_PLUS_CARDS_QUERY). */
   readonly cards = injectCompactViewport(MYTHIC_PLUS_CARDS_QUERY);
   private readonly pageSize = computed(() => this.cards() ? MYTHIC_PLUS_CARDS_PAGE_SIZE : MYTHIC_PLUS_PAGE_SIZE);
-  /** Phones: whether the realm / class / spec filters are shown, or folded behind the Filters button. */
   readonly filtersOpen = signal(false);
 
   readonly index = signal<MythicPlusIndex | undefined>(undefined);
   readonly lastEdited = computed(() => exportedAt(this.index()));
   readonly lastEditedTimeZoneLabel = computed(() => getLocalTimeZoneLabel(this.lastEdited()));
-  /** Decoded runs per dungeon id, filled as the dungeon files arrive. */
   readonly runsByDungeon = signal<ReadonlyMap<string, readonly MythicPlusRun[]>>(new Map());
   readonly isLoading = signal(true);
   readonly loadError = signal<string | undefined>(undefined);
@@ -175,22 +163,15 @@ export class MythicPlusPageComponent implements OnInit {
     this.route.snapshot.queryParamMap.get('dungeon') ?? undefined);
   readonly page = signal(parsePage(this.route.snapshot.queryParamMap.get('page')));
   readonly search = signal('');
-  /** The character `?character=` names, as written there; typing a search replaces it. */
   private readonly characterParam = signal(parseCharacterParam(this.route.snapshot.queryParamMap.get('character')));
   readonly expandedRunId = signal<string | undefined>(undefined);
   readonly view = signal<LeaderboardView>(
     this.route.snapshot.queryParamMap.get('view') === 'players' ? 'players' : 'runs');
-  /** List runs best first (by score) or newest first. */
   readonly runOrder = signal<'best' | 'latest'>(this.route.snapshot.queryParamMap.get('sort') === 'latest' ? 'latest' : 'best');
-  /** Players view only: one realm (its slug), one class, and optionally one of its specs. */
   readonly realmFilter = signal<string | undefined>(this.route.snapshot.queryParamMap.get('realm')?.toLowerCase() || undefined);
   readonly classFilter = signal<number | undefined>(parseClassFilter(this.route.snapshot.queryParamMap.get('class')));
   readonly specFilter = signal<string | undefined>(
     parseSpecFilter(this.classFilter(), this.route.snapshot.queryParamMap.get('spec')));
-  /**
-   * Players view, Roles: score each character only on the runs they played as a tank, a healer
-   * or DPS (like a spec filter, one role wide). Undefined is the plain Players ladder.
-   */
   readonly roleFilter = signal<MythicPlusRole | undefined>(
     this.view() === 'players' ? parseRoleFilter(this.route.snapshot.queryParamMap.get('role')) : undefined);
   readonly roles: readonly MythicPlusRole[] = ['tank', 'healer', 'dps'];
@@ -210,7 +191,6 @@ export class MythicPlusPageComponent implements OnInit {
     ];
   });
 
-  /** The realms in the export, the one with the most players first. */
   readonly realmOptions = computed<FilterDropdownOption[]>(() => {
     const players = new Map<string, number>();
     for (const [, realm] of this.index()?.players ?? []) {
@@ -228,8 +208,6 @@ export class MythicPlusPageComponent implements OnInit {
     return realm && (this.realmOptions().find(option => option.value === realm)?.label ?? realm);
   });
 
-  /** The realm / class / spec filters in use, as chips under the phone Filters button. */
-  /** One label per filter picked, so a class and its spec count as two. */
   readonly activeFilterLabels = computed(() => {
     const classId = this.classFilter();
     return [
@@ -239,11 +217,9 @@ export class MythicPlusPageComponent implements OnInit {
     ].filter((label): label is string => !!label);
   });
 
-  /** Every character in the export, to match `?character=` against. */
   private readonly indexCharacters = computed(() =>
     (this.index()?.players ?? []).map(([name, realm, , classId]) => ({ name, realm, classId })));
 
-  /** The character `?character=` names, matched to the export so a typed `progtrix-evermoon` works too. */
   readonly characterFilter = computed<CharacterFilter | undefined>(() => {
     const wanted = this.characterParam();
     if (!wanted) {
@@ -263,7 +239,6 @@ export class MythicPlusPageComponent implements OnInit {
 
   private decodeRuns?: (file: MythicPlusDungeonFile) => MythicPlusRun[];
   private readonly requestedDungeons = new Set<string>();
-  /** Set once a dungeon file from another export made the page load everything again. */
   private reloadedForNewerData = false;
 
   readonly dungeons = computed(() => this.index()?.dungeons ?? []);
@@ -278,7 +253,6 @@ export class MythicPlusPageComponent implements OnInit {
     new Map(this.dungeons().map(dungeon => [dungeon.id, dungeon])));
   private readonly affixesById = computed(() =>
     new Map((this.index()?.affixes ?? []).map(affix => [affix.id, affix])));
-  /** Worked out from the runs loaded so far; the leaderboard files carry no week of their own. */
   readonly affixWeek = computed(() => currentAffixWeek([...this.runsByDungeon().values()].flat()));
   readonly weekAffixes = computed(() => {
     const affixes = this.affixesById();
@@ -287,10 +261,8 @@ export class MythicPlusPageComponent implements OnInit {
       .filter((affix): affix is MythicPlusAffix => affix !== undefined);
   });
 
-  /** Raider.IO-style score colours from this season's standings, whichever dungeon is shown. */
   private readonly scoreColors = computed(() => seasonScoreColors(this.index()));
 
-  /** Runs in the selected scope, best first; undefined until every file the scope needs has loaded. */
   readonly scopeRuns = computed<readonly MythicPlusRun[] | undefined>(() => {
     const since = this.period() === 'week' ? this.affixWeek()?.since : undefined;
     const inPeriod = (runs: readonly MythicPlusRun[]) => since === undefined
@@ -313,13 +285,11 @@ export class MythicPlusPageComponent implements OnInit {
 
   readonly runsLoading = computed(() => !this.isLoading() && !this.loadError() && this.scopeRuns() === undefined);
 
-  /** Raw runs in the selected scope, for the spec popularity chart. */
   readonly dungeonRuns = computed(() => this.scopeRuns() ?? []);
 
   private readonly rankedRuns = computed<RankedRun[]>(() =>
     this.dungeonRuns().map((run, index) => ({ run, rank: index + 1 })));
 
-  /** Ranks are per dungeon filter (like raider.io); the player search narrows rows without renumbering them. */
   readonly filteredRows = computed<RankedRun[]>(() => {
     const ranked = this.rankedRuns();
     const character = this.characterFilter();
@@ -327,7 +297,6 @@ export class MythicPlusPageComponent implements OnInit {
     const rows = character
       ? ranked.filter(entry => runIncludesCharacter(entry.run, character.key))
       : query.trim() ? ranked.filter(entry => runIncludesPlayer(entry.run, query)) : ranked;
-    // Newest first keeps each run's score rank, so you can see how good the latest runs are.
     return this.runOrder() === 'latest'
       ? [...rows].sort((a, b) => Date.parse(b.run.completedAt) - Date.parse(a.run.completedAt) || a.rank - b.rank)
       : rows;
@@ -343,13 +312,11 @@ export class MythicPlusPageComponent implements OnInit {
     this.syncQueryParams();
   }
 
-  /** Characters in the selected scope by player score; only worked out once the players view is opened. */
   private readonly rankedPlayers = computed<RankedPlayer[]>(() => {
     const realm = this.realmFilter();
     const classId = this.classFilter();
     const spec = this.specFilter();
     const role = this.roleFilter();
-    // A spec (or role) filter scores each character on the runs they played as that spec (role) only.
     const include = realm === undefined && classId === undefined && role === undefined
       ? undefined
       : (member: MythicPlusMember) => (realm === undefined || realmSlug(member.realm) === realm)
@@ -367,10 +334,6 @@ export class MythicPlusPageComponent implements OnInit {
     return query.trim() ? ranked.filter(entry => memberNameMatches(entry.player.member, query)) : ranked;
   });
 
-  /**
-   * Scan-to-scan standings are overall season standings. Hide them in a scope whose ranks or
-   * scores have a different meaning instead of showing a misleading global comparison.
-   */
   private readonly showStandingChanges = computed(() => {
     const index = this.index();
     return !!index?.previousGeneratedAt
@@ -383,7 +346,6 @@ export class MythicPlusPageComponent implements OnInit {
       && this.roleFilter() === undefined;
   });
 
-  /** One lookup built from the compact index array, not a second pass over the run files. */
   private readonly standingChanges = computed(() => {
     const index = this.index();
     const changes = new Map<string, PlayerStandingChange>();
@@ -412,10 +374,6 @@ export class MythicPlusPageComponent implements OnInit {
   readonly totalPages = computed(() => pageCount(this.resultCount(), this.pageSize()));
   readonly currentPage = computed(() => Math.min(this.page(), this.totalPages()));
 
-  /**
-   * A player's score colour by season rank (as LKH and Raider.IO). One dungeon's score is a single
-   * run, so it uses the run scale; this week's scores are placed among this week's players.
-   */
   private readonly playerColor = computed(() => {
     const colors = this.scoreColors();
     if (this.selectedDungeon()) {
@@ -428,7 +386,6 @@ export class MythicPlusPageComponent implements OnInit {
     return (score: number) => scoreColor(score, tiers);
   });
 
-  /** Only the visible page is turned into display rows; a season holds tens of thousands of runs. */
   readonly pagedRows = computed<RunRow[]>(() => {
     const size = this.pageSize();
     const start = (this.currentPage() - 1) * size;
@@ -442,7 +399,6 @@ export class MythicPlusPageComponent implements OnInit {
     });
   });
 
-  /** Dungeons the players table has a best-run column for: the selected one, or all of them. */
   readonly playerDungeons = computed(() => {
     const dungeon = this.selectedDungeon();
     return dungeon ? [dungeon] : this.dungeons();
@@ -471,7 +427,6 @@ export class MythicPlusPageComponent implements OnInit {
     });
   });
 
-  /** Runs view with a character filter: how many runs they have in the selected scope. */
   readonly characterSummary = computed(() => {
     const character = this.characterFilter();
     if (!character || this.view() !== 'runs') {

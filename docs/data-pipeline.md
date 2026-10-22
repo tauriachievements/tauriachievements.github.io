@@ -113,7 +113,11 @@ git-ignored and regenerated on every build:
 
 - `players.snapshot.json`: every player, self-describing (`c` = column names, `k` = the ranking
   rules from `scripts/player-ranking.js`), in achievement-point order, with each player's rank
-  and value changes since the previous day's scan.
+  and value changes since the previous day's scan. `realm` and `faction` are indexes into the
+  file's own lists, played time is in whole minutes (the app works in seconds), and a "Level 10"
+  date is days since 1970-01-01 (0 when unknown). `readPlayerSnapshot` reads rows by column
+  name, never by position, so a column the build adds, drops or moves can't land in the wrong
+  field; a column it expects but the file lacks reads as 0 or `''` and is reported once.
 - `players.head.snapshot.json`: exactly the first 25,000 rows of the full snapshot. The ladder
   starts on it and loads the full file only when a search or sort needs it.
 - `players.history.snapshot.json`, `new-players.snapshot.json`, `stats.snapshot.json`,

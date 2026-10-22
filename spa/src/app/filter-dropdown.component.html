@@ -19,8 +19,6 @@
     (focus)="onTriggerFocus()"
     (keydown)="onTriggerKeydown($event)">
     @if (widthLabels(); as labels) {
-      <!-- Every label the dropdown can show shares one cell with the current one, out of sight:
-           the trigger keeps the widest one's width whatever is picked. -->
       <span class="trigger-fit">
         <span class="trigger-current"><ng-container *ngTemplateOutlet="currentSelection" /></span>
         @for (label of labels; track label) {

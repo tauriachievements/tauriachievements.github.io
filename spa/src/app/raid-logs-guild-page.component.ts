@@ -42,10 +42,6 @@ interface SummaryTile {
 
 const HISTORY_PREVIEW = 25;
 
-/**
- * /raid-logs/guild/:realm/:name: one guild's raid. Its progress and rank on each difficulty, the
- * first and fastest kill of each boss, and its kill history. Reads only the index.
- */
 @Component({
   selector: 'app-raid-logs-guild-page',
   imports: [RouterLink, UpdateBarComponent, BackToTopButtonComponent, RaidDifficultySwitchComponent, DatePipe],
@@ -73,7 +69,6 @@ export class RaidLogsGuildPageComponent {
   readonly lastEditedTimeZoneLabel = computed(() => getLocalTimeZoneLabel(this.lastEdited()));
   private readonly requestedDifficulty = signal(this.route.snapshot.queryParamMap.get('difficulty') ?? undefined);
 
-  /** Every kill of the guild the URL names: its realm, its name exactly, else ignoring case. */
   readonly guildKills = computed<RaidKill[]>(() => {
     const realm = realmSlug(this.params().get('realm') ?? '');
     const name = this.params().get('name') ?? '';
@@ -107,7 +102,6 @@ export class RaidLogsGuildPageComponent {
 
   readonly kills = computed(() => this.guildKills().filter(kill => kill.difficulty === this.difficulty()));
 
-  /** The guild's row in the progression of the whole difficulty, for its rank. */
   readonly progress = computed(() => {
     const index = this.index();
     const difficulty = this.difficulty();

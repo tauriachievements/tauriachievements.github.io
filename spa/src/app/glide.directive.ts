@@ -1,13 +1,5 @@
 import { DestroyRef, Directive, ElementRef, afterNextRender, inject } from '@angular/core';
 
-/**
- * Slides one highlight between the options of a switch or a picker, to whichever child has the
- * `active` class, instead of the highlight jumping. It sets --glide-x, --glide-y, --glide-w and
- * --glide-h on the host (the active child's box inside the host's padding box) and the class
- * `glide-ready`; the component's stylesheet draws the highlight from them (the glide-* mixins in
- * _mythic-plus-shared.scss). Until it's placed, and without ResizeObserver, the active child keeps
- * its own highlight, so nothing looks different.
- */
 @Directive({
   selector: '[appGlide]',
 })
@@ -27,7 +19,6 @@ export class GlideDirective {
         cancelAnimationFrame(frame);
         frame = requestAnimationFrame(() => this.place());
       };
-      // Size changes (wrapping, a font arriving, rotation) and a different option turning active.
       const resize = new ResizeObserver(schedule);
       resize.observe(this.host);
       const mutations = new MutationObserver(schedule);
@@ -44,13 +35,11 @@ export class GlideDirective {
 
   private place(): void {
     const active = this.host.querySelector<HTMLElement>(':scope > .active');
-    // Hidden (no layout), or nothing picked: drop the highlight. It comes back without sliding in.
     if (!active || active.offsetParent !== this.host) {
       this.host.classList.remove('glide-ready');
       return;
     }
 
-    // offset* ignore transforms, so a switch inside something that is animating still measures right.
     const style = this.host.style;
     style.setProperty('--glide-x', `${active.offsetLeft}px`);
     style.setProperty('--glide-y', `${active.offsetTop}px`);

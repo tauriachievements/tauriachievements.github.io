@@ -103,7 +103,6 @@
     padding: 46px 12px 20px;
   }
 
-  // The comparison label and the Filters button share the first row; the rest opens from the button.
   .movement-filter-bar {
     grid-template-columns: minmax(0, 1fr) auto;
     padding: 12px;

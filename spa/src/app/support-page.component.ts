@@ -22,10 +22,6 @@ import { UpdateBarComponent } from './update-bar.component';
 
 const QUOTE_SPANS = quoteSpans(TESTIMONIALS.map(({ quote }) => quote));
 
-/**
- * A name with its class colour and where it links: the Mythic+ profile when one is given, else the
- * armory page when its realm is.
- */
 function shownName({ name, classId, realm, mythicPlusProfile }: PlayerName) {
   return {
     name,
@@ -35,10 +31,6 @@ function shownName({ name, classId, realm, mythicPlusProfile }: PlayerName) {
   };
 }
 
-/**
- * /support: how to support the site, the people who have, and what players say about it.
- * The supporters and quotes are edited by hand in support.ts.
- */
 @Component({
   selector: 'app-support-page',
   imports: [
@@ -56,7 +48,6 @@ function shownName({ name, classId, realm, mythicPlusProfile }: PlayerName) {
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class SupportPageComponent {
-  /** Opens Xyhop's Discord profile, where visitors can send a friend request or a DM. */
   protected readonly discordUrl = 'https://discord.com/users/415206422503096320';
   protected readonly donations = DONATIONS.map((donation) => ({
     ...donation,
@@ -64,7 +55,6 @@ export class SupportPageComponent {
     icon: donationIcon(donation.currency),
     amountLabel: formatDonation(donation)
   }));
-  /** Each quote's width in the six-column grid comes from quoteSpans. */
   protected readonly testimonials = TESTIMONIALS.map((testimonial, index) => ({
     ...testimonial,
     names: testimonial.names.map(shownName),

@@ -46,9 +46,7 @@ interface MemberRow {
   member: RaidMember;
   amount: number;
   perSecond: number;
-  /** Of the raid's total, 0 to 100. */
   share: number;
-  /** Of the top member's amount, 0 to 100: the bar's length. */
   bar: number;
 }
 
@@ -64,10 +62,6 @@ interface SummaryTile {
   note: string;
 }
 
-/**
- * /raid-logs/log/:realm/:id: one kill. Who was there and what each of them did, the raid's totals,
- * how the kill ranks by speed, and the loot.
- */
 @Component({
   selector: 'app-raid-log-page',
   imports: [RouterLink, UpdateBarComponent, BackToTopButtonComponent, GlideDirective, RevealDirective, DatePipe, DecimalPipe],
@@ -87,7 +81,6 @@ export class RaidLogPageComponent {
   readonly metrics = METRICS;
   readonly index = signal<RaidLogsIndex | undefined>(undefined);
   readonly kill = signal<RaidKillDetails | undefined>(undefined);
-  /** The other kills of the same boss and difficulty, for the speed rank. */
   private readonly siblings = signal<RaidKill[]>([]);
   readonly isLoading = signal(true);
   readonly loadError = signal<string | undefined>(undefined);

@@ -8,7 +8,6 @@
 
 .over-time { color: #8a8a8a; }
 
-// Table (wide screens)
 .table-scroll {
   @include table-scroll;
   border-radius: 4px;
@@ -47,7 +46,6 @@
   &:hover { background: #333; }
 }
 
-// The player who followed one of their ranks here from their profile.
 .player-row.highlighted,
 .player-cards li.highlighted {
   background: #36302a;
@@ -61,8 +59,6 @@
 .col-rank, .col-score { line-height: 1.1; }
 .metric-value { display: inline; }
 
-// The rank itself owns the centered width. Movement is positioned from its right edge, so a
-// one-, two- or three-digit rank remains centered in the column instead of shifting left.
 .rank-metric { position: relative; display: inline-block; }
 .rank-metric > .rank-change,
 .rank-metric > .player-new {
@@ -73,8 +69,6 @@
   transform: translateY(-50%);
 }
 
-// Keep the current score centered at one stable point and attach its scan change to the right.
-// Both the heading and values move left together to leave room for that change in the last column.
 .score-metric { position: relative; display: inline-block; transform: translateX(-16px); }
 .col-score-heading span { display: inline-block; transform: translateX(-16px); }
 .score-metric > .player-new {
@@ -107,7 +101,6 @@
 
 .has-score-change { cursor: pointer; }
 
-// Immediate scan-delta tooltip: deliberately no transition or delay.
 .score-tooltip {
   position: absolute;
   z-index: 10;
@@ -137,7 +130,6 @@
 }
 .col-guild { max-width: 200px; overflow: hidden; color: #9a9a9a; font-size: .8rem; text-overflow: ellipsis; }
 
-// The guild name opens the guild's ladder; on a guild's own ladder the column holds the overall rank.
 .guild-link,
 .overall-link {
   color: inherit;
@@ -203,7 +195,6 @@ td.over-time { color: #8a8a8a; }
 
 .empty-row td { height: 120px; color: #9a9a9a; white-space: normal; }
 
-// Cards (narrow screens)
 .player-cards {
   margin: 0;
   padding: 0;
@@ -216,7 +207,6 @@ td.over-time { color: #8a8a8a; }
   li:nth-child(even) { background: #262626; }
 }
 
-// A tap anywhere opens the player's profile, as on a table row; the name is the link to tab to.
 .player-card {
   display: grid;
   width: 100%;
@@ -280,7 +270,6 @@ td.over-time { color: #8a8a8a; }
   white-space: nowrap;
 }
 
-// Only as wide as the name, so the rest of the card still opens the profile.
 a.card-guild {
   max-width: 100%;
   align-self: flex-start;
@@ -289,7 +278,6 @@ a.card-guild {
   &:hover { color: #fff; text-decoration: underline; }
   &:focus-visible { outline: 2px solid $gold; outline-offset: 1px; border-radius: 2px; }
 
-  // A taller tap target than the line it sits on, without moving the card's lines.
   @media (pointer: coarse) { margin: -4px 0; padding: 4px 12px 4px 0; }
 }
 
@@ -309,7 +297,6 @@ a.card-guild {
 
 .card-time { color: #bdbdbd; font-variant-numeric: tabular-nums; }
 
-// "EOA +17" per dungeon played; greyed when the best run there was over time.
 .best-chip {
   padding: 1px 6px;
   border-radius: 4px;
@@ -333,7 +320,6 @@ a.card-guild {
   text-align: center;
 }
 
-// Compare: a tick box per player while picking.
 .col-pick { width: 34px; text-align: center; }
 
 .pick-box {

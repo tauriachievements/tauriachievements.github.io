@@ -1,5 +1,3 @@
-// A compact, futuristic take on the site's palette: near-black glass panels with a gold-to-blurple
-// edge, a faint tech grid behind the top of the page, monospace labels and figures.
 @use './mythic-plus-shared' as shared;
 
 $gold: #f7b500;
@@ -12,7 +10,6 @@ $mono: ui-monospace, 'Cascadia Mono', 'SF Mono', Consolas, Menlo, monospace;
 
 :host { display: block; width: 100%; }
 
-// The top padding includes the 36 px (30 px on phones) the header is assumed to take.
 .support-page {
   position: relative;
   isolation: isolate;
@@ -23,7 +20,6 @@ $mono: ui-monospace, 'Cascadia Mono', 'SF Mono', Consolas, Menlo, monospace;
   line-height: 1.5;
 }
 
-// A faint grid and two glows behind the top of the page, fading out to the sides and downwards.
 .support-page::before {
   content: '';
   position: absolute;
@@ -39,10 +35,6 @@ $mono: ui-monospace, 'Cascadia Mono', 'SF Mono', Consolas, Menlo, monospace;
   pointer-events: none;
 }
 
-// --- Layout --------------------------------------------------------------------------------------
-
-// The message and its two tiles side by side, then the supporters beside the quotes. The quotes
-// span two rows, so a short supporters list doesn't stretch its panel into an empty box.
 .bento {
   display: grid;
   grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
@@ -69,10 +61,6 @@ $mono: ui-monospace, 'Cascadia Mono', 'SF Mono', Consolas, Menlo, monospace;
   box-shadow: 0 14px 36px rgba(0, 0, 0, .45);
 }
 
-// --- Message -------------------------------------------------------------------------------------
-
-// The panel's background with a glow from the top-left corner on top: a background layer rather
-// than a pseudo-element, which the spotlight takes.
 .hero {
   padding: 20px 22px 22px;
   background:
@@ -92,8 +80,6 @@ $mono: ui-monospace, 'Cascadia Mono', 'SF Mono', Consolas, Menlo, monospace;
   }
 }
 
-// A lit edge along the top of the message, over its border. An element of its own so it can light
-// up from the middle when the page opens (support-page.motion.scss).
 .hero-edge {
   position: absolute;
   top: -1px;
@@ -181,9 +167,6 @@ $mono: ui-monospace, 'Cascadia Mono', 'SF Mono', Consolas, Menlo, monospace;
   .cta:hover & { transform: translate(2px, -2px); }
 }
 
-// --- Tiles ---------------------------------------------------------------------------------------
-
-// The second tile takes up any height the message has over the two of them.
 .perks {
   display: grid;
   grid-template-rows: auto 1fr;
@@ -191,7 +174,6 @@ $mono: ui-monospace, 'Cascadia Mono', 'SF Mono', Consolas, Menlo, monospace;
   list-style: none;
 }
 
-// Content sits in the middle so the stretched tile has even space above and below.
 .perk {
   display: flex;
   flex-direction: column;
@@ -203,7 +185,6 @@ $mono: ui-monospace, 'Cascadia Mono', 'SF Mono', Consolas, Menlo, monospace;
   strong { color: $gold-soft; }
 }
 
-// The page title's font, at the size of the panel titles.
 .perk-label {
   margin-bottom: 6px;
   color: #fff;
@@ -213,10 +194,8 @@ $mono: ui-monospace, 'Cascadia Mono', 'SF Mono', Consolas, Menlo, monospace;
   line-height: 1.2;
 }
 
-// The supporter role's colour on the Discord server.
 .perk .supporter-rank { color: #ff0000; }
 
-// The in-game recipient for gold, set apart so it's easy to copy.
 .character-name {
   padding: 0 6px;
   border: 1px solid rgba($gold, .25);
@@ -224,8 +203,6 @@ $mono: ui-monospace, 'Cascadia Mono', 'SF Mono', Consolas, Menlo, monospace;
   background: rgba($gold, .1);
   white-space: nowrap;
 }
-
-// --- Supporters and kind words -------------------------------------------------------------------
 
 .supporters-panel,
 .words-panel { padding: 14px 16px 16px; }
@@ -243,7 +220,6 @@ $mono: ui-monospace, 'Cascadia Mono', 'SF Mono', Consolas, Menlo, monospace;
     font-size: 1rem;
     letter-spacing: .02em;
 
-    // A small lit bar in front of the title.
     &::before {
       content: '';
       width: 3px;
@@ -270,7 +246,6 @@ $mono: ui-monospace, 'Cascadia Mono', 'SF Mono', Consolas, Menlo, monospace;
   font-size: .8rem;
 }
 
-// One supporter below the other, in the order of DONATIONS.
 .supporters {
   margin-top: 12px;
   border-top: 1px solid $line;
@@ -302,7 +277,6 @@ $mono: ui-monospace, 'Cascadia Mono', 'SF Mono', Consolas, Menlo, monospace;
   font-size: .95rem;
 }
 
-// Several characters of one supporter wrap onto a second line rather than being cut off.
 .supporter-name {
   color: $gold;
   font-size: .92rem;
@@ -310,7 +284,6 @@ $mono: ui-monospace, 'Cascadia Mono', 'SF Mono', Consolas, Menlo, monospace;
   overflow-wrap: anywhere;
 }
 
-// A supporter's or quote author's character name, opening its armory or Mythic+ profile page.
 .name-link {
   color: inherit;
   text-decoration: none;
@@ -333,7 +306,6 @@ $mono: ui-monospace, 'Cascadia Mono', 'SF Mono', Consolas, Menlo, monospace;
   white-space: nowrap;
 }
 
-// An open place at the end of the list, for the next supporter.
 .supporter-slot {
   display: flex;
   align-items: center;
@@ -365,7 +337,6 @@ $mono: ui-monospace, 'Cascadia Mono', 'SF Mono', Consolas, Menlo, monospace;
   font-family: $mono;
 }
 
-// Six columns: quotes sit two or three to a row, long ones alone, and later ones fill any gap.
 .quotes {
   display: grid;
   grid-template-columns: repeat(6, minmax(0, 1fr));
@@ -373,7 +344,6 @@ $mono: ui-monospace, 'Cascadia Mono', 'SF Mono', Consolas, Menlo, monospace;
   gap: 8px;
 }
 
-// --span (quoteSpans) is how many of the six columns the quote takes.
 .quote {
   grid-column: span var(--span, 3);
   margin: 0;
@@ -387,11 +357,9 @@ $mono: ui-monospace, 'Cascadia Mono', 'SF Mono', Consolas, Menlo, monospace;
     font-size: .88rem;
     line-height: 1.5;
 
-    // Quotes are kept as they were typed; on the page each one starts with a capital.
     &::first-letter { text-transform: uppercase; }
   }
 
-  // Who said it along the top (name left, where they said it right), then the quote.
   figcaption {
     display: flex;
     align-items: center;
@@ -437,10 +405,6 @@ $mono: ui-monospace, 'Cascadia Mono', 'SF Mono', Consolas, Menlo, monospace;
   }
 }
 
-// --- Spotlight -----------------------------------------------------------------------------------
-
-// As on the Mythic+ records page: under the mouse a box's edge lights up gold where the pointer is
-// (SpotlightDirective). The small cards lift towards it too; the large panels stay put.
 .hero,
 .supporters-panel,
 .words-panel { @include shared.spotlight-card($lift: false); }
@@ -452,8 +416,6 @@ $mono: ui-monospace, 'Cascadia Mono', 'SF Mono', Consolas, Menlo, monospace;
   .cta,
   .cta-arrow { transition: none; }
 }
-
-// --- Smaller screens -----------------------------------------------------------------------------
 
 @media (max-width: 960px) {
   .bento {

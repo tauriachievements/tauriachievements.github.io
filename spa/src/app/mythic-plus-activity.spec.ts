@@ -17,7 +17,6 @@ const dungeon = (id: string, timerSeconds = 1800): MythicPlusDungeon =>
   ({ id, challengeId: 0, shortName: id.toUpperCase(), name: id, timerSeconds, icon: '', runCount: 0, bestScore: 0 });
 const member = (name: string): MythicPlusMember =>
   ({ name, realm: 'Evermoon', class: 11, race: 4, gender: 1, spec: 'Restoration', role: 'healer' });
-/** A run finishing at a local time, so day grouping is the same in every time zone. */
 const run = (local: [number, number, number, number], keyLevel: number, clearTimeSeconds: number,
   affixes: number[] = [], dungeonId = 'nl', roster = [member('Pretz')]) => ({
   dungeon: dungeonId,

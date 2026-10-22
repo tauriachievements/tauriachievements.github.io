@@ -1,12 +1,10 @@
 export type ArenaBracket = '2v2' | '3v3';
 export const ARENA_BRACKETS: readonly ArenaBracket[] = ['2v2', '3v3'];
 
-/** The bracket a `?bracket=` value asks for; 2v2 for anything else. */
 export function parseArenaBracket(value: string | null): ArenaBracket {
   return ARENA_BRACKETS.find(bracket => bracket === value) ?? '2v2';
 }
 
-/** The data file BattlegroundCollector (RatedArenaGameCounter) writes for a bracket. */
 export function getArenaGamesFile(bracket: ArenaBracket): string {
   return `rated-${bracket}-arena-games.json`;
 }

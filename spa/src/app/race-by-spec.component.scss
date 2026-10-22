@@ -1,21 +1,16 @@
 @use './mythic-plus-shared' as shared;
 
-// Laid over mythic-plus-spec-chart.component.scss, which gives the card, header, faction switch
-// and tooltip box the look of the spec popularity chart.
-
 .race-card {
   display: flex;
   flex-direction: column;
   gap: 12px;
   padding-bottom: 14px;
-  // Two columns of rows only when the card itself is wide, whichever page it sits on.
   container-type: inline-size;
 }
 
 .chart-header { align-items: baseline; }
 .chart-heading { flex: 1 1 420px; }
 
-// Below 900 px the spec chart's styles give the switch a full-width row of even buttons.
 @media (min-width: 901px) {
   .segmented { flex: none; }
 }
@@ -50,7 +45,6 @@
   list-style: none;
 }
 
-// Down the first column, then the second, so each class's specs stay together.
 @container (min-width: 1000px) {
   .race-rows {
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -109,7 +103,6 @@
 
 .nobody .spec-icon { opacity: .35; filter: grayscale(1); }
 
-// The spec's characters split between its three most-played races, then all the others.
 .track {
   position: relative;
   display: block;
@@ -137,7 +130,6 @@
   background: #222;
   transform-origin: left;
 
-  // Shrinking absorbs the 2 px gaps, so the segments never overflow the bar.
   .segment { min-width: 0; height: 100%; flex: 0 1 auto; }
 }
 
@@ -146,7 +138,6 @@
 .tone-2 { background: color-mix(in srgb, var(--class-color) 30%, #1b1b1b); }
 .tone-3 { background: #3a3a3a; }
 
-// Opens above the bar, from its left edge.
 .tooltip {
   top: auto;
   bottom: calc(100% + 6px);
@@ -189,11 +180,9 @@
 }
 
 @media (pointer: coarse) {
-  // The 14 px bars are hard to hit with a finger; the invisible strip makes them about 34 px tall.
   .track::before { position: absolute; inset: -10px 0; content: ''; }
 }
 
-// Phones: the spec and its leading race share a line, and the bar gets the full width below.
 @media (max-width: shared.$phone-breakpoint) {
   .race-row {
     grid-template-columns: minmax(0, 1fr) auto;

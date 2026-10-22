@@ -1,5 +1,3 @@
-// A quiet product page in the support page's palette: a centred pitch with one gold download
-// button, a large screenshot, then the features and a second button. Plenty of room, few borders.
 @use './mythic-plus-shared' as shared;
 
 $gold: #f7b500;
@@ -12,7 +10,6 @@ $mono: ui-monospace, 'Cascadia Mono', 'SF Mono', Consolas, Menlo, monospace;
 
 :host { display: block; width: 100%; }
 
-// The top padding includes the 36 px (30 px on phones) the header is assumed to take.
 .addon-page {
   position: relative;
   isolation: isolate;
@@ -23,7 +20,6 @@ $mono: ui-monospace, 'Cascadia Mono', 'SF Mono', Consolas, Menlo, monospace;
   line-height: 1.5;
 }
 
-// A faint grid and a gold glow behind the pitch, fading out to the sides and downwards.
 .addon-page::before {
   content: '';
   position: absolute;
@@ -48,8 +44,6 @@ $mono: ui-monospace, 'Cascadia Mono', 'SF Mono', Consolas, Menlo, monospace;
     linear-gradient(140deg, rgba($gold, .38), $line 32%, $line 68%, rgba($blurple, .34)) border-box;
   box-shadow: 0 14px 36px rgba(0, 0, 0, .45);
 }
-
-// --- Pitch ---------------------------------------------------------------------------------------
 
 .hero {
   max-width: 720px;
@@ -101,7 +95,6 @@ $mono: ui-monospace, 'Cascadia Mono', 'SF Mono', Consolas, Menlo, monospace;
   text-wrap: balance;
 }
 
-// The page's one loud element, used in the pitch and again at the end.
 .download {
   position: relative;
   display: inline-flex;
@@ -145,8 +138,6 @@ $mono: ui-monospace, 'Cascadia Mono', 'SF Mono', Consolas, Menlo, monospace;
   font-size: .82rem;
 }
 
-// --- Screenshots ---------------------------------------------------------------------------------
-
 .showcase { margin-top: 56px; }
 
 .showcase-tabs {
@@ -182,8 +173,6 @@ $mono: ui-monospace, 'Cascadia Mono', 'SF Mono', Consolas, Menlo, monospace;
   }
 }
 
-// The four images lie on top of each other, so switching never moves the page. The frame takes the
-// widest one's proportions and the others sit in it whole.
 .showcase-frame {
   display: grid;
   aspect-ratio: 1216 / 665;
@@ -206,8 +195,6 @@ $mono: ui-monospace, 'Cascadia Mono', 'SF Mono', Consolas, Menlo, monospace;
 
   &.is-active { opacity: 1; }
 }
-
-// --- Features ------------------------------------------------------------------------------------
 
 .features { margin-top: 96px; }
 
@@ -255,7 +242,6 @@ $mono: ui-monospace, 'Cascadia Mono', 'SF Mono', Consolas, Menlo, monospace;
     font-size: 1rem;
     line-height: 1.25;
 
-    // A small lit bar in front of the title, as on the support page's panels.
     &::before {
       content: '';
       flex-shrink: 0;
@@ -292,8 +278,6 @@ $mono: ui-monospace, 'Cascadia Mono', 'SF Mono', Consolas, Menlo, monospace;
     text-align: center;
   }
 }
-
-// --- Closing -------------------------------------------------------------------------------------
 
 .closing {
   @extend %panel;
@@ -337,17 +321,9 @@ $mono: ui-monospace, 'Cascadia Mono', 'SF Mono', Consolas, Menlo, monospace;
   }
 }
 
-// --- Spotlight -----------------------------------------------------------------------------------
-
-// Under the mouse a card's edge lights up gold where the pointer is (SpotlightDirective).
 .feature { @include shared.spotlight-card; }
 .closing { @include shared.spotlight-card($lift: false); }
 
-// --- Motion --------------------------------------------------------------------------------------
-
-// The pitch comes into focus line by line, then the screenshot; further down, sections rise in
-// with the scroll (ScrollRiseDirective marks the ones that start below the screen). The keyframes
-// are global mp-* ones in src/scss/_motion.scss.
 @include shared.motion-safe {
   .kicker,
   .hero h1,
@@ -364,7 +340,6 @@ $mono: ui-monospace, 'Cascadia Mono', 'SF Mono', Consolas, Menlo, monospace;
 
   .kicker-dot { animation: mp-dot-pop 500ms var(--ease-spring) 300ms backwards, mp-ping 2s ease-out 900ms infinite; }
 
-  // A sheen crosses the download button once the page has settled, and again on every hover.
   .download::after {
     content: '';
     position: absolute;
@@ -395,8 +370,6 @@ $mono: ui-monospace, 'Cascadia Mono', 'SF Mono', Consolas, Menlo, monospace;
   .showcase-image { transition: none; }
 }
 
-// --- Smaller screens -----------------------------------------------------------------------------
-
 @media (max-width: 900px) {
   .features-body { grid-template-columns: minmax(0, 1fr); }
 
@@ -413,7 +386,6 @@ $mono: ui-monospace, 'Cascadia Mono', 'SF Mono', Consolas, Menlo, monospace;
   .showcase { margin-top: 40px; }
   .showcase-tabs { gap: 4px; }
 
-  // All four on one row on a phone.
   .showcase-tab {
     padding: 5px 10px;
     font-size: .76rem;

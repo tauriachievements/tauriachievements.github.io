@@ -2,23 +2,16 @@ import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 import { DataFileService } from './data-file.service';
 
-/** A counted bucket keyed by a game id, whose display name lives in the view layer. */
 export interface ServerStatsIdCount {
   id: number;
   count: number;
 }
 
-/** A counted bucket that already carries its own name - a realm, guild or faction. */
 export interface ServerStatsNamedCount {
   name: string;
   count: number;
 }
 
-/**
- * Server-wide aggregates, precomputed by `scripts/generate-server-stats.js` whenever
- * Players.csv is rescanned. Shape mirrors that script's output; see its header for why
- * threshold labels ship with the data while entity names and colors do not.
- */
 export interface ServerStatsSnapshot {
   totalPlayers: number;
   guildedPlayers: number;

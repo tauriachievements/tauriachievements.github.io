@@ -198,7 +198,6 @@ describe('runIncludesCharacter', () => {
   ];
 
   it('keeps only runs of the clicked character, not of similar names or another realm', () => {
-    // The player row carries the key rankPlayers gave it.
     const nap = rankPlayers(runs).find(player => player.member.name === 'Nap' && player.member.realm === 'Tauri');
     expect(nap?.key).toBe(characterKey(member('Nap')));
 
@@ -274,7 +273,6 @@ describe('sharesTables', () => {
   it('matches a dungeon file only to the index of the same tables', () => {
     expect(sharesTables({ tables: 'aaa' }, { tables: 'aaa' })).toBe(true);
     expect(sharesTables({ tables: 'aaa' }, { tables: 'bbb' })).toBe(false);
-    // An index from before the fingerprint existed cannot vouch for a newer file.
     expect(sharesTables({}, { tables: 'bbb' })).toBe(false);
   });
 });
@@ -308,7 +306,6 @@ describe('rankPlayers', () => {
     expect(ranked.map(player => [player.member.name, player.score])).toEqual([
       ['Pashao', 370], ['Abe', 180], ['Bea', 180]
     ]);
-    // Shown with the spec of their highest run.
     expect(ranked[0].member.spec).toBe('Havoc');
     expect(ranked[0].primarySpec).toBe('Havoc');
   });
@@ -351,7 +348,6 @@ describe('pageCount', () => {
 });
 
 describe('score colours', () => {
-  // 2000 players scoring 2000 down to 1: the top 0.1% is 2 players, the top 1% 20.
   const scores = Array.from({ length: 2000 }, (_, i) => 2000 - i);
   const tiers = scoreTiers(scores);
 

@@ -9,7 +9,6 @@ export interface LadderQuery {
   faction?: string;
   playerClass?: number;
   search?: string;
-  /** Maximum number of rows to return. */
   limit: number;
 }
 
@@ -33,7 +32,6 @@ type RankDeltaField = keyof Pick<
   'achievementRankDelta' | 'honorableKillsRankDelta' | 'appearanceRankDelta' | 'achievementsTotalRankDelta' | 'playedTimeRankDelta'
 >;
 
-/** The change since the previous scan for each ranked field; item level has no history. */
 const DELTA_FIELD: Readonly<Record<PlayerRankingField, DeltaField | undefined>> = {
   achievementPoints: 'achievementPointsDelta',
   honorableKills: 'honorableKillsDelta',
@@ -52,12 +50,6 @@ const RANK_DELTA_FIELD: Readonly<Record<LadderSort, RankDeltaField | undefined>>
   ilvl: undefined
 };
 
-/**
- * Serves the ladders. Players arrive already in achievement-point rank order, and the
- * other rankings follow the rules the build shipped with them (`PlayerRankings`): fields
- * compared highest-first, remaining ties kept in that order. Array#sort is stable, so this
- * reproduces the build's ranks exactly without the browser keeping its own comparators.
- */
 @Injectable({ providedIn: 'root' })
 export class LadderService {
   private readonly dataSyncService = inject(DataSyncService);
@@ -110,7 +102,6 @@ export class LadderService {
     return 0;
   }
 
-  /** Sorted once per dataset and ranking, on first use. */
   private getSortedIndex(dataset: PlayerDataset, sort: LadderSort): IndexedLadderPlayer[] {
     if (this.indexedSource !== dataset.players) {
       this.indexedSource = dataset.players;
@@ -157,10 +148,6 @@ export class LadderService {
       : visible;
   }
 
-  /**
-   * Movement within a filtered population (a realm, faction or class): the current rank
-   * inside the cohort against the rank the same cohort had in the previous scan.
-   */
   private buildCohortRankDeltas(
     cohort: IndexedLadderPlayer[],
     fields: readonly PlayerRankingField[]

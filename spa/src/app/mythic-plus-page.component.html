@@ -160,7 +160,6 @@
               [expanded]="filtersOpen()"
               [activeFilters]="activeFilterLabels()"
               (expandedChange)="filtersOpen.set($event)" />
-            <!-- Roles: which ladder, with the same icons as the run table's columns. -->
             @if (roleFilter(); as currentRole) {
               <div class="view-switch role-switch" role="group" aria-label="Rank tanks, healers or DPS" appGlide>
                 @for (role of roles; track role) {
@@ -187,8 +186,6 @@
                 }
               </div>
             }
-            <!-- Reset and Spec are always there, greyed out until they apply, so picking a class
-                 doesn't widen the row and push it onto a new line. -->
             <button
               type="button"
               class="filter-reset collapsible-filter"
@@ -294,7 +291,6 @@
       <ng-container *ngTemplateOutlet="pager; context: { $implicit: true }"></ng-container>
     }
   }
-  <!-- Compare: who is picked, and opening the comparison. -->
   @if (compareMode()) {
     <aside class="compare-tray" aria-label="Players picked to compare" animate.leave="tray-leaving">
       @if (!picked().length) {
@@ -304,7 +300,6 @@
       }
       @if (picked().length) {
         <ul class="compare-picks">
-          <!-- Each name is named like its column's name on the compare page, so Compare carries it there. -->
           @for (pick of picked(); track pick.key) {
             <li animate.leave="chip-leaving">
               <span class="compare-pick-name" [style.color]="pick.color" [style.view-transition-name]="pick.nameTransition">{{ pick.name }}</span>
@@ -313,7 +308,6 @@
           }
         </ul>
       }
-      <!-- A new count is a new element, so it bumps each time a pick is added or removed. -->
       <span class="compare-count">@for (count of [picked().length]; track count) {
         <span class="compare-count-value">{{ count }}</span>
       } / {{ compareLimit }}</span>
@@ -347,7 +341,6 @@
     @if (!atBottom && selectedDungeonTimer(); as timer) {
       <span class="pager-timer">Timer {{ timer }}</span>
     }
-    <!-- At the top it sits beside the title instead, so the filters fit beside the buttons. -->
     @if (atBottom) {
       <ng-container *ngTemplateOutlet="pagerStatus"></ng-container>
     }

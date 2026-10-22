@@ -71,9 +71,6 @@
   }
 }
 
-// widthLabels: the current selection and every possible label stacked in one grid cell; only
-// the current one shows. overflow: hidden keeps the hidden labels from widening the page when
-// the trigger is squeezed (phones), and the current label then ends in an ellipsis.
 .trigger-fit {
   display: grid;
   grid-template-columns: minmax(0, auto);

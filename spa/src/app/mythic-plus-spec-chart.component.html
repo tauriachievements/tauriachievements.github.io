@@ -63,8 +63,6 @@
 
   @if (showBody() && popularity().total > 0) {
     <div class="chart-scroll" id="spec-chart-body">
-      <!-- The bars grow in the first time the chart is on screen; after that a filter reshapes it
-           (appFlip): classes slide to their new order and bars grow or shrink to their new share. -->
       <div class="chart" appReveal>
         <div class="y-axis" aria-hidden="true">
           @for (line of gridlines(); track line) {

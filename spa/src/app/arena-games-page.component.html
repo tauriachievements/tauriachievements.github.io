@@ -46,7 +46,6 @@
       }
     </div>
 
-    <!-- How each title's spots are counted: its share of the active players, exact and rounded up. -->
     @if (dataset()) {
       <section class="titles" aria-labelledby="titles-heading">
         <h2 id="titles-heading" class="titles-heading">Season titles</h2>
@@ -63,7 +62,6 @@
               </tr>
             </thead>
             <tbody>
-              <!-- 2v2 gives no Season Gladiator; the row stays so both brackets' tables match. -->
               @if (!hasSeasonGladiator()) {
                 <tr class="tier-season-gladiator">
                   <th scope="row">
@@ -153,7 +151,6 @@
           </thead>
           <tbody>
             @for (player of players(); track `${player.realm}::${player.guid}`; let index = $index) {
-              <!-- In the rating sort each title's players sit under a heading of their own. -->
               @if (titleGroups().has(index)) {
                 <tr
                   class="title-group"

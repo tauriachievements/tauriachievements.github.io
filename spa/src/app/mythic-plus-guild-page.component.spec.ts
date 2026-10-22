@@ -35,7 +35,6 @@ const index: MythicPlusIndex = {
     ['Twin', 'Tauri', 'Skill Issue', 5, 1, 0],
     ['Newbie', 'Evermoon', 'Skill Issue', 5, 1, 0]
   ],
-  // Polán climbed past Dksmus overall (5 -> 2, 1 -> 3); Newbie is new since the last scan.
   standings: [
     [280, 3, 0, -2],
     [290, 2, 25, 3],
@@ -58,7 +57,6 @@ const runs: Record<string, MythicPlusRunEntry[]> = {
 
 class FakeDataFiles {
   refreshes = 0;
-  /** Dungeon files carry another export's tables until refresh() when set. */
   constructor(private staleTables?: string, private readonly staysStale = false) {}
 
   getJson<T>(): Observable<T> {
@@ -112,7 +110,6 @@ describe('MythicPlusGuildPageComponent', () => {
     const { page, element } = await open('/mythic-plus/guild/evermoon/Skill%20Issue');
 
     expect(element.querySelector('h1')?.textContent).toBe('Skill Issue');
-    // Twin is in a Skill Issue on Tauri: another guild.
     expect(texts(element, '.player-row .member-link').map(name => name?.split(' ')[0])).toEqual(['Polán', 'Dksmus', 'Newbie']);
     expect(page.rows().map(row => [row.rank, row.overall?.rank, row.score])).toEqual([[1, 2, 290], [2, 3, 280], [3, 5, 120]]);
     expect(texts(element, 'a.overall-link')).toEqual(['#2', '#3', '#5']);
@@ -136,7 +133,6 @@ describe('MythicPlusGuildPageComponent', () => {
   it('shows guild-rank movement worked out from the overall standings', async () => {
     const { page, element } = await open('/mythic-plus/guild/evermoon/Skill%20Issue');
 
-    // Polán passed Dksmus inside the guild: one place each. Newbie is new.
     expect(page.rows().map(row => [row.member.name, row.change, row.newSinceLastScan])).toEqual([
       ['Polán', { rank: 1, score: 25 }, false],
       ['Dksmus', { rank: -1, score: 0 }, false],
@@ -162,7 +158,6 @@ describe('MythicPlusGuildPageComponent', () => {
 
     TestBed.resetTestingModule();
     const dungeon = await open('/mythic-plus/guild/evermoon/Skill%20Issue?dungeon=dht');
-    // Dksmus and Newbie timed the same DHT together: the same score and time.
     expect(dungeon.page.rows().map(row => [row.member.name, row.rank, row.score])).toEqual([
       ['Polán', 1, 150], ['Dksmus', 2, 120], ['Newbie', 2, 120]
     ]);

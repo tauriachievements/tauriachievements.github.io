@@ -11,7 +11,6 @@
   color: #e0e0e0;
 }
 
-// Season / this week switch, with the current week's affixes beside it.
 .period-bar {
   position: relative;
   display: flex;
@@ -23,7 +22,6 @@
   .view-switch button:disabled { opacity: .45; cursor: not-allowed; }
 }
 
-// "How scores work", at the right end of the season row: quiet, but always one click away.
 .scores-link {
   display: inline-flex;
   align-items: center;
@@ -56,15 +54,12 @@
   font-weight: 700;
 }
 
-// Dungeon picker — scopes both the chart and the leaderboard below it. `auto-fit` stretches the tiles
-// evenly across the full width (one row on desktop) and wraps them into even rows on small screens.
 .dungeon-picker {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(52px, 1fr));
   gap: 6px;
   margin-bottom: 10px;
 
-  // The gold frame glides to the picked dungeon.
   @include glide-frame;
 }
 
@@ -93,7 +88,6 @@
   &.active { border-color: $gold; background: #231d0a; color: $gold; box-shadow: 0 0 12px rgba(247, 181, 0, .2); }
   &:focus-visible { outline: 2px solid $gold; outline-offset: 2px; }
 
-  // The icon lifts towards the pointer.
   @include motion-safe {
     img, .dungeon-tile-all { transition: transform 360ms var(--ease-spring), box-shadow var(--dur) ease; }
 
@@ -113,7 +107,6 @@
 
 .spec-chart { display: block; margin-bottom: 10px; }
 
-// Toolbar + pager
 .toolbar {
   display: flex;
   flex-wrap: wrap;
@@ -140,14 +133,11 @@
   align-items: center;
   gap: 10px;
 
-  // First in the markup (and tab order), last on the row.
   .view-switch { order: 1; }
 }
 
-// The icon on the Compare button.
 .scoring-link-chart { width: 14px; height: 14px; flex: none; fill: $gold; }
 
-// The Compare button.
 .scoring-link {
   display: inline-flex;
   align-items: center;
@@ -166,7 +156,6 @@
   &:focus-visible { outline: 2px solid $gold; outline-offset: 2px; }
 }
 
-// Roles: Tank / Healer / DPS, each with its column icon from the run table.
 .role-switch button { display: inline-flex; align-items: center; gap: 6px; }
 
 .role-icon {
@@ -184,7 +173,6 @@
   &.dps { color: #e5484d; }
 }
 
-// Same look as the spec chart's role / count filters.
 .view-switch {
   display: inline-flex;
   padding: 2px;
@@ -210,7 +198,6 @@
   }
 }
 
-// The top pager shares its row with the player search.
 .pager-row {
   display: flex;
   flex-wrap: wrap;
@@ -222,7 +209,6 @@
   .pager { margin-bottom: 0; }
 }
 
-// Above the pager while a character filter is on: their run count, picked out in gold.
 .character-summary {
   margin: 0 0 12px;
   font-size: 1rem;
@@ -237,7 +223,6 @@
   .character-summary-realm { color: #8a8a8a; }
 }
 
-// Class / spec dropdowns (players view) sit in front of the search box.
 .leaderboard-filters {
   display: flex;
   flex-wrap: wrap;
@@ -267,7 +252,6 @@
   &:disabled { opacity: .45; cursor: default; }
 }
 
-// The character from `?character=`; the runs list shows only their runs until it's removed.
 .character-chip {
   display: inline-flex;
   align-items: center;
@@ -285,7 +269,6 @@
   .character-chip-realm { color: #8a8a8a; font-weight: 400; white-space: nowrap; }
 }
 
-// Pushed to the chip's right end when the chip fills a phone-wide row.
 .character-chip-profile {
   margin-left: auto;
   padding: 5px 9px;
@@ -369,7 +352,6 @@
   font-variant-numeric: tabular-nums;
 }
 
-// Loading / error
 .feedback { display: flex; min-height: 280px; flex-direction: column; align-items: center; justify-content: center; gap: 14px; }
 
 .feedback button {
@@ -392,7 +374,6 @@
 
 @keyframes spin { to { transform: rotate(360deg); } }
 
-// Touch screens: every switch, link and pager button at least 40 px tall.
 @media (pointer: coarse) {
   .view-switch button { min-height: 40px; }
   .scoring-link { min-height: 40px; }
@@ -417,7 +398,6 @@
     .dungeon-tile-all { width: 30px; height: 30px; }
   }
 
-  // Runs / Players across the full width; the two links share the row under it.
   .toolbar-actions {
     width: 100%;
 
@@ -425,34 +405,25 @@
     .view-switch button { flex: 1 1 0; }
   }
 
-  // Compare gets its own full-width row under Best / Latest and Runs / Players.
   .scoring-link { flex: 1 1 100%; justify-content: center; text-align: center; }
 
-  // Search (and the Class filters) first, then the pager.
   .pager-row { flex-direction: column; align-items: stretch; }
   .pager-row .leaderboard-filters { order: -1; }
 
-  // Four equal buttons, page count under them.
   .pager { flex-direction: column; align-items: stretch; gap: 6px; }
   .pager-buttons button { flex: 1 1 0; padding: 6px 4px; }
   .pager-status, .pager-timer { text-align: center; }
 
-  // Filters button (players view) and the search share the first row; the class and spec
-  // dropdowns and Reset open on the row under them.
   .leaderboard-filters { flex-wrap: wrap; }
-  // The search takes at least half the row and each dropdown a third, so the dropdowns can't
-  // squeeze in beside them and always wrap onto their own row, three across.
   .player-search { flex: 1 1 50%; min-width: 140px; order: -1; }
   .player-search input { width: 100%; }
   .character-chip { flex: 1 1 100%; order: -2; }
   .filter-slot { flex: 1 1 calc((100% - 16px) / 3); width: auto; min-width: 0; }
   .filters-collapsed .collapsible-filter { display: none; }
-  // These rows wrap anyway, so Reset only shows once something is filtered, after the dropdowns.
   .filter-reset { order: 1; }
   .filter-reset:disabled { display: none; }
 }
 
-// Compare: the toggle in the toolbar, and the tray of picks along the bottom while picking.
 .compare-toggle {
   font: inherit;
   font-size: .8rem;
@@ -520,8 +491,6 @@
 .compare-count { color: #8a8a8a; font-size: .8rem; font-variant-numeric: tabular-nums; }
 .compare-count-value { display: inline-block; }
 
-// The tray springs up from the bottom edge and drops back on Cancel; a pick pops in, shrinks away
-// when removed, and the count bumps. `translate` adds to the tray's centring transform.
 @include motion-safe {
   .compare-tray { animation: mp-tray-in 520ms var(--ease-spring) both; }
   .compare-tray.tray-leaving { animation: mp-tray-out var(--dur) var(--ease-in-out) forwards; }
@@ -530,7 +499,6 @@
   .compare-count-value { animation: mp-count-bump 420ms var(--ease-spring); }
 }
 
-// Carried into the compare page's column names; see characterTransitionName.
 .compare-pick-name { view-transition-class: character; }
 
 .compare-cancel {
@@ -559,5 +527,4 @@
   &.disabled { background: #3a3a3a; color: #8a8a8a; pointer-events: none; }
 }
 
-// Room under the last rows so the tray does not cover them.
 :host:has(.compare-tray) .mplus-page { padding-bottom: 110px; }

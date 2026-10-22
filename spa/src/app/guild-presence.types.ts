@@ -19,7 +19,6 @@ export interface GuildPresenceData {
   honorableKillGuilds: GuildPresenceRankingEntry[];
 }
 
-/** guilds.snapshot.json: the rankings for each "top N players" source limit, keyed by N. */
 export interface GuildPresenceSnapshot {
   v: number;
   limits: Record<string, GuildPresenceData>;

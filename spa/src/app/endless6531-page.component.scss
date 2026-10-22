@@ -188,7 +188,6 @@
   }
 }
 
-// Phones render the roster a page at a time (see MOBILE_ROSTER_PAGE_SIZE).
 .show-more {
   display: grid;
   gap: 10px;
@@ -292,13 +291,9 @@
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
 }
 
-// Set when the table is wider than its column (see isTableOverflowing): scroll it sideways
-// rather than letting it run off the page or under the class summary.
 .table-scroll--overflowing {
   overflow-x: auto;
 
-  // A scrolling container is the header's sticky reference now, and it doesn't scroll
-  // vertically: an offset for the page header would only push the header over row 1.
   th {
     top: 0;
   }
@@ -386,7 +381,6 @@ table {
       line-height: 1.2;
       white-space: nowrap;
     }
-
   }
 
   th:nth-child(n + 4) button {
@@ -486,7 +480,6 @@ table .traits-cell {
   padding-block: 6px;
 }
 
-// One spec per artifact, side by side: the spec icon over its trait count.
 .spec-traits {
   display: inline-flex;
   gap: 6px;
@@ -503,8 +496,6 @@ table .traits-cell {
   min-width: 26px;
 }
 
-// Zoomed in a little to crop off the frame baked into the game's icons, as the Mythic+
-// pages do.
 .spec-trait-icon {
   display: block;
   width: 22px;
@@ -521,7 +512,6 @@ table .traits-cell {
   }
 }
 
-// Same text as the AK and ilvl cells; only the line height is tightened under the icon.
 .spec-trait-count {
   line-height: 1;
 }
@@ -535,7 +525,6 @@ table .traits-cell {
   }
 }
 
-// Opens below: above, it would slide under the sticky table header.
 .spec-trait-tooltip {
   position: absolute;
   z-index: 20;
@@ -556,8 +545,6 @@ table .traits-cell {
   pointer-events: none;
 }
 
-// :hover only counts for a mouse: touch browsers keep it on the last tapped icon. A tap
-// toggles .tooltip-open instead (appTapTooltip).
 .spec-trait--locked.tooltip-open .spec-trait-tooltip {
   display: block;
 }
@@ -598,7 +585,6 @@ table .traits-cell {
       border-color: #ffc266;
       box-shadow: 0 0 13px rgba(255, 128, 0, 0.65);
     }
-
   }
 }
 
@@ -658,8 +644,6 @@ table .traits-cell {
 }
 
 @media (max-width: 1260px) {
-  // minmax(0, ...): a plain 1fr can't shrink below its widest content, which pushed the
-  // whole page past the right edge on tablets.
   .page-content {
     grid-template-columns: minmax(0, 1fr);
   }
@@ -678,9 +662,6 @@ table .traits-cell {
   }
 }
 
-// Below 900 px, wrap the filters onto more rows.
-// 200 px columns match the dropdown menus' min-width, so an open menu never reaches past
-// its own trigger (and off the right edge).
 @media (min-width: 641px) and (max-width: 900px) {
   .character-groups {
     grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -726,7 +707,6 @@ table .traits-cell {
     grid-template-columns: 1fr;
   }
 
-  // The filters and the class breakdown open from their buttons (app-mobile-filter-toggle).
   .filters-collapsed .collapsible-filter {
     display: none;
   }
@@ -903,8 +883,6 @@ table .traits-cell {
       }
     }
 
-    // Rank | Spec, then Traits on its own row, then AK | ilvl: divide the left-hand cells
-    // from their neighbours.
     td:nth-child(4),
     td:nth-child(7) {
       border-right: 1px solid rgba(255, 255, 255, 0.045);
@@ -953,26 +931,22 @@ table .traits-cell {
       }
     }
 
-    // Up to four spec icons need the whole width of the card.
     .traits-cell {
       grid-column: 1 / -1;
       padding-block: 9px;
     }
 
-    // The icons sit at the card's right edge, which clips anything past it.
     .spec-trait-tooltip {
       right: 0;
       left: auto;
       transform: none;
     }
 
-    // Keep every legendary on the label's row instead of wrapping the second one under it.
     .legendary-cell {
       grid-auto-flow: column;
       grid-template-columns: minmax(0, 1fr);
     }
 
-    // That leaves the last stat cell (Legendaries) alone on its row; let it fill the row.
     td:last-child {
       grid-column: 1 / -1;
     }

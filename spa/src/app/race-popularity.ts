@@ -10,13 +10,11 @@ const RACE_NAMES: Readonly<Record<number, string>> = {
   24: 'Pandaren', 25: 'Pandaren', 26: 'Pandaren'
 };
 
-/** The island Pandaren (24) and both faction ids (25 Alliance, 26 Horde) are one race choice. */
 const PANDAREN = 24;
 const canonicalRace = (race: number): number => race === 25 || race === 26 ? PANDAREN : race;
 
 export type RaceFactionFilter = 'all' | 'alliance' | 'horde';
 
-/** A character as one roster slot shows it, in a Mythic+ run or a raid kill. */
 export interface RaceSample {
   name: string;
   realm: string;
@@ -27,11 +25,9 @@ export interface RaceSample {
 }
 
 export interface RaceShare {
-  /** 24 for every Pandaren. */
   race: number;
   name: string;
   count: number;
-  /** 0–1, of the spec's characters. */
   share: number;
 }
 
@@ -41,25 +37,17 @@ export interface SpecRaces {
   color: string;
   spec: string;
   icon?: string;
-  /** Characters who played the spec. */
   total: number;
-  /** Most-played first. */
   races: RaceShare[];
 }
 
 export interface RacesBySpec {
-  /** Character-spec pairs counted, so a character who played two specs of the role counts twice. */
   total: number;
   specs: SpecRaces[];
 }
 
 const FACTION_IDS: Readonly<Record<Exclude<RaceFactionFilter, 'all'>, number>> = { alliance: 0, horde: 1 };
 
-/**
- * Which races play each spec of one role. A character counts once per spec, however many runs or
- * kills they played it in. Every Legion spec of the role is listed in the game's class and spec
- * order, also one nobody played; ties between races go to the name.
- */
 export function racesBySpec(
   samples: Iterable<RaceSample>,
   role: MythicPlusRole,

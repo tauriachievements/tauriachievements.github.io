@@ -2,8 +2,6 @@
 
 :host { display: block; min-width: 0; }
 
-// The list, not each affix, positions the tooltips: they open under the row at its left edge
-// and are never wider than it, so the last affix's description can't run off a phone's screen.
 .week-affixes {
   position: relative;
   display: flex;
@@ -33,8 +31,6 @@
     .week-affix-tooltip { opacity: 1; visibility: visible; }
   }
 
-  // :hover only counts for a mouse: touch browsers keep it on the last tapped affix,
-  // which would hold its tooltip open. A tap toggles .tooltip-open instead (appTapTooltip).
   @media (hover: hover) {
     li:hover { color: #fff; }
     li:hover .week-affix-tooltip { opacity: 1; visibility: visible; }
@@ -43,7 +39,6 @@
 
 .affix-icon { @include affix-icon; }
 
-// Opens below: above, it would slide under the sticky site header.
 .week-affix-tooltip {
   @include tooltip-box;
   z-index: 20;

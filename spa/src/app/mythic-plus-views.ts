@@ -22,15 +22,8 @@ import { guildLadderLink, guildOf } from './mythic-plus-guild';
 import { characterProfileLink } from './mythic-plus-profile';
 import { specIconFor } from './mythic-plus-stats';
 
-/**
- * Below this width the leaderboard lists runs and players as cards instead of wide tables, and
- * the stats page stacks its affix weeks. Wider than the site's phone breakpoint (640 px): the
- * 1040 px runs table doesn't fit a phone held sideways or a small tablet either. Keep it in step
- * with the `$cards-breakpoint` media queries in the M+ stylesheets.
- */
 export const MYTHIC_PLUS_CARDS_QUERY = '(max-width: 900px)';
 
-/** Leaderboard rows per page: 50 in the tables, 25 of the taller cards. */
 export const MYTHIC_PLUS_PAGE_SIZE = 50;
 export const MYTHIC_PLUS_CARDS_PAGE_SIZE = 25;
 
@@ -38,9 +31,7 @@ export interface MemberView extends MythicPlusMember {
   color: string;
   className: string;
   armoryUrl: string;
-  /** Router commands for the character's profile page. */
   profileLink: string[];
-  /** Router commands for their guild's ladder; undefined when guildless. */
   guildLink?: string[];
   classIcon: string;
   raceIcon: string;
@@ -64,11 +55,9 @@ export interface RunView {
   timerPercent: number;
   cutoffs: CutoffView[];
   score: number;
-  /** The score colour (runScoreColor / scoreColor). */
   color: string;
   completedAt: string;
   affixes: MythicPlusAffix[];
-  /** Usually one each, but a group can bring two tanks, two healers or none: every member is kept. */
   tanks: MemberView[];
   healers: MemberView[];
   dps: MemberView[];
@@ -79,7 +68,6 @@ export interface RunRow extends RunView {
   rank: number;
 }
 
-/** A character's best run in one dungeon, as a cell of the players table. */
 export interface BestRunCell {
   dungeon: MythicPlusDungeon;
   keyLevel: number;
@@ -94,15 +82,10 @@ export interface PlayerRow {
   rank: number;
   member: MemberView;
   score: number;
-  /** The score colour (runScoreColor / scoreColor). */
   color: string;
-  /** Changes since the previous scan. Positive rank means the player climbed. */
   change?: { score: number; rank: number };
-  /** Present in this scan but absent from the previous one. */
   newSinceLastScan?: boolean;
-  /** A guild ladder's row: the character's rank on the whole leaderboard, and the query that shows it there. */
   overall?: { rank: number; queryParams: Params };
-  /** One per dungeon in scope, in tile order; undefined where the character has no run. */
   bests: Array<BestRunCell | undefined>;
 }
 
@@ -121,7 +104,6 @@ export function toMemberView(member: MythicPlusMember): MemberView {
   };
 }
 
-/** A character's best run in each dungeon in scope, as players-table cells; undefined where they have none. */
 export function bestRunCells(
   bestRuns: ReadonlyMap<string, MythicPlusRun>,
   dungeons: readonly MythicPlusDungeon[]

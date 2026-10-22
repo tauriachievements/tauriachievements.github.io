@@ -28,7 +28,6 @@
   padding: 22px 24px;
 }
 
-// Wide enough, the heading and numbers sit beside the titles table instead of above it.
 @media (min-width: 900px) {
   .arena-header {
     display: grid;
@@ -50,7 +49,6 @@
   .eyebrow { margin: 0; }
 }
 
-// 2v2 / 3v3, the same switch as the raid difficulty one.
 .bracket-switch {
   display: inline-flex;
   gap: 4px;
@@ -90,7 +88,6 @@
 
 .intro { margin: 10px 0 12px; color: #bdb8ab; font-size: 0.88rem; line-height: 1.45; }
 
-// The numbers as label / value rows, each rule beside its label.
 .summary {
   display: grid;
   margin: 0;
@@ -124,14 +121,12 @@
   }
 }
 
-// Each title's colour, after WoW's item qualities: legendary, gold, epic, rare, uncommon.
 .tier-season-gladiator { --tier: #ff8000; }
 .tier-gladiator { --tier: #f7b500; }
 .tier-duelist { --tier: #b56cff; }
 .tier-rival { --tier: #4aa3ff; }
 .tier-challenger { --tier: #5ad65a; }
 
-// How each title's spots are counted: its share of the active players, exact and rounded up.
 .titles { margin-top: 16px; }
 
 .titles-heading {
@@ -175,17 +170,12 @@
 
   thead th:first-child { text-align: left; }
 
-  // Set shares of the width, the title taking the rest, so switching bracket changes only the
-  // numbers and not where the columns sit. On a desktop the table only just fits without a
-  // scrollbar: each share is its header's width, padding included.
   thead th:nth-child(2) { width: 9%; }
   thead th:nth-child(3) { width: 18.2%; }
   thead th:nth-child(4) { width: 17.8%; }
   thead th:nth-child(5) { width: 13.8%; }
   thead th:nth-child(6) { width: 11.8%; }
 
-  // The title's name, in its colour with a stripe down the edge. A +N for players on a shared
-  // rating goes beside it, or under it when the column has no room.
   tbody th {
     box-shadow: inset 3px 0 0 var(--tier);
     color: var(--tier);
@@ -272,8 +262,6 @@
     tbody tr:not(.title-group):hover { background: rgba(247, 181, 0, 0.045); }
   }
 
-  // A title's heading, above its first player: the only coloured row of its group, with a rule
-  // in the title's colour along the top and a stripe down the left.
   tbody tr.title-group td {
     padding: 10px 18px 9px;
     border-top: 2px solid var(--tier);
@@ -322,8 +310,6 @@
   &:focus-visible { outline: 2px solid #f7b500; outline-offset: 4px; border-radius: 2px; }
 }
 
-// The arrow hangs left of the label, outside the layout, so the label stays centred over its
-// numbers and sorting never shifts the columns.
 .sort-arrow { position: absolute; right: 100%; margin-right: 5px; font-size: 0.6rem; visibility: hidden; }
 .is-active .sort-arrow { visibility: visible; }
 
@@ -333,12 +319,9 @@
 }
 
 @media (max-width: 600px) {
-  // The header covers the top 30px of the page on phones.
   .arena-games-page { width: min(100% - 32px, 860px); padding-top: 46px; }
   .arena-header { padding: 18px 14px; }
 
-  // The share moves under the title's name and the exact spots under the rounded ones, so the
-  // explanation fits a phone without scrolling sideways.
   .titles-table {
     th, td { padding: 6px 4px; font-size: 0.8rem; }
     thead th { font-size: 0.6rem; letter-spacing: 0; white-space: normal; }
@@ -358,8 +341,6 @@
     td { font-size: 0.88rem; }
     a { font-size: 0.84rem; }
 
-    // Rank is only row order once the table sorts, and the realm moves under the name. Wins and
-    // Losses shorten to W / L and the arrows sit under the labels, so the table fits a phone.
     .rank, .realm { display: none; }
     .realm-inline { display: block; margin-top: 2px; color: #8f8a7d; font-size: 0.76rem; }
     tbody tr.title-group td { padding: 9px 10px 8px; }

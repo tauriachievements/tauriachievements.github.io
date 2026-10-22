@@ -7,7 +7,6 @@ import { Player, PlayerRankings } from './models/character.model';
 import { DataSyncService } from './services/data-sync.service';
 import { makePlayer } from './testing/player.fixture';
 
-// Mirrors scripts/player-ranking.js, which ships these rules inside the snapshot.
 const RANKINGS: PlayerRankings = {
   achievementPoints: ['achievementPoints', 'honorableKills'],
   honorableKills: ['honorableKills', 'achievementPoints'],
@@ -17,7 +16,6 @@ const RANKINGS: PlayerRankings = {
   ilvl: ['ilvl', 'achievementPoints', 'honorableKills']
 };
 
-/** Players must be given in achievement-point rank order, as the snapshot stores them. */
 function serviceWith(players: Player[]): LadderService {
   TestBed.resetTestingModule();
   TestBed.configureTestingModule({
@@ -187,8 +185,6 @@ describe('LadderService limits', () => {
 
 describe('LadderService rankings', () => {
   it('orders by the shipped ranking and keeps achievement-point order for full ties', () => {
-    // Snapshot order (achievement points): Alpha, Bravo, Charlie. Bravo and Charlie tie on
-    // played time, points and kills, so they keep that order - the build's key tie-break.
     const players = [
       makePlayer({ name: 'Alpha', achievementPoints: 300, playedTime: 10 }),
       makePlayer({ name: 'Bravo', achievementPoints: 200, playedTime: 50 }),

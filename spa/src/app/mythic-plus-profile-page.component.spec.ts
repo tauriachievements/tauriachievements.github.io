@@ -62,7 +62,6 @@ const fileFor = (path: string, tables = index.tables): MythicPlusDungeonFile => 
 
 class FakeDataFiles {
   refreshes = 0;
-  /** Dungeon files carry another export's tables until refresh() when set. */
   constructor(
     private staleTables?: string,
     private readonly staysStale = false,
@@ -101,7 +100,6 @@ async function open(url: string, dataFiles = new FakeDataFiles()) {
 describe('MythicPlusProfilePageComponent', () => {
   beforeEach(() => {
     vi.spyOn(console, 'error').mockImplementation(() => undefined);
-    // The score and totals count up (CountUpDirective); asking for reduced motion shows them at once.
     vi.stubGlobal('matchMedia', (media: string) => ({
       media,
       matches: media.includes('prefers-reduced-motion: reduce'),
@@ -119,14 +117,12 @@ describe('MythicPlusProfilePageComponent', () => {
     expect(element.querySelector('h1')?.textContent).toBe('Progtrix');
     expect(element.querySelector('.profile-crest img')?.getAttribute('src')).toBe('assets/class-crests/10.webp');
     expect(element.querySelector('.profile-score-value')?.textContent).toBe('290.0');
-    // All first; their top run was as Windwalker, so it comes before Mistweaver.
     expect([...element.querySelectorAll('.spec-pill')]
       .map(pill => [...pill.querySelectorAll(':scope > span:not(.spec-icon)')].map(span => span.textContent?.trim())))
       .toEqual([['All', '3 runs'], ['Windwalker', '2 runs'], ['Mistweaver', '1 run']]);
     expect([...element.querySelectorAll('.spec-pill')].map(pill => pill.getAttribute('aria-pressed')))
       .toEqual(['true', 'false', 'false']);
 
-    // Tank also has 290; the tie goes by name, as on the players view.
     expect(page.ranks().map(tile => [tile.scope, tile.rank, tile.total])).toEqual([
       ['Overall', 1, 6], ['Realm', 1, 4], ['Guild', 1, 1], ['Class', 1, 2], ['Spec', 1, 2], ['Role', 1, 4]
     ]);
@@ -175,7 +171,6 @@ describe('MythicPlusProfilePageComponent', () => {
     expect(element.querySelectorAll('.profile-rank-change')).toHaveLength(1);
     expect(element.querySelector('.profile-rank-change')?.textContent?.trim()).toBe('▲ 4');
 
-    // A spec score never sits next to the overall score's change; the Overall tile keeps its own.
     page.selectSpec('Mistweaver');
     harness.detectChanges();
     expect(element.querySelector('.profile-score-value')?.classList).not.toContain('score-gained');
@@ -199,7 +194,6 @@ describe('MythicPlusProfilePageComponent', () => {
     expect(element.querySelector('.profile-score-value')?.textContent).toBe('120.0');
     expect(element.querySelector('.profile-score-label')?.textContent?.trim()).toMatch(/^Mistweaver score/);
     expect(page.summary().map(item => item.value)).toEqual(['1', '0%', '-']);
-    // Overall, Realm and Class stay the character's; the Spec tile ranks them among Mistweavers.
     expect(page.ranks().map(tile => [tile.scope, tile.label, tile.rank, tile.total])).toEqual([
       ['Overall', 'All realms', 1, 6], ['Realm', 'Evermoon', 1, 4], ['Guild', 'The Echoes', 1, 1], ['Class', 'Monk', 1, 2],
       ['Spec', 'Mistweaver Monk', 1, 1], ['Role', 'Healer', 2, 2]
@@ -214,7 +208,6 @@ describe('MythicPlusProfilePageComponent', () => {
     expect(element.querySelector('.history-header p')?.textContent).toContain('1 as Mistweaver this season');
     expect(page.timeline().at(-1)?.score).toBe(120);
 
-    // The pressed pill again shows every spec; so does All.
     click(2);
     expect(page.selectedSpec()).toBeUndefined();
     expect(location.path()).toBe('/mythic-plus/character/evermoon/Progtrix');
@@ -290,7 +283,6 @@ describe('MythicPlusProfilePageComponent', () => {
 
     expect(element.querySelector('.not-found h1')?.textContent).toBe('No Mythic+ runs this season');
     expect(element.querySelector('.not-found p')?.textContent).toContain('on Tauri');
-    // The search starts from the name in the URL and finds it on the other realms.
     expect([...element.querySelectorAll('.character-results a')].map(link => link.getAttribute('href'))).toEqual([
       '/mythic-plus/character/evermoon/Progtrix',
       '/mythic-plus/character/wod/Progtrix'

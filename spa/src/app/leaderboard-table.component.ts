@@ -7,7 +7,6 @@ import { formatPlayedTime, formatSignedPlayedTime } from './played-time';
 import { HighlightPart, LadderPlayerView, LadderSort } from './ladder.types';
 import { COMPACT_VIEWPORT_QUERY } from './compact-viewport';
 
-/** One line of the details panel that lists a compact row's hidden values. */
 export interface PlayerDetailMetric {
   label: string;
   value: string;

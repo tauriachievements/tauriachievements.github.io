@@ -24,7 +24,6 @@ import { DISCORD_INVITE_URL, NAV_SECTIONS, NavSection, findNavLocation } from '.
 })
 export class UpdateBarComponent {
   readonly lastEdited = input<Date>();
-  /** What the shown time is, e.g. "Last updated:" or, for match data, "Latest match:". */
   readonly lastEditedLabel = input('Last updated:');
   readonly lastEditedTimeZoneLabel = input('Local time');
   readonly lastEditedTimeZone = input<string>();
@@ -32,7 +31,6 @@ export class UpdateBarComponent {
 
   protected readonly sections = NAV_SECTIONS;
   protected readonly discordUrl = DISCORD_INVITE_URL;
-  /** Content-sized dropdown widths: longest label plus roughly 20% breathing room. */
   protected readonly dropdownWidths = new Map(
     NAV_SECTIONS.map((section) => {
       const longestLabel = Math.max(...section.pages.map((page) => Array.from(page.label).length));

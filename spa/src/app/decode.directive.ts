@@ -2,37 +2,15 @@ import { DestroyRef, Directive, ElementRef, afterNextRender, inject, input } fro
 import { decodeDurationFor, graphemes, isDecodable, landingTimes, randomGlyph, transformed } from './decode-text';
 import { prefersReducedMotion } from './motion';
 
-/** How often the glyphs that haven't landed change, in ms. Changing them every frame strobes. */
 const GLYPH_TICK = 80;
-/** Of the glyphs not landed yet, the share that change on each tick, so they don't flip in step. */
 const GLYPH_CHURN = .4;
-/** How long before landing a glyph shows at full strength, in ms: the bright edge of the wave. */
 const NEAR = 260;
 
-/**
- * Decodes the text inside its host as it comes on screen: each letter and digit shows a
- * flickering glyph (decode-text.ts), then the real ones land in a soft wave from the first to the
- * last. Spaces, punctuation and emoji stay as they are, so the words keep their shape.
- *
- * The host's text itself is never touched: while it decodes it is only not painted
- * (.is-decoding in src/scss/_motion.scss), so its layout, and what screen readers read, stay as
- * they are. An overlay draws each character where the text has it instead, measured from the
- * text, and is taken away once every letter has landed. Splitting the text into a span per letter
- * would be simpler, but the browser doesn't kern across elements, so lines would shift by a
- * fraction of a pixel and could wrap differently while the text decodes. Elements marked
- * aria-hidden are left alone. Don't nest one decoding host inside another.
- *
- * Text already on screen when the page opens scrambles before it shows and lands after
- * `decodeDelay`. Text further down scrambles just before it scrolls into view and lands at once.
- * With reduced motion, or without IntersectionObserver, the text is simply there.
- */
 @Directive({
   selector: '[appDecode]',
 })
 export class DecodeDirective {
-  /** For text on screen when the page opens: wait before landing, in ms, to follow what is above it. */
   readonly decodeDelay = input(0);
-  /** How long the landing takes, in ms. By default it depends on the length (decodeDurationFor). */
   readonly decodeDuration = input<number | undefined>(undefined);
 
   constructor() {
@@ -46,8 +24,6 @@ export class DecodeDirective {
     destroyRef.onDestroy(() => decoding?.stop());
 
     afterNextRender({
-      // Every host on screen is measured before any of them adds its overlay, so the page is laid
-      // out once for all of them.
       earlyRead: () => (host.getBoundingClientRect().top < window.innerHeight ? measure(host) : null),
       write: (layout) => {
         if (layout) {
@@ -67,39 +43,30 @@ export class DecodeDirective {
   }
 }
 
-/** One character of the overlay, in px from the host's padding box. */
 interface OverlayChar {
-  /** As it shows, text-transform applied. */
   text: string;
   scramble: boolean;
   x: number;
   y: number;
   height: number;
-  /** Where it sits in its element, for a background-clip: text fill to line up. */
   fillX: number;
   fillY: number;
 }
 
-/** The characters of one text node, and how its element draws them. */
 interface OverlayRun {
   style: Pick<CSSStyleDeclaration, 'color' | 'fontFamily' | 'fontSize' | 'fontStyle' | 'fontVariantNumeric' | 'fontWeight'>;
-  /** The element's text fill, when its text is filled by a background-clip: text image. */
   fill: { image: string; width: number; height: number } | null;
   chars: OverlayChar[];
 }
 
 interface Layout {
   runs: OverlayRun[];
-  /** Elements whose text is a background-clip: text fill, which `text-fill-color` doesn't hide. */
   filled: HTMLElement[];
   hostIsStatic: boolean;
 }
 
-/** Where the host's text has each character. Reads only, so measuring many hosts lays out once. */
 function measure(host: HTMLElement): Layout {
   const box = host.getBoundingClientRect();
-  // Rects include any transform on the way (a box rising in, say); the overlay is drawn inside
-  // the host, under the same transform, so it wants the positions without it.
   const scaleX = box.width / host.offsetWidth || 1;
   const scaleY = box.height / host.offsetHeight || 1;
   const left = box.left + host.clientLeft * scaleX;
@@ -114,7 +81,6 @@ function measure(host: HTMLElement): Layout {
     const elementBox = element.getBoundingClientRect();
     const clip = clippingBox(element, host);
     const isFilled = style.backgroundClip === 'text' || style.getPropertyValue('-webkit-background-clip') === 'text';
-    // A ::first-letter can case the first character differently from the rest.
     let transform = firstText(element) === text
       ? getComputedStyle(element, '::first-letter').textTransform
       : style.textTransform;
@@ -132,7 +98,6 @@ function measure(host: HTMLElement): Layout {
       const rect = range.getBoundingClientRect();
       const shown = transformed(char, transform);
       transform = style.textTransform;
-      // Cut off (an ellipsis): the text doesn't show it, so neither does the overlay.
       if (!rect.width || (clip && (rect.left < clip.left - .5 || rect.right > clip.right + .5))) {
         continue;
       }
@@ -169,12 +134,9 @@ function measure(host: HTMLElement): Layout {
   return { runs, filled: [...filled], hostIsStatic: getComputedStyle(host).position === 'static' };
 }
 
-/** One decode of a host's text: the overlay built, its letters landed, then taken away. */
 class Decoding {
   private readonly overlay = document.createElement('span');
-  /** The overlay's letters still to land, with the character each one lands on. */
   private readonly letters: { glyph: HTMLElement; text: string }[] = [];
-  /** Undoes what was done to the page for the decode. */
   private readonly undo: (() => void)[] = [];
   private frame = 0;
   private readonly onResize = () => this.stop();
@@ -198,14 +160,12 @@ class Decoding {
     this.extend(host, 'class', 'is-decoding');
     host.append(this.overlay);
     this.undo.push(() => this.overlay.remove());
-    // The overlay is measured for this layout; a new one would leave it out of place.
     window.addEventListener('resize', this.onResize);
     this.undo.push(() => window.removeEventListener('resize', this.onResize));
 
     this.play(delay, duration ?? decodeDurationFor(this.letters.length));
   }
 
-  /** Shows the host's own text again, decoded or not. */
   stop(): void {
     cancelAnimationFrame(this.frame);
     for (const undo of this.undo.splice(0).reverse()) {

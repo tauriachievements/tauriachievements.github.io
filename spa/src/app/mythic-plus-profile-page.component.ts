@@ -83,13 +83,11 @@ import { UpdateBarComponent } from './update-bar.component';
 const TEAMMATE_COUNT = 8;
 const SEARCH_RESULT_COUNT = 20;
 
-/** One of the character's ranks, linking to the players view page (or the guild ladder) that shows it. */
 interface RankTile {
   scope: string;
   label: string;
   link: string[];
   icon?: string;
-  /** The Role tile: the run table's tank / healer / DPS icon instead of an image. */
   role?: MythicPlusRole;
   rank: number;
   total: number;
@@ -107,7 +105,6 @@ interface ProfileScanChange {
 
 interface DungeonBest {
   dungeon: RunView['dungeon'];
-  /** Undefined where the character hasn't played the dungeon. */
   run?: RunView;
 }
 
@@ -117,11 +114,8 @@ interface ChartPoint {
   longLabel: string;
   ariaLabel: string;
   showLabel: boolean;
-  /** Height of the day's score, in percent of the chart. */
   bottom: number;
-  /** In the right half: the tooltip opens to the left. */
   flip: boolean;
-  /** In the middle third: on a phone the tooltip opens centred over it. */
   middle: boolean;
 }
 
@@ -142,7 +136,6 @@ interface TeammateView {
   upgrades: number;
 }
 
-/** A character in the not-found search or in a list of name matches. */
 interface CharacterLink {
   key: string;
   member: MemberView;
@@ -152,11 +145,6 @@ interface CharacterLink {
 const percentOf = (part: number, whole: number) => whole > 0 ? (part / whole) * 100 : 0;
 const formatScore = (score: number) => score.toLocaleString('en-GB', { minimumFractionDigits: 1, maximumFractionDigits: 1 });
 
-/**
- * /mythic-plus/character/:realm/:name: one character's Mythic+ season. Their score and ranks,
- * best run per dungeon, score over the season, every run and who they play with most. Reads
- * the same data files as the leaderboard, all of them.
- */
 @Component({
   selector: 'app-mythic-plus-profile-page',
   imports: [
@@ -174,7 +162,6 @@ const formatScore = (score: number) => score.toLocaleString('en-GB', { minimumFr
     NgTemplateOutlet
 ],
   templateUrl: './mythic-plus-profile-page.component.html',
-  // The motion lives in its own stylesheet; see the top of it.
   styleUrls: ['./mythic-plus-profile-page.component.scss', './mythic-plus-profile-page.motion.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
@@ -185,9 +172,7 @@ export class MythicPlusProfilePageComponent implements OnInit {
   private readonly router = inject(Router);
   private readonly location = inject(Location);
 
-  /** Narrow screens list the dungeons and runs as cards (MYTHIC_PLUS_CARDS_QUERY). */
   readonly cards = injectCompactViewport(MYTHIC_PLUS_CARDS_QUERY);
-  /** Phones: the chart's columns get narrower, so fewer of them carry a label. */
   private readonly phone = injectCompactViewport();
   private readonly pageSize = computed(() => this.cards() ? MYTHIC_PLUS_CARDS_PAGE_SIZE : MYTHIC_PLUS_PAGE_SIZE);
 
@@ -197,30 +182,23 @@ export class MythicPlusProfilePageComponent implements OnInit {
   readonly allRuns = signal<readonly MythicPlusRun[]>([]);
   readonly isLoading = signal(true);
   readonly loadError = signal<string | undefined>(undefined);
-  /** Set once files from another export made the page load everything again. */
   private reloadedForNewerData = false;
 
-  /** A teammate's link keeps this page and only changes the parameters. */
   private readonly params = toSignal(this.route.paramMap, { initialValue: this.route.snapshot.paramMap });
   readonly urlRealm = computed(() => this.params().get('realm') ?? '');
   readonly urlName = computed(() => this.params().get('name') ?? '');
-  /** `?spec=` as the router last saw it; selectSpec writes the address bar without navigating. */
   private readonly queryParams = toSignal(this.route.queryParamMap, { initialValue: this.route.snapshot.queryParamMap });
 
   readonly dungeons = computed(() => this.index()?.dungeons ?? []);
   private readonly dungeonsById = computed(() => new Map(this.dungeons().map(dungeon => [dungeon.id, dungeon])));
   private readonly affixesById = computed(() => new Map((this.index()?.affixes ?? []).map(affix => [affix.id, affix])));
-  /** Raider.IO-style score colours from this season's standings. */
   private readonly scoreColors = computed(() => seasonScoreColors(this.index()));
 
-  /** Every character by player score, as the leaderboard's players view ranks them. */
   readonly ranking = computed(() => rankPlayers(this.allRuns()));
   private readonly characters = computed(() =>
     this.ranking().map(player => ({ name: player.member.name, realm: player.member.realm, player })));
-  /** Season rank of every run, as in the leaderboard's All dungeons view. */
   private readonly runRanks = computed(() => new Map(rankRuns(this.allRuns()).map((run, position) => [run.id, position + 1])));
 
-  /** The characters the URL names: one, none, or several when only a case-insensitive match works. */
   readonly matches = computed(() =>
     findCharacters(this.characters(), this.urlRealm(), this.urlName()).map(match => match.player));
 
@@ -237,7 +215,6 @@ export class MythicPlusProfilePageComponent implements OnInit {
     const player = this.player();
     return player && getClassCrestPath(player.member.class);
   });
-  /** Shared with their compare column, so the crest and name fly between the two pages. */
   readonly crestTransition = computed(() => {
     const key = this.player()?.key;
     return key ? characterTransitionName(key, 'crest') : null;
@@ -246,12 +223,10 @@ export class MythicPlusProfilePageComponent implements OnInit {
     const key = this.player()?.key;
     return key ? characterTransitionName(key, 'name') : null;
   });
-  /** The leaderboard's runs view, showing only this character's runs. */
   readonly showRunsParams = computed<Params>(() => {
     const member = this.player()?.member;
     return member ? { character: characterParam(member) } : {};
   });
-  /** The realm the URL names, as the export writes it (`WoD` for `wod`). */
   readonly realmName = computed(() => {
     const slug = realmSlug(this.urlRealm());
     return this.characters().find(character => realmSlug(character.realm) === slug)?.realm ?? this.urlRealm();
@@ -260,7 +235,6 @@ export class MythicPlusProfilePageComponent implements OnInit {
   readonly ambiguous = computed<CharacterLink[]>(() =>
     this.matches().length > 1 ? this.matches().map(toCharacterLink) : []);
 
-  /** Their runs, newest first. */
   readonly runs = computed(() => {
     const key = this.key();
     return key
@@ -269,7 +243,6 @@ export class MythicPlusProfilePageComponent implements OnInit {
       : [];
   });
 
-  /** This character's score and overall-rank movement since the preceding export. */
   readonly scanChange = computed<ProfileScanChange | undefined>(() => {
     const index = this.index();
     const player = this.player();
@@ -296,19 +269,16 @@ export class MythicPlusProfilePageComponent implements OnInit {
       : [];
   });
 
-  /** The spec pill clicked, or `?spec=` until one is; another character starts from their own URL. */
   private readonly pickedSpec = linkedSignal<{ key?: string; spec?: string }, string | undefined>({
     source: () => ({ key: this.key(), spec: this.queryParams().get('spec') ?? undefined }),
     computation: ({ spec }) => spec
   });
-  /** The spec the profile shows: one they played, when they played more than one. Undefined for all specs. */
   readonly selectedSpec = computed(() => {
     const spec = this.pickedSpec();
     const specs = this.specs();
     return specs.length > 1 && specs.some(played => played.spec === spec) ? spec : undefined;
   });
 
-  /** Their runs in the selected spec, newest first; all their runs without one. */
   readonly specRuns = computed(() => {
     const spec = this.selectedSpec();
     const key = this.key();
@@ -317,7 +287,6 @@ export class MythicPlusProfilePageComponent implements OnInit {
       : this.runs();
   });
 
-  /** One spec's players, each scored on their runs as it: the selected spec, else their main one (the Spec tile). */
   private readonly specRanking = computed(() => {
     const member = this.player()?.member;
     const spec = this.selectedSpec() ?? member?.spec;
@@ -326,28 +295,23 @@ export class MythicPlusProfilePageComponent implements OnInit {
       : [];
   });
 
-  /** The role of the selected spec (else their main one): the Role tile. */
   private readonly tileRole = computed(() => {
     const member = this.player()?.member;
     return member && (specRoleFor(member.class, this.selectedSpec() ?? member.spec) ?? member.role);
   });
 
-  /** One role's players, each scored on their runs in it (the players view's Roles ladder). */
   private readonly roleRanking = computed(() => {
     const role = this.tileRole();
     return role ? rankPlayers(this.allRuns(), entry => entry.role === role) : [];
   });
 
-  /** The header's score and the best run per dungeon: in the selected spec, or in all of them. */
   readonly shownScore = computed<PlayerScore | undefined>(() => {
     const key = this.key();
     return this.selectedSpec() ? this.specRanking().find(entry => entry.key === key) : this.player();
   });
 
-  /** The header score's colour by season rank, as on the players view. */
   readonly color = computed(() => scoreColor(this.shownScore()?.score ?? 0, this.scoreColors().tiers));
 
-  /** The header's change since the last scan is the overall one, so it hides behind a spec score. */
   readonly headerScanChange = computed(() => this.selectedSpec() ? undefined : this.scanChange());
 
   readonly notPlayedLabel = computed(() => {

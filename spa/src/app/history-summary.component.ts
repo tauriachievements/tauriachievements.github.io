@@ -9,10 +9,8 @@ import { LadderHistoryMoverView } from './ladder-history.types';
 import { formatPlayedTime, formatSignedPlayedTime } from './played-time';
 import { injectCompactViewport } from './compact-viewport';
 
-/** The four climber lists, named like their inputs (`achievementMovers`, ...). */
 export type MoverListKey = 'achievement' | 'honorableKill' | 'playedTime' | 'appearance';
 
-/** On phones each list starts with this many climbers; the rest open per list. */
 export const MOBILE_MOVER_PREVIEW_SIZE = 10;
 
 @Component({

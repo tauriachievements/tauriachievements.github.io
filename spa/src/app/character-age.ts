@@ -6,16 +6,10 @@ export interface CharacterAgeParts {
 
 const MS_PER_DAY = 24 * 60 * 60 * 1000;
 
-/** Today as whole days since 1970-01-01 (UTC), the unit player snapshots store dates in. */
 function currentEpochDay(now: number = Date.now()): number {
   return Math.floor(now / MS_PER_DAY);
 }
 
-/**
- * Calendar difference between two days (days since 1970-01-01, UTC): whole months first,
- * then the remaining days. Adding the months to the start clamps to the end of a shorter
- * month (Jan 31 + 1 month = Feb 28), so the day count can never go negative.
- */
 export function getCharacterAgeParts(startDay: number, endDay: number): CharacterAgeParts {
   if (endDay <= startDay) {
     return { years: 0, months: 0, days: 0 };
@@ -38,10 +32,6 @@ export function getCharacterAgeParts(startDay: number, endDay: number): Characte
   };
 }
 
-/**
- * "7 years 5 months 26 days" from the day a character earned "Level 10" until today,
- * leaving out zero parts. Empty when the date is unknown (0).
- */
 export function formatCharacterAge(level10Day: number, today: number = currentEpochDay()): string {
   if (!level10Day) {
     return '';

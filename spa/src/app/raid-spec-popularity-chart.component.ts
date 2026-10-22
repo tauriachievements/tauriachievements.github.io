@@ -20,15 +20,11 @@ import { RevealDirective } from './reveal.directive';
 import { TapTooltipDirective } from './tap-tooltip.directive';
 
 interface SpecBar extends SpecDefinition {
-  /** Player slots (popularity) or characters scored (performance); 0 draws the empty stub. */
   count: number;
-  /** The share of the slots, or the spec's score. */
   value: number;
   heightPercent: number;
   valueLabel: string;
-  /** Only each class's top spec carries a value above its bar. */
   showValue: boolean;
-  /** Performance: the spec's best character. */
   best?: SpecCharacterScore;
 }
 
@@ -43,17 +39,10 @@ interface ClassGroup {
 
 export type ChartView = 'popularity' | 'performance';
 
-/** The chart view a `?view=` value names; Popularity for anything else. */
 export function parseChartView(value: string | null | undefined): ChartView {
   return value === 'performance' ? 'performance' : 'popularity';
 }
 
-/**
- * Raid-roster equivalent of the Mythic+ spec-popularity chart. Popularity counts each appearance
- * in a boss kill as one player slot, so a character who killed several bosses counts once per
- * kill. Performance ranks each spec by its characters' leaderboard scores (see scoresBySpec):
- * the average of the best SPEC_TOP_SCORES.
- */
 @Component({
   selector: 'app-raid-spec-popularity-chart',
   imports: [TapTooltipDirective, GlideDirective, RevealDirective, FlipDirective, DecimalPipe],
@@ -63,7 +52,6 @@ export function parseChartView(value: string | null | undefined): ChartView {
 })
 export class RaidSpecPopularityChartComponent {
   readonly kills = input.required<readonly RaidKillDetails[]>();
-  /** The raid's bosses, which the performance scores average over. */
   readonly bosses = input<readonly RaidBoss[]>([]);
   readonly difficulties = input.required<readonly RaidDifficulty[]>();
   readonly selectedDifficulty = input.required<string>();
@@ -78,7 +66,6 @@ export class RaidSpecPopularityChartComponent {
     { value: 'popularity', label: 'Popularity' },
     { value: 'performance', label: 'Performance' }
   ];
-  /** Two-way: the page keeps it, and the role, in the address bar. */
   readonly view = model<ChartView>('popularity');
 
   readonly roleOptions: ReadonlyArray<{ value: RoleFilter; label: string }> = [
@@ -105,7 +92,6 @@ export class RaidSpecPopularityChartComponent {
     })), { role: role === 'all' ? undefined : role });
   });
 
-  /** Every character's score as each spec, whatever the role; worked out the first time Performance shows. */
   private readonly specScores = computed(() => {
     const kills = this.kills();
     const bosses = this.bosses();

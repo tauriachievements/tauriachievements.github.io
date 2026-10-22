@@ -8,7 +8,6 @@
     <span aria-hidden="true">‹</span> Back to Raid Logs
   </a>
 
-  <!-- The other bosses, to switch without going back. -->
   @if (index(); as loaded) {
     <nav class="boss-picker" aria-label="Pick a boss">
       @for (other of loaded.bosses; track other.slug) {
@@ -231,7 +230,6 @@
           </table>
         </app-icon-tips>
       }
-      <!-- Fastest / latest kills -->
       @if (!isRanking() && killRows().length) {
         <div class="table-scroll">
           <table>

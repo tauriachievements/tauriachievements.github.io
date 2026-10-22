@@ -8,11 +8,6 @@ import {
 } from './rare-achievements.types';
 import { DataFileService } from './services/data-file.service';
 
-/**
- * RareAchievements.json and the per-character summaries derived from it. Both are loaded
- * and computed once per session and shared by the Ladder, Rare Achievements and New Rare
- * Characters pages.
- */
 @Injectable({ providedIn: 'root' })
 export class RareAchievementsService {
   private readonly dataFiles = inject(DataFileService);
@@ -22,7 +17,6 @@ export class RareAchievementsService {
     return this.dataFiles.getJson<RareAchievementsDataset>('RareAchievements.json');
   }
 
-  /** Summary per character, keyed by {@link buildRareAchievementCharacterKey}. */
   getRareAchievementIndicators(): Observable<Map<string, RareAchievementSummary>> {
     this.summaries$ ??= this.getRareAchievements().pipe(
       map((dataset) => this.buildRareAchievementIndicators(dataset)),

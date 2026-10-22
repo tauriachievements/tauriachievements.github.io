@@ -51,7 +51,6 @@ export class BattlegroundPageComponent implements OnInit {
   private readonly battlegroundsService = inject(BattlegroundsService);
 
   readonly selectedEra = signal<BattlegroundEra>('legion');
-  /** Each era is its own file, loaded the first time that era is shown. */
   private readonly loadedEras = signal<Partial<Record<BattlegroundEra, NormalizedBattleground[]>>>({});
   readonly battlegrounds = computed(() => this.loadedEras()[this.selectedEra()] ?? []);
   readonly eraOptions = BATTLEGROUND_ERA_OPTIONS;
@@ -139,7 +138,6 @@ export class BattlegroundPageComponent implements OnInit {
     this.closeBattlegroundStarts();
   }
 
-  /** Shows the selected era, loading its file the first time. */
   private loadBattlegrounds(): void {
     const era = this.selectedEra();
     if (this.loadedEras()[era]) {

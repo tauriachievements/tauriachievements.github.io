@@ -3,11 +3,6 @@ import { RouterLink } from '@angular/router';
 import { BackToTopButtonComponent } from './back-to-top-button.component';
 import { UpdateBarComponent } from './update-bar.component';
 
-/**
- * Explains the /mythic-plus scores: run score on the left, player score on the right.
- * The formula lives in api/MythicPlusExporter/MythicPlusScore.cs, and every worked example
- * on this page is pinned by a test there, so keep the two in step.
- */
 @Component({
   selector: 'app-mythic-plus-scoring-page',
   imports: [RouterLink, UpdateBarComponent, BackToTopButtonComponent],

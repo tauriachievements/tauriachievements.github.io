@@ -13,22 +13,12 @@ import {
   topAverage
 } from './raid-logs';
 
-/*
- * /raid-logs/talents: which talents raiders pick, from the talents every member of a kill played
- * with (RaidMember.talents). Each character counts once per boss, with the talents of their best
- * kill there, so a guild that farms a boss every week doesn't outweigh everyone else.
- */
-
-/** The best tenth of a spec's ranking on a boss: the players the "top" figures describe. */
 const TOP_SHARE = 0.1;
 
-/** A talent picked this many points more on a boss than on the others is marked as picked for it. */
 export const NOTABLE_DIFFERENCE = 0.1;
 
-/** Fewer picks than this on a boss (or on the others) say too little to mark anything. */
 export const NOTABLE_MIN_PICKS = 10;
 
-/** The level each talent tier opens at, top to bottom. Death Knights and Demon Hunters start higher. */
 export function talentLevels(classId: number): number[] {
   if (classId === 6) {
     return [56, 57, 58, 60, 75, 90, 100];
@@ -39,33 +29,20 @@ export function talentLevels(classId: number): number[] {
   return [15, 30, 45, 60, 75, 90, 100];
 }
 
-// --- Samples ----------------------------------------------------------------------------
-
-/** One character's talents on one boss, as one spec: from their best kill of it. */
 export interface TalentSample {
   boss: RaidBoss;
   spec: RaidSpec;
   character: RaidCharacter;
-  /** characterKey: the same character across boss files. */
   key: string;
   member: RaidMember;
   kill: RaidKillDetails;
-  /** The column picked on each tier, as RaidMember.talents has it. */
   talents: string;
-  /** DPS, or HPS for a healer: what the boss rankings rank the spec on. */
   value: number;
-  /** The value over the best of the spec on this boss: 0 to 1. */
   relative: number;
-  /** Place in the spec's ranking on this boss, from 1: the boss page's ranking filtered to the spec. */
   rank: number;
-  /** In the best TOP_SHARE of that ranking; the best player always is. */
   isTop: boolean;
 }
 
-/**
- * One sample per character, boss and spec: the character's best kill of the boss as the spec, by
- * the spec's metric (the earlier kill on a tie). Members without a spec or talents are left out.
- */
 export function talentSamples(kills: readonly RaidKillDetails[]): TalentSample[] {
   type Best = Omit<TalentSample, 'relative' | 'rank' | 'isTop'>;
   const best = new Map<string, Best>();

@@ -14,7 +14,6 @@ import { TapTooltipDirective } from './tap-tooltip.directive';
 class HostComponent {}
 
 function pointer(type: 'pointerup' | 'pointerdown', target: Element, pointerType: string): void {
-  // jsdom has no PointerEvent; a MouseEvent carrying pointerType is what the directive reads.
   const event = new MouseEvent(type, { bubbles: true });
   Object.defineProperty(event, 'pointerType', { value: pointerType });
   target.dispatchEvent(event);

@@ -37,16 +37,12 @@
       }
     </dl>
 
-    <!-- Dungeon records -->
     <section class="section" aria-labelledby="records-title">
       <header class="section-header">
         <h2 id="records-title">Dungeon records</h2>
         <p>The highest key timed in each dungeon. At the same key, the faster clear holds the record.</p>
       </header>
 
-      <!-- A record's details open under its row of cards, across the whole grid (grid-auto-flow: dense).
-           The cards rise in one after another the first time they're on screen, each level catching
-           the light once and its stars lighting up in turn. -->
       <div class="record-grid" [appReveal]="2400">
         @for (record of records(); track record.dungeon.id; let index = $index) {
           <article
@@ -102,7 +98,6 @@
     </div>
   </section>
 
-  <!-- Server firsts -->
   <section class="section" aria-labelledby="firsts-title">
     <header class="section-header">
       <div class="section-heading">
@@ -126,7 +121,6 @@
       </div>
     </header>
 
-    <!-- Levels pop in down the rail the first time it's on screen; the rail fills as you scroll. -->
     @if (firsts().length) {
       <ol class="timeline" [appReveal]="1800">
         @for (first of firsts(); track first.level; let index = $index) {
@@ -171,7 +165,6 @@
     }
   </section>
 
-  <!-- Unclaimed bounties -->
   <section class="section" aria-labelledby="bounties-title">
     <header class="section-header">
       <h2 id="bounties-title">Unclaimed bounties</h2>
@@ -203,19 +196,16 @@
     </div>
   </section>
 
-  <!-- Most runs -->
   <section class="section" aria-labelledby="most-runs-title">
     <header class="section-header">
       <h2 id="most-runs-title">Most runs</h2>
       <p>The characters who finished the most keys this season, in time or not, on every realm.</p>
     </header>
 
-    <!-- Rows slide in down the list the first time it's on screen, each bar growing to its length. -->
     @if (mostRuns().length) {
       <ol class="runners" [appReveal]="1600">
         @for (runner of mostRuns(); track runner.key; let index = $index) {
           <li [style.--i]="index">
-            <!-- A click anywhere on the row opens the profile; the name and the guild are links of their own. -->
             <div class="runner" (click)="openProfile(runner)">
               <span class="runner-rank" [class]="'q-' + runner.quality"><span class="visually-hidden">Rank </span>{{ runner.rank }}</span>
               <span class="runner-player">
@@ -264,7 +254,6 @@
 
 <app-back-to-top-button />
 
-<!-- The group of a run: names in class colour, each opening the character's profile. -->
 <ng-template #group let-run>
   <ul class="group" aria-label="Group">
     @for (member of run.roster; track `${member.name}-${member.realm}`) {
@@ -281,7 +270,6 @@
   </ul>
 </ng-template>
 
-<!-- A bounty's closest attempt, or none, and the claim of the level below while it is recent. -->
 <ng-template #attempt let-bounty>
   @if (bounty.closest; as run) {
     <p class="bounty-closest">

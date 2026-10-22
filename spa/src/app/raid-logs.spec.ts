@@ -47,7 +47,6 @@ import {
   topAverage
 } from './raid-logs';
 
-// Two bosses, Heroic and Mythic, in the exporter's format (RaidLogFileWriter.cs).
 const indexFile: RaidLogsIndexFile = {
   version: 1,
   generatedAt: '2026-10-12T16:00:00Z',
@@ -72,7 +71,6 @@ const indexFile: RaidLogsIndexFile = {
     ['Outlaws', 'Tauri', 0, 602],
     ['', 'Evermoon', 1, 8489]
   ],
-  // [realm, logId, boss, difficultyId, killedAtUnix, fightMs, guild, faction, wipes, deaths, members]
   logs: [
     ['Tauri', 10, 0, 16, 1_000, 300_000, 0, 1, 2, 3, 20],
     ['Tauri', 11, 0, 16, 2_000, 280_000, 1, 0, 0, 1, 20],
@@ -100,7 +98,6 @@ const bossFile: RaidBossFile = {
     ['Kael', 'Tauri', 8, 1, 0, ''],
     ['Light', 'Evermoon', 2, 10, 1, 'Miracle']
   ],
-  // [player, spec, ilvl, damage, healing, absorbs, overhealing, taken, interrupts, dispels]
   logs: [
     ['Tauri', 10, 1_000, 300_000, 0, 1, 2, 3, 1, [
       [0, 64, 870, 150_000_000, 0, 0, 0, 1, 0, 0],

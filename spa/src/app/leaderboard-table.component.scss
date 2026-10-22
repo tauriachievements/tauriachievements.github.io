@@ -37,7 +37,6 @@
     transition: all 0.2s ease;
   }
 
-  // Only for a mouse: on a touch screen the highlight would stick after a tap.
   @media (hover: hover) {
     tr.Alliance:hover {
       background: linear-gradient(90deg, rgba(35, 50, 75, 0.9) 0%, rgba(25, 40, 65, 0.95) 100%);
@@ -524,7 +523,6 @@
   width: 100%;
 }
 
-// Time played deltas ("+1d 0h 44m") need a wider gutter than plain numbers.
 .wow-table td:nth-child(9) {
   --metric-delta-col: 84px;
 }
@@ -598,8 +596,6 @@
   }
 }
 
-// The rank doubles as the toggle for a row's details panel, but only on phones,
-// where the table hides most of its columns.
 .row-toggle,
 .player-details-row {
   display: none;
@@ -728,7 +724,6 @@
     padding-left: 6px;
   }
 
-  // Show #, Name, Race / Class and the column of the current sort; hide the rest.
   .wow-table :is(th, td):nth-child(n + 4) {
     display: none;
   }
@@ -742,14 +737,12 @@
     display: table-cell;
   }
 
-
   .wow-table td:nth-child(2) {
     white-space: normal;
     overflow: visible;
     text-overflow: clip;
   }
 
-  // "ACHIEVEMENTS" and "APPEARANCES" are the widest words in their columns.
   .wow-table th {
     font-size: 0.69rem;
     letter-spacing: 0.3px;
@@ -765,8 +758,6 @@
     padding-right: 8px;
   }
 
-  // Stack the value over its change and rank pill so the row fits a 360 px screen.
-  // The change and pill share a line, and wrap onto two when both are long.
   .metric-inline {
     display: inline-flex;
     flex-wrap: wrap;

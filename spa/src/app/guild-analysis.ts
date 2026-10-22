@@ -15,12 +15,7 @@ export interface GuildAnalysisPlayer {
   achievementPoints: number;
   artifactRelics: number;
   artifactTraits: number;
-  /**
-   * Every artifact the character owns, one per spec, most traits first. Null when the
-   * artifacts couldn't be loaded; missing in files exported before it was added.
-   */
   artifacts?: GuildAnalysisArtifact[] | null;
-  /** Artifact Knowledge (research) level; missing in files exported before it was added. */
   artifactKnowledge?: number | null;
   itemLevel: number;
   legendaries?: GuildAnalysisLegendary[];
@@ -57,18 +52,12 @@ export interface GuildAnalysisMetadata {
   faction: 'Alliance' | 'Horde' | 'Unknown';
 }
 
-/** Each key is also the file name under guild-analysis/ (written by api/Guildkukker). */
 export type GuildAnalysisKey =
   'endless' | 'competence-optional' | 'entropy' | 'impaired' | 'impact' | 'miracle' | 'outlaws' | 'highly-regarded' | 'temerite' |
   'rycerze-ortalionu';
 
 export const DEFAULT_GUILD_ANALYSIS_KEY: GuildAnalysisKey = 'endless';
 
-/**
- * Loads only the guild the route asks for (route `data.guild`), so the page chunk stays the
- * same size however many guilds are added. A failed load resolves to null and the page
- * shows an error instead of blocking navigation.
- */
 export const guildAnalysisResolver: ResolveFn<GuildAnalysis | null> = (route): Observable<GuildAnalysis | null> => {
   const key = (route.data['guild'] as GuildAnalysisKey | undefined) ?? DEFAULT_GUILD_ANALYSIS_KEY;
 

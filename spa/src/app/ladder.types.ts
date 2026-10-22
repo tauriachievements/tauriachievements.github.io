@@ -1,6 +1,5 @@
 import { Player, PlayerRankingField } from './models/character.model';
 
-/** A ladder is ordered by one of the build's rankings. */
 export type LadderSort = PlayerRankingField;
 
 export interface LadderFilterState {
@@ -22,7 +21,6 @@ export interface HighlightPart {
   isMatch: boolean;
 }
 
-/** A player as one row of the ladder table: the player plus what the row displays. */
 export interface LadderPlayerView extends Player {
   rank: number;
   raceIcon: string;

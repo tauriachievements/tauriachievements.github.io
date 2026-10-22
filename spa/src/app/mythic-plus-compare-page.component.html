@@ -32,7 +32,6 @@
         </p>
       </div>
 
-      <!-- Who is compared, and adding more. -->
       <div class="compare-tools">
         @if (players().length < limit) {
           <label class="add-player">
@@ -88,19 +87,14 @@
       </section>
     }
     @if (players().length) {
-      <!-- One column per player: who they are, their score. -->
       <div class="table-scroll">
         <table class="compare-table" [class.versus]="players().length > 1" [style.--players]="players().length">
           <thead>
             <tr>
               <th scope="col" class="col-label"><span class="visually-hidden">Stat</span></th>
-              <!-- Crest and name keep their view-transition-name across page changes: adding or removing a
-                   player slides the others into their new columns, a leaderboard pick's name flies into its
-                   column, and a profile's crest and name fly in from (and back to) its header. -->
               @for (player of players(); track player.key; let column = $index) {
                 <th scope="col" class="col-player">
                   <div class="player-head" [style.--class-color]="player.member.color" [style.--col]="column">
-                    <!-- Down to one player there is nothing left to compare, so back to the leaderboard. -->
                     <a class="remove" [routerLink]="players().length > 2 ? '/mythic-plus/compare' : '/mythic-plus'"
                       [queryParams]="players().length > 2 ? removeParams(player.key) : null"
                       [attr.aria-label]="'Remove ' + player.member.name" title="Remove from the comparison">×</a>
@@ -116,8 +110,6 @@
               }
             </tr>
           </thead>
-          <!-- Everyone's numbers count up together, row after row; as they land the best of each row
-               lights up in gold and the gaps behind it fade in. -->
           <tbody>
             @for (stat of stats(); track stat; let first = $first; let row = $index) {
               <tr [class.score-row]="first" [style.--row]="row">
@@ -141,7 +133,6 @@
       </table>
     </div>
 
-    <!-- Score over the season, a line each. -->
     @if (chart(); as chart) {
       <section class="card" aria-labelledby="timeline-title">
         <header class="card-header">
@@ -189,7 +180,6 @@
                   </span>
                 }
               </div>
-              <!-- The lines draw in from the left once; Score / Gap then morphs them (CSS `d`). -->
               <svg class="line" [attr.viewBox]="chart.viewBox" preserveAspectRatio="none" aria-hidden="true" focusable="false">
                 @for (line of chart.lines; track $index) {
                   <path class="stroke" [attr.d]="line.path"
@@ -239,7 +229,6 @@
       </section>
     }
 
-    <!-- Best run per dungeon, the best of them in gold. -->
     <section class="card" aria-labelledby="dungeons-title">
       <header class="card-header">
         <h2 id="dungeons-title">Best run per dungeon</h2>
@@ -303,7 +292,6 @@
         }
       </table>
 
-      <!-- A bar from the middle towards the leader, its length the size of the lead. -->
       <ng-template #leadBar let-lead>
         <span class="lead" [class.level]="!lead.points" [class.right]="lead.side === 1"
           [attr.aria-label]="lead.points ? (players()[lead.side].member.name + ' ahead by ' + lead.points) : 'Level'">

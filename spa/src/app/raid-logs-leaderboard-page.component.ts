@@ -46,7 +46,6 @@ import { UpdateBarComponent } from './update-bar.component';
 
 interface Loaded {
   difficulty: RaidDifficulty;
-  /** Each boss's kills on the difficulty, by boss index. */
   bossKills: RaidKillDetails[][];
 }
 
@@ -60,12 +59,6 @@ const METRICS: ReadonlyArray<{ id: RaidMetric; label: string }> = [
   { id: 'hps', label: 'HPS' }
 ];
 
-/**
- * /raid-logs/leaderboard: every character on one difficulty by score, their best kill of each
- * boss measured against the best anyone did there (see scoreCharacters). DPS ranks tanks and
- * damage dealers, HPS ranks healers. The difficulty, metric, filters and page live in the query
- * string. Loads the difficulty's seven boss files.
- */
 @Component({
   selector: 'app-raid-logs-leaderboard-page',
   imports: [
@@ -80,7 +73,6 @@ const METRICS: ReadonlyArray<{ id: RaidMetric; label: string }> = [
     ],
   templateUrl: './raid-logs-leaderboard-page.component.html',
   styleUrl: './raid-logs-leaderboard-page.component.scss',
-  // The class, spec and realm dropdowns need it (NG0201 without it).
   providers: [FilterDropdownCoordinatorService],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
@@ -114,7 +106,6 @@ export class RaidLogsLeaderboardPageComponent {
   readonly showHelp = signal(false);
   readonly hasFilters = computed(() =>
     this.classFilter() !== undefined || this.specFilter() !== undefined || this.realmFilter() !== undefined);
-  /** The ladder's gender where the raid logs have it wrong; until it loads, the raid logs' own. */
   private readonly genders = toSignal(this.data.genders(), { initialValue: new Map<string, number>() as ReadonlyMap<string, number> });
 
   readonly difficulty = computed(() => {
@@ -123,14 +114,12 @@ export class RaidLogsLeaderboardPageComponent {
       ?? defaultDifficulty(difficulties);
   });
 
-  /** Everyone's score, every spec counted. What 100% is on each boss comes from it. */
   private readonly allScores = computed(() => {
     const loaded = this.loaded();
     const index = this.index();
     return loaded && index ? scoreCharacters(index.bosses, loaded.bossKills, this.metric()) : [];
   });
 
-  /** With a spec picked, each character scored on the kills played as it; the other filters only pick rows. */
   readonly scores = computed(() => {
     const loaded = this.loaded();
     const index = this.index();
@@ -141,13 +130,11 @@ export class RaidLogsLeaderboardPageComponent {
     return loaded && index ? scoreCharacters(index.bosses, loaded.bossKills, this.metric(), spec) : [];
   });
 
-  /** The filtered ranking, before the search: ranks hold across it, so a found character shows their real place. */
   private readonly ranked = computed<RankedScore[]>(() => rankScores(this.scores(), {
     classId: this.classFilter(),
     realm: this.realmFilter()
   }));
 
-  /** The difficulty's kills as the previous scan had them; undefined while none of them is new. */
   private readonly previousBossKills = computed(() => {
     const loaded = this.loaded();
     const newLogs = this.index()?.newLogs;
@@ -158,10 +145,6 @@ export class RaidLogsLeaderboardPageComponent {
     return previous.some((kills, boss) => kills.length < loaded.bossKills[boss].length) ? previous : undefined;
   });
 
-  /**
-   * How each character's rank and score moved since the previous scan, by characterKey: the same
-   * ranking (metric, spec, class, realm) worked out without the kills that scan didn't have.
-   */
   private readonly changes = computed(() => {
     const previousKills = this.previousBossKills();
     const index = this.index();
@@ -172,7 +155,6 @@ export class RaidLogsLeaderboardPageComponent {
     return scoreChanges(this.ranked(), rankScores(previous, { classId: this.classFilter(), realm: this.realmFilter() }));
   });
 
-  /** The scan the changes measure from, for the explanation; undefined when no change shows. */
   readonly changesSince = computed(() => this.previousBossKills() ? this.index()?.previousGeneratedAt : undefined);
 
   readonly rankings = computed<RankedScore[]>(() => {
@@ -180,10 +162,8 @@ export class RaidLogsLeaderboardPageComponent {
     return query ? this.ranked().filter(entry => nameMatches(entry.character.name, query)) : this.ranked();
   });
 
-  /** The top score in view; the score colours measure against it, as the M+ leaderboard's ranks do. */
   private readonly topScore = computed(() => this.ranked()[0]?.score ?? 0);
 
-  /** What 100% is on each boss: the best anyone did there, in kill order. Read only while the explanation is open. */
   readonly bossTops = computed<BossTop[]>(() => {
     const scores = this.allScores();
     return bossesInKillOrder(this.index()?.bosses ?? []).map(boss => {
@@ -212,7 +192,6 @@ export class RaidLogsLeaderboardPageComponent {
     return CLASS_FILTER_OPTIONS.filter(option => typeof option.value !== 'number' || ranked.has(option.value));
   });
 
-  /** The picked class's specs that the tab ranks: healers on HPS, everyone else on DPS. */
   readonly specOptions = computed<FilterDropdownOption[]>(() => {
     const classId = this.classFilter();
     const metric = this.metric();
@@ -226,10 +205,6 @@ export class RaidLogsLeaderboardPageComponent {
     ...RAID_REALMS.map(realm => ({ value: realmSlug(realm), label: realm }))
   ];
 
-  /**
-   * Every label each dropdown can show, whatever the tab and class: each keeps its longest one's
-   * width ("Death Knight", "Beast Mastery"), so picking never cuts a name or moves the toolbar.
-   */
   readonly classWidthLabels: ReadonlyArray<string> = ['All classes', ...Object.values(CLASS_NAMES)];
   readonly specWidthLabels = computed<string[]>(() =>
     ['All specs', ...new Set([...(this.index()?.specs.values() ?? [])].map(spec => spec.name))]);
@@ -284,12 +259,6 @@ export class RaidLogsLeaderboardPageComponent {
     this.writeUrl();
   }
 
-  /**
-   * Clears a class or spec the tab doesn't rank (a Warrior on HPS): it would empty the list, and
-   * the dropdown would show no label for it. Then picks the spec of a class with only one the
-   * tab ranks (a Shaman on HPS is Restoration). Runs on a tab switch and once a URL's filters
-   * meet the index.
-   */
   private fitFiltersToTab(): void {
     if (this.classFilter() !== undefined && !this.classOptions().some(option => option.value === this.classFilter())) {
       this.classFilter.set(undefined);
@@ -301,10 +270,6 @@ export class RaidLogsLeaderboardPageComponent {
     this.specFilter.update(spec => spec ?? this.onlyRankedSpec());
   }
 
-  /**
-   * The picked class's spec when it is the only one the tab ranks: every healing class but the
-   * Priest on HPS. No class has just one on DPS.
-   */
   private onlyRankedSpec(): number | undefined {
     const specs = this.specOptions().filter(option => option.value !== undefined);
     return specs.length === 1 ? specs[0].value as number : undefined;
@@ -323,7 +288,6 @@ export class RaidLogsLeaderboardPageComponent {
     this.writeUrl();
   }
 
-  /** Clears class, spec and realm, as the M+ leaderboard's Reset does; the search stays. */
   resetFilters(): void {
     this.classFilter.set(undefined);
     this.specFilter.set(undefined);
@@ -353,12 +317,10 @@ export class RaidLogsLeaderboardPageComponent {
     return getClassColor(classId) ?? '#e0e0e0';
   }
 
-  /** The race icon, with the ladder's gender: the raid logs make nearly everyone male. */
   raceIcon(character: RaidCharacter): string {
     return getRaceIconPath(character.race, this.genders().get(characterKey(character)) ?? character.gender);
   }
 
-  /** The score's colour, against the top score in view: the M+ leaderboard's scoreQuality. */
   scoreTier(entry: RankedScore): RunQuality {
     return scoreQuality(entry.score, this.topScore());
   }
@@ -367,7 +329,6 @@ export class RaidLogsLeaderboardPageComponent {
     return this.changes().get(characterKey(entry.character));
   }
 
-  /** "+3", "−12": the minus sign is as wide as the plus, so the digits line up. */
   signed(value: number): string {
     return `${value > 0 ? '+' : '−'}${Math.abs(value)}`;
   }

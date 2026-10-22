@@ -4,7 +4,6 @@ import { RouterLink } from '@angular/router';
 import { ROLE_LABELS, UPGRADE_CUTOFFS } from './mythic-plus';
 import { MemberView, RunView } from './mythic-plus-views';
 
-/** The panel under an expanded run: result, affixes, timer and the whole group, each linking to their profile. */
 @Component({
   selector: 'app-mythic-plus-run-details',
   imports: [RouterLink, DatePipe],

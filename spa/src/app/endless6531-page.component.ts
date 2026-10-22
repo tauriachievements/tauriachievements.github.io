@@ -32,7 +32,6 @@ import { injectCompactViewport } from './compact-viewport';
 import { MobileFilterToggleComponent } from './mobile-filter-toggle.component';
 import { TapTooltipDirective } from './tap-tooltip.directive';
 
-/** On phones each member is a ~470 px tall card, so the roster is rendered this many at a time. */
 const MOBILE_ROSTER_PAGE_SIZE = 25;
 
 interface GuildAnalysisConfig {
@@ -156,7 +155,6 @@ export class Endless6531PageComponent {
   private readonly guildKey =
     this.routeData['guild'] as GuildAnalysisKey ?? DEFAULT_GUILD_ANALYSIS_KEY;
   private readonly guild = GUILD_ANALYSES[this.guildKey] ?? GUILD_ANALYSES[DEFAULT_GUILD_ANALYSIS_KEY];
-  // Loaded by guildAnalysisResolver before the page is created; null when the load failed.
   private readonly loadedAnalysis = this.routeData['analysis'] as GuildAnalysis | null | undefined;
   private readonly analysis: GuildAnalysis = this.loadedAnalysis ?? { timestamp: '', players: [] };
   private readonly sourcePlayers = this.analysis.players;
@@ -191,7 +189,6 @@ export class Endless6531PageComponent {
   readonly selectedClassId = signal<number | null>(null);
   readonly selectedGuildRank = signal('');
   readonly selectedCombatRole = signal<CombatRole | ''>('');
-  /** Phones collapse the filters and the class breakdown so the roster starts on the first screen. */
   readonly filtersOpen = signal(false);
   readonly classBreakdownOpen = signal(false);
   readonly guildRanks = this.buildGuildRanks();
@@ -220,11 +217,6 @@ export class Endless6531PageComponent {
       .sort((left, right) => left.label.localeCompare(right.label))
   ];
 
-  /**
-   * Whether the roster table is wider than its column (its cells don't wrap, so it needs about
-   * 900 px). Only then does it scroll sideways: a scrolling container would also stop the
-   * header from sticking to the page, which it can keep wherever the table fits.
-   */
   readonly isTableOverflowing = signal(false);
   private readonly destroyRef = inject(DestroyRef);
   private readonly tableScroll = viewChild<ElementRef<HTMLElement>>('tableScroll');
@@ -249,7 +241,6 @@ export class Endless6531PageComponent {
     this.destroyRef.onDestroy(() => observer.disconnect());
   }
 
-  /** The roster filters that differ from their defaults, for the phone filter summary. */
   activeFilterLabels(): string[] {
     const labels: string[] = [];
 

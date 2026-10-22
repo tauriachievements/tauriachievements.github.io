@@ -74,7 +74,6 @@ export class TopGainersPageComponent implements OnInit {
   readonly lastEdited = signal<Date | undefined>(undefined);
   readonly lastEditedTimeZoneLabel = signal('Local time');
   readonly topGainersLimit = signal(DEFAULT_TOP_GAINERS_LIMIT);
-  /** Phones show only the comparison label until the filter panel is opened. */
   readonly filtersOpen = signal(false);
   readonly achievementSourceLimit = signal<number | undefined>(DEFAULT_ACHIEVEMENT_SOURCE_LIMIT);
   readonly honorableKillSourceLimit = signal<number | undefined>(DEFAULT_HONORABLE_KILL_SOURCE_LIMIT);

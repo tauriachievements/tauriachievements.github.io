@@ -15,7 +15,6 @@ type CountMode = 'runs' | 'characters';
 interface SpecBar extends SpecShare {
   heightPercent: number;
   shareLabel: string;
-  /** Only each class's most-seen spec carries a value on its cap; the rest live in the tooltip. */
   showValue: boolean;
 }
 
@@ -50,7 +49,6 @@ export class MythicPlusSpecChartComponent {
     { value: 'runs', label: 'All runs' },
     { value: 'characters', label: 'Unique characters' }
   ];
-  /** Minimum key level; each step keeps that level and everything above it. */
   readonly levelOptions: ReadonlyArray<{ value: number; label: string; title: string }> = [
     { value: 0, label: 'All keys', title: 'Keys of every level' },
     { value: 5, label: '+5', title: 'Keys +5 and higher' },
@@ -62,10 +60,6 @@ export class MythicPlusSpecChartComponent {
   readonly countMode = signal<CountMode>('runs');
   readonly minLevel = signal(0);
 
-  /**
-   * On narrow screens the chart and its filters start folded under the title, so the
-   * leaderboard is on the first screen; a tap opens them. Wide screens always show them.
-   */
   readonly collapsible = injectCompactViewport(MYTHIC_PLUS_CARDS_QUERY);
   readonly expanded = signal(false);
   readonly showBody = computed(() => !this.collapsible() || this.expanded());

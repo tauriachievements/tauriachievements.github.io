@@ -7,7 +7,6 @@ import { MythicPlusDungeonFile, MythicPlusIndex, MythicPlusPlayerEntry, NEWER_DA
 import { MythicPlusPageComponent } from './mythic-plus-page.component';
 import { DataFileService } from './services/data-file.service';
 
-/** One export: an index and its Court of Stars file, where the healer is player 0. */
 function exportOf(tables: string, players: MythicPlusPlayerEntry[]): { index: MythicPlusIndex; cos: MythicPlusDungeonFile } {
   return {
     index: {
@@ -23,11 +22,9 @@ function exportOf(tables: string, players: MythicPlusPlayerEntry[]): { index: My
   };
 }
 
-// The Oct 5 table had Fellicia (a warlock) where the Oct 7 one has Exkeito (a druid).
 const oct5 = exportOf('aaaaaaaaaaaa', [['Fellicia', 'Evermoon', 'Yin Yang', 9, 1, 1]]);
 const oct7 = exportOf('bbbbbbbbbbbb', [['Exkeito', 'Evermoon', '', 11, 4, 0]]);
 
-/** Serves `held` until refresh(), then `deployed`: a tab that kept an old index across a deploy. */
 class FakeDataFiles {
   refreshes = 0;
   constructor(private held: MythicPlusIndex, private readonly deployed: ReturnType<typeof exportOf>) {}
@@ -71,7 +68,7 @@ describe('MythicPlusPageComponent data from two exports', () => {
 
   it('reports a mismatch that a fresh load does not fix instead of reloading again', () => {
     const dataFiles = new FakeDataFiles(oct5.index, oct7);
-    dataFiles.refresh = () => dataFiles.refreshes++; // the deploy is still going out
+    dataFiles.refresh = () => dataFiles.refreshes++;
     const page = createPage(dataFiles);
 
     expect(dataFiles.refreshes).toBe(1);
@@ -106,7 +103,6 @@ describe('MythicPlusPageComponent data from two exports', () => {
 });
 
 describe('MythicPlusPageComponent character and realm in the URL', () => {
-  // Two runs: Exkeito (Evermoon) with Napim (Tauri), and Napim alone.
   const both = exportOf('cccccccccccc', [['Exkeito', 'Evermoon', '', 11, 4, 0], ['Napim', 'Tauri', '', 11, 4, 0]]);
   both.cos.runs = [
     [19, 1297289, 1791293804, 196, [], [[0, 0], [1, 0]]],
@@ -148,13 +144,11 @@ describe('MythicPlusPageComponent character and realm in the URL', () => {
     expect(page.view()).toBe('players');
     expect(page.classFilter()).toBe(11);
     expect(page.specFilter()).toBe('Restoration');
-    // A class and its spec are two filters, so the phone's Filters button counts 2.
     expect(page.activeFilterLabels()).toEqual(['Druid', 'Restoration']);
   });
 });
 
 describe('MythicPlusPageComponent roles', () => {
-  // Exkeito healed and Napim tanked the +19; Napim also healed a +15. Specs: 0 Restoration, 1 Guardian.
   const roles = exportOf('dddddddddddd', [['Exkeito', 'Evermoon', '', 11, 4, 0], ['Napim', 'Tauri', '', 11, 4, 0]]);
   roles.index.specs = [{ class: 11, name: 'Restoration', role: 'healer' }, { class: 11, name: 'Guardian', role: 'tank' }];
   roles.cos.runs = [

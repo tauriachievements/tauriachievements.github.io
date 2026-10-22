@@ -79,7 +79,6 @@ import { MythicPlusWeekAffixesComponent } from './mythic-plus-week-affixes.compo
 import { DataFileService } from './services/data-file.service';
 import { UpdateBarComponent } from './update-bar.component';
 
-/** Season: every run. Week: only runs with the current week's affixes. */
 type LadderPeriod = 'season' | 'week';
 
 interface SummaryTile {
@@ -90,7 +89,6 @@ interface SummaryTile {
   link?: string[];
 }
 
-/** How many members of a guild in the top this many of the leaderboard the header counts. */
 const TOP_OVERALL = 100;
 
 function parseRole(value: string | null): MythicPlusRole | undefined {
@@ -102,16 +100,10 @@ function parseClass(value: string | null): number | undefined {
   return value && CLASS_NAMES[classId] ? classId : undefined;
 }
 
-/** A spec from the URL only counts when it belongs to the class filter. */
 function parseSpec(classId: number | undefined, value: string | null): string | undefined {
   return LEGION_SPECS.find(spec => spec.classId === classId && spec.spec === value)?.spec;
 }
 
-/**
- * /mythic-plus/guild/:realm/:guild: one guild's own Mythic+ ladder, so its members can compete
- * with each other instead of the whole server. Scores are the leaderboard's; ranks are counted
- * again inside the guild, with each member's overall rank beside theirs. Reads every data file.
- */
 @Component({
   selector: 'app-mythic-plus-guild-page',
   imports: [
@@ -127,7 +119,6 @@ function parseSpec(classId: number | undefined, value: string | null): string | 
     ],
   templateUrl: './mythic-plus-guild-page.component.html',
   styleUrl: './mythic-plus-guild-page.component.scss',
-  // Keeps one of this page's dropdowns open at a time.
   providers: [FilterDropdownCoordinatorService],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
@@ -138,11 +129,8 @@ export class MythicPlusGuildPageComponent implements OnInit {
   private readonly router = inject(Router);
   private readonly location = inject(Location);
 
-  /** Narrow screens list the members as cards (MYTHIC_PLUS_CARDS_QUERY). */
   readonly cards = injectCompactViewport(MYTHIC_PLUS_CARDS_QUERY);
-  /** Rows "Show more" adds; also the leaderboard's page size, for the overall-rank links. */
   private readonly pageSize = computed(() => this.cards() ? MYTHIC_PLUS_CARDS_PAGE_SIZE : MYTHIC_PLUS_PAGE_SIZE);
-  /** Phones: whether the class and spec filters are shown, or folded behind the Filters button. */
   readonly filtersOpen = signal(false);
 
   readonly index = signal<MythicPlusIndex | undefined>(undefined);
@@ -151,25 +139,20 @@ export class MythicPlusGuildPageComponent implements OnInit {
   readonly allRuns = signal<readonly MythicPlusRun[]>([]);
   readonly isLoading = signal(true);
   readonly loadError = signal<string | undefined>(undefined);
-  /** Set once files from another export made the page load everything again. */
   private reloadedForNewerData = false;
 
   private readonly params = toSignal(this.route.paramMap, { initialValue: this.route.snapshot.paramMap });
   readonly urlRealm = computed(() => this.params().get('realm') ?? '');
   readonly urlGuild = computed(() => this.params().get('guild') ?? '');
 
-  // The filters, read from the URL once and written back without navigating (see writeUrl).
   private readonly query = this.route.snapshot.queryParamMap;
   readonly period = signal<LadderPeriod>(this.query.get('period') === 'week' ? 'week' : 'season');
   readonly selectedDungeonId = signal<string | undefined>(this.query.get('dungeon') ?? undefined);
-  /** Roles: each member scored only on their runs as a tank, a healer or DPS. Undefined is Players. */
   readonly roleFilter = signal<MythicPlusRole | undefined>(parseRole(this.query.get('role')));
   readonly classFilter = signal<number | undefined>(this.roleFilter() ? undefined : parseClass(this.query.get('class')));
   readonly specFilter = signal<string | undefined>(parseSpec(this.classFilter(), this.query.get('spec')));
   readonly search = signal('');
-  /** The member `?character=` picks out, e.g. from the Guild tile on their profile. */
   private readonly highlightParam = signal(parseCharacterParam(this.query.get('character')));
-  /** Rows shown before "Show more". */
   private readonly limit = signal(this.pageSize());
 
   readonly roles: readonly MythicPlusRole[] = ['tank', 'healer', 'dps'];
@@ -187,19 +170,16 @@ export class MythicPlusGuildPageComponent implements OnInit {
     ];
   });
 
-  /** The class / spec filter in use, as a chip under the phone Filters button. */
   readonly activeFilterLabels = computed(() => {
     const classId = this.classFilter();
     return classId === undefined ? [] : [[this.specFilter(), CLASS_NAMES[classId]].filter(Boolean).join(' ')];
   });
 
-  /** The guild the URL names, written as the export writes it. Undefined when nobody in the export is in it. */
   readonly guild = computed(() => {
     const players = this.index()?.players ?? [];
     return findGuild(players.map(([, realm, guild]) => ({ realm, guild })), this.urlRealm(), this.urlGuild());
   });
 
-  /** The realm the URL names, as the export writes it (`WoD` for `wod`), for the not-found message. */
   readonly realmName = computed(() => {
     const slug = realmSlug(this.urlRealm());
     return this.index()?.players.find(([, realm]) => realmSlug(realm) === slug)?.[1] ?? this.urlRealm();
@@ -210,7 +190,6 @@ export class MythicPlusGuildPageComponent implements OnInit {
     return guild && getGuildArmoryUrl(guild.name, guild.realm);
   });
 
-  /** The guild's characters in the export, each with their standing: everyone with a run this season. */
   private readonly memberStandings = computed(() => {
     const index = this.index();
     const guild = this.guild();
@@ -230,7 +209,6 @@ export class MythicPlusGuildPageComponent implements OnInit {
 
   readonly dungeons = computed(() => this.index()?.dungeons ?? []);
   readonly selectedDungeon = computed(() => this.dungeons().find(dungeon => dungeon.id === this.selectedDungeonId()));
-  /** Dungeons the table has a best-run column for: the selected one, or all of them. */
   readonly ladderDungeons = computed(() => {
     const dungeon = this.selectedDungeon();
     return dungeon ? [dungeon] : this.dungeons();
@@ -245,17 +223,13 @@ export class MythicPlusGuildPageComponent implements OnInit {
       .filter((affix): affix is MythicPlusAffix => affix !== undefined);
   });
 
-  /** Raider.IO-style score colours from this season's standings. */
   private readonly scoreColors = computed(() => seasonScoreColors(this.index()));
 
-  /** Season, all dungeons, no role, class or spec: the scope the standings' changes describe. */
   private readonly defaultScope = computed(() =>
     this.period() === 'season' && !this.selectedDungeon() && !this.roleFilter() && this.classFilter() === undefined);
 
-  /** Every character's season, for the header; also the ladder's ranking in the default scope. */
   private readonly seasonRanking = computed(() => rankPlayers(this.allRuns()));
 
-  /** Every character in the selected scope, as the leaderboard's players view ranks them. */
   private readonly ranking = computed(() => {
     if (this.defaultScope()) {
       return this.seasonRanking();
@@ -268,7 +242,6 @@ export class MythicPlusGuildPageComponent implements OnInit {
     const role = this.roleFilter();
     const classId = this.classFilter();
     const spec = this.specFilter();
-    // A spec (or role) scores each character on the runs they played as that spec (role) only.
     const include = role === undefined && classId === undefined
       ? undefined
       : (member: MythicPlusMember) => (role === undefined || member.role === role)
@@ -281,21 +254,18 @@ export class MythicPlusGuildPageComponent implements OnInit {
     return guild ? guildLadder(this.ranking(), guild) : [];
   });
 
-  /** The ladder, narrowed by the name search; like the leaderboard's, it keeps the ranks. */
   readonly filteredLadder = computed(() => {
     const query = this.search();
     const ladder = this.ladder();
     return query.trim() ? ladder.filter(entry => memberNameMatches(entry.player.member, query)) : ladder;
   });
 
-  /** `characterKey` of the member `?character=` names, matched without regard to case. */
   readonly highlightKey = computed(() => {
     const wanted = this.highlightParam();
     const members = this.ladder().map(entry => entry.player.member);
     return wanted && findCharacters(members, wanted.realm, wanted.name).map(member => characterKey(member))[0];
   });
 
-  /** Rows shown: up to the limit, and always down to the highlighted member. */
   private readonly shownCount = computed(() => {
     const key = this.highlightKey();
     const position = key ? this.filteredLadder().findIndex(entry => entry.player.key === key) + 1 : 0;
@@ -303,11 +273,9 @@ export class MythicPlusGuildPageComponent implements OnInit {
     return Math.max(this.limit(), Math.ceil(position / size) * size);
   });
 
-  /** How many rows "Show more" adds; 0 once every member is shown. */
   readonly nextRows = computed(() =>
     Math.min(this.pageSize(), Math.max(0, this.filteredLadder().length - this.shownCount())));
 
-  /** Guild-rank changes since the previous scan; undefined outside the scope the standings describe. */
   private readonly rankChanges = computed(() => {
     const index = this.index();
     if (!index?.previousGeneratedAt || index.standings?.length !== index.players.length || !this.defaultScope()) {
@@ -322,7 +290,6 @@ export class MythicPlusGuildPageComponent implements OnInit {
     })));
   });
 
-  /** A score's colour: the run scale for one dungeon, this week's players for this week, else the season's. */
   private readonly playerColor = computed(() => {
     const colors = this.scoreColors();
     if (this.selectedDungeon()) {
@@ -361,7 +328,6 @@ export class MythicPlusGuildPageComponent implements OnInit {
     });
   });
 
-  /** The leaderboard's players view in the same scope, for the overall-rank links. */
   private readonly overallFilters = computed<Params>(() => ({
     view: 'players',
     period: this.period() === 'week' ? 'week' : undefined,
@@ -371,7 +337,6 @@ export class MythicPlusGuildPageComponent implements OnInit {
     spec: this.specFilter()
   }));
 
-  /** The header: who is in the guild this season, its best score and its share of the top 100. */
   readonly summary = computed<SummaryTile[]>(() => {
     const guild = this.guild();
     if (!guild) {

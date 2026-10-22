@@ -14,7 +14,6 @@ interface RaceView extends RaceShare {
 
 interface Segment {
   key: string;
-  /** 0–2 for the three most-played races, 3 for the rest together. */
   tone: number;
   width: number;
 }
@@ -28,13 +27,11 @@ interface SpecRow {
   icon?: string;
   total: number;
   races: RaceView[];
-  /** The other races with as many characters as the first, which only leads by name. */
   tiedWith: string[];
   segments: Segment[];
   label: string;
 }
 
-/** How many races get their own segment in a spec's bar; the rest share one. */
 const SHOWN_RACES = 3;
 
 const shareLabel = (share: number): string => `${Math.round(share * 100)}%`;

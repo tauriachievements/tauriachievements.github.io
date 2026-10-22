@@ -1,6 +1,5 @@
 @use './mythic-plus-shared' as *;
 
-// Same palette as the M+ leaderboard and stats page: dark cards, gold accent.
 $timed: #7fdc8f;
 $depleted: #e06666;
 $plot-height: 180px;
@@ -37,7 +36,6 @@ $plot-height: 180px;
   &:focus-visible { outline: 2px solid $gold; outline-offset: 2px; }
 }
 
-// Loading / error
 .feedback { display: flex; min-height: 280px; flex-direction: column; align-items: center; justify-content: center; gap: 14px; }
 
 .feedback button {
@@ -60,7 +58,6 @@ $plot-height: 180px;
 
 @keyframes spin { to { transform: rotate(360deg); } }
 
-// Header: who they are, their score, the links out, and a few totals.
 .profile-header {
   display: grid;
   grid-template-areas:
@@ -75,7 +72,6 @@ $plot-height: 180px;
   box-shadow: 0 10px 30px rgba(0, 0, 0, .5);
 }
 
-// The class crest on a soft glow of the class colour (--class-color, set from the template).
 .profile-crest {
   display: grid;
   width: 88px;
@@ -108,7 +104,6 @@ $plot-height: 180px;
   font-size: .9rem;
 }
 
-// Opens the guild's Mythic+ ladder.
 .guild-link {
   color: inherit;
   text-decoration: none;
@@ -140,12 +135,10 @@ $plot-height: 180px;
   font-size: .8rem;
   font-weight: 600;
 
-  // A character's only spec, as their main spec looked before the pills could be clicked.
   &.main { box-shadow: inset 0 0 0 1px rgba(247, 181, 0, .45); }
   &.all-specs { padding-left: 9px; }
 }
 
-// Two specs or more: a pill shows the profile in that spec only, tinted in the class colour.
 button.spec-pill {
   cursor: pointer;
 
@@ -161,7 +154,6 @@ button.spec-pill {
 .spec-icon,
 .rank-icon { @include affix-icon(20px); border-radius: 3px; }
 
-// The Role tile's tank / healer / DPS icon, as in the run table's column headings.
 .rank-role {
   display: grid;
   flex: none;
@@ -198,7 +190,6 @@ button.spec-pill {
 .profile-score-value.score-gained { color: #61d887; }
 .profile-score-metric.has-score-change { cursor: pointer; }
 
-// Immediate scan-delta tooltip: deliberately no transition or delay.
 .scan-score-tooltip {
   position: absolute;
   z-index: 10;
@@ -267,7 +258,6 @@ button.spec-pill {
   &:focus-visible { outline: 2px solid $gold; outline-offset: 2px; }
 }
 
-// Fixed-width columns: a number counting to a wider one (95% to 100%) doesn't push the next along.
 .profile-summary {
   display: grid;
   grid-template-columns: repeat(3, minmax(3.25rem, max-content));
@@ -281,7 +271,6 @@ button.spec-pill {
   dd { margin: 0; color: #fff; font-size: 1.15rem; font-weight: 700; font-variant-numeric: tabular-nums; }
 }
 
-// Ranks: each tile opens the players view on the page that holds the character.
 .ranks {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
@@ -334,7 +323,6 @@ button.spec-pill {
   white-space: nowrap;
 }
 
-// A long guild name ends in an ellipsis instead of being cut off.
 .rank-label-text { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
 
 .rank-total {
@@ -345,7 +333,6 @@ button.spec-pill {
   b { color: $gold; }
 }
 
-// Best per dungeon and teammates share a row on wide screens.
 .pair {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(min(100%, 480px), 1fr));
@@ -379,7 +366,6 @@ button.spec-pill {
 .timer-delta { color: $timed; font-size: .75rem; font-weight: 700; }
 .timer-delta.over { color: $depleted; }
 
-// Best per dungeon, table (wide screens)
 .bests {
   width: 100%;
   border-collapse: collapse;
@@ -407,7 +393,6 @@ button.spec-pill {
 .not-played img { opacity: .45; filter: grayscale(1); }
 .not-played-cell { color: #6f6f6f; font-style: italic; }
 
-// Best per dungeon, cards (narrow screens)
 .best-cards {
   display: flex;
   flex-direction: column;
@@ -435,7 +420,6 @@ button.spec-pill {
 .best-card-meta { color: #9a9a9a; font-size: .75rem; font-variant-numeric: tabular-nums; }
 .best-cards .not-played .best-card-name { color: #8a8a8a; }
 
-// Frequent teammates
 .teammates {
   display: flex;
   flex-direction: column;
@@ -479,7 +463,6 @@ button.spec-pill {
 .teammate-best { color: #bdbdbd; font-weight: 600; white-space: nowrap; }
 .teammate-best .level-star { margin-left: 2px; color: $gold; font-size: .65rem; letter-spacing: -1px; }
 
-// Score over the season: a line through each day's score, with a hit target per day.
 .chart-scroll {
   @include table-scroll;
 }
@@ -488,7 +471,6 @@ button.spec-pill {
   display: grid;
   min-width: max(100%, calc(var(--columns) * 14px));
   grid-template-columns: 48px minmax(0, 1fr);
-  // Room above the plot for the top y-axis label, which is centred on its gridline.
   padding: 10px 4px 0 0;
 }
 
@@ -526,7 +508,6 @@ svg.line {
   grid-template-columns: repeat(var(--columns), minmax(0, 1fr));
 }
 
-// Affix weeks behind the line, their affixes along the top.
 .week-bands {
   span { position: relative; border-left: 1px dashed #333; }
   span:first-child { border-left: 0; }
@@ -572,7 +553,6 @@ svg.line {
   }
 }
 
-// A dot on each day they played; the others show theirs on hover.
 .dot {
   position: absolute;
   left: 50%;
@@ -589,7 +569,6 @@ svg.line {
 
 .played .dot { opacity: 1; }
 
-// The day picked for the runs list.
 .played { cursor: pointer; }
 .column.selected { background: rgba(247, 181, 0, .12); }
 .column.selected .dot { transform: translate(-50%, 50%) scale(1.5); box-shadow: 0 0 0 2px $gold; }
@@ -647,7 +626,6 @@ svg.line {
   b { margin-left: auto; padding-left: 12px; color: $timed; font-variant-numeric: tabular-nums; }
 }
 
-// "Hover a day" for a mouse, "Tap a day" on a touch screen.
 .hint-touch { display: none; }
 
 @media (hover: none) {
@@ -655,7 +633,6 @@ svg.line {
   .hint-touch { display: inline; }
 }
 
-// Run history
 .history { display: flex; flex-direction: column; gap: 10px; }
 
 .history-header {
@@ -683,7 +660,6 @@ svg.line {
   &:focus-visible { outline: 2px solid $gold; outline-offset: 2px; }
 }
 
-// Not found, or several characters by that name
 .not-found {
   display: flex;
   width: min(640px, 100%);
@@ -756,10 +732,8 @@ svg.line {
 .result-realm { color: #8a8a8a; font-size: .8rem; }
 .result-score { color: #fff; font-size: .85rem; font-variant-numeric: tabular-nums; }
 
-// Touch screens: every link and button at least 40 px tall.
 @media (pointer: coarse) {
   .back-link, .action-link, .more-runs { min-height: 40px; }
-  // Spec pills sit in a wrapping row under the name; 32 px keeps it compact.
   button.spec-pill { min-height: 32px; }
 }
 
@@ -813,19 +787,14 @@ svg.line {
 
   .card { padding: 12px 12px 14px; }
 
-  // Narrower columns, so a long season needs less sideways scrolling.
   .line-chart {
     min-width: max(100%, calc(var(--columns) * 8px));
     grid-template-columns: 40px minmax(0, 1fr);
-    // Room for the last date label, which overhangs its narrow column.
     padding-right: 14px;
   }
 
-  // A tooltip beside a column near the middle would run past the end of a phone-wide chart;
-  // those open centred over their column instead.
   .column.middle .tooltip { right: auto; left: 50%; transform: translateX(-50%); }
 
-  // Hidden tooltips still widen a scrolling chart, which would then scroll for nothing.
   .tooltip { display: none; }
   .column:focus-visible .tooltip, .column.tooltip-open .tooltip { display: flex; }
 
@@ -836,7 +805,6 @@ svg.line {
   .not-found { margin-top: 8px; padding: 16px; }
 }
 
-// Compare: the "compare with" search under the header's links, and a compare link per teammate.
 button.action-link { font: inherit; font-size: .8rem; font-weight: 600; cursor: pointer; }
 .action-link.active { border-color: $gold; color: #fff; }
 
@@ -861,7 +829,6 @@ button.action-link { font: inherit; font-size: .8rem; font-weight: 600; cursor: 
   &:hover { text-decoration: underline; }
 }
 
-// The teammate row, then a compare link at its right; brighter on hover.
 .teammate-item { display: flex; align-items: center; gap: 2px; }
 .teammate-item .teammate { min-width: 0; flex: 1 1 auto; }
 

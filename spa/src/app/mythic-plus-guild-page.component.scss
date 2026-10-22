@@ -1,8 +1,5 @@
 @use './mythic-plus-shared' as *;
 
-// The leaderboard's look: dark cards, gold accent. The switches, dungeon tiles and filters match
-// the leaderboard's players view, so the guild ladder reads as the same ladder, narrowed.
-
 :host { display: block; width: 100%; }
 
 @include visually-hidden;
@@ -33,7 +30,6 @@
   &:focus-visible { outline: 2px solid $gold; outline-offset: 2px; }
 }
 
-// Header: the guild's initial, its name and realm, and three totals.
 .guild-header {
   display: grid;
   grid-template-areas: 'crest heading summary';
@@ -117,7 +113,6 @@ a.summary-note {
   &:focus-visible { outline: 2px solid $gold; outline-offset: 2px; border-radius: 2px; }
 }
 
-// Season / this week switch, with the current week's affixes beside it.
 .period-bar {
   position: relative;
   display: flex;
@@ -159,7 +154,6 @@ a.summary-note {
   font-weight: 700;
 }
 
-// One tile per dungeon, stretched evenly across the row as on the leaderboard.
 .dungeon-picker {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(52px, 1fr));
@@ -245,7 +239,6 @@ a.summary-note {
   }
 }
 
-// Roles: Tank / Healer / DPS, each with its column icon from the run table.
 .role-switch button { display: inline-flex; align-items: center; gap: 6px; }
 
 .role-icon {
@@ -291,7 +284,6 @@ a.summary-note {
   &:disabled { opacity: .45; cursor: default; }
 }
 
-// At the end of the row, like the leaderboard's player search.
 .player-search { margin-left: auto; }
 
 .player-search input {
@@ -325,7 +317,6 @@ a.summary-note {
 
 .ladder-note { max-width: 72ch; color: #8a8a8a; font-size: .8rem; line-height: 1.5; }
 
-// Unknown guild, or no runs this season
 .not-found {
   display: flex;
   width: min(640px, 100%);
@@ -356,7 +347,6 @@ a.summary-note {
   &:focus-visible { outline: 2px solid $gold; outline-offset: 2px; }
 }
 
-// Loading / error
 .feedback { display: flex; min-height: 280px; flex-direction: column; align-items: center; justify-content: center; gap: 14px; }
 
 .feedback button {
@@ -379,13 +369,11 @@ a.summary-note {
 
 @keyframes spin { to { transform: rotate(360deg); } }
 
-// Touch screens: every switch, link and button at least 40 px tall.
 @media (pointer: coarse) {
   .back-link, .more-rows, .back-button { min-height: 40px; }
   .view-switch button { min-height: 40px; }
 }
 
-// Narrower screens: the totals go under the name.
 @media (max-width: $cards-breakpoint) {
   .guild-header {
     grid-template-areas:
@@ -425,16 +413,12 @@ a.summary-note {
     .dungeon-tile-all { width: 30px; height: 30px; }
   }
 
-  // Players / Roles and the role switch across the full width.
   .toolbar .view-switch, .role-switch { flex: 1 1 100%; }
   .toolbar .view-switch button, .role-switch button { flex: 1 1 0; }
   .role-switch button { justify-content: center; }
 
-  // Filters button and the search share the first row; the class and spec dropdowns and Reset
-  // open on the row under them.
   .player-search { flex: 1 1 0; min-width: 140px; margin-left: 0; order: -1; }
   .player-search input { width: 100%; }
-  // Wide enough to wrap under the search instead of squeezing beside it; Reset still fits beside them.
   .filter-slot { flex: 1 1 30%; width: auto; min-width: 0; }
   .filters-collapsed .collapsible-filter { display: none; }
   .filter-reset { order: 1; }

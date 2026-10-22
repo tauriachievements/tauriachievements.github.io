@@ -2,26 +2,15 @@ import { DestroyRef, Directive, ElementRef, effect, inject, input, untracked } f
 import { CountText, easeOutExpo, formatCountText, parseCountText } from './count-up';
 import { prefersReducedMotion } from './motion';
 
-/**
- * Writes a number into its host by counting to it: "41,401", "90%", "+20", "78 runs". The first
- * value counts up from zero; a later one counts on from the number shown, so switching Season /
- * This week rolls the numbers instead of swapping them. Text without a number is written as it
- * is, and so is a rank ("#3"): counting one up from #0 would read as passing through better ranks.
- * The host's own content is replaced, so leave it empty in the template.
- *
- * It writes the DOM straight from requestAnimationFrame, so counting renders nothing in Angular.
- */
 @Directive({
   selector: '[appCountUp]',
 })
 export class CountUpDirective {
   readonly appCountUp = input.required<string>();
-  /** Wait before counting, in ms, to stagger a row of numbers. */
   readonly countUpDelay = input(0);
   readonly countUpDuration = input(900);
 
   private readonly host: HTMLElement = inject(ElementRef).nativeElement;
-  /** The number on screen right now; undefined before the first value. */
   private shown: number | undefined;
   private frame = 0;
   private timer: ReturnType<typeof setTimeout> | undefined;
@@ -66,7 +55,6 @@ export class CountUpDirective {
       this.frame = requestAnimationFrame(step);
     };
 
-    // Starts on zero, so the number doesn't show in full and then drop back while it waits.
     if (first) {
       this.write(formatCountText(target, 0), 0);
     }
@@ -89,7 +77,6 @@ export class CountUpDirective {
   }
 }
 
-/** To the target's decimals, so a whole number never shows a fraction on its way. */
 function round(value: number, shape: CountText): number {
   const scale = 10 ** shape.decimals;
   return Math.round(value * scale) / scale;

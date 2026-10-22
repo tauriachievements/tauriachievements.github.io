@@ -36,11 +36,6 @@ interface BossCard {
 
 const RECENT_KILLS = 12;
 
-/**
- * /raid-logs: the way into the logs on one difficulty (`?difficulty=`): each boss's kills, fastest
- * kill and best damage and healing, and the latest kills. Reads only the index. Guild progression
- * is /raid-logs/guilds, the spec and race charts /raid-logs/stats.
- */
 @Component({
   selector: 'app-raid-logs-page',
   imports: [RouterLink, UpdateBarComponent, BackToTopButtonComponent, RaidDifficultySwitchComponent, RevealDirective, DatePipe, DecimalPipe],
@@ -140,7 +135,6 @@ export class RaidLogsPageComponent implements OnInit {
     return formatAgo(kill.killedAt, this.now());
   }
 
-  /** The difficulty switch keeps the scroll position: no navigation, only the address bar changes. */
   private writeUrl(): void {
     const url = this.router.createUrlTree([], {
       relativeTo: this.route,

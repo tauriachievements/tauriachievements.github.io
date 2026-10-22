@@ -1,6 +1,5 @@
 @use './mythic-plus-shared' as *;
 
-// Same palette as the character profile: dark cards, gold accent.
 $timed: #7fdc8f;
 $depleted: #e06666;
 $plot-height: 220px;
@@ -36,7 +35,6 @@ $plot-height: 220px;
   &:focus-visible { outline: 2px solid $gold; outline-offset: 2px; }
 }
 
-// Loading / error
 .feedback { display: flex; min-height: 280px; flex-direction: column; align-items: center; justify-content: center; gap: 14px; }
 
 .feedback button {
@@ -59,7 +57,6 @@ $plot-height: 220px;
 
 @keyframes spin { to { transform: rotate(360deg); } }
 
-// Title and the add-a-player search
 .compare-header {
   display: flex;
   flex-wrap: wrap;
@@ -187,7 +184,6 @@ $plot-height: 220px;
 
 .table-scroll { @include table-scroll; }
 
-// Side by side: a label column, then one column per player.
 .compare-table {
   width: 100%;
   border-collapse: separate;
@@ -198,10 +194,8 @@ $plot-height: 220px;
   th, td { padding: 8px 12px; border-bottom: 1px solid #2a2a2a; text-align: center; vertical-align: middle; }
   .col-label { width: 190px; color: #bdbdbd; font-weight: 600; text-align: left; }
   td { min-width: 150px; font-variant-numeric: tabular-nums; }
-
 }
 
-// The summary table sits on the page as its own card.
 .table-scroll:has(> .compare-table:not(.dungeons-table)) {
   border-radius: 4px;
   background: #1b1b1b;
@@ -220,10 +214,8 @@ $plot-height: 220px;
   min-width: 0;
 }
 
-// Carried between pages (characterTransitionName); see ::view-transition-group(*.character).
 .crest img, .player-name { view-transition-class: character; }
 
-// A glow in the class colour behind each crest; brighter while the column is pointed at.
 .crest { @include crest-glow(16px); }
 
 @media (hover: hover) {
@@ -231,9 +223,6 @@ $plot-height: 220px;
 }
 
 @include motion-safe {
-  // Column by column: the crest rises in, then its glow blooms. `backwards`, so the hover above
-  // still eases once the entrance is over. The frame only fades, and quickly: while it is see-through
-  // or moved it paints its own glow over its background, so the rise is on the image inside it.
   .crest { animation: mp-fade-in 280ms ease backwards; animation-delay: calc(var(--col, 0) * 110ms); }
   .crest img { animation: mp-crest-in 620ms var(--ease-spring) backwards; animation-delay: calc(var(--col, 0) * 110ms); }
   .crest::before { animation: mp-aura-in 900ms var(--ease-out) backwards; animation-delay: calc(var(--col, 0) * 110ms + 300ms); }
@@ -291,17 +280,14 @@ $plot-height: 220px;
 .stat-sub { display: block; color: #8a8a8a; font-size: .72rem; }
 .stat-hint { display: block; color: #6f6f6f; font-size: .7rem; font-weight: 400; }
 
-// Side by side: the best value in gold, the others quieter with how far behind they are.
 .versus {
   td .stat-value { color: #a8a8a8; font-weight: 600; }
   td.best .stat-value { color: $gold; font-weight: 800; }
   td.best .stat-sub { color: #bdbdbd; }
 
-  // Best run per dungeon: the others fade back.
   td:not(.best) .run-main { opacity: .5; }
 }
 
-// Beside the value, out of the flow, so the value stays centred.
 .stat-delta {
   position: absolute;
   top: 50%;
@@ -315,8 +301,6 @@ $plot-height: 220px;
 
 .score-row .stat-delta { font-size: .8rem; }
 
-// The numbers count up (CountUpDirective, 900 ms plus 40 ms a row). As they land, the best of
-// each row turns from grey to gold with a flash of light, then the gaps behind it fade in.
 @include motion-safe {
   .versus td.best .stat-number {
     animation: mp-leader-in 1s var(--ease-out) both;
@@ -329,7 +313,6 @@ $plot-height: 220px;
   }
 }
 
-// Best run per dungeon
 .dungeons-table {
   thead th { padding-top: 0; color: #9a9a9a; font-size: .8rem; font-weight: 700; }
   td { padding: 6px 12px; }
@@ -359,7 +342,6 @@ $plot-height: 220px;
 .dungeons-table tbody tr:hover { background: rgba(255, 255, 255, .03); }
 .not-played { color: #6f6f6f; font-style: italic; }
 
-// Score over the season: a line per player, a hit target per day.
 .legend {
   display: flex;
   flex-wrap: wrap;
@@ -442,16 +424,11 @@ svg.line {
 }
 
 @include motion-safe {
-  // Drawn in from the left once, by uncovering it (the stroke doesn't scale with the chart, so a
-  // dash-offset draw would come out uneven). The clip reaches past the edges, so lines along the
-  // top or bottom aren't cut; `backwards` drops it once done.
   svg.line { animation: mp-line-draw 1.4s var(--ease-in-out) backwards; }
 
-  // Score / Gap: the lines morph between their two shapes, and the dots follow.
   svg.line .stroke { transition: d 700ms var(--ease-out); }
   .dot { transition: bottom 700ms var(--ease-out); }
 
-  // New axis labels and gridlines fade in rather than appear.
   .y-axis span, .gridlines span { animation: mp-fade-in var(--dur-slow) ease both; }
 }
 
@@ -474,7 +451,6 @@ svg.line {
   }
 }
 
-// Each player's dot shows on the day pointed at.
 .dot {
   position: absolute;
   left: 50%;
@@ -536,7 +512,6 @@ svg.line {
   .hint-touch { display: inline; }
 }
 
-
 @media (pointer: coarse) {
   .back-link, .action-link { min-height: 40px; }
 }
@@ -565,7 +540,6 @@ svg.line {
   }
 }
 
-// Score / Gap switch, as on the leaderboard.
 .view-switch {
   display: inline-flex;
   padding: 2px;
@@ -593,7 +567,6 @@ svg.line {
 
 .tooltip-row i { color: $depleted; font-style: normal; font-variant-numeric: tabular-nums; }
 
-// Two players: a Lead column between them, a bar from its middle towards the leader.
 .dungeons-table.duel {
   .col-lead { width: 34%; padding: 6px 4px; }
   tfoot th, tfoot td { border-bottom: 0; padding-top: 12px; }
@@ -608,7 +581,6 @@ svg.line {
   align-items: center;
   height: 22px;
 
-  // The middle line: level.
   &::before {
     position: absolute;
     top: 2px;
@@ -633,7 +605,6 @@ svg.line {
 .lead-left .lead-bar { border-radius: 4px 0 0 4px; transform-origin: right; }
 .lead-right .lead-bar { border-radius: 0 4px 4px 0; transform-origin: left; }
 
-// Each bar grows out from the middle line towards the leader, one row after another.
 @include motion-safe {
   .lead-bar {
     animation: mp-grow-x 700ms var(--ease-out) both;
@@ -641,7 +612,6 @@ svg.line {
   }
 }
 
-// The number sits on the side away from the bar, beside the middle line.
 .lead-value {
   position: absolute;
   top: 50%;

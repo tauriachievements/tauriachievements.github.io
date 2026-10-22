@@ -29,7 +29,6 @@
   app-raid-difficulty-switch { margin-left: auto; }
 }
 
-// The class crest with a soft glow in the class colour, as on the M+ profile.
 .crest {
   position: relative;
   isolation: isolate;
@@ -94,7 +93,6 @@
   }
 }
 
-// Damage / Healing and All players / Same class, side by side; they wrap under the title on a phone.
 .section-controls { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
 .comparison-switch img { width: 16px; height: 16px; border-radius: 3px; }
 .class-name { font-weight: 600; }

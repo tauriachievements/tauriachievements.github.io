@@ -11,10 +11,6 @@ import { ChartView, RaidSpecPopularityChartComponent, parseChartView } from './r
 import { RaidLogsDataService } from './services/raid-logs-data.service';
 import { UpdateBarComponent } from './update-bar.component';
 
-/**
- * /raid-logs/stats: spec popularity and performance on one difficulty (`?difficulty=`, `?view=`,
- * `?role=`) and each spec's races. Loads the index and the difficulty's seven boss files.
- */
 @Component({
   selector: 'app-raid-logs-stats-page',
   imports: [UpdateBarComponent, BackToTopButtonComponent, RaidSpecPopularityChartComponent, RaceBySpecComponent],
@@ -35,9 +31,7 @@ export class RaidLogsStatsPageComponent implements OnInit {
   readonly popularityKills = signal<readonly RaidKillDetails[]>([]);
   readonly popularityLoading = signal(false);
   readonly popularityError = signal<string | undefined>(undefined);
-  /** One race-by-spec box each, in this order. */
   readonly raceRoles: readonly RaidRole[] = ['dps', 'tank', 'healer'];
-  /** Every roster slot of the loaded difficulty, for the race-by-spec boxes. */
   readonly rosterSlots = computed(() => this.popularityKills().flatMap(kill => kill.members.flatMap((member): RaceSample[] =>
     member.spec ? [{
       name: member.character.name,
@@ -51,7 +45,6 @@ export class RaidLogsStatsPageComponent implements OnInit {
   readonly lastEditedTimeZoneLabel = computed(() => getLocalTimeZoneLabel(this.lastEdited()));
 
   private readonly requestedDifficulty = signal(this.route.snapshot.queryParamMap.get('difficulty') ?? this.data.lastDifficulty());
-  /** The spec chart's view and role, kept in `?view=` and `?role=` so every combination can be linked. */
   readonly chartView = signal<ChartView>(parseChartView(this.route.snapshot.queryParamMap.get('view')));
   readonly chartRole = signal<RoleFilter>(parseRoleFilter(this.route.snapshot.queryParamMap.get('role')));
 
@@ -153,10 +146,6 @@ export class RaidLogsStatsPageComponent implements OnInit {
       });
   }
 
-  /**
-   * In-page filters keep the scroll position: no navigation, only the address bar changes. The
-   * defaults (Popularity, all roles) stay out of it.
-   */
   private writeUrl(): void {
     const url = this.router.createUrlTree([], {
       relativeTo: this.route,

@@ -17,7 +17,6 @@ function member(name: string, overrides: Partial<MythicPlusMember> = {}): Mythic
   return { name, realm: 'Evermoon', class: 10, race: 1, gender: 0, spec: 'Windwalker', role: 'dps', ...overrides };
 }
 
-/** A local date and time, so day grouping is the same in every time zone. */
 const at = (month: number, day: number, hour = 20) => new Date(2026, month - 1, day, hour).toISOString();
 
 let nextId = 0;

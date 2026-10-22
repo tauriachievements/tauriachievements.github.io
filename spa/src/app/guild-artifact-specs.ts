@@ -4,19 +4,11 @@ import { LEGION_SPECS } from './mythic-plus-stats';
 export interface ArtifactSpecTraits {
   spec: string;
   icon?: string;
-  /** Traits bought on that spec's artifact; null when the character hasn't unlocked it. */
   traits: number | null;
 }
 
 type ArtifactPlayer = Pick<GuildAnalysisPlayer, 'class' | 'specialization' | 'artifactTraits' | 'artifacts'>;
 
-/**
- * One entry per spec of the player's class: the artifacts they own by traits (most first),
- * then the specs whose artifact they haven't unlocked, in the game's spec order.
- *
- * Files exported before `artifacts` was added only know the best artifact, so for those
- * this returns just that one and leaves the other specs out rather than call them locked.
- */
 export function artifactSpecTraits(player: ArtifactPlayer): ArtifactSpecTraits[] {
   const classSpecs = LEGION_SPECS.filter((definition) => definition.classId === player.class);
   const iconFor = (spec: string) => classSpecs.find((definition) => definition.spec === spec)?.icon;

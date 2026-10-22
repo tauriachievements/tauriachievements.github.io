@@ -3,10 +3,6 @@ import { ChangeDetectionStrategy, Component, computed, input, output } from '@an
 import { GlideDirective } from './glide.directive';
 import { RaidDifficulty } from './raid-logs';
 
-/**
- * Normal / Heroic / Mythic. A difficulty without a kill anywhere in the raid isn't shown (LFR,
- * which the servers don't log); one without a kill of this boss can't be picked.
- */
 @Component({
   selector: 'app-raid-difficulty-switch',
   imports: [GlideDirective],
@@ -36,7 +32,6 @@ export class RaidDifficultySwitchComponent {
   readonly difficulties = input.required<readonly RaidDifficulty[]>();
   readonly selected = input<string>();
   readonly label = input('Difficulty');
-  /** Kills per difficulty slug; defaults to each difficulty's raid-wide count. */
   readonly killCounts = input<ReadonlyMap<string, number>>();
   readonly selectedChange = output<string>();
 

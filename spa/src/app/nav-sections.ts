@@ -1,28 +1,20 @@
-/** One page in the site navigation. */
 export interface NavPage {
-  /** Name in the section's dropdown. */
   readonly label: string;
-  /** Shorter name for the section tabs under the header; the label when not set. */
   readonly tab?: string;
   readonly icon: string;
   readonly path: string;
-  /** Deeper routes that belong to this page, e.g. a character profile under its leaderboard. */
   readonly includes?: readonly string[];
-  /** A small note beside the name, e.g. "Archive" for a page tied to one past event. */
   readonly tag?: string;
 }
 
-/** A top-level entry of the header. A section with one page is a plain link. */
 export interface NavSection {
   readonly id: string;
   readonly label: string;
   readonly icon: string;
-  /** Shows one "New" badge on the section instead of one on each of its pages. */
   readonly isNew?: boolean;
   readonly pages: readonly NavPage[];
 }
 
-/** The community Discord server, linked from the header. */
 export const DISCORD_INVITE_URL = 'https://discord.gg/JMHnDmh2bP';
 
 export interface NavLocation {
@@ -30,7 +22,6 @@ export interface NavLocation {
   readonly page: NavPage;
 }
 
-// Issue #107: 17 flat drawer entries grouped into 6 sections. Every URL stays as it was.
 export const NAV_SECTIONS: readonly NavSection[] = [
   {
     id: 'ladder',
@@ -121,7 +112,6 @@ export const NAV_SECTIONS: readonly NavSection[] = [
   }
 ];
 
-/** The section and page a router URL belongs to; undefined for pages outside the navigation. */
 export function findNavLocation(url: string, sections: readonly NavSection[] = NAV_SECTIONS): NavLocation | undefined {
   const path = url.split(/[?#;]/, 1)[0].replace(/\/+$/, '') || '/';
 

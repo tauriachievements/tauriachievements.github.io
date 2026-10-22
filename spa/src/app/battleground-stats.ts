@@ -13,11 +13,6 @@ export interface BattlegroundDateBounds {
 
 export type BattlegroundEra = 'legion' | 'wod-prepatch';
 
-/**
- * One era's battlegrounds as built by scripts/generate-battleground-snapshot.js: days in date
- * order, each holding flat [name index, start minute of day, duration in seconds] triples,
- * with -1 for an unknown start or duration.
- */
 export interface BattlegroundSnapshot {
   version: number;
   era: BattlegroundEra;
@@ -163,8 +158,6 @@ const DATE_LABEL_FORMATTER = new Intl.DateTimeFormat(undefined, {
   timeZone: 'UTC'
 });
 
-
-/** The records of an era snapshot, in its order (by date, then as collected). */
 export function decodeBattlegroundSnapshot(snapshot: BattlegroundSnapshot | null | undefined): NormalizedBattleground[] {
   const records: NormalizedBattleground[] = [];
 
@@ -231,7 +224,6 @@ export function getCompletedBattlegroundDateBounds(
     max: completedDates[completedDates.length - 1]
   };
 }
-
 
 export function computeBattlegroundStats(
   records: ReadonlyArray<NormalizedBattleground>,

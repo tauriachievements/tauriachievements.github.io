@@ -1,13 +1,7 @@
 import { AffixWeek, MythicPlusDungeon, MythicPlusRun, keystoneUpgrades } from './mythic-plus';
 
-/*
- * Season activity for /mythic-plus/stats: runs per day, per dungeon and per key level, and
- * a summary of each affix week. Everything is worked out from the decoded runs.
- */
-
 type ActivityRun = Pick<MythicPlusRun, 'dungeon' | 'keyLevel' | 'clearTimeSeconds' | 'completedAt' | 'affixes' | 'roster'>;
 
-/** Dungeon id -> timer in seconds, to tell timed runs from depleted ones. */
 export type DungeonTimers = ReadonlyMap<string, number>;
 
 export function dungeonTimers(dungeons: readonly Pick<MythicPlusDungeon, 'id' | 'timerSeconds'>[]): DungeonTimers {
@@ -18,7 +12,6 @@ export function isTimed(run: Pick<MythicPlusRun, 'dungeon' | 'clearTimeSeconds'>
   return keystoneUpgrades(run.clearTimeSeconds, timers.get(run.dungeon) ?? 0) > 0;
 }
 
-/** Key level bands the per-day chart can split by. */
 export type LevelBand = 'low' | 'mid' | 'high';
 
 export const LEVEL_BANDS: ReadonlyArray<{ band: LevelBand; label: string }> = [
@@ -31,7 +24,6 @@ export function levelBand(keyLevel: number): LevelBand {
   return keyLevel >= 15 ? 'high' : keyLevel >= 10 ? 'mid' : 'low';
 }
 
-/** The weekly boss/trash affix. Every week has one of the two. */
 export type WeekType = 'fortified' | 'tyrannical';
 
 const FORTIFIED = 10;
@@ -41,15 +33,10 @@ function weekTypeOf(affixes: readonly number[]): WeekType | undefined {
   return affixes.includes(FORTIFIED) ? 'fortified' : affixes.includes(TYRANNICAL) ? 'tyrannical' : undefined;
 }
 
-/**
- * Fortified or Tyrannical for a run. Keys below +10 do not carry that affix themselves, so they
- * take it from the affix week they were played in.
- */
 export function runWeekType(run: Pick<MythicPlusRun, 'affixes' | 'completedAt'>, weeks: readonly AffixWeekSpan[]): WeekType | undefined {
   return weekTypeOf(run.affixes) ?? weekTypeOf(weeks[weekIndexAt(weeks, Date.parse(run.completedAt))]?.affixes ?? []);
 }
 
-/** One affix week; `since` and `until` are epoch ms, `until` is the next week's start. */
 export interface AffixWeekSpan extends AffixWeek {
   until?: number;
 }
@@ -57,12 +44,6 @@ export interface AffixWeekSpan extends AffixWeek {
 const sameAffixes = (a: readonly number[], b: readonly number[]) =>
   a.length === b.length && a.every((id, slot) => id === b[slot]);
 
-/**
- * Every affix week of the season, oldest first. Weeks are the stretches of time in which
- * runs with all three affixes share one set. Like currentAffixWeek, a week starts just after
- * the last earlier run whose affixes contradict it, so +2/+3 keys (no affixes) and +4 to +9
- * keys (one or two affixes) land in the right week. The first week covers everything before.
- */
 export function affixWeeks(runs: readonly Pick<MythicPlusRun, 'affixes' | 'completedAt'>[]): AffixWeekSpan[] {
   const timed = runs.map(run => ({ affixes: run.affixes, at: Date.parse(run.completedAt) }));
   const full = timed.filter(run => run.affixes.length === 3).sort((a, b) => a.at - b.at);
@@ -98,7 +79,6 @@ export function affixWeeks(runs: readonly Pick<MythicPlusRun, 'affixes' | 'compl
   return weeks;
 }
 
-/** Index of the week a moment (epoch ms) falls in, or -1 before the first week. */
 export function weekIndexAt(weeks: readonly AffixWeekSpan[], at: number): number {
   for (let index = weeks.length - 1; index >= 0; index--) {
     if (at >= weeks[index].since) {
@@ -109,7 +89,6 @@ export function weekIndexAt(weeks: readonly AffixWeekSpan[], at: number): number
 }
 
 export interface DayActivity {
-  /** Local calendar day, YYYY-MM-DD. */
   day: string;
   total: number;
   low: number;
@@ -117,11 +96,9 @@ export interface DayActivity {
   high: number;
   timed: number;
   depleted: number;
-  /** The affix week at midday: resets happen in the morning, so a reset day counts as the new week. */
   week: number;
 }
 
-/** Local calendar day as YYYY-MM-DD. */
 export function localDay(date: Date): string {
   const pad = (value: number) => String(value).padStart(2, '0');
   return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;

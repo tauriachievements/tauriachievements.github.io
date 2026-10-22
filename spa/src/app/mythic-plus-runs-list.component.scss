@@ -8,7 +8,6 @@
 @include visually-hidden;
 @include details-reveal;
 
-// Table (wide screens)
 .table-scroll {
   @include table-scroll;
   border-radius: 4px;
@@ -72,7 +71,6 @@
 .col-score { color: #fff; font-size: .95rem; }
 .depleted .col-level, .depleted .col-time, .depleted .col-completed { color: #8a8a8a; }
 
-// Holds the clipped icon and its tooltip side by side, so the crop below can't cut the tooltip off.
 .affix {
   position: relative;
   display: inline-block;
@@ -81,7 +79,6 @@
 
   .affix-tooltip { padding-left: 10px; }
 
-  // Mouse only: a tap opens the run details, which list every affix with its description.
   @media (hover: hover) {
     &:hover .affix-tooltip { opacity: 1; visibility: visible; }
   }
@@ -91,7 +88,6 @@
 
 .member-link {
   position: relative;
-  // Padding grows the tap area; the margins keep the names where they were, 10 px apart.
   margin: 0 5px 0 -5px;
   padding: 8px 5px;
   font-size: .85rem;
@@ -102,15 +98,12 @@
   &:focus-visible { text-decoration: underline; }
   &:focus-visible .member-tooltip { opacity: 1; visibility: visible; }
 
-  // Mouse only: on a touch screen the run details list each member's spec and class.
   @media (hover: hover) {
     &:hover { text-decoration: underline; }
     &:hover .member-tooltip { opacity: 1; visibility: visible; }
   }
 }
 
-// Tank and healer cells, one name per line. Stacked names trade the tall tap area for tight
-// lines, so a hover over one never lands on its neighbour; the tooltip keeps its 6 px gap.
 .member-stack {
   display: flex;
   flex-direction: column;
@@ -123,7 +116,6 @@
   }
 }
 
-// Instant dark tooltip above a player name (class icon, spec icon, "Spec Class") or an affix icon (its name).
 .member-tooltip,
 .affix-tooltip {
   @include tooltip-box;
@@ -141,7 +133,6 @@
   img { display: block; width: 20px; height: 20px; }
 }
 
-// Same zoom-past-the-frame treatment as the affix icons.
 .member-tooltip-spec {
   width: 20px;
   height: 20px;
@@ -169,7 +160,6 @@
 
 .empty-row td { height: 120px; color: #9a9a9a; white-space: normal; }
 
-// Cards (narrow screens)
 .run-cards {
   margin: 0;
   padding: 0;
@@ -187,7 +177,6 @@
   &.expanded { background: #36302a; }
 }
 
-// The whole card is the button that opens its details.
 .run-card-summary {
   display: grid;
   width: 100%;
@@ -227,7 +216,6 @@
   .card-line .level, .card-time { color: #8a8a8a; }
 }
 
-// Tank, healer, then the DPS, in class colours; the details panel has their specs and links.
 .card-roster {
   display: flex;
   flex-wrap: wrap;
@@ -251,7 +239,6 @@
   text-align: center;
 }
 
-// When each run was completed (same look as Time), and the Best / Latest order.
 .col-completed {
   font-variant-numeric: tabular-nums;
   white-space: nowrap;

@@ -8,14 +8,6 @@ interface DataManifest {
 
 const MANIFEST_URL = 'assets/data/data-manifest.json';
 
-/**
- * The one way the app loads its data files (JSON and text under the site root).
- *
- * Each file is requested as `file?v=<content hash>`, with the hashes read from a manifest
- * the build writes (scripts/generate-data-manifest.js). The URL therefore changes exactly
- * when the file does: browsers keep a file cached across visits and still pick up a new
- * deploy immediately. Only the tiny manifest is fetched fresh, once per session.
- */
 @Injectable({ providedIn: 'root' })
 export class DataFileService {
   private readonly http = inject(HttpClient);
@@ -23,25 +15,16 @@ export class DataFileService {
   private readonly memoized = new Map<string, Observable<unknown>>();
   private manifest$ = this.loadManifest();
 
-  /**
-   * Starts the session over: a fresh manifest and nothing memoized. For a tab left open
-   * across a deploy, which still holds the old manifest and the files it already loaded.
-   */
   refresh(): void {
     this.sessionStamp = Date.now();
     this.manifest$ = this.loadManifest();
     this.memoized.clear();
   }
 
-  /**
-   * Loads a JSON file once per session and shares the parsed result with every caller.
-   * A failed load is forgotten, so a retry fetches again.
-   */
   getJson<T>(path: string): Observable<T> {
     return this.memoize(path, () => this.fetchJson<T>(path));
   }
 
-  /** Loads a text file once per session and shares it with every caller. */
   getText(path: string): Observable<string> {
     return this.memoize(`text:${path}`, () =>
       this.versionedUrl(path).pipe(switchMap((url) => this.http.get(url, { responseType: 'text' })))

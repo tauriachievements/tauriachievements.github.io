@@ -2,15 +2,8 @@ import { getClassColor } from './class-colors';
 import { CLASS_NAMES, formatClock } from './mythic-plus';
 import { LEGION_SPECS, SpecDefinition, compareSpecLists } from './mythic-plus-stats';
 
-/*
- * The /raid-logs pages: every boss kill of the current raid, from the files RaidLogExporter
- * writes (contract: api/RaidLogExporter/RaidLogFileWriter.cs). This file holds the file format,
- * its decoding, and the pure rankings the pages share.
- */
-
 export const RAID_LOGS_DATA_DIR = 'raid-log-data';
 
-/** Every spec's talent tiers, which members' `talents` columns pick from. */
 export const RAID_TALENTS_PATH = `${RAID_LOGS_DATA_DIR}/talents.json`;
 
 export const RAID_TALENT_TOOLTIPS_PATH = `${RAID_LOGS_DATA_DIR}/talent-tooltips.json`;

@@ -3,7 +3,6 @@
 
 <main class="support-page">
   <div class="bento" appScrollRise=".perk, .panel-head, .panel-sub, .supporter, .supporter-slot, .quote">
-    <!-- How to support -->
     <section class="panel hero" appSpotlight aria-labelledby="support-title">
       <span class="hero-edge" aria-hidden="true"></span>
       <p class="kicker" appDecode [decodeDelay]="150"><span class="kicker-dot" aria-hidden="true"></span>Community project</p>
@@ -26,7 +25,6 @@
       </a>
     </section>
 
-    <!-- What you get and how to give -->
     <ul class="perks">
       <li class="panel perk" appSpotlight appDecode [decodeDelay]="300">
         <h2 class="perk-label">Supporter rank</h2>
@@ -44,7 +42,6 @@
       </li>
     </ul>
 
-    <!-- Supporters -->
     <section class="panel supporters-panel" appSpotlight aria-labelledby="supporters-title">
       <header class="panel-head" appDecode [decodeDelay]="400">
         <h2 id="supporters-title">Supporters</h2>
@@ -72,7 +69,6 @@
       </a>
     </section>
 
-    <!-- Kind words -->
     <section class="panel words-panel" appSpotlight aria-labelledby="kind-words-title">
       <header class="panel-head" appDecode [decodeDelay]="350">
         <h2 id="kind-words-title">Kind words</h2>
@@ -110,7 +106,6 @@
   </div>
 </main>
 
-<!-- One person's names, split by slashes: class-coloured, linking their profile or armory page. -->
 <ng-template #nameList let-names>
   @for (shown of names; track shown; let last = $last) {
     @if (shown.profileLink) {

@@ -45,19 +45,11 @@ export class LadderPageStore {
   readonly totalPlayerCount = signal(0);
   readonly loadedPlayerCount = this.sourcePlayerCount.asReadonly();
 
-  /**
-   * A search on the default ladder shows the head's matches at once (they are the first rows of
-   * the full answer) and is still searching the rest of the server for the rows it lacks.
-   */
   readonly isSearchingAllPlayers = signal(false);
   private searchLoad?: Promise<void>;
   private searchLoadFailed = false;
   private readonly needsCompleteDataset = signal(requiresCompleteLadderDataset(DEFAULT_LADDER_FILTER_STATE));
 
-  /**
-   * The head slice cannot answer this view yet. Results computed against it would be
-   * plausible but wrong, so the page shows its loading state rather than publishing them.
-   */
   readonly isAwaitingCompleteDataset = computed(() => this.needsCompleteDataset() && !this.isDatasetComplete());
 
   constructor() {
@@ -82,8 +74,6 @@ export class LadderPageStore {
     this.filterState$.next(state);
     this.needsCompleteDataset.set(requiresCompleteLadderDataset(state));
 
-    // Before initialize() the upgrade is folded into the first load instead, so a deep
-    // link straight to a search or a sort costs one request rather than two.
     if (this.initialized && this.needsCompleteDataset() && !this.isDatasetComplete()) {
       void this.syncData();
     }
@@ -92,7 +82,6 @@ export class LadderPageStore {
   async syncData(): Promise<void> {
     this.hasStartedSync = true;
     this.loadError.set(undefined);
-    // This is also the "Try again" after a failed search of every player.
     this.searchLoadFailed = false;
 
     if (!this.hasSourcePlayers()) {
@@ -107,8 +96,6 @@ export class LadderPageStore {
         await this.dataSyncService.syncData();
       }
 
-      // The head is in: check whether the current search still needs the rest of the server.
-      // (loadError was cleared above; clearing it again here would hide a failed search load.)
       this.searchRestOfServerIfNeeded(this.filterState$.value, this.players().length);
     } catch (error) {
       console.error('Failed to sync data:', error);
@@ -118,17 +105,12 @@ export class LadderPageStore {
     }
   }
 
-  /**
-   * After a head-first search, loads every player when the head did not fill the page.
-   * Until then the head's matches stay on screen, flagged by isSearchingAllPlayers.
-   */
   private searchRestOfServerIfNeeded(state: LadderFilterState, resultCount: number): void {
     const needsRest = isHeadFirstSearch(state)
       && this.hasSourcePlayers()
       && !this.dataSyncService.isCurrentDatasetComplete()
       && resultCount < state.pageSize;
 
-    // A failed load is retried only from "Try again" (syncData), not on every keystroke.
     this.isSearchingAllPlayers.set(needsRest && !this.searchLoadFailed);
     if (!needsRest || this.searchLoadFailed || this.searchLoad) {
       return;
@@ -159,8 +141,6 @@ export class LadderPageStore {
       takeUntilDestroyed(this.destroyRef)
     ).subscribe((isComplete) => {
       this.isDatasetComplete.set(isComplete);
-      // The full set is published just before it is flagged complete, so the search that
-      // asked for it last saw it as incomplete.
       if (isComplete) {
         this.isSearchingAllPlayers.set(false);
       }

@@ -1,11 +1,5 @@
 import { Directive, ElementRef, inject, signal } from '@angular/core';
 
-/**
- * Opens a CSS hover tooltip on touch screens. A tap with a finger or pen toggles the
- * `tooltip-open` class on the host, and a tap anywhere else or Escape removes it; the
- * component's stylesheet shows its tooltip for `.tooltip-open` as it does for `:hover`.
- * Mouse input is left to the existing hover styles.
- */
 @Directive({
   selector: '[appTapTooltip]',
   host: {

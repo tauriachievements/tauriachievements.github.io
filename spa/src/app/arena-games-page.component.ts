@@ -29,13 +29,11 @@ import { DataFileService } from './services/data-file.service';
 import { getClassColor } from './class-colors';
 import { UpdateBarComponent } from './update-bar.component';
 
-/** A character counts as active, and is listed, once they have played this many rated games in the bracket. */
 const MIN_GAMES = 50;
 
 interface SortColumn {
   readonly key: ArenaSortKey;
   readonly label: string;
-  /** The header on phones, where the full labels do not fit. */
   readonly shortLabel: string;
 }
 
@@ -47,7 +45,6 @@ const SORT_COLUMNS: readonly SortColumn[] = [
   { key: 'rating', label: 'Rating', shortLabel: 'Rating' }
 ];
 
-/** Written by BattlegroundCollector (RatedArenaGameCounter); players are sorted by games, most first. */
 interface RatedArenaGames {
   seasonStart: string;
   lastMatchId: number;
@@ -78,16 +75,13 @@ export class ArenaGamesPageComponent implements OnInit {
   readonly dataset = signal<RatedArenaGames | undefined>(undefined);
   readonly isLoading = signal(true);
   readonly loadError = signal<string | undefined>(undefined);
-  // Rating first, so the title lines show straight away.
   readonly sortKey = signal<ArenaSortKey>('rating');
   readonly sortDirection = signal<SortDirection>('desc');
 
   private readonly rows = computed(() => toArenaRows(this.dataset()?.players ?? [], MIN_GAMES));
   readonly players = computed(() => sortArenaRows(this.rows(), this.sortKey(), this.sortDirection()));
   readonly eligibleCount = computed(() => this.rows().filter(row => row.wins >= REWARD_MIN_WINS).length);
-  /** This bracket's titles and where each one's line falls. */
   readonly cutoffs = computed(() => getTitleCutoffs(this.rows(), ARENA_TITLES[this.bracket() ?? '2v2']));
-  /** 2v2 has no Season Gladiator; its table still keeps the row so both brackets' boxes match. */
   readonly hasSeasonGladiator = computed(() =>
     this.cutoffs().some(cutoff => cutoff.title.slug === 'season-gladiator')
   );
@@ -95,7 +89,6 @@ export class ArenaGamesPageComponent implements OnInit {
     const cutoffs = this.cutoffs();
     return new Map(this.rows().map(row => [row, getTitle(row.rating, cutoffs)]));
   });
-  /** How many players hold each title. */
   readonly titleCounts = computed(() => {
     const counts = new Map<TitleCutoff, number>();
     for (const cutoff of this.titles().values()) {
@@ -108,12 +101,6 @@ export class ArenaGamesPageComponent implements OnInit {
   readonly untitledCount = computed(() =>
     [...this.titles().values()].filter(cutoff => !cutoff).length
   );
-  /**
-   * The group headings, by the index of the row each goes above: the first row and every row
-   * whose title differs from the one before, with null for the players without a title. Every
-   * player then sits under the heading of the title they hold. Only in the rating sort, either
-   * way round; any other sort mixes the titles.
-   */
   readonly titleGroups = computed(() => {
     const groups = new Map<number, TitleCutoff | null>();
     const rows = this.players();
@@ -129,7 +116,6 @@ export class ArenaGamesPageComponent implements OnInit {
     });
     return groups;
   });
-  /** The start of the latest counted game, shown in local time in the update bar. */
   readonly lastEdited = computed(() => {
     const latest = this.dataset()?.lastMatchStart;
     return latest ? new Date(latest) : undefined;
@@ -140,7 +126,6 @@ export class ArenaGamesPageComponent implements OnInit {
   readonly formatTitleShare = formatTitleShare;
 
   ngOnInit(): void {
-    // The bracket lives in the address (?bracket=3v3), so a link opens the same table.
     this.route.queryParamMap
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe(params => {
@@ -165,7 +150,6 @@ export class ArenaGamesPageComponent implements OnInit {
     this.loadData();
   }
 
-  /** A new column sorts most first; clicking the sorted column again flips it. */
   sortBy(key: ArenaSortKey): void {
     if (this.sortKey() === key) {
       this.sortDirection.update(direction => direction === 'desc' ? 'asc' : 'desc');
@@ -184,12 +168,10 @@ export class ArenaGamesPageComponent implements OnInit {
     return this.sortDirection() === 'desc' ? 'descending' : 'ascending';
   }
 
-  /** The active players times the title's share, before rounding up: at most three decimals. */
   exactSpots(cutoff: TitleCutoff): number {
     return (this.rows().length * cutoff.title.topPerMille) / 1000;
   }
 
-  /** The hover text of a title's +N. */
   tiesHint(cutoff: TitleCutoff): string {
     return `${cutoff.ties} more ${cutoff.ties === 1 ? 'holder' : 'holders'}: players on the same rating share one spot`;
   }

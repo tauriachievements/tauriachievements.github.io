@@ -44,15 +44,12 @@ import { DataFileService } from './services/data-file.service';
 import { SpotlightDirective } from './spotlight.directive';
 import { UpdateBarComponent } from './update-bar.component';
 
-/** A list a run can be opened in; the same run can sit in both. */
 type RecordsSection = 'record' | 'first';
 
-/** The stars of a timed +0 to +3, by upgrade count (see starSlots). */
 const STAR_SLOTS: ReadonlyArray<readonly number[]> = [[], [0], [0, 1], [0, 1, 2]];
 
 interface RecordCard {
   dungeon: MythicPlusDungeon;
-  /** Undefined until someone times the dungeon. */
   run?: RunView;
   heldFor: string;
 }
@@ -64,12 +61,10 @@ interface FirstRow {
 
 interface BountyView {
   key: string;
-  /** Undefined for the server-wide bounty. */
   dungeon?: MythicPlusDungeon;
   level: number;
   attempts: number;
   closest?: RunView;
-  /** How far over its timer the closest attempt finished: `0:13`. */
   missedBy?: string;
   claimed?: RunView;
 }
@@ -77,14 +72,12 @@ interface BountyView {
 interface RunnerRow {
   key: string;
   rank: number;
-  /** The rank's colour: the leaderboard's quality tiers, on runs against the leader's. */
   quality: RunQuality;
   member: MemberView;
   runs: number;
   timed: number;
   timedPercent: number;
   highestTimed?: number;
-  /** Runs as a share of the leader's, for the bar: 0 to 1. */
   share: number;
 }
 
@@ -94,12 +87,6 @@ interface SummaryTile {
   note: string;
 }
 
-/**
- * /mythic-plus/records: the highest key timed in each dungeon, the first group to time each key
- * level, the next level nobody has timed yet, with the attempt that came closest, and the
- * characters with the most runs. Records are season-wide. Reads the same data files as the
- * leaderboard, all of them.
- */
 @Component({
   selector: 'app-mythic-plus-records-page',
   imports: [
@@ -117,7 +104,6 @@ interface SummaryTile {
 ],
   templateUrl: './mythic-plus-records-page.component.html',
   styleUrl: './mythic-plus-records-page.component.scss',
-  // Keeps the firsts' dungeon dropdown working (NG0201 without it).
   providers: [FilterDropdownCoordinatorService],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
@@ -130,7 +116,6 @@ export class MythicPlusRecordsPageComponent implements OnInit {
 
   readonly firstsFromLevel = FIRSTS_FROM_LEVEL;
 
-  /** One entry per star of a +1 / +2 / +3 upgrade, each its own element so they light up in turn. */
   starSlots(upgrades: number): readonly number[] {
     return STAR_SLOTS[upgrades] ?? STAR_SLOTS[0];
   }
@@ -138,25 +123,19 @@ export class MythicPlusRecordsPageComponent implements OnInit {
   readonly index = signal<MythicPlusIndex | undefined>(undefined);
   readonly lastEdited = computed(() => exportedAt(this.index()));
   readonly lastEditedTimeZoneLabel = computed(() => getLocalTimeZoneLabel(this.lastEdited()));
-  /** All Tauri, Evermoon and WoD runs share one records leaderboard. */
   readonly runs = signal<readonly MythicPlusRun[]>([]);
   readonly isLoading = signal(true);
   readonly loadError = signal<string | undefined>(undefined);
-  /** Set once files from another export made the page load everything again. */
   private reloadedForNewerData = false;
-  /** "Held for" and recent claims count from here: when the runs were loaded. */
   readonly now = signal(Date.now());
 
-  /** The firsts of one dungeon (`?dungeon=`), or of all of them. */
   readonly firstsDungeon = signal<string | undefined>(this.route.snapshot.queryParamMap.get('dungeon') ?? undefined);
-  /** The open run in each list, so opening a first doesn't close a record further up. */
   readonly expanded = signal<Partial<Record<RecordsSection, string>>>({});
 
   readonly dungeons = computed(() => this.index()?.dungeons ?? []);
   private readonly dungeonsById = computed(() => new Map(this.dungeons().map(dungeon => [dungeon.id, dungeon])));
   private readonly timers = computed(() => dungeonTimers(this.dungeons()));
   private readonly affixesById = computed(() => new Map((this.index()?.affixes ?? []).map(affix => [affix.id, affix])));
-  /** Raider.IO-style score colours from this season's standings. */
   private readonly scoreColors = computed(() => seasonScoreColors(this.index()));
 
   readonly records = computed<RecordCard[]>(() => {
@@ -168,9 +147,7 @@ export class MythicPlusRecordsPageComponent implements OnInit {
     }));
   });
 
-  /** The dungeon the firsts are shown for, when `?dungeon=` names one. */
   readonly selectedFirstsDungeon = computed(() => this.dungeonsById().get(this.firstsDungeon() ?? ''));
-  /** The dropdown's value. Undefined, not the template's `?.` null, so "All dungeons" shows as selected. */
   readonly firstsDungeonId = computed(() => this.selectedFirstsDungeon()?.id);
   readonly firstsDungeonOptions = computed<FilterDropdownOption[]>(() => [
     { value: undefined, label: 'All dungeons' },
@@ -199,7 +176,6 @@ export class MythicPlusRecordsPageComponent implements OnInit {
       member: toMemberView(count.member),
       runs: count.runs,
       timed: count.timed,
-      // Rounded like the profile's "In time", so both say the same.
       timedPercent: Math.round((count.timed / count.runs) * 100),
       highestTimed: count.highestTimed,
       share: top > 0 ? count.runs / top : 0

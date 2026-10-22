@@ -11,7 +11,6 @@ export interface SyncProgress {
   message: string;
 }
 
-/** The loaded players, in achievement-point rank order, with the rules for every other ranking. */
 export interface PlayerDataset {
   players: Player[];
   rankings: PlayerRankings | undefined;
@@ -38,8 +37,6 @@ export class DataSyncService {
     shareReplay({ bufferSize: 1, refCount: false })
   );
 
-  // Both stages are deduped by holding onto the in-flight promise: several components
-  // ask for data on the same navigation, and without this each one starts its own fetch.
   private headSync?: Promise<void>;
   private completeSync?: Promise<void>;
 
@@ -59,7 +56,6 @@ export class DataSyncService {
     return this.dataset$.value.players;
   }
 
-  /** Characters first seen in the latest scan. A small file of its own, so no full load is needed. */
   getNewPlayers(): Observable<Player[]> {
     return this.newPlayers$;
   }
@@ -68,7 +64,6 @@ export class DataSyncService {
     return this.syncProgress$.asObservable();
   }
 
-  /** True once every player on the server is loaded, false while only the head slice is. */
   isDatasetComplete(): Observable<boolean> {
     return this.isComplete$.asObservable();
   }
@@ -77,16 +72,10 @@ export class DataSyncService {
     return this.isComplete$.value;
   }
 
-  /** Total players on the server, which exceeds `getCurrentPlayers().length` until the full set lands. */
   getTotalPlayerCount(): Observable<number> {
     return this.totalPlayerCount$.asObservable();
   }
 
-  /**
-   * Loads the smallest dataset that can answer the ladder's default view. Callers that
-   * need every player - search, aggregates, arbitrary lookups - must use
-   * {@link ensureCompleteData} instead.
-   */
   async syncData(): Promise<void> {
     if (this.isComplete$.value) {
       return;
@@ -101,7 +90,6 @@ export class DataSyncService {
     return this.headSync;
   }
 
-  /** Loads every player, upgrading in place if only the head slice is present. */
   async ensureCompleteData(): Promise<void> {
     this.completeSync ??= this.runSync(FULL_SNAPSHOT_URL, true)
       .catch((error: unknown) => {
@@ -121,7 +109,6 @@ export class DataSyncService {
       const players = readPlayerSnapshot(snapshot);
       const totalPlayerCount = snapshot?.t ?? players.length;
 
-      // A slower head response must never overwrite the full set that beat it home.
       if (!isComplete && this.isComplete$.value) {
         return;
       }

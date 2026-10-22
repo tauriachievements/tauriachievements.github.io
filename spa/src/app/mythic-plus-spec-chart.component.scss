@@ -19,7 +19,6 @@ $plot-height: 180px;
   gap: 8px 16px;
 }
 
-// Title and subtitle share one row, and the subtitle wraps under the title on narrow screens.
 .chart-heading {
   display: flex;
   min-width: 0;
@@ -34,7 +33,6 @@ $plot-height: 180px;
 
 .chart-filters { display: flex; flex-wrap: wrap; align-items: stretch; gap: 8px; }
 
-// Same look as the leaderboard's class/spec Reset button.
 .filter-reset {
   display: inline-flex;
   align-items: center;
@@ -80,8 +78,6 @@ $plot-height: 180px;
 
 .chart-scroll { overflow-x: auto; }
 
-// Only the value labels need room above the plot: tooltips open beside the bar, so the
-// scroll container (which also clips vertically) never cuts them off.
 .chart {
   display: grid;
   grid-template-columns: 36px minmax(0, 1fr);
@@ -121,7 +117,6 @@ $plot-height: 180px;
 
 .bars { display: flex; height: $plot-height; align-items: flex-end; }
 
-// 22px hit target around a 20px bar: the side padding doubles as the 2px gap between bars.
 .bar-slot {
   position: relative;
   display: flex;
@@ -136,10 +131,6 @@ $plot-height: 180px;
   font: inherit;
   cursor: pointer;
 
-  // The hover `filter` makes the bar its own stacking context, which would trap the tooltip beneath
-  // every bar painted after it — so lift the whole slot above its neighbours while it's active.
-  // .tooltip-open is a tap on a touch screen (appTapTooltip). :hover only counts for a mouse:
-  // touch browsers keep it on the last tapped bar, which would hold its tooltip open.
   &:focus-visible, &.tooltip-open { z-index: 3; }
   &:focus-visible .tooltip, &.tooltip-open .tooltip { @include tooltip-shown; }
   &.tooltip-open .bar { filter: brightness(1.2); }
@@ -152,18 +143,14 @@ $plot-height: 180px;
   &:focus-visible { outline: 2px solid #f7b500; outline-offset: 2px; }
 }
 
-// Heights change with the filters through FlipDirective (data-flip-height), not a transition.
 .bar {
   position: relative;
   width: 100%;
   border-radius: 4px 4px 0 0;
 
-  // An unplayed spec keeps a hairline stub so its slot still reads as a spec.
   &.empty { height: 2px !important; background: #3a3a3a !important; }
 }
 
-// Mirrors the Players view's class/spec filter in the chart. The exact spec glows in its
-// class colour; with only a class filter, all of that class's specs are highlighted.
 .bar-slot.filter-match .bar {
   box-shadow:
     0 0 7px 2px color-mix(in srgb, var(--class-color) 85%, transparent),
@@ -171,7 +158,6 @@ $plot-height: 180px;
   filter: brightness(1.22) saturate(1.15);
 }
 
-// The bar pointed at stays lit, the others step back.
 @media (hover: hover) {
   .plot:has(.bar-slot:hover) .bar-slot:not(:hover) .bar { opacity: .4; }
 }
@@ -179,8 +165,6 @@ $plot-height: 180px;
 @include motion-safe {
   .bar { transition: opacity var(--dur) ease, box-shadow 420ms var(--ease-out), filter var(--dur) ease; }
 
-  // First time on screen (RevealDirective): class by class, left to right, each spec a beat after
-  // the one before; the share on the tallest bar fades in once its bar has grown.
   .chart[data-reveal='pending'] {
     .bar { transform: scaleY(0); }
     .bar-value { opacity: 0; }
@@ -210,7 +194,6 @@ $plot-height: 180px;
   transform: translateX(-50%);
 }
 
-// Opens beside the bar, level with its top: rightwards in the left half of the chart, leftwards in the right half.
 .tooltip {
   position: absolute;
   z-index: 2;
@@ -281,7 +264,6 @@ $plot-height: 180px;
 
 .chart-empty { padding: 40px 0; color: #9a9a9a; text-align: center; }
 
-// Narrow screens only: folds the chart and its filters under the title (see `collapsible`).
 .chart-toggle {
   display: inline-flex;
   align-items: center;
@@ -306,8 +288,6 @@ $plot-height: 180px;
   .segmented button { min-height: 40px; }
 }
 
-// Must match MYTHIC_PLUS_CARDS_QUERY: the title and Show / Hide share a row, and each filter
-// group gets a full-width row of even buttons. Reset only shows once something is filtered.
 @media (max-width: 900px) {
   .chart-heading { flex: 1 1 0; }
   .chart-filters { flex: 1 1 100%; }

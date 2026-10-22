@@ -135,7 +135,6 @@
             [activeFilters]="activeFilterLabels()"
             (expandedChange)="filtersOpen.set($event)" />
         }
-        <!-- Roles: which ladder, with the same icons as the run table's columns. -->
         @if (roleFilter(); as currentRole) {
           <div class="view-switch role-switch" role="group" aria-label="Rank tanks, healers or DPS" appGlide>
             @for (role of roles; track role) {
@@ -163,8 +162,6 @@
           </div>
         }
         @if (!roleFilter()) {
-          <!-- Reset and Spec are always there, greyed out until they apply, so picking a class
-               doesn't widen the row. -->
           <button
             type="button"
             class="filter-reset collapsible-filter"

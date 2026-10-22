@@ -128,7 +128,6 @@ describe('RaidSpecPopularityChartComponent', () => {
     expect(chart.view()).toBe('performance');
     expect(element.querySelector('h2')?.textContent).toContain('Spec Performance');
 
-    // Fire has more players, but Frost's one scores higher than Fire's average.
     fixture.componentRef.setInput('kills', [
       kill(1, [member('Spark', FIRE, 100), member('Ember', FIRE, 50), member('Chill', FROST, 80)])
     ]);
@@ -157,7 +156,6 @@ describe('RaidSpecPopularityChartComponent', () => {
     fixture.componentRef.setInput('role', 'healer');
     const views: string[] = [];
     const roles: string[] = [];
-    // A model's subscribe is its viewChange / roleChange output.
     fixture.componentInstance.view.subscribe(view => views.push(view));
     fixture.componentInstance.role.subscribe(role => roles.push(role));
     fixture.detectChanges();

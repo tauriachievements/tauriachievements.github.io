@@ -60,8 +60,6 @@ describe('specPopularity', () => {
       }
     ]);
 
-    // Monk has the biggest total (5) but Mage has the single most-seen spec (Frost, 3).
-    // Demon Hunter and Monk tie on their top spec (2), so Monk's second spec (2 vs 0) breaks the tie.
     expect(result.classes.slice(0, 3).map(group => [group.className, group.count]))
       .toEqual([['Mage', 3], ['Monk', 5], ['Demon Hunter', 2]]);
   });

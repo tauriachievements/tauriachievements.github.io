@@ -25,7 +25,6 @@ function member(name: string, realm = 'Evermoon'): MythicPlusMember {
 }
 
 let nextId = 0;
-/** A run of `dungeonId` at `keyLevel`, `clear` seconds long, finished `day` days into the season. */
 function run(dungeonId: string, keyLevel: number, clear: number, day: number, roster = [member('Progtrix')]): MythicPlusRun {
   return {
     id: `${dungeonId}-${++nextId}`,

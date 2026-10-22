@@ -67,7 +67,6 @@ interface KillRow {
   kill: RaidKillDetails;
 }
 
-/** A ranking row with the talents its kill was played with, one per tier. */
 interface RankingRow extends RankedPerformance {
   talents: Array<RaidTalent | undefined>;
 }
@@ -78,11 +77,6 @@ interface SummaryTile {
   note: string;
 }
 
-/**
- * /raid-logs/boss/:boss: one boss on one difficulty. Damage and healing rankings (each character's
- * best kill, filterable by realm, class, spec and name) and every kill by speed or date. The
- * filters, tab and page live in the query string.
- */
 @Component({
   selector: 'app-raid-logs-boss-page',
   imports: [
@@ -98,7 +92,6 @@ interface SummaryTile {
     ],
   templateUrl: './raid-logs-boss-page.component.html',
   styleUrl: './raid-logs-boss-page.component.scss',
-  // The class, spec and realm dropdowns need it (NG0201 without it).
   providers: [FilterDropdownCoordinatorService],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
@@ -118,7 +111,6 @@ export class RaidLogsBossPageComponent {
   readonly tabs = TABS;
   readonly index = signal<RaidLogsIndex | undefined>(undefined);
   readonly kills = signal<RaidKillDetails[]>([]);
-  /** Empty until talents.json loads, or if it doesn't: the rows then show no talents. */
   private readonly talentTable = signal<RaidTalentTable>(new Map());
   readonly talentTooltips = signal<RaidTalentTooltips>(new Map());
   readonly isLoading = signal(true);
@@ -138,7 +130,6 @@ export class RaidLogsBossPageComponent {
   readonly boss = computed<RaidBoss | undefined>(() =>
     this.index()?.bosses.find(boss => boss.slug === this.params().get('boss')));
 
-  /** Each difficulty's kill count on this boss, for the switch. */
   readonly bossKillCounts = computed(() => {
     const counts = new Map<string, number>();
     for (const kill of this.index()?.kills ?? []) {
@@ -149,7 +140,6 @@ export class RaidLogsBossPageComponent {
     return counts;
   });
 
-  /** The difficulty asked for when this boss has kills on it, else the hardest one that has. */
   readonly difficulty = computed<RaidDifficulty | undefined>(() => {
     const difficulties = this.index()?.difficulties ?? [];
     const counts = this.bossKillCounts();
@@ -166,7 +156,6 @@ export class RaidLogsBossPageComponent {
       return [];
     }
 
-    // Ranks hold across the search, so a found character shows their real place.
     const ranked = rankCharacters(this.kills(), this.metric(), {
       classId: this.classFilter(),
       specId: this.specFilter(),
@@ -191,7 +180,6 @@ export class RaidLogsBossPageComponent {
   readonly total = computed(() => this.isRanking() ? this.rankings().length : this.killRows().length);
   readonly pages = computed(() => pageCount(this.total()));
   readonly currentPage = computed(() => Math.min(this.page(), this.pages()));
-  /** Talents are looked up for the page's rows only, not for every ranked character. */
   readonly shownRankings = computed<RankingRow[]>(() => {
     const talents = this.talentTable();
     return pageSlice(this.rankings(), this.currentPage())

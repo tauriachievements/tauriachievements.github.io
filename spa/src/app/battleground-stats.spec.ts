@@ -8,7 +8,6 @@ import {
   getCompletedBattlegroundDateBounds
 } from './battleground-stats';
 
-/** A battleground started at "YYYY.MM.DD HH.MM", as the collector writes it. */
 function battleground(name: string, startTime: string, durationMs?: number): NormalizedBattleground {
   const [, year, month, day, hour, minute] = /^(\d{4})\.(\d{2})\.(\d{2}) (\d{2})\.(\d{2})$/.exec(startTime)!;
   return {

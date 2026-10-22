@@ -10,7 +10,6 @@ import { RaidBossFile, RaidBossLogEntry, RaidLogsIndexFile, RaidMemberEntry } fr
 import { RaidLogsCharacterPageComponent } from './raid-logs-character-page.component';
 import { DataFileService } from './services/data-file.service';
 
-// Three bosses on Mythic, one on Heroic. Every fight lasts 100 s, so damage / 100 is the DPS.
 const indexFile: RaidLogsIndexFile = {
   version: 1,
   generatedAt: '2026-10-17T16:00:00Z',
@@ -66,8 +65,6 @@ const bossFile = (boss: string, difficulty: string, logs: RaidBossLogEntry[]): R
   logs
 });
 
-// Frosty, a Frost mage: second of four on Nythendra but the best mage, third of three on
-// Il'gynoth and second of two mages, and no Elerethe kill.
 const bossFiles: Record<string, RaidBossFile> = Object.fromEntries([
   bossFile('nythendra', 'mythic', [
     log(10, 1_000, [member(RET, 70, 1_000), member(FROSTY, 64, 800), member(KAEL, 63, 600), member(LIGHT, 65, 0, 500)]),

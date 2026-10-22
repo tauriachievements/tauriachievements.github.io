@@ -42,11 +42,6 @@ export class IconTipsComponent {
     this.document.removeEventListener('keydown', this.onKeyDown);
   };
 
-  /**
-   * A scroll moves the icon away from its tooltip. Under the mouse the tooltip just goes; for
-   * keyboard focus it follows the icon, since focusing an icon is often what scrolled the page or
-   * the table to it.
-   */
   private readonly onScroll = () => {
     if (!this.shownByFocus) {
       this.hide();
@@ -116,7 +111,6 @@ export class IconTipsComponent {
     tip.classList.add('shown');
 
     if (!this.anchor) {
-      // Capturing on the window also hears the table's own sideways scroll.
       const view = this.document.defaultView;
       view?.addEventListener('scroll', this.onScroll, { capture: true, passive: true });
       view?.addEventListener('resize', this.hide, { passive: true });
@@ -126,7 +120,6 @@ export class IconTipsComponent {
     this.shownByFocus = byFocus;
   }
 
-  /** Under the icon, centred on it, or over it when there's no room below; never off screen. */
   private place(tip: HTMLElement, anchor: DOMRect): void {
     const viewportWidth = this.document.documentElement.clientWidth;
     const viewportHeight = this.document.defaultView?.innerHeight ?? 0;

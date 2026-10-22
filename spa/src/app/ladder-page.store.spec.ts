@@ -9,19 +9,13 @@ import { DataSyncService } from './services/data-sync.service';
 import { LadderLastUpdatedService } from './services/ladder-last-updated.service';
 import { Player } from './models/character.model';
 
-/**
- * Stands in for the real two-stage loader so the tests can watch which stage the store
- * asks for. Only the surface LadderPageStore touches is implemented.
- */
 class FakeDataSyncService {
   readonly players$ = new BehaviorSubject<Player[]>([]);
   readonly complete$ = new BehaviorSubject<boolean>(false);
   readonly progress$ = new BehaviorSubject({ isLoading: false, current: 0, total: 0, message: '' });
 
-  /** Held open so a test can observe the window where the head cannot answer the view yet. */
   private resolveComplete?: () => void;
 
-  /** The head slice the fake "loads": enough players for the store to treat the head as present. */
   readonly headPlayers = [
     { name: 'Larahh', guild: '', realm: 'Tauri', race: 4, gender: 1, class: 11, isNewCharacter: false } as Player
   ];
@@ -140,7 +134,6 @@ describe('LadderPageStore dataset escalation', () => {
     expect(store.loadError()).toContain('search every character');
     expect(dataSync.ensureCompleteData).toHaveBeenCalledTimes(1);
 
-    // "Try again" searches every player again.
     await store.syncData();
     expect(dataSync.ensureCompleteData).toHaveBeenCalledTimes(2);
     expect(store.isSearchingAllPlayers()).toBe(true);

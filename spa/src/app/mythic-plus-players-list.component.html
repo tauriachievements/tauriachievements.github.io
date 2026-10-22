@@ -3,7 +3,6 @@
     <ol class="player-cards" aria-label="Mythic+ players ranked by score: the sum of their best run in each dungeon">
       @for (row of rows(); track row.key) {
         <li [class.highlighted]="row.key === highlightKey()" [class.picked]="pickedKeys().has(row.key)">
-          <!-- Like a table row: a tap anywhere opens the profile, and the name and the guild are links of their own. -->
           <div class="player-card" [class.picking]="pickMode()" (click)="openProfile(row)">
             @if (pickMode()) {
               <span class="pick-box" aria-hidden="true"></span>
@@ -255,5 +254,4 @@
     </table>
   </div>
 }
-
 

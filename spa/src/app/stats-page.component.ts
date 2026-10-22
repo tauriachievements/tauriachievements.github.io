@@ -87,10 +87,6 @@ export interface ServerStats {
   realmCounts: number[];
 }
 
-/**
- * Maps the precomputed aggregates onto the shape the template and charts consume,
- * attaching the class and race names and the class colors that live in this layer.
- */
 export function toServerStats(snapshot: ServerStatsSnapshot): ServerStats {
   return {
     totalPlayers: snapshot.totalPlayers,

@@ -4,11 +4,6 @@ import { Router, RouterLink } from '@angular/router';
 import { MythicPlusDungeon, upgradeStars } from './mythic-plus';
 import { BestRunCell, PlayerRow } from './mythic-plus-views';
 
-/**
- * One page of ranked players. A table with a best-key column per dungeon on wide screens; on
- * narrow ones a card per player with their best keys as chips. Picking a player opens their
- * profile, and their guild name opens the guild's ladder.
- */
 @Component({
   selector: 'app-mythic-plus-players-list',
   imports: [RouterLink, DecimalPipe],
@@ -21,24 +16,14 @@ export class MythicPlusPlayersListComponent {
   private readonly host: HTMLElement = inject(ElementRef).nativeElement;
 
   readonly rows = input.required<readonly PlayerRow[]>();
-  /** The dungeons in scope, one per entry of each row's `bests`. */
   readonly dungeons = input.required<readonly MythicPlusDungeon[]>();
-  /** One dungeon picked: best key and time columns instead of a column per dungeon. */
   readonly singleDungeon = input(false);
   readonly emptyMessage = input('');
-  /** Cards instead of the table (MYTHIC_PLUS_CARDS_QUERY). */
   readonly cards = input(false);
-  /** `characterKey` of a player to pick out, e.g. one who followed a rank from their profile. */
   readonly highlightKey = input<string | undefined>();
-  /** Compare: clicking a player picks them instead of opening their profile. */
   readonly pickMode = input(false);
-  /** `characterKey`s already picked. */
   readonly pickedKeys = input<ReadonlySet<string>>(new Set());
   readonly pick = output<PlayerRow>();
-  /**
-   * `guild`: one guild's ladder. Its rows show their overall rank where the others show the
-   * guild, which is the same on every row.
-   */
   readonly ladder = input<'server' | 'guild'>('server');
 
   readonly upgradeStars = upgradeStars;

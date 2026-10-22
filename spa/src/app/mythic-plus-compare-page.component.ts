@@ -46,39 +46,28 @@ interface ComparedPlayer {
   player: PlayerScore;
   member: MemberView;
   crest: string;
-  /** Their line on the chart: the class colour, or a spare when two share a class. */
   color: string;
-  /** The total score's colour by season rank (scoreColor). */
   scoreColor: string;
-  /** Their runs, newest first. */
   runs: MythicPlusRun[];
-  /** `view-transition-name`s of their crest and name (characterTransitionName). */
   crestTransition: string;
   nameTransition: string;
 }
 
-/** One line of the summary table: a cell per player, the best one marked. */
 interface StatRow {
   label: string;
   hint?: string;
-  /** `delta`: how far behind the best a value is, e.g. `−9.8`; only on the others. */
   cells: Array<{ text: string; sub?: string; best: boolean; delta?: string }>;
 }
 
 interface DungeonCell {
   run?: RunView;
   best: boolean;
-  /** Points behind the best run in this dungeon among the compared players. */
   behind: number;
 }
 
-/** Two players: who leads in a dungeon and by how much, drawn as a bar towards the leader. */
 interface Lead {
-  /** Points between them; 0 is level. */
   points: number;
-  /** The leader's side: 0 (left) or 1 (right). */
   side: 0 | 1;
-  /** Bar length, in percent of half the column. */
   width: number;
   color: string;
 }
@@ -106,14 +95,8 @@ interface WeekBand {
 }
 
 const percentOf = (part: number, whole: number) => whole > 0 ? (part / whole) * 100 : 0;
-/** Gap axis marks, in points behind; those up to the largest gap are used. */
 const GAP_TICKS = [0, 1, 2, 5, 10, 20, 50, 100, 200, 500, 1000, 2000];
 
-/**
- * /mythic-plus/compare?players=A-Realm,B-Realm: two to four characters side by side. Their
- * score and ranks, score over the season on one chart, and best run per dungeon with the gap to
- * the best of them.
- */
 @Component({
   selector: 'app-mythic-plus-compare-page',
   imports: [
@@ -153,7 +136,6 @@ export class MythicPlusComparePageComponent implements OnInit {
   readonly dungeons = computed(() => this.index()?.dungeons ?? []);
   private readonly dungeonsById = computed(() => new Map(this.dungeons().map(dungeon => [dungeon.id, dungeon])));
   private readonly affixesById = computed(() => new Map((this.index()?.affixes ?? []).map(affix => [affix.id, affix])));
-  /** Raider.IO-style score colours from this season's standings. */
   private readonly scoreColors = computed(() => seasonScoreColors(this.index()));
   private readonly timers = computed(() => dungeonTimers(this.dungeons()));
 
@@ -161,7 +143,6 @@ export class MythicPlusComparePageComponent implements OnInit {
   private readonly characters = computed(() =>
     this.ranking().map(player => ({ name: player.member.name, realm: player.member.realm, player })));
 
-  /** The characters the URL names that the export has; unknown ones are listed apart. */
   readonly players = computed<ComparedPlayer[]>(() => {
     const characters = this.characters();
     const found = this.wanted()
@@ -188,7 +169,6 @@ export class MythicPlusComparePageComponent implements OnInit {
     return this.isLoading() ? [] : this.wanted().filter(character => !found.has(characterParam(character).toLowerCase()));
   });
 
-  // Summary: the numbers that say who is ahead, best of each marked.
   readonly stats = computed<StatRow[]>(() => {
     const players = this.players();
     if (!players.length) {
@@ -198,7 +178,6 @@ export class MythicPlusComparePageComponent implements OnInit {
     const ranking = this.ranking();
     const timers = this.timers();
     const recentFrom = Date.now() - RECENT_DAYS * 86_400_000;
-    // Higher is better unless `lower`; ties all count as best. 0 / missing never wins.
     const row = (label: string, values: Array<number | undefined>, text: (value: number, position: number) => string,
       sub?: (value: number, position: number) => string | undefined, lower = false, hint?: string,
       delta: (gap: number) => string = gap => `−${gap.toLocaleString('en-GB', { maximumFractionDigits: 1 })}`): StatRow => {
@@ -404,8 +383,6 @@ export class MythicPlusComparePageComponent implements OnInit {
       viewBox: `0 0 ${count} 100`,
       lines: players.map((player, index) => {
         const path = `M${timelines[index].map((day, position) => `${position + 0.5},${(100 - bottomOf(index, position)).toFixed(2)}`).join(' L')}`;
-        // The same path as a CSS `d`, which (unlike the attribute) can transition: Score / Gap
-        // morphs the lines between their two shapes. Browsers without CSS `d` use the attribute.
         return { color: player.color, path, cssPath: `path("${path}")` };
       }),
       gridlines: gapMode

@@ -13,7 +13,6 @@ const routes: Routes = [
   { path: '**', component: BlankPageComponent }
 ];
 
-// jsdom has no showModal() or close(); these stand in for the part the component relies on.
 const dialogMethods = ['showModal', 'close'] as const;
 const nativeDialogMethods = dialogMethods.map((name) => Object.getOwnPropertyDescriptor(HTMLDialogElement.prototype, name));
 

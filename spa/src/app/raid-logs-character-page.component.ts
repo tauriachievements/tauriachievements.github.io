@@ -44,16 +44,13 @@ interface Appearance {
   member: RaidMember;
 }
 
-/** Who "Of best" and Rank compare the character with: everyone, or only their own class. */
 export type RaidComparison = 'all' | 'class';
 
 interface BossRow {
   boss: RaidBoss;
   kills: number;
-  /** The best kill by the metric, among the specs the metric ranks. */
   best?: Appearance;
   value: number;
-  /** The value over the best on the boss, by anyone or by the class compared with: 0 to 1. */
   relative: number;
   rank?: number;
   ranked: number;
@@ -61,9 +58,7 @@ interface BossRow {
 
 interface Loaded {
   difficulty: RaidDifficulty;
-  /** Each boss's kills on the difficulty, by boss index. */
   bossKills: RaidKillDetails[][];
-  /** The URL's character, as the boss files spell it. */
   key: string;
 }
 
@@ -75,12 +70,6 @@ interface SummaryTile {
 
 const RECENT_KILLS = 20;
 
-/**
- * /raid-logs/character/:realm/:name: one character on one difficulty (`?difficulty=`, else the
- * hardest one they have kills on). Their best damage or healing on each boss and where it ranks,
- * among everyone or (`?compare=class`) their own class, and their latest kills. Loads the
- * difficulty's seven boss files.
- */
 @Component({
   selector: 'app-raid-logs-character-page',
   imports: [RouterLink, UpdateBarComponent, BackToTopButtonComponent, RaidDifficultySwitchComponent, GlideDirective, DatePipe, DecimalPipe],
@@ -107,7 +96,6 @@ export class RaidLogsCharacterPageComponent {
   readonly lastEditedTimeZoneLabel = computed(() => getLocalTimeZoneLabel(this.lastEdited()));
 
   private readonly requestedDifficulty = signal(this.route.snapshot.queryParamMap.get('difficulty') ?? undefined);
-  /** Picked on the page; otherwise the character's main role decides. */
   private readonly pickedMetric = signal<RaidMetric | undefined>(parseMetric(this.route.snapshot.queryParamMap.get('metric')));
   readonly comparison = signal<RaidComparison>(parseComparison(this.route.snapshot.queryParamMap.get('compare')));
 
@@ -123,10 +111,8 @@ export class RaidLogsCharacterPageComponent {
 
   readonly character = computed(() => latestFirst(this.appearances())[0]?.member.character);
 
-  /** Comparing by class: the character's class. Undefined comparing with all players. */
   readonly comparedClass = computed(() => this.comparison() === 'class' ? this.character()?.classId : undefined);
 
-  /** "Mage": the class Same class compares the character with. */
   readonly ownClass = computed(() => {
     const classId = this.character()?.classId;
     return classId === undefined ? '' : CLASS_NAMES[classId] ?? 'Character';
@@ -138,14 +124,12 @@ export class RaidLogsCharacterPageComponent {
     ? { relative: `The best kill against the best any ${this.ownClass()} did on the boss`, rank: `Among every ${this.ownClass()}'s best kill of the boss` }
     : { relative: 'The best kill against the best anyone did on the boss', rank: "Among every character's best kill of the boss" });
 
-  /** A boss's page on this difficulty and metric; comparing by class, ranking only the class. */
   readonly bossQueryParams = computed(() => ({
     difficulty: this.loaded()?.difficulty.slug,
     tab: this.metric(),
     class: this.comparedClass() ?? null
   }));
 
-  /** The spec played most often, the latest kill breaking a tie. */
   readonly mainSpec = computed<RaidSpec | undefined>(() => {
     const counts = new Map<RaidSpec, number>();
     for (const { member } of latestFirst(this.appearances())) {
@@ -158,7 +142,6 @@ export class RaidLogsCharacterPageComponent {
 
   readonly metric = computed<RaidMetric>(() => this.pickedMetric() ?? (this.mainSpec()?.role === 'healer' ? 'hps' : 'dps'));
 
-  /** Everyone's score on the difficulty, as the leaderboard ranks them. */
   private readonly scores = computed<RankedScore[]>(() => {
     const loaded = this.loaded();
     const index = this.index();
@@ -185,7 +168,6 @@ export class RaidLogsCharacterPageComponent {
       const best = own
         .filter(appearance => countsFor(metric, appearance.member.spec))
         .sort((a, b) => b.member[metric] - a.member[metric] || a.kill.killedAt - b.kill.killedAt)[0];
-      // The class as this boss file has it, so the character is always in their own class's ranking.
       const standing = best
         ? bossStanding(kills, metric, loaded.key, byClass ? { classId: best.member.character.classId } : {})
         : undefined;
@@ -267,7 +249,6 @@ export class RaidLogsCharacterPageComponent {
         next: index => {
           this.index.set(index);
           const requested = index.difficulties.find(difficulty => difficulty.slug === this.requestedDifficulty() && difficulty.kills > 0);
-          // Hardest first; without a requested difficulty, step down until the character shows up.
           const order = requested ? [requested] : [...index.difficulties].reverse().filter(difficulty => difficulty.kills > 0);
           this.loadDifficulty(index, order);
         },

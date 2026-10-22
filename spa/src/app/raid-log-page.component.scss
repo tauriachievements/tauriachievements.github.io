@@ -98,7 +98,6 @@
   }
 }
 
-// The amount bar: as long as the member's share of the top member's amount.
 .bar-col { width: 42%; min-width: 220px; }
 
 .bar-track {
@@ -113,17 +112,14 @@
 
 .bar { position: absolute; inset: 0 auto 0 0; opacity: .35; transform-origin: left; }
 .bar-label { position: relative; padding: 0 8px; color: #fff; font-size: .8rem; font-variant-numeric: tabular-nums; font-weight: 600; }
-// The raid-table .muted grey is too dark over a coloured bar.
 .bar-label .muted { color: rgba(255, 255, 255, .72); font-weight: 400; }
 
 @include motion-safe {
   tbody[data-reveal='pending'] .bar { transform: scaleX(0); }
 
-  // All together: rows rippling in one after another was turned down on the M+ tables.
   tbody[data-reveal='in'] .bar { animation: mp-grow-x 700ms var(--ease-out) both; }
 }
 
-// Loot
 .loot {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));

@@ -1,24 +1,16 @@
 import { localDay } from './mythic-plus-activity';
 import { MythicPlusMember, MythicPlusRun, PlayerScore, characterKey, isBetterRun, samePlace } from './mythic-plus';
 
-/*
- * The pure parts of /mythic-plus/character/:realm/:name, a character's season on one page:
- * finding the character the URL names, their ranks, their score day by day and who they play with.
- */
-
 type Character = Pick<MythicPlusMember, 'name' | 'realm'>;
 
-/** The realm as it appears in profile URLs: `evermoon`, `tauri`, `wod`. */
 export function realmSlug(realm: string): string {
   return realm.toLowerCase();
 }
 
-/** Router commands for a character's profile page. */
 export function characterProfileLink(character: Character): string[] {
   return ['/mythic-plus', 'character', realmSlug(character.realm), character.name];
 }
 
-/** `Progtrix-Evermoon`, the way the game writes a character from another realm. */
 export function characterParam(character: Character): string {
   return `${character.name}-${character.realm}`;
 }

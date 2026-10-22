@@ -4,7 +4,6 @@
   [lastEditedTimeZoneLabel]="lastEditedTimeZoneLabel()" />
 
 <main class="raid-page">
-  <!-- No visible header or back link: the page opens on the toolbar. The heading is for screen readers. -->
   <h1 class="visually-hidden">Character leaderboard, {{ index()?.raid?.name ?? 'The Emerald Nightmare' }}</h1>
 
   <section class="section" aria-label="Character leaderboard">
@@ -29,7 +28,6 @@
         </div>
 
         <div class="filters">
-          <!-- Always there, greyed out until a filter is set, as on the M+ leaderboard. -->
           <button
             type="button"
             class="filter-reset"
@@ -85,7 +83,6 @@
       </div>
     }
 
-    <!-- The score, explained. The Score heading's (i) opens it. -->
     @if (showHelp()) {
       <aside id="score-help" class="score-help" aria-labelledby="score-help-title">
         <header class="help-head">
@@ -232,7 +229,6 @@
                   <td class="center phone-hidden guild" [class]="'faction-text-' + entry.faction" [title]="entry.character.guild ? entry.character.guild + ' · ' + factionName(entry.faction) : ''">{{ entry.character.guild }}</td>
                   <td class="center phone-hidden muted col-realm">{{ entry.character.realm }}</td>
                   <td class="num center strong score" [class]="'q-' + scoreTier(entry)">
-                    <!-- Since the last scan: ranks climbed or lost on the left, score gained or lost on the right. -->
                     @if (change(entry); as moved) {
                       <span class="score-cell">
                         <span class="score-side score-side-start">

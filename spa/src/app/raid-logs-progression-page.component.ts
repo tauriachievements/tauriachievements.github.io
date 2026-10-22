@@ -25,23 +25,16 @@ import {
 import { RaidLogsDataService } from './services/raid-logs-data.service';
 import { UpdateBarComponent } from './update-bar.component';
 
-/** The faction dropdown's values, as `?faction=` has them, and the faction ids they stand for. */
 const FACTIONS: ReadonlyArray<{ slug: string; id: number; label: string }> = [
   { slug: 'horde', id: 1, label: 'Horde' },
   { slug: 'alliance', id: 0, label: 'Alliance' }
 ];
 
-/**
- * /raid-logs/guilds: every guild with a kill on one difficulty (`?difficulty=`), most bosses down
- * first, optionally only one faction's (`?faction=`) or one realm's (`?realm=`), ranked among
- * themselves. Reads only the index.
- */
 @Component({
   selector: 'app-raid-logs-progression-page',
   imports: [RouterLink, UpdateBarComponent, BackToTopButtonComponent, RaidDifficultySwitchComponent, FilterDropdownComponent, DatePipe, DecimalPipe],
   templateUrl: './raid-logs-progression-page.component.html',
   styleUrl: './raid-logs-progression-page.component.scss',
-  // The faction and realm dropdowns need it (NG0201 without it).
   providers: [FilterDropdownCoordinatorService],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
@@ -77,7 +70,6 @@ export class RaidLogsProgressionPageComponent implements OnInit {
   readonly factionWidthLabels = this.factionOptions.map(option => option.label);
   readonly realmWidthLabels = this.realmOptions.map(option => option.label);
 
-  /** The progress squares' order: the order raiders kill the bosses. */
   readonly pipBosses = computed(() => bossesInKillOrder(this.index()?.bosses ?? []));
 
   readonly difficulty = computed(() => {
@@ -132,7 +124,6 @@ export class RaidLogsProgressionPageComponent implements OnInit {
     this.writeUrl();
   }
 
-  /** Clears faction and realm; the difficulty stays. */
   resetFilters(): void {
     this.factionFilter.set(undefined);
     this.realmFilter.set(undefined);
@@ -149,7 +140,6 @@ export class RaidLogsProgressionPageComponent implements OnInit {
     this.writeUrl();
   }
 
-  /** The tooltip of a progress pip: the boss, and when the guild first killed it. */
   pipTitle(boss: RaidBoss, kill: RaidKill | undefined): string {
     return kill ? `${boss.shortName}: first kill ${new Date(kill.killedAt).toLocaleDateString('en-GB')}` : `${boss.shortName}: not killed yet`;
   }

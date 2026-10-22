@@ -64,16 +64,12 @@ import {
 import { RaidLogsDataService } from './services/raid-logs-data.service';
 import { UpdateBarComponent } from './update-bar.component';
 
-/** The most played builds the table lists. */
 const SHOWN_BUILDS = 10;
 
-/** Below this many characters a spec's shares are flagged as resting on few players. */
 const FEW_CHARACTERS = 10;
 
-/** A tier's change rate shows once this many characters killed the bosses it compares. */
 const MIN_SWAP_CHARACTERS = 5;
 
-/** A top-player share this far from everyone's is called out beside it. */
 const EDGE_POINTS = .05;
 
 const SPEC_COLUMNS = 3;
@@ -101,7 +97,6 @@ interface Insight {
 
 interface ChoiceView extends TalentChoice {
   isLeader: boolean;
-  /** The top players' share minus everyone's, when it is worth calling out. */
   edge?: string;
   edgeTone?: 'up' | 'down';
 }
@@ -110,23 +105,19 @@ interface TierView {
   tier: number;
   level: number;
   choices: ChoiceView[];
-  /** "21% changed it", when enough characters can be compared. */
   swapNote?: string;
 }
 
 interface BuildRow extends TalentBuild {
   rank: number;
   picked: Array<RaidTalent | undefined>;
-  /** The meter's length: the share over the most played build's. */
   meter: number;
 }
 
 interface HeatCell {
   share: number;
   label: string;
-  /** Picked NOTABLE_DIFFERENCE or more above the other bosses. */
   notable: boolean;
-  /** Too few picks on the boss to read much into. */
   thin: boolean;
   tip: string;
   tipNote: string;
@@ -135,7 +126,6 @@ interface HeatCell {
 interface HeatRow {
   key: string;
   level: number;
-  /** The first of its tier, which carries the level cell. */
   first: boolean;
   tierSize: number;
   talent?: RaidTalent;
@@ -179,7 +169,6 @@ export class RaidLogsTalentsPageComponent {
   readonly kills = signal<readonly RaidKillDetails[]>([]);
   readonly killsLoading = signal(false);
   readonly killsError = signal<string | undefined>(undefined);
-  /** Empty until talents.json loads, or if it doesn't: talents then show unnamed. */
   private readonly talentTable = signal<RaidTalentTable>(new Map());
   readonly talentTooltips = signal<RaidTalentTooltips>(new Map());
   readonly lastEdited = computed(() => this.index()?.generatedAt);
@@ -226,9 +215,7 @@ export class RaidLogsTalentsPageComponent {
   readonly hasFilters = computed(() =>
     this.classFilter() !== undefined || this.role() !== 'all' || this.spec() !== undefined || this.boss() !== undefined);
 
-  /** Every character's talents on every boss of the difficulty, for every spec. */
   private readonly samples = computed(() => talentSamples(this.kills()));
-  /** The bosses with kills on the difficulty; a boss without any can't be picked. */
   readonly bossesWithKills = computed(() => new Set(this.kills().map(kill => kill.boss)));
   private readonly specScores = computed(() => {
     const kills = this.kills();

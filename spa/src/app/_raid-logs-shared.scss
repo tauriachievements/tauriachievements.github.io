@@ -1,5 +1,3 @@
-// Shared by the /raid-logs pages. The look is the Mythic+ pages' (dark cards, gold accent), with
-// the difficulty colours WoW players know from item qualities. Forwards the M+ mixins and $gold.
 @forward './mythic-plus-shared';
 @use './mythic-plus-shared' as *;
 
@@ -16,7 +14,6 @@ $difficulty-colors: (
   mythic: #ff8000
 );
 
-// Page shell: the same width and padding as the M+ pages.
 @mixin raid-page {
   display: flex;
   width: min(1240px, 100%);
@@ -45,7 +42,6 @@ $difficulty-colors: (
   }
 }
 
-// Loading spinner and error box.
 @mixin feedback {
   .feedback { display: flex; min-height: 280px; flex-direction: column; align-items: center; justify-content: center; gap: 14px; text-align: center; }
 
@@ -70,7 +66,6 @@ $difficulty-colors: (
   @keyframes spin { to { transform: rotate(360deg); } }
 }
 
-// Number tiles under a page header.
 @mixin summary-tiles {
   .summary {
     display: grid;
@@ -86,7 +81,6 @@ $difficulty-colors: (
   .summary-note { display: block; color: #bdbdbd; font-size: .78rem; font-weight: 400; overflow-wrap: anywhere; }
 }
 
-// A section with a title and a line of explanation.
 @mixin sections {
   .section { display: flex; min-width: 0; flex-direction: column; gap: 12px; margin-top: 8px; }
 
@@ -104,7 +98,6 @@ $difficulty-colors: (
   .empty-note { margin: 0; padding: 18px; border-radius: 4px; background: $raid-card; color: $raid-muted; text-align: center; }
 }
 
-// Leaderboard tables: scroll sideways on a phone rather than squeeze.
 @mixin raid-table {
   .table-scroll {
     @include table-scroll;
@@ -143,12 +136,10 @@ $difficulty-colors: (
   @media (max-width: 640px) {
     th, td { padding: 8px 6px; }
     th { font-size: .66rem; }
-    // Hidden on a phone: whatever doesn't fit beside the numbers.
     .phone-hidden { display: none; }
   }
 }
 
-// A character: class icon, name in its class colour, a muted line under it.
 @mixin character-cell {
   .character { display: inline-flex; min-width: 0; align-items: center; gap: 8px; }
   .character img { width: 20px; height: 20px; flex: none; border-radius: 3px; }
@@ -159,7 +150,6 @@ $difficulty-colors: (
   .character-sub { overflow: hidden; color: $raid-muted; font-size: .74rem; text-overflow: ellipsis; }
   .spec-icon { width: 18px; height: 18px; border-radius: 3px; vertical-align: middle; }
 
-  // On a phone the numbers matter more than the full "spec · realm · guild" line.
   @media (max-width: 640px) {
     .character-text { max-width: 132px; }
     .character-name, .character-sub { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -209,7 +199,6 @@ $difficulty-colors: (
   @include difficulty-colors;
 }
 
-// `.difficulty-dot.heroic`, `.difficulty-text.mythic`.
 @mixin difficulty-colors {
   @each $slug, $color in $difficulty-colors {
     .difficulty-dot.#{$slug} { background: $color; box-shadow: 0 0 8px rgba($color, .55); }
@@ -219,7 +208,6 @@ $difficulty-colors: (
   .difficulty-dot { display: inline-block; width: 8px; height: 8px; flex: none; border-radius: 50%; }
 }
 
-// A boss's portrait in a rounded frame.
 @mixin boss-portrait($size: 44px) {
   width: $size;
   height: $size;
@@ -230,14 +218,12 @@ $difficulty-colors: (
   object-fit: cover;
 }
 
-// Alliance blue / Horde red, as on the rest of the site.
 @mixin faction-marks {
   .faction { display: inline-block; width: 8px; height: 8px; flex: none; border-radius: 2px; }
   .faction-0 { background: #3b78d8; }
   .faction-1 { background: #c8322e; }
 }
 
-// Over a ranking: the tabs on the left, the filter dropdowns and a search box on the right.
 @mixin ranking-toolbar {
   .toolbar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px 16px; }
 
@@ -279,7 +265,6 @@ $difficulty-colors: (
     border-radius: 6px;
     background: #111;
     color: #fff;
-    // 16px stops iOS from zooming into the field.
     font: inherit;
     font-size: 16px;
 
@@ -293,7 +278,6 @@ $difficulty-colors: (
   }
 }
 
-// Reset, before a ranking's filter dropdowns: the M+ leaderboard's. Greyed out until a filter is set.
 @mixin filter-reset {
   .filter-reset {
     display: inline-flex;

@@ -15,7 +15,6 @@
 
 .raid-page { @include raid-page; }
 
-// Boss picker: the seven portraits in raid order.
 .boss-picker {
   display: grid;
   grid-template-columns: repeat(7, minmax(0, 1fr));
@@ -80,8 +79,6 @@
   &:focus-visible { outline: 2px solid $gold; outline-offset: 2px; }
 }
 
-// Talents and trinkets: rows of small icons, linked to TauriShoot. A trinket's frame is in its
-// item quality's colour.
 .icons { display: inline-flex; gap: 3px; vertical-align: middle; }
 
 .icon {
@@ -106,8 +103,6 @@ td a.icon:hover img { filter: brightness(1.25); }
 .realm { font-size: .78rem; }
 td a.log-link { color: $gold; font-size: .8rem; font-weight: 600; }
 
-// The rankings' talents and trinkets need the width: first the kill date gives way, then the
-// item level and the guild beside the kill time, as on a phone.
 @media (max-width: 1100px) {
   .tablet-hidden { display: none; }
 }

@@ -2,11 +2,6 @@ import { describe, it, expect } from 'vitest';
 import { emptyStats, toServerStats } from './stats-page.component';
 import { ServerStatsSnapshot } from './services/server-stats.service';
 
-/**
- * The aggregation itself runs at build time and is covered by
- * scripts/compute-server-stats.test.js. What is left to test here is the mapping from
- * ids to the display names and colors this layer owns.
- */
 function snapshot(overrides: Partial<ServerStatsSnapshot> = {}): ServerStatsSnapshot {
   return {
     totalPlayers: 4,

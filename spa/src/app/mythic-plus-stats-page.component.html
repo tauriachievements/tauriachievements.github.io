@@ -55,7 +55,6 @@
       }
     </div>
 
-    <!-- The numbers count up, one tile after another; switching period rolls them to the new ones. -->
     <dl class="summary">
       @for (item of summary(); track item.label; let index = $index) {
         <div>
@@ -65,7 +64,6 @@
       }
     </dl>
 
-    <!-- Runs per day -->
     <section class="chart-card" aria-labelledby="days-title">
       <header class="chart-header">
         <div class="chart-heading">
@@ -92,7 +90,6 @@
         }
       </ul>
 
-      <!-- Wider than a phone: opens on the newest days, at the right end. -->
       @if (dayBars().length) {
         <div class="chart-scroll" [appScrollToEnd]="period() + dayBars().length">
           <div class="column-chart days" [style.--columns]="dayBars().length" appReveal>
@@ -168,7 +165,6 @@
     </section>
 
     <div class="pair">
-      <!-- Runs per dungeon -->
       <section class="chart-card" aria-labelledby="dungeons-title">
         <header class="chart-header">
           <div class="chart-heading">
@@ -227,7 +223,6 @@
         </ol>
       </section>
 
-      <!-- Key levels -->
       <section class="chart-card" aria-labelledby="levels-title">
         <header class="chart-header with-corner">
           <div class="chart-heading">
@@ -320,7 +315,6 @@
       </section>
     </div>
 
-    <!-- Affix weeks -->
     <section class="chart-card" aria-labelledby="weeks-title">
       <header class="chart-header">
         <div class="chart-heading">

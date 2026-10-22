@@ -47,7 +47,6 @@ const runs: Record<string, MythicPlusRunEntry[]> = {
   mos: [
     [17, 1174220, unix('2026-09-26T13:34:00Z'), 180, lastWeek, [[0, 0], [1, 1]]],
     [17, 1300000, unix('2026-09-21T15:10:00Z'), 177, lastWeek, [[0, 0]]],
-    // 13 seconds over the timer
     [18, 1453188, unix('2026-09-27T12:00:00Z'), 177, lastWeek, [[1, 1], [2, 2]]],
     [15, 1400000, unix('2026-09-16T22:11:00Z'), 160, lastWeek, [[0, 0]]]
   ],
@@ -64,7 +63,6 @@ const fileFor = (path: string, tables = index.tables): MythicPlusDungeonFile => 
 
 class FakeDataFiles {
   refreshes = 0;
-  /** Dungeon files carry another export's tables until refresh() when set. */
   constructor(private staleTables?: string, private readonly staysStale = false) {}
 
   getJson<T>(): Observable<T> {
@@ -114,13 +112,11 @@ describe('MythicPlusRecordsPageComponent', () => {
     expect(element.querySelector('.realm-bar')).toBeNull();
     expect(page.records().map(record => [record.dungeon.id, record.run?.keyLevel, record.heldFor])).toEqual([
       ['nl', 19, 'held for 2 days'],
-      // The faster of the two +17s holds it.
       ['mos', 17, 'held for 11 days'],
       ['hov', 16, 'held for 10 days']
     ]);
     expect(texts(element, '.record-card h3')).toEqual(["Neltharion's Lair", 'Maw of Souls', 'Halls of Valor']);
     expect(texts(element, '.record-card:first-child .record-time > *')).toEqual(['29:57', 'of 33:00', '-3:03']);
-    // Tank, healer, then DPS, each opening their profile.
     expect([...element.querySelectorAll('.record-card:first-child .group a')].map(link => link.getAttribute('href'))).toEqual([
       '/mythic-plus/character/evermoon/Tank',
       '/mythic-plus/character/tauri/Healer',
@@ -153,7 +149,6 @@ describe('MythicPlusRecordsPageComponent', () => {
     expect(texts(element, '.section-filter .dropdown-trigger .option-label')).toEqual(['All dungeons']);
     expect(element.querySelector('.section-filter .dropdown.has-selection')).toBeNull();
 
-    // The same run opens on its own in each list, and a record stays open while a first opens.
     page.toggle('record', 'mos-1');
     element.querySelector<HTMLElement>('.first-row')?.click();
     expect(page.isExpanded('first', 'nl-1')).toBe(true);
@@ -189,16 +184,13 @@ describe('MythicPlusRecordsPageComponent', () => {
     expect(page.mostRuns().map(runner => [runner.rank, runner.member.name, runner.runs, runner.timedPercent, runner.highestTimed]))
       .toEqual([
         [1, 'Progtrix', 7, 100, 19],
-        // The +18 Maw of Souls ran out of time.
         [2, 'Tank', 4, 75, 19],
         [3, 'Healer', 2, 50, 19],
         [4, 'Arrchangel', 1, 100, 12]
       ]);
     expect(page.mostRuns().map(runner => runner.share)).toEqual([1, 4 / 7, 2 / 7, 1 / 7]);
-    // Coloured like leaderboard ranks, on runs against the leader's.
     expect([...element.querySelectorAll('.runner-rank')].map(rank => rank.className.match(/q-\w+/)?.[0]))
       .toEqual(['q-artifact', 'q-uncommon', 'q-uncommon', 'q-uncommon']);
-    // The guild under the name, where there is one.
     expect([...element.querySelectorAll('.runner-name')].map(name => name.querySelector('.runner-guild')?.textContent))
       .toEqual(['The Echoes', undefined, undefined, undefined]);
     expect(texts(element, '.runner-count')).toEqual(['7 runs', '4 runs', '2 runs', '1 run']);
@@ -210,7 +202,6 @@ describe('MythicPlusRecordsPageComponent', () => {
       '/mythic-plus/character/tauri/Healer',
       '/mythic-plus/character/wod/Arrchangel'
     ]);
-    // The guild opens its ladder.
     expect(element.querySelector('a.runner-guild')?.getAttribute('href')).toBe('/mythic-plus/guild/evermoon/The%20Echoes');
   });
 

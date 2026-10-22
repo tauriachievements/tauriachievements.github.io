@@ -1,38 +1,26 @@
-/** How a donation was paid: real money through PayPal, or in-game Tauri Credits or gold. */
 export type DonationCurrency = 'eur' | 'usd' | 'credits' | 'gold';
 
-/** A character, Discord or Stoat name, as the person wants to be shown. */
 export interface PlayerName {
   readonly name: string;
-  /** The character's class id (1 Warrior, 2 Paladin, 6 Death Knight, 10 Monk, 11 Druid…), to colour the name. */
   readonly classId?: number;
-  /** The character's realm ('tauri', 'evermoon', 'wod'), to link the name to its armory page. */
   readonly realm?: string;
-  /** Links the name to this character's Mythic+ profile on `realm` instead of the armory. */
   readonly mythicPlusProfile?: string;
 }
 
-/** One entry on the /support page's list of supporters. */
 export interface Donation {
-  /** One person's names, sharing one row. */
   readonly names: readonly PlayerName[];
   readonly amount: number;
   readonly currency: DonationCurrency;
 }
 
-/** Where a quote's author name is from: an in-game character, or the Discord or Stoat chat. */
 export type TestimonialSource = 'character' | 'discord' | 'stoat';
 
-/** Something nice a player said about the site. */
 export interface Testimonial {
   readonly quote: string;
-  /** Who said it: one person's names, shown together. */
   readonly names: readonly PlayerName[];
-  /** Where the names are from, shown as a small tag beside them. */
   readonly from: TestimonialSource;
 }
 
-// Shown in this order: add a new supporter at the bottom.
 export const DONATIONS: readonly Donation[] = [
   {
     names: [
@@ -50,7 +38,6 @@ export const DONATIONS: readonly Donation[] = [
   }
 ];
 
-// Shown in this order: add a new quote, and the names of the person who said it, at the bottom.
 export const TESTIMONIALS: readonly Testimonial[] = [
   {
     quote: 'Our entire guild is going back to your website fairly often though and I often refer people there as well when they are asking questions.',
@@ -102,17 +89,10 @@ export function testimonialSourceLabel(from: TestimonialSource): string {
   return SOURCE_LABELS[from];
 }
 
-/** The quote grid has six columns, so quotes can sit two (three columns each) or three (two) to a row. */
 const QUOTE_COLUMNS = 6;
 
-/**
- * How many columns each quote takes: a long one the whole row, a one-liner a third, the rest half.
- * Places them the way the grid's dense packing does, then widens the last quote of each row to its
- * end, so no row is left with a gap.
- */
 export function quoteSpans(quotes: readonly string[]): number[] {
   const spans = quotes.map(({ length }) => (length > 180 ? QUOTE_COLUMNS : length <= 30 ? 2 : 3));
-  // Columns filled in each row, and the quote placed last in it. Rows fill from the left.
   const filled: number[] = [];
   const lastInRow: number[] = [];
 
@@ -141,7 +121,6 @@ export function donationIcon(currency: DonationCurrency): string {
   return CURRENCY_ICONS[currency];
 }
 
-/** The amount as it reads on the page: "€50", "$12.50", "500 Tauri Credits", "100,000 gold". */
 export function formatDonation({ amount, currency }: Donation): string {
   if (currency === 'eur' || currency === 'usd') {
     return amount.toLocaleString('en-US', {

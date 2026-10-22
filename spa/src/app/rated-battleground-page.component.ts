@@ -145,7 +145,6 @@ export class RatedBattlegroundPageComponent implements OnInit {
         .map(member => ({ match, member, won: member.side === getWinningSide(match) })))
       .sort((left, right) => left.match.starttime - right.match.starttime || left.match.matchid - right.match.matchid);
   });
-  /** The start of the latest recorded match, shown in local time in the update bar. */
   readonly lastEdited = computed(() => {
     const latest = this.matches().at(-1)?.starttime;
     return latest ? new Date(latest * 1000) : undefined;
