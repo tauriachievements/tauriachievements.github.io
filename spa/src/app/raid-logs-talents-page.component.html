@@ -54,6 +54,7 @@
           *ngFor="let option of roleOptions"
           [class.active]="selectedRole() === option.value"
           [attr.aria-pressed]="selectedRole() === option.value"
+          [disabled]="option.value !== 'all' && !availableRoles().has(option.value)"
           (click)="setRole(option.value)">{{ option.label }}</button>
       </div>
       <div class="filters">
@@ -92,7 +93,6 @@
     <app-icon-tips *ngIf="!killsLoading() && !killsError()">
       <ng-container *ngIf="!spec(); else specView">
         <section class="section">
-          <p class="empty-note" *ngIf="!specGroups().length">{{ classFilterName() }} has no {{ roleNoun() }} spec.</p>
           <div class="role-group" *ngFor="let group of specGroups()">
             <h3>{{ group.title }}</h3>
             <ul class="spec-grid">

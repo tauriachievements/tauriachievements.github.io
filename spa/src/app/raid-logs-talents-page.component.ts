@@ -184,7 +184,7 @@ export class RaidLogsTalentsPageComponent {
   readonly specId = signal<number | undefined>(undefined);
   private readonly bossSlug = signal<string | undefined>(undefined);
   private readonly classFilter = signal<number | undefined>(undefined);
-  private readonly roleFilter = signal<RoleFilter>('all');
+  private readonly requestedRole = signal<RoleFilter>('all');
 
   readonly difficulty = computed(() => {
     const difficulties = this.index()?.difficulties ?? [];
@@ -202,11 +202,16 @@ export class RaidLogsTalentsPageComponent {
     const classId = this.classFilter();
     return classId === undefined ? undefined : CLASS_NAMES[classId];
   });
-  readonly selectedRole = computed<RoleFilter>(() => this.spec()?.role ?? this.roleFilter());
-  readonly roleNoun = computed(() => ROLE_GROUPS.find(group => group.role === this.roleFilter())?.noun);
+  readonly availableRoles = computed(() => new Set(specsMatching(this.specs(), this.classFilter(), 'all').map(spec => spec.role)));
+  readonly role = computed<RoleFilter>(() => {
+    const requested = this.requestedRole();
+    return requested === 'all' || this.availableRoles().has(requested) ? requested : 'all';
+  });
+  readonly selectedRole = computed<RoleFilter>(() => this.spec()?.role ?? this.role());
+  readonly roleNoun = computed(() => ROLE_GROUPS.find(group => group.role === this.role())?.noun);
   readonly backLabel = computed(() => ['All', this.classFilterName(), this.roleNoun(), 'specs'].filter(Boolean).join(' '));
   readonly hasFilters = computed(() =>
-    this.classFilter() !== undefined || this.roleFilter() !== 'all' || this.spec() !== undefined || this.boss() !== undefined);
+    this.classFilter() !== undefined || this.role() !== 'all' || this.spec() !== undefined || this.boss() !== undefined);
 
   /** Every character's talents on every boss of the difficulty, for every spec. */
   private readonly samples = computed(() => talentSamples(this.kills()));
@@ -216,7 +221,7 @@ export class RaidLogsTalentsPageComponent {
   readonly specGroups = computed(() => {
     const boss = this.boss();
     const samples = boss ? this.samples().filter(sample => sample.boss === boss) : this.samples();
-    const specs = specsMatching(this.specs(), this.classFilter(), this.roleFilter());
+    const specs = specsMatching(this.specs(), this.classFilter(), this.role());
     const cards = specTalentSummaries(samples, specs, this.talentTable()).map((summary): SpecCard => {
       const className = CLASS_NAMES[summary.spec.classId] ?? 'Unknown';
       return {
@@ -484,7 +489,7 @@ export class RaidLogsTalentsPageComponent {
         this.specId.set(parseNumber(params.get('spec')));
         this.bossSlug.set(params.get('boss') ?? undefined);
         this.classFilter.set(parseClass(params.get('class')));
-        this.roleFilter.set(parseRoleFilter(params.get('role')));
+        this.requestedRole.set(parseRoleFilter(params.get('role')));
         const difficulty = params.get('difficulty');
         if (difficulty) {
           this.requestedDifficulty.set(difficulty);
@@ -543,23 +548,24 @@ export class RaidLogsTalentsPageComponent {
 
   setClass(value: FilterDropdownValue): void {
     this.classFilter.set(typeof value === 'number' ? value : undefined);
+    this.requestedRole.set(this.role());
     this.applyFilters();
   }
 
   setRole(role: RoleFilter): void {
-    this.roleFilter.set(role);
+    this.requestedRole.set(role);
     this.applyFilters();
   }
 
   resetFilters(): void {
     this.classFilter.set(undefined);
-    this.roleFilter.set('all');
+    this.requestedRole.set('all');
     this.bossSlug.set(undefined);
     this.applyFilters();
   }
 
   queryParams(specId: number | undefined): Record<string, string | number | null> {
-    const role = this.roleFilter();
+    const role = this.role();
     return {
       difficulty: this.difficulty()?.slug ?? null,
       boss: this.boss()?.slug ?? null,
