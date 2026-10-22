@@ -101,12 +101,17 @@ for (const viewport of VISUAL_VIEWPORTS) {
       hasTouch: isPhone
     });
 
-    for (const visualPage of VISUAL_PAGES) {
+    for (const visualPage of VISUAL_PAGES.filter(entry => !entry.only || entry.only === viewport.name)) {
       test(visualPage.name, async ({ page }) => {
         await page.clock.setFixedTime(FIXED_TIME);
         await serveExternalFromCache(page);
         await page.goto(visualPage.path);
         await settle(page);
+        for (const selector of visualPage.clicks ?? []) {
+          await page.locator(selector).click();
+          await page.waitForTimeout(400);
+          await settle(page);
+        }
         await expectPageInSlices(page, `${visualPage.name}-${viewport.name}`);
       });
     }

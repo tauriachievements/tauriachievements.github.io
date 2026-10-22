@@ -1,6 +1,10 @@
+export type ViewportName = 'phone' | 'desktop';
+
 export interface VisualPage {
   readonly name: string;
   readonly path: string;
+  readonly clicks?: readonly string[];
+  readonly only?: ViewportName;
 }
 
 export const VISUAL_PAGES: readonly VisualPage[] = [
@@ -60,10 +64,29 @@ export const VISUAL_PAGES: readonly VisualPage[] = [
   { name: 'guild-temerite', path: '/temerite-b93e7a41' },
   { name: 'guild-rycerze-ortalionu', path: '/rycerze-ortalionu-c1ee200b' },
   { name: 'redirect-old-arena', path: '/50-games-played-arenas' },
-  { name: 'redirect-old-raid-history', path: '/guild-realm-firsts' }
+  { name: 'redirect-old-raid-history', path: '/guild-realm-firsts' },
+  { name: 'state-menu-drawer', path: '/', clicks: ['.site-menu-toggle'], only: 'phone' },
+  { name: 'state-menu-section', path: '/', clicks: ['.site-nav-trigger:has-text("Mythic+")'], only: 'desktop' },
+  { name: 'state-ladder-row-details', path: '/', clicks: ['.row-toggle >> nth=0'], only: 'phone' },
+  { name: 'state-ladder-search', path: '/?search=Lara' },
+  { name: 'state-compare-two', path: '/compare?a=Tauri:Larahh&b=Tauri:Darkpaladino' },
+  { name: 'state-mythic-plus-compare-mode', path: '/mythic-plus?compare=Pashao-Evermoon,Exkeito-Evermoon' },
+  { name: 'state-mythic-plus-dropdown', path: '/mythic-plus?view=players', clicks: ['app-filter-dropdown .dropdown-trigger >> nth=0'], only: 'desktop' },
+  { name: 'state-mythic-plus-filters-open', path: '/mythic-plus?view=players', clicks: ['.mobile-filter-toggle'], only: 'phone' },
+  { name: 'state-mythic-plus-guild-week', path: '/mythic-plus/guild/evermoon/Miracle?period=week&role=healer' },
+  { name: 'state-mythic-plus-records-dungeon', path: '/mythic-plus/records?dungeon=brh' },
+  { name: 'state-battleground-starts', path: '/battleground', clicks: ['.bg-count-row >> nth=0'] },
+  { name: 'state-rated-battleground-history', path: '/rated-battleground', clicks: ['.player-history-trigger >> nth=0'] },
+  { name: 'state-rare-achievements-filtered', path: '/rare-achievements?realm=Tauri&class=2' },
+  { name: 'state-raid-log-pickup', path: '/raid-logs/log/tauri/1329435' },
+  { name: 'state-raid-logs-character-class', path: '/raid-logs/character/evermoon/Gankuh?difficulty=mythic&metric=dps&compare=class' },
+  { name: 'state-raid-logs-stats-performance', path: '/raid-logs/stats?view=performance&role=healer' },
+  { name: 'state-raid-logs-boss-hps-class', path: '/raid-logs/boss/xavius?difficulty=mythic&tab=hps&class=5' },
+  { name: 'state-raid-logs-guilds-filtered', path: '/raid-logs/guilds?difficulty=heroic&realm=evermoon&faction=horde' },
+  { name: 'state-raid-logs-talents-role', path: '/raid-logs/talents?difficulty=heroic&role=healer' }
 ];
 
-export const VISUAL_VIEWPORTS = [
+export const VISUAL_VIEWPORTS: ReadonlyArray<{ readonly name: ViewportName; readonly width: number; readonly height: number }> = [
   { name: 'phone', width: 360, height: 780 },
   { name: 'desktop', width: 1280, height: 900 }
-] as const;
+];

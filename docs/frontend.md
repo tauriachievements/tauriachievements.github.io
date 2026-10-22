@@ -204,6 +204,14 @@ that should look the same: a refactor, a migration, moved styles.
    expected, actual and diff images in `e2e/.results/`, and `npx playwright show-report
    e2e/.report` shows them side by side.
 
+To take a baseline from another commit without leaving your branch, build that commit in a
+worktree (`git worktree add <dir> main`, then `npm ci` and `npm run build` in `<dir>/spa`)
+and point the server at its output: `DIST_DIR=<dir>/spa/dist/tauri-achievements/browser
+npm run test:visual:baseline`. Add `-- -g <name>` to capture only some pages.
+
+An entry in `e2e/visual-pages.ts` is a URL, optionally with `clicks` (selectors clicked in
+order before the screenshots, for menus, dropdowns and dialogs) and `only` (one viewport).
+
 How it stays deterministic:
 
 - The baselines (`e2e/__screenshots__/`) are local and git-ignored: font rendering differs
