@@ -17,7 +17,6 @@ import { UpdateBarComponent } from './update-bar.component';
  */
 @Component({
   selector: 'app-raid-logs-stats-page',
-  standalone: true,
   imports: [UpdateBarComponent, BackToTopButtonComponent, RaidSpecPopularityChartComponent, RaceBySpecComponent],
   templateUrl: './raid-logs-stats-page.component.html',
   styleUrl: './raid-logs-stats-page.component.scss',

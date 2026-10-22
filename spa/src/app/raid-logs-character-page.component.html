@@ -65,7 +65,7 @@
     @if (loaded(); as data) {
       <section class="section" aria-labelledby="character-bosses-title">
         <header class="section-header">
-          <h2 id="character-bosses-title">Bosses <span class="difficulty-text" [ngClass]="data.difficulty.slug">{{ data.difficulty.name }}</span></h2>
+          <h2 id="character-bosses-title">Bosses <span class="difficulty-text" [class]="data.difficulty.slug">{{ data.difficulty.name }}</span></h2>
           <div class="section-controls">
             <div class="view-switch" role="tablist" aria-label="Rank by" appGlide>
               <button type="button" role="tab" [class.active]="metric() === 'dps'" [attr.aria-selected]="metric() === 'dps'" (click)="setMetric('dps')">Damage</button>

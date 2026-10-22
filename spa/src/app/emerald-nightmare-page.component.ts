@@ -76,7 +76,6 @@ const TIMELINE_GUILD_REALMS: Readonly<Record<string, string>> = {
 
 @Component({
   selector: 'app-emerald-nightmare-page',
-  standalone: true,
   imports: [UpdateBarComponent, BackToTopButtonComponent, TapTooltipDirective],
   templateUrl: './emerald-nightmare-page.component.html',
   styleUrls: ['./emerald-nightmare-page.component.scss'],

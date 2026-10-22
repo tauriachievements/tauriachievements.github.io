@@ -6,7 +6,6 @@ export type RatedBattlegroundContentView = 'players' | 'matches';
   selector: 'app-rated-battleground-view-switcher',
   templateUrl: './rated-battleground-view-switcher.component.html',
   styleUrls: ['./rated-battleground-view-switcher.component.scss'],
-  standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class RatedBattlegroundViewSwitcherComponent {

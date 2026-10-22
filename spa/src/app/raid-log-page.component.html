@@ -33,11 +33,11 @@
       <img class="boss-portrait" [src]="current.boss.portrait" alt="" />
       <div class="log-heading">
         <p class="eyebrow">
-          <span class="difficulty-dot" [ngClass]="current.difficulty.slug" aria-hidden="true"></span>
-          {{ current.boss.shortName }} · <span class="difficulty-text" [ngClass]="current.difficulty.slug">{{ current.difficulty.name }}</span>
+          <span class="difficulty-dot" [class]="current.difficulty.slug" aria-hidden="true"></span>
+          {{ current.boss.shortName }} · <span class="difficulty-text" [class]="current.difficulty.slug">{{ current.difficulty.name }}</span>
         </p>
         <h1>
-          <span class="faction" [ngClass]="'faction-' + current.faction" aria-hidden="true"></span>
+          <span class="faction" [class]="'faction-' + current.faction" aria-hidden="true"></span>
           @if (current.guild?.name) {
             <a [routerLink]="guildLink(current.guild!)" [queryParams]="{ difficulty: current.difficulty.slug }">{{ current.guild!.name }}</a>
           } @else {Pickup group}

@@ -90,7 +90,7 @@ class FakeDataFiles {
   refresh(): void {}
 }
 
-@Component({ standalone: true, template: '' })
+@Component({ template: '' })
 class ElsewhereComponent {}
 
 async function open(url: string) {

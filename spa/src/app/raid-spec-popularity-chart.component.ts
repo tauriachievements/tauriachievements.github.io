@@ -1,4 +1,4 @@
-import { CommonModule } from '@angular/common';
+import { DecimalPipe } from '@angular/common';
 import { ChangeDetectionStrategy, Component, computed, input, model, output } from '@angular/core';
 import { getClassIconPath } from '../utils/classIconHelper';
 import { FlipDirective } from './flip.directive';
@@ -56,8 +56,7 @@ export function parseChartView(value: string | null | undefined): ChartView {
  */
 @Component({
   selector: 'app-raid-spec-popularity-chart',
-  standalone: true,
-  imports: [CommonModule, TapTooltipDirective, GlideDirective, RevealDirective, FlipDirective],
+  imports: [TapTooltipDirective, GlideDirective, RevealDirective, FlipDirective, DecimalPipe],
   templateUrl: './raid-spec-popularity-chart.component.html',
   styleUrls: ['./mythic-plus-spec-chart.component.scss', './raid-spec-popularity-chart.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush

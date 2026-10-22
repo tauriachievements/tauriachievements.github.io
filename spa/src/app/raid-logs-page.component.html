@@ -31,7 +31,7 @@
     <!-- Bosses -->
     <section class="section" aria-labelledby="bosses-title">
       <header class="section-header">
-        <h2 id="bosses-title">Bosses <span class="difficulty-text" [ngClass]="current.slug">{{ current.name }}</span></h2>
+        <h2 id="bosses-title">Bosses <span class="difficulty-text" [class]="current.slug">{{ current.name }}</span></h2>
         <p>Open a boss for its damage and healing rankings and every kill.</p>
       </header>
 
@@ -102,7 +102,7 @@
               <span class="kill-main">
                 <span class="kill-boss">{{ kill.boss.shortName }}</span>
                 <span class="kill-guild">
-                  <span class="faction" [ngClass]="'faction-' + kill.faction" aria-hidden="true"></span>
+                  <span class="faction" [class]="'faction-' + kill.faction" aria-hidden="true"></span>
                   {{ kill.guild?.name || 'Pickup group' }}
                 </span>
               </span>

@@ -1,4 +1,4 @@
-import { CommonModule } from '@angular/common';
+import { DecimalPipe } from '@angular/common';
 import { ChangeDetectionStrategy, Component, HostListener, OnInit, computed, inject, signal } from '@angular/core';
 import { catchError, of } from 'rxjs';
 import { BackToTopButtonComponent } from './back-to-top-button.component';
@@ -43,8 +43,7 @@ const BATTLEGROUND_ERA_OPTIONS: ReadonlyArray<{ value: BattlegroundEra; label: s
   selector: 'app-battleground-page',
   templateUrl: './battleground-page.component.html',
   styleUrls: ['./battleground-page.component.scss'],
-  standalone: true,
-  imports: [CommonModule, UpdateBarComponent, BackToTopButtonComponent, FilterDropdownComponent],
+  imports: [UpdateBarComponent, BackToTopButtonComponent, FilterDropdownComponent, DecimalPipe],
   providers: [FilterDropdownCoordinatorService],
   changeDetection: ChangeDetectionStrategy.OnPush
 })

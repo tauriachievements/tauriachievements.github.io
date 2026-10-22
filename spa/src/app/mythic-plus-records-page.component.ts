@@ -1,4 +1,4 @@
-import { CommonModule, Location } from '@angular/common';
+import { Location, DatePipe, DecimalPipe, NgTemplateOutlet } from '@angular/common';
 import { ChangeDetectionStrategy, Component, DestroyRef, OnInit, computed, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
@@ -102,9 +102,7 @@ interface SummaryTile {
  */
 @Component({
   selector: 'app-mythic-plus-records-page',
-  standalone: true,
   imports: [
-    CommonModule,
     RouterLink,
     UpdateBarComponent,
     BackToTopButtonComponent,
@@ -112,8 +110,11 @@ interface SummaryTile {
     MythicPlusRunDetailsComponent,
     RevealDirective,
     CountUpDirective,
-    SpotlightDirective
-  ],
+    SpotlightDirective,
+    DatePipe,
+    DecimalPipe,
+    NgTemplateOutlet
+],
   templateUrl: './mythic-plus-records-page.component.html',
   styleUrl: './mythic-plus-records-page.component.scss',
   // Keeps the firsts' dungeon dropdown working (NG0201 without it).

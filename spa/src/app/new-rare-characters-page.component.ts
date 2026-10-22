@@ -1,4 +1,4 @@
-import { CommonModule } from '@angular/common';
+import { DecimalPipe } from '@angular/common';
 import { ChangeDetectionStrategy, Component, DestroyRef, OnInit, computed, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { forkJoin } from 'rxjs';
@@ -51,8 +51,7 @@ const KEYSTONE_MASTER_ACHIEVEMENT_IDS: ReadonlySet<number> = new Set([11224]);
   selector: 'app-new-rare-characters-page',
   templateUrl: './new-rare-characters-page.component.html',
   styleUrls: ['./new-rare-characters-page.component.scss'],
-  standalone: true,
-  imports: [CommonModule, UpdateBarComponent, BackToTopButtonComponent],
+  imports: [UpdateBarComponent, BackToTopButtonComponent, DecimalPipe],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class NewRareCharactersPageComponent implements OnInit {

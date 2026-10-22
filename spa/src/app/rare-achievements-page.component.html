@@ -108,7 +108,7 @@
         </thead>
         <tbody>
           @for (character of matchingCharacters(); track `${character.realm}::${character.name}`) {
-            <tr [ngClass]="character.faction">
+            <tr [class]="character.faction">
               <td>{{ character.rank }}</td>
               <td>
                 <div class="player-identity">
@@ -128,7 +128,7 @@
                     @if (character.ratedBattlegroundHeroCount > 0) {
                       <span
                         class="player-name-rbg-sigil"
-                        [ngClass]="character.faction === 'Alliance' ? 'player-name-rbg-sigil--alliance' : 'player-name-rbg-sigil--horde'"
+                        [class]="character.faction === 'Alliance' ? 'player-name-rbg-sigil--alliance' : 'player-name-rbg-sigil--horde'"
                         aria-hidden="true">
                         &#10022;
                       </span>

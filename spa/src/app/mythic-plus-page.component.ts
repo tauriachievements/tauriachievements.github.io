@@ -1,4 +1,4 @@
-import { CommonModule, Location } from '@angular/common';
+import { Location, DecimalPipe, NgTemplateOutlet } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -129,9 +129,7 @@ function parseSpecFilter(classId: number | undefined, value: string | null): str
 
 @Component({
   selector: 'app-mythic-plus-page',
-  standalone: true,
   imports: [
-    CommonModule,
     RouterLink,
     UpdateBarComponent,
     BackToTopButtonComponent,
@@ -141,8 +139,10 @@ function parseSpecFilter(classId: number | undefined, value: string | null): str
     MythicPlusPlayersListComponent,
     FilterDropdownComponent,
     MobileFilterToggleComponent,
-    GlideDirective
-  ],
+    GlideDirective,
+    DecimalPipe,
+    NgTemplateOutlet
+],
   templateUrl: './mythic-plus-page.component.html',
   styleUrls: ['./mythic-plus-page.component.scss'],
   // Keeps one of this page's dropdowns open at a time.

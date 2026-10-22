@@ -55,7 +55,7 @@
         </thead>
         <tbody>
           @for (character of newRareCharacters(); track `${character.realm}::${character.name}`) {
-            <tr [ngClass]="character.faction">
+            <tr [class]="character.faction">
               <td>{{ character.rank }}</td>
               <td>
                 <div class="player-identity">

@@ -101,7 +101,7 @@
               </thead>
               <tbody>
                 @for (guild of achievementGuilds(); track guild.key) {
-                  <tr [ngClass]="guild.faction">
+                  <tr [class]="guild.faction">
                     <td>{{ guild.rank }}</td>
                     <td>
                       <a
@@ -143,7 +143,7 @@
               </thead>
               <tbody>
                 @for (guild of honorableKillGuilds(); track guild.key) {
-                  <tr [ngClass]="guild.faction">
+                  <tr [class]="guild.faction">
                     <td>{{ guild.rank }}</td>
                     <td>
                       <a

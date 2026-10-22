@@ -9,7 +9,6 @@ import { Directive, ElementRef, afterNextRender, inject, input } from '@angular/
  */
 @Directive({
   selector: '[appScrollRise]',
-  standalone: true
 })
 export class ScrollRiseDirective {
   readonly appScrollRise = input.required<string>();

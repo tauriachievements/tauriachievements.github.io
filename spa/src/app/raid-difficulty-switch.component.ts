@@ -1,4 +1,4 @@
-import { CommonModule } from '@angular/common';
+
 import { ChangeDetectionStrategy, Component, computed, input, output } from '@angular/core';
 import { GlideDirective } from './glide.directive';
 import { RaidDifficulty } from './raid-logs';
@@ -9,8 +9,7 @@ import { RaidDifficulty } from './raid-logs';
  */
 @Component({
   selector: 'app-raid-difficulty-switch',
-  standalone: true,
-  imports: [CommonModule, GlideDirective],
+  imports: [GlideDirective],
   template: `
     <div class="difficulty-switch" role="group" [attr.aria-label]="label()" appGlide>
       @for (difficulty of shown(); track difficulty.slug) {
@@ -20,7 +19,7 @@ import { RaidDifficulty } from './raid-logs';
           [attr.aria-pressed]="difficulty.slug === selected()"
           [disabled]="!counts(difficulty)"
           (click)="selectedChange.emit(difficulty.slug)">
-          <span class="difficulty-dot" [ngClass]="difficulty.slug" aria-hidden="true"></span>
+          <span class="difficulty-dot" [class]="difficulty.slug" aria-hidden="true"></span>
           <span>{{ difficulty.name === 'Looking For Raid' ? 'LFR' : difficulty.name }}</span>
         </button>
       }

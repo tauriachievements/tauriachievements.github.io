@@ -29,7 +29,7 @@
     <div class="compare-slots">
       <div class="compare-slot">
         @if (slotA(); as a) {
-          <div class="slot-card" [ngClass]="a.faction">
+          <div class="slot-card" [class]="a.faction">
             <div class="slot-identity">
               <div class="slot-main">
                 <div class="slot-icons">
@@ -74,7 +74,7 @@
 
       <div class="compare-slot">
         @if (slotB(); as b) {
-          <div class="slot-card" [ngClass]="b.faction">
+          <div class="slot-card" [class]="b.faction">
             <div class="slot-identity">
               <div class="slot-main">
                 <div class="slot-icons">
@@ -115,7 +115,7 @@
       <div class="compare-result">
         <div class="result-rows">
           @for (row of result.rows; track row.label) {
-            <div class="result-row" [ngClass]="row.kind">
+            <div class="result-row" [class]="row.kind">
               <div
                 class="result-cell result-cell--a"
                 [class.win]="isWinner(row, 'a')"

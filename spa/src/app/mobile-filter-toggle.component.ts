@@ -11,8 +11,6 @@ import { ChangeDetectionStrategy, Component, computed, input, output } from '@an
   selector: 'app-mobile-filter-toggle',
   templateUrl: './mobile-filter-toggle.component.html',
   styleUrls: ['./mobile-filter-toggle.component.scss'],
-  standalone: true,
-  imports: [],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class MobileFilterToggleComponent {

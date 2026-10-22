@@ -8,7 +8,6 @@ import { Directive, ElementRef, inject, signal } from '@angular/core';
  */
 @Directive({
   selector: '[appTapTooltip]',
-  standalone: true,
   host: {
     '[class.tooltip-open]': 'isOpen()',
     '(pointerup)': 'onPointerUp($event)',

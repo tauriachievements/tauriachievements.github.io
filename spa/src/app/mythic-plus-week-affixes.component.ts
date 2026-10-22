@@ -8,7 +8,6 @@ import { TapTooltipDirective } from './tap-tooltip.directive';
  */
 @Component({
   selector: 'app-mythic-plus-week-affixes',
-  standalone: true,
   imports: [TapTooltipDirective],
   templateUrl: './mythic-plus-week-affixes.component.html',
   styleUrl: './mythic-plus-week-affixes.component.scss',

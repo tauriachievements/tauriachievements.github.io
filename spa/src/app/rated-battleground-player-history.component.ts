@@ -1,4 +1,4 @@
-import { CommonModule } from '@angular/common';
+import { DecimalPipe, PercentPipe } from '@angular/common';
 import { ChangeDetectionStrategy, Component, HostListener, input, output } from '@angular/core';
 import { getClassIconPath } from '../utils/classIconHelper';
 import {
@@ -18,8 +18,7 @@ import {
   selector: 'app-rated-battleground-player-history',
   templateUrl: './rated-battleground-player-history.component.html',
   styleUrls: ['./rated-battleground-player-history.component.scss'],
-  standalone: true,
-  imports: [CommonModule],
+  imports: [DecimalPipe, PercentPipe],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class RatedBattlegroundPlayerHistoryComponent {

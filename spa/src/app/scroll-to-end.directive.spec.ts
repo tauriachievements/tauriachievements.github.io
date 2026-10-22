@@ -4,7 +4,6 @@ import { describe, expect, it } from 'vitest';
 import { ScrollToEndDirective } from './scroll-to-end.directive';
 
 @Component({
-  standalone: true,
   imports: [ScrollToEndDirective],
   template: `<div class="scroller" [appScrollToEnd]="columns()"></div>`
 })

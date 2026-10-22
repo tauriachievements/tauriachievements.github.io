@@ -1,4 +1,4 @@
-import { CommonModule, Location } from '@angular/common';
+import { Location, DecimalPipe, PercentPipe } from '@angular/common';
 import { ChangeDetectionStrategy, Component, DestroyRef, ElementRef, OnInit, computed, inject, signal, viewChild } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -58,15 +58,15 @@ const LEADERBOARD_PAGE_SIZE = 25;
   selector: 'app-rated-battleground-page',
   templateUrl: './rated-battleground-page.component.html',
   styleUrls: ['./rated-battleground-page.component.scss'],
-  standalone: true,
   imports: [
-    CommonModule,
     UpdateBarComponent,
     BackToTopButtonComponent,
     FilterDropdownComponent,
     RatedBattlegroundPlayerHistoryComponent,
-    RatedBattlegroundViewSwitcherComponent
-  ],
+    RatedBattlegroundViewSwitcherComponent,
+    DecimalPipe,
+    PercentPipe
+],
   providers: [FilterDropdownCoordinatorService],
   changeDetection: ChangeDetectionStrategy.OnPush
 })

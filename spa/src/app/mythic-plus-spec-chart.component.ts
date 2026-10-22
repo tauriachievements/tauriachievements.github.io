@@ -27,7 +27,6 @@ interface ClassGroup extends Omit<ClassShare, 'specs'> {
 
 @Component({
   selector: 'app-mythic-plus-spec-chart',
-  standalone: true,
   imports: [TapTooltipDirective, GlideDirective, RevealDirective, FlipDirective],
   templateUrl: './mythic-plus-spec-chart.component.html',
   styleUrls: ['./mythic-plus-spec-chart.component.scss'],

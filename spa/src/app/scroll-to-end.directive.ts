@@ -8,7 +8,6 @@ import { Directive, ElementRef, Injector, afterNextRender, effect, inject, input
  */
 @Directive({
   selector: '[appScrollToEnd]',
-  standalone: true
 })
 export class ScrollToEndDirective {
   readonly appScrollToEnd = input<unknown>();

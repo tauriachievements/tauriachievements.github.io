@@ -28,7 +28,6 @@ const NEAR = 260;
  */
 @Directive({
   selector: '[appDecode]',
-  standalone: true
 })
 export class DecodeDirective {
   /** For text on screen when the page opens: wait before landing, in ms, to follow what is above it. */

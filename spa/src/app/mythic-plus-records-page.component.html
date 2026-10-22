@@ -217,7 +217,7 @@
           <li [style.--i]="index">
             <!-- A click anywhere on the row opens the profile; the name and the guild are links of their own. -->
             <div class="runner" (click)="openProfile(runner)">
-              <span class="runner-rank" [ngClass]="'q-' + runner.quality"><span class="visually-hidden">Rank </span>{{ runner.rank }}</span>
+              <span class="runner-rank" [class]="'q-' + runner.quality"><span class="visually-hidden">Rank </span>{{ runner.rank }}</span>
               <span class="runner-player">
                 <span class="player-icons">
                   <img class="class-icon" [src]="runner.member.classIcon" [alt]="runner.member.className" />

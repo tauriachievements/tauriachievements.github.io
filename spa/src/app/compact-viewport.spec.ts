@@ -3,7 +3,7 @@ import { TestBed } from '@angular/core/testing';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { COMPACT_VIEWPORT_QUERY, injectCompactViewport } from './compact-viewport';
 
-@Component({ standalone: true, template: '' })
+@Component({ template: '' })
 class ViewportHostComponent {
   readonly isCompact = injectCompactViewport();
 }
@@ -49,7 +49,7 @@ describe('injectCompactViewport', () => {
   it('follows a wider media query when a page passes its own', () => {
     stubMatchMedia(true);
 
-    @Component({ standalone: true, template: '' })
+    @Component({ template: '' })
     class WideHostComponent {
       readonly isCompact = injectCompactViewport('(max-width: 900px)');
     }

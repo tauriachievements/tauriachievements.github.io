@@ -11,7 +11,6 @@ export interface IconTipSpell {
 
 @Component({
   selector: 'app-icon-tips',
-  standalone: true,
   template: `<ng-content /><span #tip class="icon-tip" aria-hidden="true"><b #name></b><span #note class="icon-tip-note"></span><span #details class="icon-tip-details"></span><span #description class="icon-tip-description"></span></span>`,
   styleUrl: './icon-tips.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush

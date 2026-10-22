@@ -7,7 +7,6 @@ import { DestroyRef, Directive, ElementRef, inject } from '@angular/core';
  */
 @Directive({
   selector: '[appSpotlight]',
-  standalone: true
 })
 export class SpotlightDirective {
   constructor() {

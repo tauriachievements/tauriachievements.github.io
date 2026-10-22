@@ -1,4 +1,4 @@
-import { CommonModule } from '@angular/common';
+import { DecimalPipe } from '@angular/common';
 import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal } from '@angular/core';
 import { BackToTopButtonComponent } from './back-to-top-button.component';
 import { FilterDropdownCoordinatorService } from './filter-dropdown-coordinator.service';
@@ -19,8 +19,7 @@ import { getGuildArmoryUrl } from '../utils/armory';
   selector: 'app-guild-presence-page',
   templateUrl: './guild-presence-page.component.html',
   styleUrls: ['./guild-presence-page.component.scss'],
-  standalone: true,
-  imports: [CommonModule, UpdateBarComponent, BackToTopButtonComponent, FilterDropdownComponent],
+  imports: [UpdateBarComponent, BackToTopButtonComponent, FilterDropdownComponent, DecimalPipe],
   changeDetection: ChangeDetectionStrategy.OnPush,
   providers: [GuildPresencePageStore, FilterDropdownCoordinatorService]
 })

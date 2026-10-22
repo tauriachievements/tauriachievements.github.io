@@ -1,4 +1,4 @@
-import { CommonModule } from '@angular/common';
+import { DecimalPipe } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -137,14 +137,13 @@ const SORT_COLUMNS = new Set<SortColumn>([
 
 @Component({
   selector: 'app-endless6531-page',
-  standalone: true,
   imports: [
-    CommonModule,
     UpdateBarComponent,
     FilterDropdownComponent,
     MobileFilterToggleComponent,
-    TapTooltipDirective
-  ],
+    TapTooltipDirective,
+    DecimalPipe
+],
   providers: [FilterDropdownCoordinatorService],
   templateUrl: './endless6531-page.component.html',
   styleUrls: ['./endless6531-page.component.scss'],

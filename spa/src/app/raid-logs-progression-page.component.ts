@@ -1,4 +1,4 @@
-import { CommonModule, Location } from '@angular/common';
+import { Location, DatePipe, DecimalPipe } from '@angular/common';
 import { ChangeDetectionStrategy, Component, DestroyRef, OnInit, computed, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
@@ -38,8 +38,7 @@ const FACTIONS: ReadonlyArray<{ slug: string; id: number; label: string }> = [
  */
 @Component({
   selector: 'app-raid-logs-progression-page',
-  standalone: true,
-  imports: [CommonModule, RouterLink, UpdateBarComponent, BackToTopButtonComponent, RaidDifficultySwitchComponent, FilterDropdownComponent],
+  imports: [RouterLink, UpdateBarComponent, BackToTopButtonComponent, RaidDifficultySwitchComponent, FilterDropdownComponent, DatePipe, DecimalPipe],
   templateUrl: './raid-logs-progression-page.component.html',
   styleUrl: './raid-logs-progression-page.component.scss',
   // The faction and realm dropdowns need it (NG0201 without it).

@@ -10,7 +10,6 @@ import { DestroyRef, Directive, ElementRef, afterNextRender, inject } from '@ang
  */
 @Directive({
   selector: '[appGlide]',
-  standalone: true
 })
 export class GlideDirective {
   private readonly host: HTMLElement = inject(ElementRef).nativeElement;

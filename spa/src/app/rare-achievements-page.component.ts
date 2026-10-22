@@ -1,4 +1,4 @@
-import { CommonModule } from '@angular/common';
+
 import { ChangeDetectionStrategy, Component, DestroyRef, OnInit, computed, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -159,8 +159,7 @@ const GROUPED_ACHIEVEMENT_LABELS = new Map<AchievementFilterValue, string>([
   selector: 'app-rare-achievements-page',
   templateUrl: './rare-achievements-page.component.html',
   styleUrls: ['./rare-achievements-page.component.scss'],
-  standalone: true,
-  imports: [CommonModule, UpdateBarComponent, BackToTopButtonComponent, FilterDropdownComponent],
+  imports: [UpdateBarComponent, BackToTopButtonComponent, FilterDropdownComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   providers: [FilterDropdownCoordinatorService]
 })

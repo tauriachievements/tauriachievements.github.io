@@ -1,4 +1,4 @@
-import { CommonModule, Location } from '@angular/common';
+import { Location, DecimalPipe } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -114,9 +114,7 @@ function parseSpec(classId: number | undefined, value: string | null): string | 
  */
 @Component({
   selector: 'app-mythic-plus-guild-page',
-  standalone: true,
   imports: [
-    CommonModule,
     RouterLink,
     UpdateBarComponent,
     BackToTopButtonComponent,
@@ -124,8 +122,9 @@ function parseSpec(classId: number | undefined, value: string | null): string | 
     MythicPlusWeekAffixesComponent,
     FilterDropdownComponent,
     MobileFilterToggleComponent,
-    GlideDirective
-  ],
+    GlideDirective,
+    DecimalPipe,
+    ],
   templateUrl: './mythic-plus-guild-page.component.html',
   styleUrl: './mythic-plus-guild-page.component.scss',
   // Keeps one of this page's dropdowns open at a time.

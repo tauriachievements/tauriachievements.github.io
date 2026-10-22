@@ -137,7 +137,7 @@
 
           @if (difficulty(); as current) {
             <div class="help-tops">
-              <h3>What 100% is on <span class="difficulty-text" [ngClass]="current.slug">{{ current.name }}</span></h3>
+              <h3>What 100% is on <span class="difficulty-text" [class]="current.slug">{{ current.name }}</span></h3>
               <ol class="top-list">
                 @for (top of bossTops(); track top) {
                   <li>
@@ -215,7 +215,7 @@
             <tbody>
               @for (entry of shownRankings(); track characterKey(entry.character)) {
                 <tr>
-                  <td class="rank" [ngClass]="'q-' + scoreTier(entry)">{{ entry.rank }}</td>
+                  <td class="rank" [class]="'q-' + scoreTier(entry)">{{ entry.rank }}</td>
                   <td>
                     <span class="character">
                       <img [src]="entry.spec?.icon || classIcon(entry.character.classId)" [title]="entry.spec?.name ?? ''" alt="" loading="lazy" />
@@ -229,9 +229,9 @@
                       </span>
                     </span>
                   </td>
-                  <td class="center phone-hidden guild" [ngClass]="'faction-text-' + entry.faction" [title]="entry.character.guild ? entry.character.guild + ' · ' + factionName(entry.faction) : ''">{{ entry.character.guild }}</td>
+                  <td class="center phone-hidden guild" [class]="'faction-text-' + entry.faction" [title]="entry.character.guild ? entry.character.guild + ' · ' + factionName(entry.faction) : ''">{{ entry.character.guild }}</td>
                   <td class="center phone-hidden muted col-realm">{{ entry.character.realm }}</td>
-                  <td class="num center strong score" [ngClass]="'q-' + scoreTier(entry)">
+                  <td class="num center strong score" [class]="'q-' + scoreTier(entry)">
                     <!-- Since the last scan: ranks climbed or lost on the left, score gained or lost on the right. -->
                     @if (change(entry); as moved) {
                       <span class="score-cell">

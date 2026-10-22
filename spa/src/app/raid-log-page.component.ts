@@ -1,4 +1,4 @@
-import { CommonModule } from '@angular/common';
+import { DatePipe, DecimalPipe } from '@angular/common';
 import { ChangeDetectionStrategy, Component, DestroyRef, computed, effect, inject, signal, untracked } from '@angular/core';
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, RouterLink } from '@angular/router';
@@ -70,8 +70,7 @@ interface SummaryTile {
  */
 @Component({
   selector: 'app-raid-log-page',
-  standalone: true,
-  imports: [CommonModule, RouterLink, UpdateBarComponent, BackToTopButtonComponent, GlideDirective, RevealDirective],
+  imports: [RouterLink, UpdateBarComponent, BackToTopButtonComponent, GlideDirective, RevealDirective, DatePipe, DecimalPipe],
   templateUrl: './raid-log-page.component.html',
   styleUrl: './raid-log-page.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush

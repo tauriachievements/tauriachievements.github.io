@@ -1,4 +1,4 @@
-import { CommonModule } from '@angular/common';
+import { DecimalPipe } from '@angular/common';
 import { ChangeDetectionStrategy, Component, DestroyRef, OnInit, computed, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { getArmoryUrl } from '../utils/armory';
@@ -33,8 +33,7 @@ type RealmFilter = 'all' | 'Evermoon' | 'Tauri' | 'WoD';
   selector: 'app-rare-items-page',
   templateUrl: './rare-items-page.component.html',
   styleUrls: ['./rare-items-page.component.scss'],
-  standalone: true,
-  imports: [CommonModule, BackToTopButtonComponent],
+  imports: [BackToTopButtonComponent, DecimalPipe],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class RareItemsPageComponent implements OnInit {

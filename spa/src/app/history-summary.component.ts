@@ -1,4 +1,4 @@
-import { CommonModule } from '@angular/common';
+import { DecimalPipe } from '@angular/common';
 import { ChangeDetectionStrategy, Component, input, output, signal } from '@angular/core';
 import { getArmoryUrl } from '../utils/armory';
 import { getClassIconPath } from '../utils/classIconHelper';
@@ -19,8 +19,7 @@ export const MOBILE_MOVER_PREVIEW_SIZE = 10;
   selector: 'app-history-summary',
   templateUrl: './history-summary.component.html',
   styleUrls: ['./history-summary.component.scss'],
-  standalone: true,
-  imports: [CommonModule, FilterDropdownComponent],
+  imports: [FilterDropdownComponent, DecimalPipe],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class HistorySummaryComponent {

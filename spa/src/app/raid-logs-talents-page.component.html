@@ -255,7 +255,7 @@
                         <span class="talent-top">
                           Top 10% <b>{{ formatShare(choice.topShare) }}</b>
                           @if (choice.edge) {
-                            <span class="edge" [ngClass]="choice.edgeTone">{{ choice.edge }}</span>
+                            <span class="edge" [class]="choice.edgeTone">{{ choice.edge }}</span>
                           }
                         </span>
                       </a>
@@ -276,7 +276,7 @@
               </div>
               <ul class="insights">
                 @for (insight of insights(); track insight.id) {
-                  <li class="insight" [ngClass]="insight.tone">
+                  <li class="insight" [class]="insight.tone">
                     @if (insight.talent; as talent) {
                       <img class="insight-icon" [src]="icon(talent.icon, 'medium')" [srcset]="iconSrcset(talent.icon)" sizes="36px" width="36" height="36" alt="" loading="lazy" [attr.data-tip]="talent.name" [attr.data-tip-spell]="talent.id" />
                     }

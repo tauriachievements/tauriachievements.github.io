@@ -1,4 +1,4 @@
-import { CommonModule, Location } from '@angular/common';
+import { Location, DatePipe, DecimalPipe } from '@angular/common';
 import { ChangeDetectionStrategy, Component, DestroyRef, OnInit, computed, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
@@ -43,8 +43,7 @@ const RECENT_KILLS = 12;
  */
 @Component({
   selector: 'app-raid-logs-page',
-  standalone: true,
-  imports: [CommonModule, RouterLink, UpdateBarComponent, BackToTopButtonComponent, RaidDifficultySwitchComponent, RevealDirective],
+  imports: [RouterLink, UpdateBarComponent, BackToTopButtonComponent, RaidDifficultySwitchComponent, RevealDirective, DatePipe, DecimalPipe],
   templateUrl: './raid-logs-page.component.html',
   styleUrl: './raid-logs-page.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush

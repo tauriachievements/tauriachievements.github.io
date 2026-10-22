@@ -1,4 +1,4 @@
-import { CommonModule, Location } from '@angular/common';
+import { Location, DatePipe, DecimalPipe } from '@angular/common';
 import { ChangeDetectionStrategy, Component, DestroyRef, computed, effect, inject, signal, untracked } from '@angular/core';
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
@@ -85,17 +85,17 @@ interface SummaryTile {
  */
 @Component({
   selector: 'app-raid-logs-boss-page',
-  standalone: true,
   imports: [
-    CommonModule,
     RouterLink,
     UpdateBarComponent,
     BackToTopButtonComponent,
     FilterDropdownComponent,
     RaidDifficultySwitchComponent,
     GlideDirective,
-    IconTipsComponent
-  ],
+    IconTipsComponent,
+    DatePipe,
+    DecimalPipe,
+    ],
   templateUrl: './raid-logs-boss-page.component.html',
   styleUrl: './raid-logs-boss-page.component.scss',
   // The class, spec and realm dropdowns need it (NG0201 without it).

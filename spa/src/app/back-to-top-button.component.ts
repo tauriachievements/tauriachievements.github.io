@@ -4,7 +4,6 @@ import { ChangeDetectionStrategy, ChangeDetectorRef, Component, HostListener } f
   selector: 'app-back-to-top-button',
   templateUrl: './back-to-top-button.component.html',
   styleUrls: ['./back-to-top-button.component.scss'],
-  standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class BackToTopButtonComponent {

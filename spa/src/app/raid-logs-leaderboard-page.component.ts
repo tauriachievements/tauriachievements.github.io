@@ -1,4 +1,4 @@
-import { CommonModule, Location } from '@angular/common';
+import { Location, DatePipe, DecimalPipe } from '@angular/common';
 import { ChangeDetectionStrategy, Component, DestroyRef, computed, inject, signal } from '@angular/core';
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
@@ -68,16 +68,16 @@ const METRICS: ReadonlyArray<{ id: RaidMetric; label: string }> = [
  */
 @Component({
   selector: 'app-raid-logs-leaderboard-page',
-  standalone: true,
   imports: [
-    CommonModule,
     RouterLink,
     UpdateBarComponent,
     BackToTopButtonComponent,
     FilterDropdownComponent,
     RaidDifficultySwitchComponent,
-    GlideDirective
-  ],
+    GlideDirective,
+    DatePipe,
+    DecimalPipe,
+    ],
   templateUrl: './raid-logs-leaderboard-page.component.html',
   styleUrl: './raid-logs-leaderboard-page.component.scss',
   // The class, spec and realm dropdowns need it (NG0201 without it).

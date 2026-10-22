@@ -1,7 +1,7 @@
 <div class="wow-table-scroll">
   <table
     class="wow-table"
-    [ngClass]="{
+    [class]="{
       'sort-achievements-total': currentSort() === 'achievementsTotal',
       'sort-honorable-kills': currentSort() === 'honorableKills',
       'sort-played-time': currentSort() === 'playedTime',
@@ -26,7 +26,7 @@
     <tbody>
       @for (player of players(); track playerKey(player)) {
         <tr
-          [ngClass]="player.faction"
+          [class]="player.faction"
           [class.is-expanded]="isExpanded(player)"
           (click)="onRowClick($event, player)">
           <td>
@@ -69,7 +69,7 @@
                   @if (player.ratedBattlegroundHeroCount > 0) {
                     <span
                       class="player-name-rbg-sigil"
-                      [ngClass]="player.faction === 'Alliance' ? 'player-name-rbg-sigil--alliance' : 'player-name-rbg-sigil--horde'"
+                      [class]="player.faction === 'Alliance' ? 'player-name-rbg-sigil--alliance' : 'player-name-rbg-sigil--horde'"
                       aria-hidden="true">
                       ✦
                     </span>
@@ -116,7 +116,7 @@
                 @if (showAchievementDelta(player)) {
                   <span
                     class="metric-delta"
-                    [ngClass]="getAchievementDeltaClass(player)">
+                    [class]="getAchievementDeltaClass(player)">
                     {{ formatSignedValue(player.achievementPointsDelta) }}
                   </span>
                 }
@@ -126,7 +126,7 @@
                 @if (showAchievementRank(player)) {
                   <span
                     class="metric-rank-pill"
-                    [ngClass]="getAchievementRankClass(player)"
+                    [class]="getAchievementRankClass(player)"
                     [title]="getAchievementRankTitle(player)">
                     {{ getAchievementRankLabel(player) }}
                   </span>
@@ -140,7 +140,7 @@
                 @if (showAchievementsTotalDelta(player)) {
                   <span
                     class="metric-delta"
-                    [ngClass]="getAchievementsTotalDeltaClass(player)">
+                    [class]="getAchievementsTotalDeltaClass(player)">
                     {{ formatSignedValue(player.achievementsTotalDelta) }}
                   </span>
                 }
@@ -155,7 +155,7 @@
                 @if (showAchievementsTotalRank(player)) {
                   <span
                     class="metric-rank-pill"
-                    [ngClass]="getAchievementsTotalRankClass(player)"
+                    [class]="getAchievementsTotalRankClass(player)"
                     [title]="getAchievementsTotalRankTitle(player)">
                     {{ getAchievementsTotalRankLabel(player) }}
                   </span>
@@ -169,7 +169,7 @@
                 @if (showHonorableKillDelta(player)) {
                   <span
                     class="metric-delta"
-                    [ngClass]="getHonorableKillDeltaClass(player)">
+                    [class]="getHonorableKillDeltaClass(player)">
                     {{ formatSignedValue(player.honorableKillsDelta) }}
                   </span>
                 }
@@ -179,7 +179,7 @@
                 @if (showHonorableKillRank(player)) {
                   <span
                     class="metric-rank-pill"
-                    [ngClass]="getHonorableKillRankClass(player)"
+                    [class]="getHonorableKillRankClass(player)"
                     [title]="getHonorableKillRankTitle(player)">
                     {{ getHonorableKillRankLabel(player) }}
                   </span>
@@ -193,7 +193,7 @@
                 @if (showPlayedTimeDelta(player)) {
                   <span
                     class="metric-delta"
-                    [ngClass]="getPlayedTimeDeltaClass(player)">
+                    [class]="getPlayedTimeDeltaClass(player)">
                     {{ formatPlayedTimeDelta(player) }}
                   </span>
                 }
@@ -203,7 +203,7 @@
                 @if (showPlayedTimeRank(player)) {
                   <span
                     class="metric-rank-pill"
-                    [ngClass]="getPlayedTimeRankClass(player)"
+                    [class]="getPlayedTimeRankClass(player)"
                     [title]="getPlayedTimeRankTitle(player)">
                     {{ getPlayedTimeRankLabel(player) }}
                   </span>
@@ -220,7 +220,7 @@
                 @if (showAppearanceDelta(player)) {
                   <span
                     class="metric-delta"
-                    [ngClass]="getAppearanceDeltaClass(player)">
+                    [class]="getAppearanceDeltaClass(player)">
                     {{ formatSignedValue(player.appearanceCountDelta) }}
                   </span>
                 }
@@ -230,7 +230,7 @@
                 @if (showAppearanceRank(player)) {
                   <span
                     class="metric-rank-pill"
-                    [ngClass]="getAppearanceRankClass(player)"
+                    [class]="getAppearanceRankClass(player)"
                     [title]="getAppearanceRankTitle(player)">
                     {{ getAppearanceRankLabel(player) }}
                   </span>
@@ -242,7 +242,7 @@
         @if (isExpanded(player)) {
           <tr
             class="player-details-row"
-            [ngClass]="player.faction">
+            [class]="player.faction">
             <td colspan="11" [id]="getDetailsId(player)">
               <dl class="player-details">
                 <div>
@@ -267,7 +267,7 @@
                     <dd>
                       {{ metric.value }}
                       @if (metric.delta) {
-                        <span class="metric-delta" [ngClass]="metric.deltaClass">{{ metric.delta }}</span>
+                        <span class="metric-delta" [class]="metric.deltaClass">{{ metric.delta }}</span>
                       }
                     </dd>
                   </div>

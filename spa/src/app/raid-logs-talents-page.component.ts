@@ -1,4 +1,4 @@
-import { CommonModule, Location } from '@angular/common';
+import { Location, DecimalPipe } from '@angular/common';
 import { ChangeDetectionStrategy, Component, DestroyRef, computed, effect, inject, signal, untracked } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
@@ -151,17 +151,16 @@ interface SpecCard extends SpecTalentSummary {
 
 @Component({
   selector: 'app-raid-logs-talents-page',
-  standalone: true,
   imports: [
-    CommonModule,
     RouterLink,
     UpdateBarComponent,
     BackToTopButtonComponent,
     FilterDropdownComponent,
     RaidDifficultySwitchComponent,
     IconTipsComponent,
-    GlideDirective
-  ],
+    GlideDirective,
+    DecimalPipe,
+    ],
   templateUrl: './raid-logs-talents-page.component.html',
   styleUrls: ['./raid-logs-talents-page.component.scss', './raid-logs-talents-page.motion.scss'],
   providers: [FilterDropdownCoordinatorService],

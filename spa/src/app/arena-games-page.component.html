@@ -78,7 +78,7 @@
                 </tr>
               }
               @for (cutoff of cutoffs(); track cutoff) {
-                <tr [ngClass]="'tier-' + cutoff.title.slug">
+                <tr [class]="'tier-' + cutoff.title.slug">
                   <th scope="row">
                     <span class="title-name">{{ cutoff.title.name }}</span>
                     @if (cutoff.ties) {
@@ -157,7 +157,7 @@
               @if (titleGroups().has(index)) {
                 <tr
                   class="title-group"
-                  [ngClass]="groupClasses(index)">
+                  [class]="groupClasses(index)">
                   <td colspan="8">
                     @if (titleGroups().get(index); as group) {
                       <span class="group-name">{{ group.title.name }}</span>

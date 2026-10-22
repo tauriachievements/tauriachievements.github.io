@@ -1,4 +1,4 @@
-import { CommonModule } from '@angular/common';
+import { NgTemplateOutlet } from '@angular/common';
 import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { BackToTopButtonComponent } from './back-to-top-button.component';
@@ -91,8 +91,7 @@ const FEATURES: readonly Feature[] = [
  */
 @Component({
   selector: 'app-legion-key-history-page',
-  standalone: true,
-  imports: [CommonModule, RouterLink, UpdateBarComponent, BackToTopButtonComponent, ScrollRiseDirective, SpotlightDirective],
+  imports: [RouterLink, UpdateBarComponent, BackToTopButtonComponent, ScrollRiseDirective, SpotlightDirective, NgTemplateOutlet],
   templateUrl: './legion-key-history-page.component.html',
   styleUrls: ['./legion-key-history-page.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush

@@ -1,4 +1,4 @@
-import { CommonModule, Location } from '@angular/common';
+import { Location, DatePipe, DecimalPipe, NgTemplateOutlet } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -159,9 +159,7 @@ const formatScore = (score: number) => score.toLocaleString('en-GB', { minimumFr
  */
 @Component({
   selector: 'app-mythic-plus-profile-page',
-  standalone: true,
   imports: [
-    CommonModule,
     RouterLink,
     UpdateBarComponent,
     BackToTopButtonComponent,
@@ -170,8 +168,11 @@ const formatScore = (score: number) => score.toLocaleString('en-GB', { minimumFr
     MythicPlusRunsListComponent,
     CountUpDirective,
     RevealDirective,
-    SpotlightDirective
-  ],
+    SpotlightDirective,
+    DatePipe,
+    DecimalPipe,
+    NgTemplateOutlet
+],
   templateUrl: './mythic-plus-profile-page.component.html',
   // The motion lives in its own stylesheet; see the top of it.
   styleUrls: ['./mythic-plus-profile-page.component.scss', './mythic-plus-profile-page.motion.scss'],

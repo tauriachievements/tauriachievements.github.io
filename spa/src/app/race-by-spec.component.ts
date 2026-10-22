@@ -1,4 +1,4 @@
-import { CommonModule } from '@angular/common';
+import { DecimalPipe } from '@angular/common';
 import { ChangeDetectionStrategy, Component, computed, input, signal } from '@angular/core';
 import { getRaceIconPath } from '../utils/raceIconHelper';
 import { GlideDirective } from './glide.directive';
@@ -48,8 +48,7 @@ const ROLE_TITLES: Readonly<Record<MythicPlusRole, string>> = { dps: 'DPS', tank
  */
 @Component({
   selector: 'app-race-by-spec',
-  standalone: true,
-  imports: [CommonModule, GlideDirective, RevealDirective, TapTooltipDirective],
+  imports: [GlideDirective, RevealDirective, TapTooltipDirective, DecimalPipe],
   templateUrl: './race-by-spec.component.html',
   styleUrls: ['./mythic-plus-spec-chart.component.scss', './race-by-spec.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush

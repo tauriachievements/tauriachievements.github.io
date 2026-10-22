@@ -1,4 +1,4 @@
-import { CommonModule, Location } from '@angular/common';
+import { Location, DatePipe } from '@angular/common';
 import { ChangeDetectionStrategy, Component, DestroyRef, computed, inject, signal } from '@angular/core';
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
@@ -48,8 +48,7 @@ const HISTORY_PREVIEW = 25;
  */
 @Component({
   selector: 'app-raid-logs-guild-page',
-  standalone: true,
-  imports: [CommonModule, RouterLink, UpdateBarComponent, BackToTopButtonComponent, RaidDifficultySwitchComponent],
+  imports: [RouterLink, UpdateBarComponent, BackToTopButtonComponent, RaidDifficultySwitchComponent, DatePipe],
   templateUrl: './raid-logs-guild-page.component.html',
   styleUrl: './raid-logs-guild-page.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush

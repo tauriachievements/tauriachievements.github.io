@@ -4,7 +4,6 @@ import { describe, expect, it } from 'vitest';
 import { TapTooltipDirective } from './tap-tooltip.directive';
 
 @Component({
-  standalone: true,
   imports: [TapTooltipDirective],
   template: `
     <span class="first" appTapTooltip>first</span>

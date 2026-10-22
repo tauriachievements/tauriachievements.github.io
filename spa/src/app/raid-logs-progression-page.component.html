@@ -86,20 +86,20 @@
                   <td class="rank">{{ row.rank }}</td>
                   <td>
                     <a class="guild-name" [routerLink]="guildLink(row.guild)" [queryParams]="{ difficulty: current.slug }">
-                      <span class="faction" [ngClass]="'faction-' + row.guild.faction" aria-hidden="true"></span>
+                      <span class="faction" [class]="'faction-' + row.guild.faction" aria-hidden="true"></span>
                       <span class="strong">{{ row.guild.name }}</span>
                       <span class="muted phone-hidden">{{ row.guild.realm }}</span>
                     </a>
                   </td>
                   <td>
                     <span class="progress">
-                      <span class="progress-count difficulty-text" [ngClass]="current.slug">{{ row.killed }}/{{ row.firsts.length }}</span>
+                      <span class="progress-count difficulty-text" [class]="current.slug">{{ row.killed }}/{{ row.firsts.length }}</span>
                       <span class="pips" aria-hidden="true">
                         @for (boss of pipBosses(); track boss) {
                           <span
                             class="pip"
                             [class.down]="!!row.firsts[boss.index]"
-                            [ngClass]="current.slug"
+                            [class]="current.slug"
                             [title]="pipTitle(boss, row.firsts[boss.index])"></span>
                         }
                       </span>

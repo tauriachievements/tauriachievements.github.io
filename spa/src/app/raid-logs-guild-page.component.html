@@ -24,12 +24,12 @@
 
   @if (!isLoading() && !loadError() && guild(); as current) {
     <header class="guild-header">
-      <span class="crest" [ngClass]="'faction-' + current.faction" aria-hidden="true">{{ current.name.charAt(0) }}</span>
+      <span class="crest" [class]="'faction-' + current.faction" aria-hidden="true">{{ current.name.charAt(0) }}</span>
       <div class="guild-heading">
         <p class="eyebrow">Guild · {{ index()?.raid?.name }}</p>
         <h1>{{ current.name }}</h1>
         <p class="guild-meta">
-          <span class="faction" [ngClass]="'faction-' + current.faction" aria-hidden="true"></span>
+          <span class="faction" [class]="'faction-' + current.faction" aria-hidden="true"></span>
           {{ current.faction === 1 ? 'Horde' : 'Alliance' }} · {{ current.realm }}
           @if (armoryUrl(); as url) {
             <a [href]="url" target="_blank" rel="noopener">Armory <span aria-hidden="true">↗</span></a>
@@ -58,7 +58,7 @@
     @if (difficulty(); as diff) {
       <section class="section" aria-labelledby="guild-bosses-title">
         <header class="section-header">
-          <h2 id="guild-bosses-title">Bosses <span class="difficulty-text" [ngClass]="diff.slug">{{ diff.name }}</span></h2>
+          <h2 id="guild-bosses-title">Bosses <span class="difficulty-text" [class]="diff.slug">{{ diff.name }}</span></h2>
           <p>The guild's first and fastest kill of each boss.</p>
         </header>
 

@@ -13,7 +13,6 @@ import { prefersReducedMotion } from './motion';
  */
 @Directive({
   selector: '[appCountUp]',
-  standalone: true
 })
 export class CountUpDirective {
   readonly appCountUp = input.required<string>();

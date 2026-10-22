@@ -13,7 +13,7 @@ import {
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { firstValueFrom } from 'rxjs';
 import { getClassColor } from './class-colors';
-import { CommonModule } from '@angular/common';
+import { DecimalPipe } from '@angular/common';
 import {
   ArcElement,
   BarController,
@@ -137,8 +137,7 @@ export function emptyStats(): ServerStats {
   selector: 'app-stats-page',
   templateUrl: './stats-page.component.html',
   styleUrls: ['./stats-page.component.scss'],
-  standalone: true,
-  imports: [CommonModule, UpdateBarComponent, BackToTopButtonComponent],
+  imports: [UpdateBarComponent, BackToTopButtonComponent, DecimalPipe],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class StatsPageComponent {

@@ -1,4 +1,4 @@
-import { CommonModule } from '@angular/common';
+import { DatePipe, NgTemplateOutlet } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -19,8 +19,7 @@ import { DISCORD_INVITE_URL, NAV_SECTIONS, NavSection, findNavLocation } from '.
   selector: 'app-update-bar',
   templateUrl: './update-bar.component.html',
   styleUrls: ['./update-bar.component.scss'],
-  standalone: true,
-  imports: [CommonModule, RouterLink, RouterLinkActive],
+  imports: [RouterLink, RouterLinkActive, DatePipe, NgTemplateOutlet],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class UpdateBarComponent {

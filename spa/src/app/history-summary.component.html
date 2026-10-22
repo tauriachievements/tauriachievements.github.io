@@ -47,7 +47,7 @@
                     </a>
                   </td>
                   <td>
-                    <span class="history-primary" [ngClass]="getDeltaClass(mover.achievementPointsDelta)">
+                    <span class="history-primary" [class]="getDeltaClass(mover.achievementPointsDelta)">
                       {{ formatSignedValue(mover.achievementPointsDelta) }}
                     </span>
                     <span class="history-secondary">{{ mover.currentAchievementPoints | number }} now</span>
@@ -118,7 +118,7 @@
                     </a>
                   </td>
                   <td>
-                    <span class="history-primary" [ngClass]="getDeltaClass(mover.honorableKillsDelta)">
+                    <span class="history-primary" [class]="getDeltaClass(mover.honorableKillsDelta)">
                       {{ formatSignedValue(mover.honorableKillsDelta) }}
                     </span>
                     <span class="history-secondary">{{ mover.currentHonorableKills | number }} now</span>
@@ -189,7 +189,7 @@
                     </a>
                   </td>
                   <td>
-                    <span class="history-primary" [ngClass]="getDeltaClass(mover.playedTimeDelta)">
+                    <span class="history-primary" [class]="getDeltaClass(mover.playedTimeDelta)">
                       {{ formatSignedPlayedTime(mover.playedTimeDelta) }}
                     </span>
                     <span class="history-secondary">{{ formatPlayedTime(mover.currentPlayedTime) }} now</span>
@@ -260,7 +260,7 @@
                     </a>
                   </td>
                   <td>
-                    <span class="history-primary" [ngClass]="getDeltaClass(mover.appearanceCountDelta)">
+                    <span class="history-primary" [class]="getDeltaClass(mover.appearanceCountDelta)">
                       {{ formatSignedValue(mover.appearanceCountDelta) }}
                     </span>
                     <span class="history-secondary">{{ mover.currentAppearanceCount | number }} now</span>

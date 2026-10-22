@@ -253,7 +253,7 @@
                   <td class="rank">{{ row.rank }}</td>
                   <td>
                     <span class="guild-cell">
-                      <span class="faction" [ngClass]="'faction-' + row.kill.faction" aria-hidden="true"></span>
+                      <span class="faction" [class]="'faction-' + row.kill.faction" aria-hidden="true"></span>
                       @if (row.kill.guild?.name) {
                         <a class="strong" [routerLink]="guildLink(row.kill.guild!)" [queryParams]="{ difficulty: current.slug }">{{ row.kill.guild!.name }}</a>
                       } @else {

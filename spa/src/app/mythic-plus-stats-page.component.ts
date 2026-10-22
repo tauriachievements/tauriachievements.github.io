@@ -1,4 +1,4 @@
-import { CommonModule, Location } from '@angular/common';
+import { Location, DecimalPipe } from '@angular/common';
 import { ChangeDetectionStrategy, Component, DestroyRef, OnInit, computed, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
@@ -108,9 +108,7 @@ const isMiddle = (position: number, count: number) => position >= count / 3 && p
  */
 @Component({
   selector: 'app-mythic-plus-stats-page',
-  standalone: true,
   imports: [
-    CommonModule,
     RouterLink,
     UpdateBarComponent,
     BackToTopButtonComponent,
@@ -121,8 +119,9 @@ const isMiddle = (position: number, count: number) => position >= count / 3 && p
     ScrollToEndDirective,
     GlideDirective,
     RevealDirective,
-    CountUpDirective
-  ],
+    CountUpDirective,
+    DecimalPipe
+],
   templateUrl: './mythic-plus-stats-page.component.html',
   styleUrl: './mythic-plus-stats-page.component.scss',
   // Keeps one of this page's dropdowns open at a time.

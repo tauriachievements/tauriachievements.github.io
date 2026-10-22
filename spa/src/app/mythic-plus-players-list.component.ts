@@ -1,4 +1,4 @@
-import { CommonModule } from '@angular/common';
+import { DecimalPipe } from '@angular/common';
 import { ChangeDetectionStrategy, Component, ElementRef, afterRenderEffect, inject, input, output } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { MythicPlusDungeon, upgradeStars } from './mythic-plus';
@@ -11,8 +11,7 @@ import { BestRunCell, PlayerRow } from './mythic-plus-views';
  */
 @Component({
   selector: 'app-mythic-plus-players-list',
-  standalone: true,
-  imports: [CommonModule, RouterLink],
+  imports: [RouterLink, DecimalPipe],
   templateUrl: './mythic-plus-players-list.component.html',
   styleUrl: './mythic-plus-players-list.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush

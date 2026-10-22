@@ -60,7 +60,6 @@ const APPEARANCE_SOURCE_LIMIT_OPTIONS: ReadonlyArray<FilterDropdownOption<number
   selector: 'app-rank-movement-page',
   templateUrl: './rank-movement-page.component.html',
   styleUrls: ['./rank-movement-page.component.scss'],
-  standalone: true,
   imports: [UpdateBarComponent, BackToTopButtonComponent, FilterDropdownComponent, HistorySummaryComponent, MobileFilterToggleComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   providers: [FilterDropdownCoordinatorService]

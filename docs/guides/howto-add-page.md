@@ -28,8 +28,7 @@ In `spa/src/app/`:
   selector: 'app-<name>-page',
   templateUrl: './<name>-page.component.html',
   styleUrls: ['./<name>-page.component.scss'],
-  standalone: true,
-  imports: [CommonModule, UpdateBarComponent /* , … */],
+  imports: [UpdateBarComponent /* , DecimalPipe, … */],
   // Only when the page uses app-filter-dropdown:
   providers: [FilterDropdownCoordinatorService],
   changeDetection: ChangeDetectionStrategy.OnPush

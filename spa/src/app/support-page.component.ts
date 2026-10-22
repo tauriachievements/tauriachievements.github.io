@@ -1,4 +1,4 @@
-import { CommonModule } from '@angular/common';
+import { NgTemplateOutlet } from '@angular/common';
 import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { getArmoryUrl } from '../utils/armory';
@@ -41,17 +41,16 @@ function shownName({ name, classId, realm, mythicPlusProfile }: PlayerName) {
  */
 @Component({
   selector: 'app-support-page',
-  standalone: true,
   imports: [
-    CommonModule,
     RouterLink,
     UpdateBarComponent,
     BackToTopButtonComponent,
     DecodeDirective,
     RevealDirective,
     ScrollRiseDirective,
-    SpotlightDirective
-  ],
+    SpotlightDirective,
+    NgTemplateOutlet
+],
   templateUrl: './support-page.component.html',
   styleUrls: ['./support-page.component.scss', './support-page.motion.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush

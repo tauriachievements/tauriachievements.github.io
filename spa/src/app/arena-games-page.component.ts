@@ -1,4 +1,4 @@
-import { CommonModule } from '@angular/common';
+import { DatePipe, DecimalPipe, PercentPipe } from '@angular/common';
 import { ChangeDetectionStrategy, Component, DestroyRef, OnInit, computed, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -60,8 +60,7 @@ interface RatedArenaGames {
   selector: 'app-arena-games-page',
   templateUrl: './arena-games-page.component.html',
   styleUrls: ['./arena-games-page.component.scss'],
-  standalone: true,
-  imports: [CommonModule, BackToTopButtonComponent, GlideDirective, UpdateBarComponent],
+  imports: [BackToTopButtonComponent, GlideDirective, UpdateBarComponent, DatePipe, DecimalPipe, PercentPipe],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class ArenaGamesPageComponent implements OnInit {

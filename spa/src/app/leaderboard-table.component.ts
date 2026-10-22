@@ -1,4 +1,4 @@
-import { CommonModule } from '@angular/common';
+import { DecimalPipe } from '@angular/common';
 import { ChangeDetectionStrategy, Component, HostListener, input } from '@angular/core';
 import { getGuildArmoryUrl, getArmoryUrl } from '../utils/armory';
 import { getClassIconPath } from '../utils/classIconHelper';
@@ -19,8 +19,7 @@ export interface PlayerDetailMetric {
   selector: 'app-leaderboard-table',
   templateUrl: './leaderboard-table.component.html',
   styleUrls: ['./leaderboard-table.component.scss'],
-  standalone: true,
-  imports: [CommonModule],
+  imports: [DecimalPipe],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class LeaderboardTableComponent {

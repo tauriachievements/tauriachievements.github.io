@@ -1,4 +1,4 @@
-import { CommonModule } from '@angular/common';
+import { DatePipe, DecimalPipe, NgTemplateOutlet } from '@angular/common';
 import { ChangeDetectionStrategy, Component, DestroyRef, inject, input, output, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { upgradeStars } from './mythic-plus';
@@ -12,8 +12,7 @@ import { MemberView, RunRow } from './mythic-plus-views';
  */
 @Component({
   selector: 'app-mythic-plus-runs-list',
-  standalone: true,
-  imports: [CommonModule, RouterLink, MythicPlusRunDetailsComponent],
+  imports: [RouterLink, MythicPlusRunDetailsComponent, DatePipe, DecimalPipe, NgTemplateOutlet],
   templateUrl: './mythic-plus-runs-list.component.html',
   styleUrl: './mythic-plus-runs-list.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush

@@ -4,7 +4,6 @@ import { describe, expect, it } from 'vitest';
 import { IconTipSpell, IconTipsComponent } from './icon-tips.component';
 
 @Component({
-  standalone: true,
   imports: [IconTipsComponent],
   template: `
     <app-icon-tips [spells]="spells">

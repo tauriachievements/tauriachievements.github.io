@@ -182,7 +182,7 @@
               <span class="rank-icon"><img [src]="tile.icon" alt="" /></span>
             }
             @if (tile.role; as role) {
-              <span class="rank-role" [ngClass]="role" aria-hidden="true">
+              <span class="rank-role" [class]="role" aria-hidden="true">
                 @switch (role) {
                   @case ('tank') {
                     <svg viewBox="0 0 24 24" focusable="false"><path d="M12 2 4 5v6.1c0 5 3.4 9.6 8 10.9 4.6-1.3 8-5.9 8-10.9V5l-8-3z" /></svg>

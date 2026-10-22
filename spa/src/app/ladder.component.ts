@@ -26,7 +26,6 @@ import { UpdateBarComponent } from './update-bar.component';
   selector: 'app-achievement-ladder',
   templateUrl: './ladder.component.html',
   styleUrls: ['./ladder.component.scss'],
-  standalone: true,
   imports: [UpdateBarComponent, FilterBarComponent, LeaderboardTableComponent, BackToTopButtonComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   providers: [LadderPageStore]

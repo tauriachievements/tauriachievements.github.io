@@ -12,7 +12,6 @@ import { prefersReducedMotion } from './motion';
  */
 @Directive({
   selector: '[appReveal]',
-  standalone: true
 })
 export class RevealDirective {
   /** How long the entrance runs, in ms, staggered children included. */

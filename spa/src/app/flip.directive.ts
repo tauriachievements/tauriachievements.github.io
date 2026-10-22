@@ -19,7 +19,6 @@ interface Point { x: number; y: number }
  */
 @Directive({
   selector: '[appFlip]',
-  standalone: true
 })
 export class FlipDirective {
   readonly appFlip = input<unknown>();

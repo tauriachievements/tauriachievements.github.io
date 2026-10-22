@@ -14,7 +14,6 @@ interface ApChestLooter {
 
 @Component({
   selector: 'app-ap-chest-looters-page',
-  standalone: true,
   imports: [UpdateBarComponent],
   templateUrl: './ap-chest-looters-page.component.html',
   styleUrls: ['./ap-chest-looters-page.component.scss'],

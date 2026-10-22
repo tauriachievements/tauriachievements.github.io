@@ -1,4 +1,4 @@
-import { CommonModule } from '@angular/common';
+import { DecimalPipe } from '@angular/common';
 import { ChangeDetectionStrategy, Component, DestroyRef, OnInit, computed, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, ParamMap, Router } from '@angular/router';
@@ -24,8 +24,7 @@ const MIN_SEARCH_LENGTH = 2;
   selector: 'app-compare-page',
   templateUrl: './compare-page.component.html',
   styleUrls: ['./compare-page.component.scss'],
-  standalone: true,
-  imports: [CommonModule, UpdateBarComponent, BackToTopButtonComponent],
+  imports: [UpdateBarComponent, BackToTopButtonComponent, DecimalPipe],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class ComparePageComponent implements OnInit {

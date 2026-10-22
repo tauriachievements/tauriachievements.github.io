@@ -89,7 +89,6 @@ const POGCHAMP_EMOTE_URL = 'assets/pogchamp.png';
   selector: 'app-guild-realm-firsts-page',
   templateUrl: './guild-realm-firsts-page.component.html',
   styleUrls: ['./guild-realm-firsts-page.component.scss'],
-  standalone: true,
   imports: [UpdateBarComponent, BackToTopButtonComponent],
   changeDetection: ChangeDetectionStrategy.OnPush
 })

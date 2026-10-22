@@ -10,7 +10,6 @@ import { UpdateBarComponent } from './update-bar.component';
  */
 @Component({
   selector: 'app-mythic-plus-scoring-page',
-  standalone: true,
   imports: [RouterLink, UpdateBarComponent, BackToTopButtonComponent],
   templateUrl: './mythic-plus-scoring-page.component.html',
   styleUrl: './mythic-plus-scoring-page.component.scss',
