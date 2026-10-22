@@ -24,6 +24,28 @@ explains it together.
   real place, as on the Mythic+ leaderboard. The order has no ties, so no two rows share a place.
 - **Tests:** `scripts/player-ranking.test.js`, `ladder.service.spec.ts`.
 
+## Ladder changes and new characters
+
+- **Code:** `spa/scripts/generate-player-snapshot.js`, `spa/scripts/generate-player-history.js`.
+- Changes compare with the most recent earlier scan from another day
+  ([data-pipeline.md](data-pipeline.md#what-prepare-appjs-builds)).
+- Played time ranks on whole minutes, in the build and in the browser, so players in the same
+  minute tie in both places and the rank changes agree with the ladder.
+- An earlier scan that lacks a column (appearances, account-wide achievements, played time)
+  gives no value or rank change for that ranking.
+- Top Gainers on appearances skips a character whose earlier count was 0: the data may have
+  been missing in that scan, so the first positive count is a baseline, not a one-day gain.
+- **A new character** is one whose name and class no earlier scan had (the name ignoring case).
+  Realm, race and faction are left out on purpose: transfers and faction changes aren't new.
+- **Tests:** `scripts/generate-player-snapshot.test.js`, `scripts/generate-player-history.test.js`.
+
+## Realm Stats
+
+- **Code:** `spa/scripts/compute-server-stats.js`.
+- A value falls in the highest bucket whose lower bound it reaches (bounds inclusive).
+- Factions list Horde, Alliance and Neutral in that order, then anything else.
+- **Tests:** `scripts/compute-server-stats.test.js`.
+
 ## Rare Achievements
 
 - **Code:** `rankMatchingCharacters` in
