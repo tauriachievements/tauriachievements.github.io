@@ -1,5 +1,5 @@
 import { CommonModule, Location } from '@angular/common';
-import { ChangeDetectionStrategy, Component, DestroyRef, ElementRef, OnInit, ViewChild, computed, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, DestroyRef, ElementRef, OnInit, computed, inject, signal, viewChild } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router } from '@angular/router';
 import { getClassIconPath } from '../utils/classIconHelper';
@@ -71,7 +71,7 @@ const LEADERBOARD_PAGE_SIZE = 25;
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class RatedBattlegroundPageComponent implements OnInit {
-  @ViewChild('leaderboardPanel') private leaderboardPanel?: ElementRef<HTMLElement>;
+  private readonly leaderboardPanel = viewChild<ElementRef<HTMLElement>>('leaderboardPanel');
 
   private readonly service = inject(RatedBattlegroundsService);
   private readonly route = inject(ActivatedRoute);
@@ -213,7 +213,7 @@ export class RatedBattlegroundPageComponent implements OnInit {
       return;
     }
     this.leaderboardPage.set(targetPage);
-    requestAnimationFrame(() => this.leaderboardPanel?.nativeElement.scrollIntoView({ behavior: 'smooth', block: 'start' }));
+    requestAnimationFrame(() => this.leaderboardPanel()?.nativeElement.scrollIntoView({ behavior: 'smooth', block: 'start' }));
   }
 
   playerRank(index: number): number {

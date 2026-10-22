@@ -18,19 +18,19 @@
     </button>
 
     <div class="update-bar-status">
-      @if (showLastUpdated && lastEdited) {
+      @if (showLastUpdated() && lastEdited(); as edited) {
         <span
           class="update-status"
-          [attr.aria-label]="lastEditedLabel + ' ' + (lastEdited | date:'MMM d, y, HH:mm':lastEditedTimeZone) + ' ' + lastEditedTimeZoneLabel"
-          [attr.title]="lastEditedLabel + ' ' + (lastEdited | date:'MMM d, y, HH:mm':lastEditedTimeZone) + ' ' + lastEditedTimeZoneLabel">
+          [attr.aria-label]="lastEditedLabel() + ' ' + (edited | date:'MMM d, y, HH:mm':lastEditedTimeZone()) + ' ' + lastEditedTimeZoneLabel()"
+          [attr.title]="lastEditedLabel() + ' ' + (edited | date:'MMM d, y, HH:mm':lastEditedTimeZone()) + ' ' + lastEditedTimeZoneLabel()">
           <span class="update-status-text">
-            <span class="update-status-label">{{ lastEditedLabel }}</span>
+            <span class="update-status-label">{{ lastEditedLabel() }}</span>
             <span class="update-status-date">
-              {{ lastEdited | date:'MMM d':lastEditedTimeZone }}<span class="update-status-year">{{ lastEdited | date:', y':lastEditedTimeZone }}</span>
+              {{ edited | date:'MMM d':lastEditedTimeZone() }}<span class="update-status-year">{{ edited | date:', y':lastEditedTimeZone() }}</span>
             </span>
             <span class="update-status-separator" aria-hidden="true">&bull;</span>
-            <time class="update-status-time">{{ lastEdited | date:'HH:mm':lastEditedTimeZone }}</time>
-            <span class="update-status-zone">{{ lastEditedTimeZoneLabel }}</span>
+            <time class="update-status-time">{{ edited | date:'HH:mm':lastEditedTimeZone() }}</time>
+            <span class="update-status-zone">{{ lastEditedTimeZoneLabel() }}</span>
           </span>
         </span>
       }

@@ -3,29 +3,29 @@
     class="player-history-modal"
     role="dialog"
     aria-modal="true"
-    [attr.aria-label]="player.name + ' rated battleground history'"
+    [attr.aria-label]="player().name + ' rated battleground history'"
     (click)="$event.stopPropagation()">
     <header class="player-history-header">
       <div class="history-player">
-        <img [src]="getClassIconPath(player.classId)" [alt]="getClassName(player.classId)" />
+        <img [src]="getClassIconPath(player().classId)" [alt]="getClassName(player().classId)" />
         <div>
           <span class="eyebrow">Player match history</span>
-          <h2 [style.color]="getClassColor(player.classId)">{{ player.name }}</h2>
+          <h2 [style.color]="getClassColor(player().classId)">{{ player().name }}</h2>
           <p>
-            {{ getSpec(player.specId).name }} {{ getClassName(player.classId) }}
-            @if (player.guild) {
-              &lt;{{ player.guild }}&gt;
+            {{ getSpec(player().specId).name }} {{ getClassName(player().classId) }}
+            @if (player().guild) {
+              &lt;{{ player().guild }}&gt;
             }
-            &middot; {{ player.realm }} &middot; {{ getFactionLabel(player.faction) }}
+            &middot; {{ player().realm }} &middot; {{ getFactionLabel(player().faction) }}
           </p>
         </div>
       </div>
 
       <div class="history-record">
-        <div><strong>{{ player.games }}</strong><span>Games</span></div>
-        <div><strong class="wins">{{ player.wins }}</strong><span>Wins</span></div>
-        <div><strong class="losses">{{ player.losses }}</strong><span>Losses</span></div>
-        <div><strong>{{ player.winRate | percent:'1.0-0' }}</strong><span>Win rate</span></div>
+        <div><strong>{{ player().games }}</strong><span>Games</span></div>
+        <div><strong class="wins">{{ player().wins }}</strong><span>Wins</span></div>
+        <div><strong class="losses">{{ player().losses }}</strong><span>Losses</span></div>
+        <div><strong>{{ player().winRate | percent:'1.0-0' }}</strong><span>Win rate</span></div>
       </div>
 
       <button type="button" class="history-close" aria-label="Close player match history" (click)="close()">
@@ -36,12 +36,12 @@
     <div class="player-history-body">
       <div class="history-order-label">
         <span>Oldest</span>
-        <span>{{ history.length }} recorded appearances</span>
+        <span>{{ history().length }} recorded appearances</span>
         <span>Newest</span>
       </div>
 
       <ol class="history-timeline">
-        @for (entry of history; track entry; let index = $index) {
+        @for (entry of history(); track entry; let index = $index) {
           <li>
             <div class="history-marker"><span>{{ index + 1 }}</span></div>
 

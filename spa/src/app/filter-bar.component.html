@@ -1,15 +1,15 @@
-<div id="ladder-filters" class="ladder-header" [class.filters-collapsed]="!filtersOpen">
+<div id="ladder-filters" class="ladder-header" [class.filters-collapsed]="!filtersOpen()">
   <div class="filter-group reset-group">
     <button type="button" class="reset-button" (click)="resetFilters()">Reset</button>
   </div>
 
   <app-mobile-filter-toggle
     controlsId="ladder-filters"
-    [expanded]="filtersOpen"
-    [activeFilters]="activeFilterLabels"
-    (expandedChange)="filtersOpen = $event" />
+    [expanded]="filtersOpen()"
+    [activeFilters]="activeFilterLabels()"
+    (expandedChange)="filtersOpen.set($event)" />
 
-  @for (dropdown of dropdowns; track dropdown.key) {
+  @for (dropdown of dropdowns(); track dropdown.key) {
     <div class="filter-group collapsible-filter" [ngClass]="'filter-group--' + dropdown.key">
       <app-filter-dropdown
         [dropdownId]="dropdown.key"
@@ -29,7 +29,7 @@
       id="nameGuildSearch"
       type="search"
       class="filter-select search-input"
-      [value]="searchTerm"
+      [value]="searchTerm()"
       placeholder="Name or guild"
       aria-label="Search by character name or guild"
       (input)="onSearchInput($event)" />
@@ -38,11 +38,11 @@
   <div class="filter-group filter-group--page-size collapsible-filter">
     <div class="page-size">
       <button type="button" class="page-size-button page-size-reset-inline" (click)="resetFilters()">Reset</button>
-      @for (size of pageSizeOptions; track size) {
+      @for (size of pageSizeOptions(); track size) {
         <button
           type="button"
           class="page-size-button"
-          [class.active]="pageSize === size"
+          [class.active]="pageSize() === size"
           [attr.aria-label]="'Show ' + size + ' entries'"
           (click)="onPageSizeSelect(size)">{{ size }}</button>
       }

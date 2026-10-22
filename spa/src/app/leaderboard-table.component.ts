@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectionStrategy, Component, HostListener, Input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, HostListener, input } from '@angular/core';
 import { getGuildArmoryUrl, getArmoryUrl } from '../utils/armory';
 import { getClassIconPath } from '../utils/classIconHelper';
 import { formatCharacterAge } from './character-age';
@@ -24,8 +24,8 @@ export interface PlayerDetailMetric {
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class LeaderboardTableComponent {
-  @Input() players: LadderPlayerView[] = [];
-  @Input() currentSort: LadderSort = 'achievementPoints';
+  readonly players = input<LadderPlayerView[]>([]);
+  readonly currentSort = input<LadderSort>('achievementPoints');
 
   activePlayerTooltip = '';
   expandedPlayerKey: string | null = null;
@@ -82,7 +82,7 @@ export class LeaderboardTableComponent {
   }
 
   showAchievementRank(player: LadderPlayerView): boolean {
-    return this.currentSort === 'achievementPoints' && player.achievementRankDelta !== 0;
+    return this.currentSort() === 'achievementPoints' && player.achievementRankDelta !== 0;
   }
 
   showHonorableKillDelta(player: LadderPlayerView): boolean {
@@ -90,7 +90,7 @@ export class LeaderboardTableComponent {
   }
 
   showHonorableKillRank(player: LadderPlayerView): boolean {
-    return this.currentSort === 'honorableKills' && player.honorableKillsRankDelta !== 0;
+    return this.currentSort() === 'honorableKills' && player.honorableKillsRankDelta !== 0;
   }
 
   showAppearanceDelta(player: LadderPlayerView): boolean {
@@ -98,7 +98,7 @@ export class LeaderboardTableComponent {
   }
 
   showAppearanceRank(player: LadderPlayerView): boolean {
-    return this.currentSort === 'appearanceCount' && player.appearanceRankDelta !== 0;
+    return this.currentSort() === 'appearanceCount' && player.appearanceRankDelta !== 0;
   }
 
   hasAchievementsTotalValue(player: LadderPlayerView): boolean {
@@ -120,7 +120,7 @@ export class LeaderboardTableComponent {
   }
 
   showAchievementsTotalRank(player: LadderPlayerView): boolean {
-    return this.currentSort === 'achievementsTotal'
+    return this.currentSort() === 'achievementsTotal'
       && this.hasAchievementsTotalValue(player)
       && player.achievementsTotalRankDelta !== 0;
   }
@@ -130,7 +130,7 @@ export class LeaderboardTableComponent {
   }
 
   showPlayedTimeRank(player: LadderPlayerView): boolean {
-    return this.currentSort === 'playedTime' && player.playedTimeRankDelta !== 0;
+    return this.currentSort() === 'playedTime' && player.playedTimeRankDelta !== 0;
   }
 
   formatPlayedTime(player: LadderPlayerView): string {

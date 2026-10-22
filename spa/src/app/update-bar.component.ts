@@ -4,11 +4,11 @@ import {
   Component,
   ElementRef,
   HostListener,
-  Input,
   computed,
   inject,
   signal,
-  viewChild
+  viewChild,
+  input
 } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { NavigationEnd, Router, RouterLink, RouterLinkActive } from '@angular/router';
@@ -24,12 +24,12 @@ import { DISCORD_INVITE_URL, NAV_SECTIONS, NavSection, findNavLocation } from '.
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class UpdateBarComponent {
-  @Input() lastEdited?: Date;
+  readonly lastEdited = input<Date>();
   /** What the shown time is, e.g. "Last updated:" or, for match data, "Latest match:". */
-  @Input() lastEditedLabel = 'Last updated:';
-  @Input() lastEditedTimeZoneLabel = 'Local time';
-  @Input() lastEditedTimeZone?: string;
-  @Input() showLastUpdated = true;
+  readonly lastEditedLabel = input('Last updated:');
+  readonly lastEditedTimeZoneLabel = input('Local time');
+  readonly lastEditedTimeZone = input<string>();
+  readonly showLastUpdated = input(true);
 
   protected readonly sections = NAV_SECTIONS;
   protected readonly discordUrl = DISCORD_INVITE_URL;

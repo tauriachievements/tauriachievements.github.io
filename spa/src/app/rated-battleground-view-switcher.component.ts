@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, EventEmitter, Input, Output } from '@angular/core';
+import { ChangeDetectionStrategy, Component, input, output } from '@angular/core';
 
 export type RatedBattlegroundContentView = 'players' | 'matches';
 
@@ -10,8 +10,8 @@ export type RatedBattlegroundContentView = 'players' | 'matches';
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class RatedBattlegroundViewSwitcherComponent {
-  @Input({ required: true }) selectedView: RatedBattlegroundContentView = 'players';
-  @Input() playerCount = 0;
-  @Input() matchCount = 0;
-  @Output() readonly viewChange = new EventEmitter<RatedBattlegroundContentView>();
+  readonly selectedView = input.required<RatedBattlegroundContentView>();
+  readonly playerCount = input(0);
+  readonly matchCount = input(0);
+  readonly viewChange = output<RatedBattlegroundContentView>();
 }

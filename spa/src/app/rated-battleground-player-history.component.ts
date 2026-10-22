@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectionStrategy, Component, EventEmitter, HostListener, Input, Output } from '@angular/core';
+import { ChangeDetectionStrategy, Component, HostListener, input, output } from '@angular/core';
 import { getClassIconPath } from '../utils/classIconHelper';
 import {
   RatedPlayerMatchHistoryEntry,
@@ -23,9 +23,9 @@ import {
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class RatedBattlegroundPlayerHistoryComponent {
-  @Input({ required: true }) player!: RatedPlayerSummary;
-  @Input({ required: true }) history: ReadonlyArray<RatedPlayerMatchHistoryEntry> = [];
-  @Output() readonly closeHistory = new EventEmitter<void>();
+  readonly player = input.required<RatedPlayerSummary>();
+  readonly history = input.required<ReadonlyArray<RatedPlayerMatchHistoryEntry>>();
+  readonly closeHistory = output<void>();
 
   readonly getClassIconPath = getClassIconPath;
   readonly getClassColor = getClassColor;

@@ -2,11 +2,11 @@
   <table
     class="wow-table"
     [ngClass]="{
-      'sort-achievements-total': currentSort === 'achievementsTotal',
-      'sort-honorable-kills': currentSort === 'honorableKills',
-      'sort-played-time': currentSort === 'playedTime',
-      'sort-item-level': currentSort === 'ilvl',
-      'sort-appearances': currentSort === 'appearanceCount'
+      'sort-achievements-total': currentSort() === 'achievementsTotal',
+      'sort-honorable-kills': currentSort() === 'honorableKills',
+      'sort-played-time': currentSort() === 'playedTime',
+      'sort-item-level': currentSort() === 'ilvl',
+      'sort-appearances': currentSort() === 'appearanceCount'
     }">
     <thead>
       <tr>
@@ -24,7 +24,7 @@
       </tr>
     </thead>
     <tbody>
-      @for (player of players; track playerKey(player)) {
+      @for (player of players(); track playerKey(player)) {
         <tr
           [ngClass]="player.faction"
           [class.is-expanded]="isExpanded(player)"

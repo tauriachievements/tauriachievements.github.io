@@ -3,14 +3,12 @@ import {
   ChangeDetectionStrategy,
   Component,
   ElementRef,
-  EventEmitter,
   HostListener,
-  Input,
-  Output,
-  QueryList,
-  ViewChild,
-  ViewChildren,
-  inject
+  inject,
+  input,
+  output,
+  viewChild,
+  viewChildren
 } from '@angular/core';
 import { FilterDropdownCoordinatorService } from './filter-dropdown-coordinator.service';
 import { FilterDropdownOption, FilterDropdownValue } from './filter-dropdown.types';
@@ -24,42 +22,42 @@ import { FilterDropdownOption, FilterDropdownValue } from './filter-dropdown.typ
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class FilterDropdownComponent {
-  @Input({ required: true }) dropdownId = '';
-  @Input({ required: true }) triggerId = '';
-  @Input({ required: true }) ariaLabel = '';
-  @Input() options: ReadonlyArray<FilterDropdownOption> = [];
-  @Input() selectedValue?: FilterDropdownValue;
-  @Input() selectedLabel = '';
-  @Input() selectedIcon?: string;
-  @Input() showIcons = false;
-  @Input() highlightWhenSelected = false;
-  @Input() compact = false;
-  @Input() disabled = false;
+  readonly dropdownId = input.required<string>();
+  readonly triggerId = input.required<string>();
+  readonly ariaLabel = input.required<string>();
+  readonly options = input<ReadonlyArray<FilterDropdownOption>>([]);
+  readonly selectedValue = input<FilterDropdownValue>();
+  readonly selectedLabel = input('');
+  readonly selectedIcon = input<string>();
+  readonly showIcons = input(false);
+  readonly highlightWhenSelected = input(false);
+  readonly compact = input(false);
+  readonly disabled = input(false);
   /**
    * Every label the dropdown can ever show, not only today's options. The trigger then reserves
    * the widest one's width (and an icon's, with showIcons), so it never cuts a name short or
    * changes width. Size its container to the content (width: auto, flex: none) to use it.
    */
-  @Input() widthLabels?: ReadonlyArray<string>;
+  readonly widthLabels = input<ReadonlyArray<string>>();
 
-  @Output() readonly selectionChange = new EventEmitter<FilterDropdownValue>();
+  readonly selectionChange = output<FilterDropdownValue>();
 
-  @ViewChild('trigger') private triggerRef?: ElementRef<HTMLButtonElement>;
-  @ViewChildren('optionButton') private optionRefs?: QueryList<ElementRef<HTMLButtonElement>>;
+  private readonly triggerRef = viewChild<ElementRef<HTMLButtonElement>>('trigger');
+  private readonly optionRefs = viewChildren<ElementRef<HTMLButtonElement>>('optionButton');
 
   private readonly hostRef = inject(ElementRef<HTMLElement>);
   private readonly coordinator = inject(FilterDropdownCoordinatorService);
 
   get isOpen(): boolean {
-    return this.coordinator.isOpen(this.dropdownId);
+    return this.coordinator.isOpen(this.dropdownId());
   }
 
   get displaySelectedLabel(): string {
-    return this.selectedLabel || this.selectedOption?.label || '';
+    return this.selectedLabel() || this.selectedOption?.label || '';
   }
 
   get displaySelectedIcon(): string | undefined {
-    return this.selectedIcon ?? this.selectedOption?.icon;
+    return this.selectedIcon() ?? this.selectedOption?.icon;
   }
 
   get displaySelectedColor(): string | undefined {
@@ -71,7 +69,7 @@ export class FilterDropdownComponent {
   }
 
   get hasSelectedValue(): boolean {
-    return this.selectedValue !== undefined;
+    return this.selectedValue() !== undefined;
   }
 
   @HostListener('document:click', ['$event'])
@@ -81,7 +79,7 @@ export class FilterDropdownComponent {
       return;
     }
 
-    this.coordinator.close(this.dropdownId);
+    this.coordinator.close(this.dropdownId());
   }
 
   @HostListener('document:keydown.escape', ['$event'])
@@ -91,16 +89,16 @@ export class FilterDropdownComponent {
     }
 
     event.preventDefault();
-    this.coordinator.close(this.dropdownId);
+    this.coordinator.close(this.dropdownId());
     this.focusTrigger();
   }
 
   onTriggerFocus(): void {
-    this.coordinator.closeOthers(this.dropdownId);
+    this.coordinator.closeOthers(this.dropdownId());
   }
 
   toggleMenu(): void {
-    this.coordinator.toggle(this.dropdownId);
+    this.coordinator.toggle(this.dropdownId());
   }
 
   onTriggerKeydown(event: KeyboardEvent): void {
@@ -109,7 +107,7 @@ export class FilterDropdownComponent {
     }
 
     event.preventDefault();
-    this.coordinator.open(this.dropdownId);
+    this.coordinator.open(this.dropdownId());
     this.focusSelectedOption();
   }
 
@@ -137,26 +135,26 @@ export class FilterDropdownComponent {
         this.focusOption(options.length - 1);
         break;
       case 'Tab':
-        this.coordinator.close(this.dropdownId);
+        this.coordinator.close(this.dropdownId());
         break;
     }
   }
 
   selectOption(option: FilterDropdownOption): void {
-    this.coordinator.close(this.dropdownId);
+    this.coordinator.close(this.dropdownId());
     this.selectionChange.emit(option.value);
   }
 
   isOptionSelected(option: FilterDropdownOption): boolean {
-    return option.value === this.selectedValue;
+    return option.value === this.selectedValue();
   }
 
   private get selectedOption(): FilterDropdownOption | undefined {
-    return this.options.find((option) => this.isOptionSelected(option));
+    return this.options().find((option) => this.isOptionSelected(option));
   }
 
   private focusSelectedOption(): void {
-    const selectedIndex = this.options.findIndex((option) => this.isOptionSelected(option));
+    const selectedIndex = this.options().findIndex((option) => this.isOptionSelected(option));
     this.focusOption(selectedIndex === -1 ? 0 : selectedIndex);
   }
 
@@ -173,10 +171,10 @@ export class FilterDropdownComponent {
   }
 
   private focusTrigger(): void {
-    this.triggerRef?.nativeElement.focus();
+    this.triggerRef()?.nativeElement.focus();
   }
 
   private getOptionElements(): HTMLButtonElement[] {
-    return this.optionRefs?.toArray().map((option) => option.nativeElement) ?? [];
+    return this.optionRefs().map((option) => option.nativeElement);
   }
 }

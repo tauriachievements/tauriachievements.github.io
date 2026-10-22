@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectionStrategy, Component, EventEmitter, Input, Output, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, input, output, signal } from '@angular/core';
 import { FilterDropdownComponent } from './filter-dropdown.component';
 import { FilterDropdownCoordinatorService } from './filter-dropdown-coordinator.service';
 import { FilterDropdownOption, FilterDropdownValue } from './filter-dropdown.types';
@@ -34,110 +34,105 @@ interface DropdownConfig {
   providers: [FilterDropdownCoordinatorService]
 })
 export class FilterBarComponent {
-  @Input() sort: LadderSort = 'achievementPoints';
-  @Input() realm?: string;
-  @Input() faction?: string;
-  @Input() playerClass?: number;
-  @Input() pageSize = 100;
-  @Input() searchTerm = '';
-  @Input() sortOptions: ReadonlyArray<SortOption> = [];
-  @Input() realmOptions: ReadonlyArray<TextOption> = [];
-  @Input() factionOptions: ReadonlyArray<TextOption> = [];
-  @Input() classOptions: ReadonlyArray<ClassOption> = [];
-  @Input() pageSizeOptions: ReadonlyArray<number> = [];
+  readonly sort = input<LadderSort>('achievementPoints');
+  readonly realm = input<string>();
+  readonly faction = input<string>();
+  readonly playerClass = input<number>();
+  readonly pageSize = input(100);
+  readonly searchTerm = input('');
+  readonly sortOptions = input<ReadonlyArray<SortOption>>([]);
+  readonly realmOptions = input<ReadonlyArray<TextOption>>([]);
+  readonly factionOptions = input<ReadonlyArray<TextOption>>([]);
+  readonly classOptions = input<ReadonlyArray<ClassOption>>([]);
+  readonly pageSizeOptions = input<ReadonlyArray<number>>([]);
 
-  @Output() readonly sortChange = new EventEmitter<LadderSort>();
-  @Output() readonly realmChange = new EventEmitter<string | undefined>();
-  @Output() readonly factionChange = new EventEmitter<string | undefined>();
-  @Output() readonly classChange = new EventEmitter<number | undefined>();
-  @Output() readonly pageSizeChange = new EventEmitter<number>();
-  @Output() readonly searchChange = new EventEmitter<string>();
-  @Output() readonly reset = new EventEmitter<void>();
+  readonly sortChange = output<LadderSort>();
+  readonly realmChange = output<string | undefined>();
+  readonly factionChange = output<string | undefined>();
+  readonly classChange = output<number | undefined>();
+  readonly pageSizeChange = output<number>();
+  readonly searchChange = output<string>();
+  readonly reset = output<void>();
 
   private readonly dropdownCoordinator = inject(FilterDropdownCoordinatorService);
 
-  /** Phones show only the search box until the filter panel is opened. */
-  filtersOpen = false;
+  readonly filtersOpen = signal(false);
 
-  get dropdowns(): ReadonlyArray<DropdownConfig> {
-    return [
-      {
-        key: 'sort',
-        triggerId: 'sortSelect',
-        ariaLabel: 'Sort by',
-        options: this.sortOptions,
-        selectedValue: this.sort,
-        selectedLabel: this.selectedSortLabel
-      },
-      {
-        key: 'realm',
-        triggerId: 'realmSelect',
-        ariaLabel: 'Realm',
-        options: this.realmOptions,
-        selectedValue: this.realm,
-        selectedLabel: this.selectedRealmLabel
-      },
-      {
-        key: 'class',
-        triggerId: 'classSelect',
-        ariaLabel: 'Class',
-        options: this.classDropdownOptions,
-        selectedValue: this.playerClass,
-        selectedLabel: this.selectedClassLabel,
-        selectedIcon: this.selectedClassIcon,
-        showIcons: true
-      },
-      {
-        key: 'faction',
-        triggerId: 'factionSelect',
-        ariaLabel: 'Faction',
-        options: this.factionOptions,
-        selectedValue: this.faction,
-        selectedLabel: this.selectedFactionLabel
-      }
-    ];
-  }
+  private readonly selectedClassOption = computed(() =>
+    this.classOptions().find((option) => option.id === this.playerClass()));
+  private readonly selectedSortLabel = computed(() =>
+    this.sortOptions().find((option) => option.value === this.sort())?.label ?? 'Achievements');
+  private readonly selectedRealmLabel = computed(() =>
+    this.realmOptions().find((option) => option.value === this.realm())?.label ?? 'All Realms');
+  private readonly selectedFactionLabel = computed(() =>
+    this.factionOptions().find((option) => option.value === this.faction())?.label ?? 'All Factions');
+  private readonly selectedClassLabel = computed(() => this.selectedClassOption()?.name ?? 'All Classes');
 
-  /** The settings that differ from the defaults: what Reset would undo. Search is always visible. */
-  get activeFilterLabels(): string[] {
+  private readonly classDropdownOptions = computed<ReadonlyArray<FilterDropdownOption<number | undefined>>>(() => [
+    { value: undefined, label: 'All Classes' },
+    ...this.classOptions().map((option) => ({
+      value: option.id,
+      label: option.name,
+      icon: option.icon
+    }))
+  ]);
+
+  readonly dropdowns = computed<ReadonlyArray<DropdownConfig>>(() => [
+    {
+      key: 'sort',
+      triggerId: 'sortSelect',
+      ariaLabel: 'Sort by',
+      options: this.sortOptions(),
+      selectedValue: this.sort(),
+      selectedLabel: this.selectedSortLabel()
+    },
+    {
+      key: 'realm',
+      triggerId: 'realmSelect',
+      ariaLabel: 'Realm',
+      options: this.realmOptions(),
+      selectedValue: this.realm(),
+      selectedLabel: this.selectedRealmLabel()
+    },
+    {
+      key: 'class',
+      triggerId: 'classSelect',
+      ariaLabel: 'Class',
+      options: this.classDropdownOptions(),
+      selectedValue: this.playerClass(),
+      selectedLabel: this.selectedClassLabel(),
+      selectedIcon: this.selectedClassOption()?.icon,
+      showIcons: true
+    },
+    {
+      key: 'faction',
+      triggerId: 'factionSelect',
+      ariaLabel: 'Faction',
+      options: this.factionOptions(),
+      selectedValue: this.faction(),
+      selectedLabel: this.selectedFactionLabel()
+    }
+  ]);
+
+  readonly activeFilterLabels = computed(() => {
     const labels: string[] = [];
-    if (this.sort !== DEFAULT_SORT) {
-      labels.push(`Sort: ${this.selectedSortLabel}`);
+    if (this.sort() !== DEFAULT_SORT) {
+      labels.push(`Sort: ${this.selectedSortLabel()}`);
     }
-    if (this.realm) {
-      labels.push(this.selectedRealmLabel);
+    if (this.realm()) {
+      labels.push(this.selectedRealmLabel());
     }
-    if (this.playerClass !== undefined) {
-      labels.push(this.selectedClassLabel);
+    if (this.playerClass() !== undefined) {
+      labels.push(this.selectedClassLabel());
     }
-    if (this.faction) {
-      labels.push(this.selectedFactionLabel);
+    if (this.faction()) {
+      labels.push(this.selectedFactionLabel());
     }
-    if (this.pageSize !== DEFAULT_PAGE_SIZE) {
-      labels.push(`${this.pageSize} per page`);
+    if (this.pageSize() !== DEFAULT_PAGE_SIZE) {
+      labels.push(`${this.pageSize()} per page`);
     }
     return labels;
-  }
-
-  get selectedSortLabel(): string {
-    return this.sortOptions.find((option) => option.value === this.sort)?.label ?? 'Achievements';
-  }
-
-  get selectedRealmLabel(): string {
-    return this.realmOptions.find((option) => option.value === this.realm)?.label ?? 'All Realms';
-  }
-
-  get selectedFactionLabel(): string {
-    return this.factionOptions.find((option) => option.value === this.faction)?.label ?? 'All Factions';
-  }
-
-  get selectedClassLabel(): string {
-    return this.selectedClassOption?.name ?? 'All Classes';
-  }
-
-  get selectedClassIcon(): string | undefined {
-    return this.selectedClassOption?.icon;
-  }
+  });
 
   onDropdownSelection(dropdown: DropdownKey, value: FilterDropdownValue): void {
     switch (dropdown) {
@@ -168,20 +163,5 @@ export class FilterBarComponent {
   resetFilters(): void {
     this.dropdownCoordinator.closeAll();
     this.reset.emit();
-  }
-
-  private get classDropdownOptions(): ReadonlyArray<FilterDropdownOption<number | undefined>> {
-    return [
-      { value: undefined, label: 'All Classes' },
-      ...this.classOptions.map((option) => ({
-        value: option.id,
-        label: option.name,
-        icon: option.icon
-      }))
-    ];
-  }
-
-  private get selectedClassOption(): ClassOption | undefined {
-    return this.classOptions.find((option) => option.id === this.playerClass);
   }
 }

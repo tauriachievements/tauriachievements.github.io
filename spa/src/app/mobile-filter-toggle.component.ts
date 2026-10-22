@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, EventEmitter, Input, Output } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, input, output } from '@angular/core';
 
 /**
  * The phone-only button that opens a page's collapsed filter panel, with the active
@@ -17,20 +17,20 @@ import { ChangeDetectionStrategy, Component, EventEmitter, Input, Output } from 
 })
 export class MobileFilterToggleComponent {
   /** Id of the element the button shows and hides. */
-  @Input({ required: true }) controlsId!: string;
-  @Input() label = 'Filters';
-  @Input() expanded = false;
+  readonly controlsId = input.required<string>();
+  readonly label = input('Filters');
+  readonly expanded = input(false);
   /** Labels of the filters that differ from the page's defaults. */
-  @Input() activeFilters: ReadonlyArray<string> = [];
+  readonly activeFilters = input<ReadonlyArray<string>>([]);
 
-  @Output() readonly expandedChange = new EventEmitter<boolean>();
+  readonly expandedChange = output<boolean>();
 
-  get ariaLabel(): string {
-    const count = this.activeFilters.length;
-    return count > 0 ? `${this.label}, ${count} active` : this.label;
-  }
+  readonly ariaLabel = computed(() => {
+    const count = this.activeFilters().length;
+    return count > 0 ? `${this.label()}, ${count} active` : this.label();
+  });
 
   toggle(): void {
-    this.expandedChange.emit(!this.expanded);
+    this.expandedChange.emit(!this.expanded());
   }
 }

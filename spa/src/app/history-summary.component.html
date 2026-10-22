@@ -7,16 +7,16 @@
           dropdownId="achievementSourceLimit"
           triggerId="achievementSourceLimitSelect"
           ariaLabel="Achievement ladder source"
-          [options]="achievementSourceLimitOptions"
-          [selectedValue]="achievementSourceLimit"
-          [selectedLabel]="achievementSourceLimitLabel"
+          [options]="achievementSourceLimitOptions()"
+          [selectedValue]="achievementSourceLimit()"
+          [selectedLabel]="achievementSourceLimitLabel()"
           (selectionChange)="achievementSourceLimitChange.emit($event)" />
       </div>
-      @if (achievementMovers.length > 0) {
+      @if (achievementMovers().length > 0) {
         <div class="history-table-wrap">
           <table class="history-table">
             <tbody>
-              @for (mover of visibleMovers(achievementMovers, 'achievement'); track mover.playerKey) {
+              @for (mover of visibleMovers(achievementMovers(), 'achievement'); track mover.playerKey) {
                 <tr>
                   <td>
                     <a
@@ -56,18 +56,18 @@
               }
             </tbody>
           </table>
-          @if (canToggleList(achievementMovers)) {
+          @if (canToggleList(achievementMovers())) {
             <button
               type="button"
               class="list-toggle"
               [attr.aria-expanded]="isListExpanded('achievement')"
               (click)="toggleList('achievement')">
-              {{ listToggleLabel(achievementMovers, 'achievement') }}
+              {{ listToggleLabel(achievementMovers(), 'achievement') }}
             </button>
           }
         </div>
       } @else {
-        <p class="history-empty">{{ achievementEmptyMessage }}</p>
+        <p class="history-empty">{{ achievementEmptyMessage() }}</p>
       }
     </article>
 
@@ -78,16 +78,16 @@
           dropdownId="honorableKillSourceLimit"
           triggerId="honorableKillSourceLimitSelect"
           ariaLabel="Honorable kill ladder source"
-          [options]="honorableKillSourceLimitOptions"
-          [selectedValue]="honorableKillSourceLimit"
-          [selectedLabel]="honorableKillSourceLimitLabel"
+          [options]="honorableKillSourceLimitOptions()"
+          [selectedValue]="honorableKillSourceLimit()"
+          [selectedLabel]="honorableKillSourceLimitLabel()"
           (selectionChange)="honorableKillSourceLimitChange.emit($event)" />
       </div>
-      @if (honorableKillMovers.length > 0) {
+      @if (honorableKillMovers().length > 0) {
         <div class="history-table-wrap">
           <table class="history-table">
             <tbody>
-              @for (mover of visibleMovers(honorableKillMovers, 'honorableKill'); track mover.playerKey) {
+              @for (mover of visibleMovers(honorableKillMovers(), 'honorableKill'); track mover.playerKey) {
                 <tr>
                   <td>
                     <a
@@ -127,18 +127,18 @@
               }
             </tbody>
           </table>
-          @if (canToggleList(honorableKillMovers)) {
+          @if (canToggleList(honorableKillMovers())) {
             <button
               type="button"
               class="list-toggle"
               [attr.aria-expanded]="isListExpanded('honorableKill')"
               (click)="toggleList('honorableKill')">
-              {{ listToggleLabel(honorableKillMovers, 'honorableKill') }}
+              {{ listToggleLabel(honorableKillMovers(), 'honorableKill') }}
             </button>
           }
         </div>
       } @else {
-        <p class="history-empty">{{ honorableKillEmptyMessage }}</p>
+        <p class="history-empty">{{ honorableKillEmptyMessage() }}</p>
       }
     </article>
 
@@ -149,16 +149,16 @@
           dropdownId="playedTimeSourceLimit"
           triggerId="playedTimeSourceLimitSelect"
           ariaLabel="Played time ladder source"
-          [options]="playedTimeSourceLimitOptions"
-          [selectedValue]="playedTimeSourceLimit"
-          [selectedLabel]="playedTimeSourceLimitLabel"
+          [options]="playedTimeSourceLimitOptions()"
+          [selectedValue]="playedTimeSourceLimit()"
+          [selectedLabel]="playedTimeSourceLimitLabel()"
           (selectionChange)="playedTimeSourceLimitChange.emit($event)" />
       </div>
-      @if (playedTimeMovers.length > 0) {
+      @if (playedTimeMovers().length > 0) {
         <div class="history-table-wrap">
           <table class="history-table">
             <tbody>
-              @for (mover of visibleMovers(playedTimeMovers, 'playedTime'); track mover.playerKey) {
+              @for (mover of visibleMovers(playedTimeMovers(), 'playedTime'); track mover.playerKey) {
                 <tr>
                   <td>
                     <a
@@ -198,18 +198,18 @@
               }
             </tbody>
           </table>
-          @if (canToggleList(playedTimeMovers)) {
+          @if (canToggleList(playedTimeMovers())) {
             <button
               type="button"
               class="list-toggle"
               [attr.aria-expanded]="isListExpanded('playedTime')"
               (click)="toggleList('playedTime')">
-              {{ listToggleLabel(playedTimeMovers, 'playedTime') }}
+              {{ listToggleLabel(playedTimeMovers(), 'playedTime') }}
             </button>
           }
         </div>
       } @else {
-        <p class="history-empty">{{ playedTimeEmptyMessage }}</p>
+        <p class="history-empty">{{ playedTimeEmptyMessage() }}</p>
       }
     </article>
 
@@ -220,16 +220,16 @@
           dropdownId="appearanceSourceLimit"
           triggerId="appearanceSourceLimitSelect"
           ariaLabel="Appearance ladder source"
-          [options]="appearanceSourceLimitOptions"
-          [selectedValue]="appearanceSourceLimit"
-          [selectedLabel]="appearanceSourceLimitLabel"
+          [options]="appearanceSourceLimitOptions()"
+          [selectedValue]="appearanceSourceLimit()"
+          [selectedLabel]="appearanceSourceLimitLabel()"
           (selectionChange)="appearanceSourceLimitChange.emit($event)" />
       </div>
-      @if (appearanceMovers.length > 0) {
+      @if (appearanceMovers().length > 0) {
         <div class="history-table-wrap">
           <table class="history-table">
             <tbody>
-              @for (mover of visibleMovers(appearanceMovers, 'appearance'); track mover.playerKey) {
+              @for (mover of visibleMovers(appearanceMovers(), 'appearance'); track mover.playerKey) {
                 <tr>
                   <td>
                     <a
@@ -269,18 +269,18 @@
               }
             </tbody>
           </table>
-          @if (canToggleList(appearanceMovers)) {
+          @if (canToggleList(appearanceMovers())) {
             <button
               type="button"
               class="list-toggle"
               [attr.aria-expanded]="isListExpanded('appearance')"
               (click)="toggleList('appearance')">
-              {{ listToggleLabel(appearanceMovers, 'appearance') }}
+              {{ listToggleLabel(appearanceMovers(), 'appearance') }}
             </button>
           }
         </div>
       } @else {
-        <p class="history-empty">{{ appearanceEmptyMessage }}</p>
+        <p class="history-empty">{{ appearanceEmptyMessage() }}</p>
       }
     </article>
   </div>

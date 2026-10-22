@@ -117,7 +117,10 @@ There is no root package manager; each half has its own toolchain.
 ### Frontend
 
 - Standalone components with `ChangeDetectionStrategy.OnPush`, signals for state, and
-  `inject()` for dependencies (constructors only set up effects and listeners).
+  `inject()` for dependencies (constructors only set up effects and listeners). Inputs,
+  outputs and queries are the signal functions `input()`, `output()` and `viewChild()`, not
+  decorators; a value derived from inputs is a `computed`, not a getter. A spec sets an input
+  with `fixture.componentRef.setInput()`.
 - Templates use the built-in control flow: `@if`, `@for`, `@switch`. A `@for` tracks a key of
   the item (`track row.id`), not a method. A block inside running text stays on one line
   (`side by side@if (season) { · {{ season }}}.`): a line break inside it renders as a space.

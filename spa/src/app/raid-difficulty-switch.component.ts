@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectionStrategy, Component, EventEmitter, Input, Output } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, input, output } from '@angular/core';
 import { GlideDirective } from './glide.directive';
 import { RaidDifficulty } from './raid-logs';
 
@@ -12,12 +12,12 @@ import { RaidDifficulty } from './raid-logs';
   standalone: true,
   imports: [CommonModule, GlideDirective],
   template: `
-    <div class="difficulty-switch" role="group" [attr.aria-label]="label" appGlide>
-      @for (difficulty of shown; track difficulty.slug) {
+    <div class="difficulty-switch" role="group" [attr.aria-label]="label()" appGlide>
+      @for (difficulty of shown(); track difficulty.slug) {
         <button
           type="button"
-          [class.active]="difficulty.slug === selected"
-          [attr.aria-pressed]="difficulty.slug === selected"
+          [class.active]="difficulty.slug === selected()"
+          [attr.aria-pressed]="difficulty.slug === selected()"
           [disabled]="!counts(difficulty)"
           (click)="selectedChange.emit(difficulty.slug)">
           <span class="difficulty-dot" [ngClass]="difficulty.slug" aria-hidden="true"></span>
@@ -34,18 +34,17 @@ import { RaidDifficulty } from './raid-logs';
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class RaidDifficultySwitchComponent {
-  @Input({ required: true }) set difficulties(value: readonly RaidDifficulty[]) {
-    this.shown = value.filter(difficulty => difficulty.kills > 0);
-  }
-  @Input() selected?: string;
-  @Input() label = 'Difficulty';
+  readonly difficulties = input.required<readonly RaidDifficulty[]>();
+  readonly selected = input<string>();
+  readonly label = input('Difficulty');
   /** Kills per difficulty slug; defaults to each difficulty's raid-wide count. */
-  @Input() killCounts?: ReadonlyMap<string, number>;
-  @Output() readonly selectedChange = new EventEmitter<string>();
+  readonly killCounts = input<ReadonlyMap<string, number>>();
+  readonly selectedChange = output<string>();
 
-  shown: readonly RaidDifficulty[] = [];
+  readonly shown = computed(() => this.difficulties().filter(difficulty => difficulty.kills > 0));
 
   counts(difficulty: RaidDifficulty): number {
-    return this.killCounts ? this.killCounts.get(difficulty.slug) ?? 0 : difficulty.kills;
+    const killCounts = this.killCounts();
+    return killCounts ? killCounts.get(difficulty.slug) ?? 0 : difficulty.kills;
   }
 }

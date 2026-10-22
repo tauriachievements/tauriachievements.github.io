@@ -5,10 +5,10 @@ import {
   DestroyRef,
   ElementRef,
   OnInit,
-  ViewChild,
   computed,
   inject,
-  signal
+  signal,
+  viewChild
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
@@ -156,7 +156,7 @@ export class MythicPlusPageComponent implements OnInit {
   private readonly router = inject(Router);
   private readonly location = inject(Location);
 
-  @ViewChild('leaderboard') private leaderboardRef?: ElementRef<HTMLElement>;
+  private readonly leaderboardRef = viewChild<ElementRef<HTMLElement>>('leaderboard');
 
   /** Narrow screens list runs and players as cards (MYTHIC_PLUS_CARDS_QUERY). */
   readonly cards = injectCompactViewport(MYTHIC_PLUS_CARDS_QUERY);
@@ -713,7 +713,7 @@ export class MythicPlusPageComponent implements OnInit {
     this.syncQueryParams();
 
     if (scrollToLeaderboard) {
-      this.leaderboardRef?.nativeElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      this.leaderboardRef()?.nativeElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
   }
 

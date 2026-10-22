@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectionStrategy, Component, EventEmitter, Input, Output, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, input, output, signal } from '@angular/core';
 import { getArmoryUrl } from '../utils/armory';
 import { getClassIconPath } from '../utils/classIconHelper';
 import { getRaceIconPath } from '../utils/raceIconHelper';
@@ -24,31 +24,31 @@ export const MOBILE_MOVER_PREVIEW_SIZE = 10;
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class HistorySummaryComponent {
-  @Input() achievementSourceLimitOptions: ReadonlyArray<FilterDropdownOption<number | undefined>> = [];
-  @Input() honorableKillSourceLimitOptions: ReadonlyArray<FilterDropdownOption<number | undefined>> = [];
-  @Input() playedTimeSourceLimitOptions: ReadonlyArray<FilterDropdownOption<number | undefined>> = [];
-  @Input() appearanceSourceLimitOptions: ReadonlyArray<FilterDropdownOption<number | undefined>> = [];
-  @Input() achievementSourceLimit?: number;
-  @Input() achievementSourceLimitLabel = 'All players';
-  @Input() honorableKillSourceLimit?: number;
-  @Input() honorableKillSourceLimitLabel = 'All players';
-  @Input() playedTimeSourceLimit?: number;
-  @Input() playedTimeSourceLimitLabel = 'All players';
-  @Input() appearanceSourceLimit?: number;
-  @Input() appearanceSourceLimitLabel = 'All players';
-  @Input() achievementMovers: ReadonlyArray<LadderHistoryMoverView> = [];
-  @Input() honorableKillMovers: ReadonlyArray<LadderHistoryMoverView> = [];
-  @Input() playedTimeMovers: ReadonlyArray<LadderHistoryMoverView> = [];
-  @Input() appearanceMovers: ReadonlyArray<LadderHistoryMoverView> = [];
-  @Input() achievementEmptyMessage = 'No achievement climbers available yet.';
-  @Input() honorableKillEmptyMessage = 'No honorable kill climbers available yet.';
-  @Input() playedTimeEmptyMessage = 'No played time climbers available yet.';
-  @Input() appearanceEmptyMessage = 'No appearance climbers available yet.';
+  readonly achievementSourceLimitOptions = input<ReadonlyArray<FilterDropdownOption<number | undefined>>>([]);
+  readonly honorableKillSourceLimitOptions = input<ReadonlyArray<FilterDropdownOption<number | undefined>>>([]);
+  readonly playedTimeSourceLimitOptions = input<ReadonlyArray<FilterDropdownOption<number | undefined>>>([]);
+  readonly appearanceSourceLimitOptions = input<ReadonlyArray<FilterDropdownOption<number | undefined>>>([]);
+  readonly achievementSourceLimit = input<number>();
+  readonly achievementSourceLimitLabel = input('All players');
+  readonly honorableKillSourceLimit = input<number>();
+  readonly honorableKillSourceLimitLabel = input('All players');
+  readonly playedTimeSourceLimit = input<number>();
+  readonly playedTimeSourceLimitLabel = input('All players');
+  readonly appearanceSourceLimit = input<number>();
+  readonly appearanceSourceLimitLabel = input('All players');
+  readonly achievementMovers = input<ReadonlyArray<LadderHistoryMoverView>>([]);
+  readonly honorableKillMovers = input<ReadonlyArray<LadderHistoryMoverView>>([]);
+  readonly playedTimeMovers = input<ReadonlyArray<LadderHistoryMoverView>>([]);
+  readonly appearanceMovers = input<ReadonlyArray<LadderHistoryMoverView>>([]);
+  readonly achievementEmptyMessage = input('No achievement climbers available yet.');
+  readonly honorableKillEmptyMessage = input('No honorable kill climbers available yet.');
+  readonly playedTimeEmptyMessage = input('No played time climbers available yet.');
+  readonly appearanceEmptyMessage = input('No appearance climbers available yet.');
 
-  @Output() readonly achievementSourceLimitChange = new EventEmitter<FilterDropdownValue>();
-  @Output() readonly honorableKillSourceLimitChange = new EventEmitter<FilterDropdownValue>();
-  @Output() readonly playedTimeSourceLimitChange = new EventEmitter<FilterDropdownValue>();
-  @Output() readonly appearanceSourceLimitChange = new EventEmitter<FilterDropdownValue>();
+  readonly achievementSourceLimitChange = output<FilterDropdownValue>();
+  readonly honorableKillSourceLimitChange = output<FilterDropdownValue>();
+  readonly playedTimeSourceLimitChange = output<FilterDropdownValue>();
+  readonly appearanceSourceLimitChange = output<FilterDropdownValue>();
 
   readonly getArmoryUrl = getArmoryUrl;
   readonly getClassIconPath = getClassIconPath;

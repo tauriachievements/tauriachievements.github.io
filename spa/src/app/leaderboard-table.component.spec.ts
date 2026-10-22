@@ -101,7 +101,7 @@ describe('LeaderboardTableComponent row details', () => {
   });
 
   it('shows a change only for metrics that moved', () => {
-    const component = new LeaderboardTableComponent();
+    const component = TestBed.createComponent(LeaderboardTableComponent).componentInstance;
     const metrics = component.getDetailMetrics(createPlayer());
     const byLabel = new Map(metrics.map((metric) => [metric.label, metric]));
 
@@ -137,7 +137,7 @@ describe('LeaderboardTableComponent row details', () => {
   });
 
   it('shows no account-wide value or change for a player without that data', () => {
-    const component = new LeaderboardTableComponent();
+    const component = TestBed.createComponent(LeaderboardTableComponent).componentInstance;
     const metric = component
       .getDetailMetrics(createPlayer({ achievementsTotal: -1, achievementsTotalDelta: 5 }))
       .find((item) => item.label === 'Account wide achievements');
@@ -146,7 +146,7 @@ describe('LeaderboardTableComponent row details', () => {
   });
 
   it('toggles from a row tap on phones, but not from links or on wider screens', () => {
-    const component = new LeaderboardTableComponent();
+    const component = TestBed.createComponent(LeaderboardTableComponent).componentInstance;
     const player = createPlayer();
     const cell = document.createElement('td');
     const link = document.createElement('a');

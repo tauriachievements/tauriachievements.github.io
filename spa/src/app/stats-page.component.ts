@@ -3,12 +3,12 @@ import {
   Component,
   DestroyRef,
   ElementRef,
-  ViewChild,
   afterNextRender,
   computed,
   effect,
   inject,
-  signal
+  signal,
+  viewChild
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { firstValueFrom } from 'rxjs';
@@ -168,9 +168,9 @@ export class StatsPageComponent {
   readonly showError = computed(() => !this.isLoading() && !!this.loadError() && !this.hasData());
   readonly showContent = computed(() => this.hasData());
 
-  @ViewChild('factionCanvas') factionCanvasRef?: ElementRef<HTMLCanvasElement>;
-  @ViewChild('classCanvas') classCanvasRef?: ElementRef<HTMLCanvasElement>;
-  @ViewChild('raceCanvas') raceCanvasRef?: ElementRef<HTMLCanvasElement>;
+  readonly factionCanvasRef = viewChild<ElementRef<HTMLCanvasElement>>('factionCanvas');
+  readonly classCanvasRef = viewChild<ElementRef<HTMLCanvasElement>>('classCanvas');
+  readonly raceCanvasRef = viewChild<ElementRef<HTMLCanvasElement>>('raceCanvas');
 
   constructor() {
     this.destroyRef.onDestroy(() => this.destroyAllCharts());
@@ -258,7 +258,7 @@ export class StatsPageComponent {
   }
 
   private renderFactionChart(stats: ServerStats): void {
-    const canvas = this.factionCanvasRef?.nativeElement;
+    const canvas = this.factionCanvasRef()?.nativeElement;
     if (!canvas) return;
 
     const colors = stats.factionLabels.map((f) =>
@@ -305,7 +305,7 @@ export class StatsPageComponent {
   }
 
   private renderClassChart(stats: ServerStats): void {
-    const canvas = this.classCanvasRef?.nativeElement;
+    const canvas = this.classCanvasRef()?.nativeElement;
     if (!canvas) return;
 
     this.upsertChart('class', canvas, {
@@ -354,7 +354,7 @@ export class StatsPageComponent {
   }
 
   private renderRaceChart(stats: ServerStats): void {
-    const canvas = this.raceCanvasRef?.nativeElement;
+    const canvas = this.raceCanvasRef()?.nativeElement;
     if (!canvas) return;
 
     this.upsertChart('race', canvas, {

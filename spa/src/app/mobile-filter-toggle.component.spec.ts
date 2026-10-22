@@ -59,21 +59,19 @@ describe('FilterBarComponent active filters', () => {
   it('lists every setting Reset would undo, but not the search', () => {
     TestBed.configureTestingModule({ imports: [FilterBarComponent] });
     const fixture = TestBed.createComponent(FilterBarComponent);
-    const bar = fixture.componentInstance;
-    bar.sortOptions = [{ value: 'achievementPoints', label: 'Character Achievements' }, { value: 'honorableKills', label: 'Honorable Kills' }];
-    bar.realmOptions = [{ value: undefined, label: 'All Realms' }, { value: 'Tauri', label: 'Tauri' }];
-    bar.factionOptions = [{ value: undefined, label: 'All Factions' }, { value: 'Horde', label: 'Horde' }];
-    bar.classOptions = [{ id: 8, name: 'Mage', icon: '' }];
+    const setInputs = (inputs: Record<string, unknown>) =>
+      Object.entries(inputs).forEach(([name, value]) => fixture.componentRef.setInput(name, value));
+    setInputs({
+      sortOptions: [{ value: 'achievementPoints', label: 'Character Achievements' }, { value: 'honorableKills', label: 'Honorable Kills' }],
+      realmOptions: [{ value: undefined, label: 'All Realms' }, { value: 'Tauri', label: 'Tauri' }],
+      factionOptions: [{ value: undefined, label: 'All Factions' }, { value: 'Horde', label: 'Horde' }],
+      classOptions: [{ id: 8, name: 'Mage', icon: '' }]
+    });
 
-    expect(bar.activeFilterLabels).toEqual([]);
+    expect(fixture.componentInstance.activeFilterLabels()).toEqual([]);
 
-    bar.searchTerm = 'larahh';
-    bar.sort = 'honorableKills';
-    bar.realm = 'Tauri';
-    bar.playerClass = 8;
-    bar.faction = 'Horde';
-    bar.pageSize = 500;
+    setInputs({ searchTerm: 'larahh', sort: 'honorableKills', realm: 'Tauri', playerClass: 8, faction: 'Horde', pageSize: 500 });
 
-    expect(bar.activeFilterLabels).toEqual(['Sort: Honorable Kills', 'Tauri', 'Mage', 'Horde', '500 per page']);
+    expect(fixture.componentInstance.activeFilterLabels()).toEqual(['Sort: Honorable Kills', 'Tauri', 'Mage', 'Horde', '500 per page']);
   });
 });
