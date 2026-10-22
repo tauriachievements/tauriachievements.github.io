@@ -2,6 +2,7 @@ import { inject } from '@angular/core';
 import { ResolveFn } from '@angular/router';
 import { Observable, catchError, of } from 'rxjs';
 import { DataFileService } from './services/data-file.service';
+import { Realm } from './wow';
 
 export interface GuildAnalysisPlayer {
   name: string;
@@ -52,19 +53,38 @@ export interface GuildAnalysisMetadata {
   faction: 'Alliance' | 'Horde' | 'Unknown';
 }
 
-export type GuildAnalysisKey =
-  'endless' | 'competence-optional' | 'entropy' | 'impaired' | 'impact' | 'miracle' | 'outlaws' | 'highly-regarded' | 'temerite' |
-  'rycerze-ortalionu';
+export interface GuildPage {
+  readonly key: string;
+  readonly hash: string;
+  readonly name: string;
+  readonly realm: Realm;
+}
 
-export const DEFAULT_GUILD_ANALYSIS_KEY: GuildAnalysisKey = 'endless';
+export const GUILD_PAGES = [
+  { key: 'endless', hash: 'f8c2a91d', name: 'Endless', realm: 'Evermoon' },
+  { key: 'competence-optional', hash: 'a47d9c2e', name: 'Competence Optional', realm: 'Evermoon' },
+  { key: 'miracle', hash: '6e2d8f14', name: 'Miracle', realm: 'Evermoon' },
+  { key: 'entropy', hash: '3e8f1a62', name: 'Entropy', realm: 'Evermoon' },
+  { key: 'outlaws', hash: '34c1426b', name: 'Outlaws', realm: 'Tauri' },
+  { key: 'impaired', hash: 'c18e7b42', name: 'Impaired', realm: 'Evermoon' },
+  { key: 'impact', hash: '94fd2a61', name: 'Impact', realm: 'Evermoon' },
+  { key: 'highly-regarded', hash: 'd74a9e3c', name: 'Highly Regarded', realm: 'Evermoon' },
+  { key: 'temerite', hash: 'b93e7a41', name: 'Témérité', realm: 'Evermoon' },
+  { key: 'rycerze-ortalionu', hash: 'c1ee200b', name: 'Rycerze Ortalionu', realm: 'Evermoon' }
+] as const satisfies readonly GuildPage[];
+
+export function guildPagePath(page: GuildPage): string {
+  return `${page.key}-${page.hash}`;
+}
 
 export const guildAnalysisResolver: ResolveFn<GuildAnalysis | null> = (route): Observable<GuildAnalysis | null> => {
-  const key = (route.data['guild'] as GuildAnalysisKey | undefined) ?? DEFAULT_GUILD_ANALYSIS_KEY;
+  const page = route.data['guild'] as GuildPage;
 
-  return inject(DataFileService).getJson<GuildAnalysis>(`guild-analysis/${key}.json`).pipe(
+  return inject(DataFileService).getJson<GuildAnalysis>(`guild-analysis/${page.key}.json`).pipe(
     catchError((error: unknown) => {
-      console.error(`Failed to load the ${key} guild analysis:`, error);
+      console.error(`Failed to load the ${page.key} guild analysis:`, error);
       return of(null);
     })
   );
 };
+

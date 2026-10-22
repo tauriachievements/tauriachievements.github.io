@@ -13,11 +13,10 @@ import {
 } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import {
-  DEFAULT_GUILD_ANALYSIS_KEY,
   GuildAnalysis,
-  GuildAnalysisKey,
   GuildAnalysisLegendary,
-  GuildAnalysisPlayer
+  GuildAnalysisPlayer,
+  GuildPage
 } from './guild-analysis';
 import { getArmoryUrl } from '../utils/armory';
 import { getClassIconPath } from '../utils/classIconHelper';
@@ -34,54 +33,6 @@ import { TapTooltipDirective } from './tap-tooltip.directive';
 import { CLASS_NAMES } from './wow';
 
 const MOBILE_ROSTER_PAGE_SIZE = 25;
-
-interface GuildAnalysisConfig {
-  name: string;
-  realm: string;
-}
-
-const GUILD_ANALYSES: Readonly<Record<GuildAnalysisKey, GuildAnalysisConfig>> = {
-  'endless': {
-    name: 'Endless',
-    realm: 'Evermoon'
-  },
-  'competence-optional': {
-    name: 'Competence Optional',
-    realm: 'Evermoon'
-  },
-  'entropy': {
-    name: 'Entropy',
-    realm: 'Evermoon'
-  },
-  'impaired': {
-    name: 'Impaired',
-    realm: 'Evermoon'
-  },
-  'impact': {
-    name: 'Impact',
-    realm: 'Evermoon'
-  },
-  'miracle': {
-    name: 'Miracle',
-    realm: 'Evermoon'
-  },
-  'outlaws': {
-    name: 'Outlaws',
-    realm: 'Tauri'
-  },
-  'highly-regarded': {
-    name: 'Highly Regarded',
-    realm: 'Evermoon'
-  },
-  'temerite': {
-    name: 'Témérité',
-    realm: 'Evermoon'
-  },
-  'rycerze-ortalionu': {
-    name: 'Rycerze Ortalionu',
-    realm: 'Evermoon'
-  }
-};
 
 interface ClassCountEntry {
   id: number;
@@ -130,26 +81,24 @@ const SORT_COLUMNS = new Set<SortColumn>([
 ]);
 
 @Component({
-  selector: 'app-endless6531-page',
+  selector: 'app-guild-analysis-page',
   imports: [
     UpdateBarComponent,
     FilterDropdownComponent,
     MobileFilterToggleComponent,
     TapTooltipDirective,
     DecimalPipe
-],
+  ],
   providers: [FilterDropdownCoordinatorService],
-  templateUrl: './endless6531-page.component.html',
-  styleUrls: ['./endless6531-page.component.scss'],
+  templateUrl: './guild-analysis-page.component.html',
+  styleUrls: ['./guild-analysis-page.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class Endless6531PageComponent {
+export class GuildAnalysisPageComponent {
   private activeLegendaryTooltip: HTMLElement | null = null;
 
   private readonly routeData = inject(ActivatedRoute).snapshot.data;
-  private readonly guildKey =
-    this.routeData['guild'] as GuildAnalysisKey ?? DEFAULT_GUILD_ANALYSIS_KEY;
-  private readonly guild = GUILD_ANALYSES[this.guildKey] ?? GUILD_ANALYSES[DEFAULT_GUILD_ANALYSIS_KEY];
+  private readonly guild = this.routeData['guild'] as GuildPage;
   private readonly loadedAnalysis = this.routeData['analysis'] as GuildAnalysis | null | undefined;
   private readonly analysis: GuildAnalysis = this.loadedAnalysis ?? { timestamp: '', players: [] };
   private readonly sourcePlayers = this.analysis.players;
