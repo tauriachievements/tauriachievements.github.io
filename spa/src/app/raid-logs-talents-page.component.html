@@ -95,7 +95,7 @@
       <ng-container *ngIf="!spec(); else specView">
         <section class="section">
           <div class="role-group" *ngFor="let group of specGroups()">
-            <h3>{{ group.title }}</h3>
+            <h3 class="visually-hidden">{{ group.title }}</h3>
             <ul class="spec-grid">
               <li *ngFor="let card of group.cards; trackBy: trackSpec">
                 <a
