@@ -50,11 +50,21 @@ difficulty, the page number. Defaults are left out of it.
   the reader keeps their scroll position:
 
   ```ts
-  const url = this.router.createUrlTree([], { relativeTo: this.route, queryParams: { … } });
-  this.location.replaceState(this.router.serializeUrl(url));
+  private readonly replaceUrl = injectReplaceUrl();
+
+  private writeUrl(): void {
+    this.replaceUrl({ period: this.period() === 'week' ? 'week' : null, … });
+  }
   ```
 
-  `syncQueryParams()` in `mythic-plus-page.component.ts` is the reference.
+  `injectReplaceUrl()` (`url-state.ts`) writes the page's query parameters with
+  `Location.replaceState`; a `null` leaves a parameter out. Pass `{ path }` to also write the
+  canonical address (a profile found by a lowercased name), or `{ merge: true }` to keep the
+  parameters the page doesn't name. Each page keeps one `writeUrl()` that names every
+  parameter it owns. Read parameters with the shared parsers: `parseInteger`, `parsePage`
+  (`url-state.ts`), `parseRole`, `parseClassId` (`wow.ts`), `parseSpecName` (`wow-specs.ts`).
+- The ladder, Compare, Arena and Rare Achievements pages still write their filters with
+  `router.navigate`, so some changes add a history entry and every change scrolls to the top.
 - **Real navigation** is only for a change the Back button should undo. For example, on the
   Talent Analytics page, opening a spec's card navigates, while difficulty, boss, role and class
   use `replaceState`. On a spec's page, picking a role or a class, or pressing Reset, navigates

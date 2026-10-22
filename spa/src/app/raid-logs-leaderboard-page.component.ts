@@ -1,7 +1,7 @@
-import { Location, DatePipe, DecimalPipe } from '@angular/common';
+import { DatePipe, DecimalPipe } from '@angular/common';
 import { ChangeDetectionStrategy, Component, DestroyRef, computed, inject, signal } from '@angular/core';
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
-import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { ActivatedRoute, RouterLink } from '@angular/router';
 import { Subscription, forkJoin, of } from 'rxjs';
 import { getClassIconPath } from '../utils/classIconHelper';
 import { getRaceIconPath } from '../utils/raceIconHelper';
@@ -43,6 +43,7 @@ import {
 import { RaidLogsDataService } from './services/raid-logs-data.service';
 import { UpdateBarComponent } from './update-bar.component';
 import { CLASS_FILTER_OPTIONS, CLASS_NAMES, REALMS } from './wow';
+import { injectReplaceUrl, parseInteger, parsePage } from './url-state';
 
 interface Loaded {
   difficulty: RaidDifficulty;
@@ -69,8 +70,8 @@ const METRICS: ReadonlyArray<{ id: RaidMetric; label: string }> = [
     RaidDifficultySwitchComponent,
     GlideDirective,
     DatePipe,
-    DecimalPipe,
-    ],
+    DecimalPipe
+  ],
   templateUrl: './raid-logs-leaderboard-page.component.html',
   styleUrl: './raid-logs-leaderboard-page.component.scss',
   providers: [FilterDropdownCoordinatorService],
@@ -82,8 +83,7 @@ export class RaidLogsLeaderboardPageComponent {
   private readonly data = inject(RaidLogsDataService);
   private readonly destroyRef = inject(DestroyRef);
   private readonly route = inject(ActivatedRoute);
-  private readonly router = inject(Router);
-  private readonly location = inject(Location);
+  private readonly replaceUrl = injectReplaceUrl();
 
   private readonly query = this.route.snapshot.queryParamMap;
 
@@ -98,11 +98,11 @@ export class RaidLogsLeaderboardPageComponent {
 
   private readonly requestedDifficulty = signal(this.query.get('difficulty') ?? this.data.lastDifficulty());
   readonly metric = signal<RaidMetric>(this.query.get('metric') === 'hps' ? 'hps' : 'dps');
-  readonly classFilter = signal<number | undefined>(parseNumber(this.query.get('class')));
-  readonly specFilter = signal<number | undefined>(parseNumber(this.query.get('spec')));
+  readonly classFilter = signal<number | undefined>(parseInteger(this.query.get('class')));
+  readonly specFilter = signal<number | undefined>(parseInteger(this.query.get('spec')));
   readonly realmFilter = signal<string | undefined>(this.query.get('realm') ?? undefined);
   readonly search = signal(this.query.get('q') ?? '');
-  readonly page = signal(Math.max(1, parseNumber(this.query.get('page')) ?? 1));
+  readonly page = signal(parsePage(this.query.get('page')));
   readonly showHelp = signal(false);
   readonly hasFilters = computed(() =>
     this.classFilter() !== undefined || this.specFilter() !== undefined || this.realmFilter() !== undefined);
@@ -372,23 +372,14 @@ export class RaidLogsLeaderboardPageComponent {
   }
 
   private writeUrl(): void {
-    const url = this.router.createUrlTree([], {
-      relativeTo: this.route,
-      queryParams: {
-        difficulty: this.difficulty()?.slug ?? null,
-        metric: this.metric() === 'dps' ? null : this.metric(),
-        class: this.classFilter() ?? null,
-        spec: this.specFilter() ?? null,
-        realm: this.realmFilter() ?? null,
-        q: this.search() || null,
-        page: this.currentPage() > 1 ? this.currentPage() : null
-      }
+    this.replaceUrl({
+      difficulty: this.difficulty()?.slug ?? null,
+      metric: this.metric() === 'dps' ? null : this.metric(),
+      class: this.classFilter() ?? null,
+      spec: this.specFilter() ?? null,
+      realm: this.realmFilter() ?? null,
+      q: this.search() || null,
+      page: this.currentPage() > 1 ? this.currentPage() : null
     });
-    this.location.replaceState(this.router.serializeUrl(url));
   }
-}
-
-function parseNumber(value: string | null): number | undefined {
-  const number = value === null ? NaN : Number(value);
-  return Number.isInteger(number) ? number : undefined;
 }

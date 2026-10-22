@@ -1,4 +1,4 @@
-import { Location, DecimalPipe, NgTemplateOutlet } from '@angular/common';
+import { DecimalPipe, NgTemplateOutlet } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -11,7 +11,7 @@ import {
   viewChild
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { ActivatedRoute, RouterLink } from '@angular/router';
 import { getLocalTimeZoneLabel } from '../utils/time-zone-label';
 import { BackToTopButtonComponent } from './back-to-top-button.component';
 import { injectCompactViewport } from './compact-viewport';
@@ -64,8 +64,9 @@ import { MythicPlusDataService, NewerExportError } from './services/mythic-plus-
 import { getClassColor } from './class-colors';
 import { GlideDirective } from './glide.directive';
 import { characterTransitionName } from './motion';
-import { CLASS_FILTER_OPTIONS, CLASS_NAMES, Role } from './wow';
-import { LEGION_SPECS } from './wow-specs';
+import { CLASS_FILTER_OPTIONS, CLASS_NAMES, parseClassId, parseRole, Role } from './wow';
+import { LEGION_SPECS, parseSpecName } from './wow-specs';
+import { injectReplaceUrl, parsePage } from './url-state';
 
 interface RankedRun {
   run: MythicPlusRun;
@@ -94,24 +95,6 @@ interface CharacterFilter {
   profileLink: string[];
 }
 
-function parsePage(value: string | null): number {
-  const page = Number(value);
-  return Number.isInteger(page) && page > 0 ? page : 1;
-}
-
-function parseRoleFilter(value: string | null): Role | undefined {
-  return value === 'tank' || value === 'healer' || value === 'dps' ? value : undefined;
-}
-
-function parseClassFilter(value: string | null): number | undefined {
-  const classId = Number(value);
-  return value && CLASS_NAMES[classId] ? classId : undefined;
-}
-
-function parseSpecFilter(classId: number | undefined, value: string | null): string | undefined {
-  return LEGION_SPECS.find(spec => spec.classId === classId && spec.spec === value)?.spec;
-}
-
 @Component({
   selector: 'app-mythic-plus-page',
   imports: [
@@ -137,8 +120,7 @@ export class MythicPlusPageComponent implements OnInit {
   private readonly mythicPlusData = inject(MythicPlusDataService);
   private readonly destroyRef = inject(DestroyRef);
   private readonly route = inject(ActivatedRoute);
-  private readonly router = inject(Router);
-  private readonly location = inject(Location);
+  private readonly replaceUrl = injectReplaceUrl();
 
   private readonly leaderboardRef = viewChild<ElementRef<HTMLElement>>('leaderboard');
 
@@ -162,11 +144,11 @@ export class MythicPlusPageComponent implements OnInit {
     this.route.snapshot.queryParamMap.get('view') === 'players' ? 'players' : 'runs');
   readonly runOrder = signal<'best' | 'latest'>(this.route.snapshot.queryParamMap.get('sort') === 'latest' ? 'latest' : 'best');
   readonly realmFilter = signal<string | undefined>(this.route.snapshot.queryParamMap.get('realm')?.toLowerCase() || undefined);
-  readonly classFilter = signal<number | undefined>(parseClassFilter(this.route.snapshot.queryParamMap.get('class')));
+  readonly classFilter = signal<number | undefined>(parseClassId(this.route.snapshot.queryParamMap.get('class')));
   readonly specFilter = signal<string | undefined>(
-    parseSpecFilter(this.classFilter(), this.route.snapshot.queryParamMap.get('spec')));
+    parseSpecName(this.classFilter(), this.route.snapshot.queryParamMap.get('spec')));
   readonly roleFilter = signal<Role | undefined>(
-    this.view() === 'players' ? parseRoleFilter(this.route.snapshot.queryParamMap.get('role')) : undefined);
+    this.view() === 'players' ? parseRole(this.route.snapshot.queryParamMap.get('role')) : undefined);
   readonly roles: readonly Role[] = ['tank', 'healer', 'dps'];
   readonly roleLabels = ROLE_LABELS;
   readonly period = signal<LeaderboardPeriod>(
@@ -683,24 +665,19 @@ export class MythicPlusPageComponent implements OnInit {
   private syncQueryParams(): void {
     const players = this.view() === 'players';
     const character = this.characterFilter();
-    const url = this.router.createUrlTree([], {
-      relativeTo: this.route,
-      queryParams: {
-        dungeon: this.selectedDungeon()?.id ?? null,
-        period: this.period() === 'week' ? 'week' : null,
-        view: players ? 'players' : null,
-        sort: !players && this.runOrder() === 'latest' ? 'latest' : null,
-        realm: players ? this.realmFilter() ?? null : null,
-        class: players ? this.classFilter() ?? null : null,
-        spec: players ? this.specFilter() ?? null : null,
-        role: players ? this.roleFilter() ?? null : null,
-        character: character ? characterParam(character) : null,
-        page: this.currentPage() > 1 ? this.currentPage() : null,
-        compare: this.compareMode() ? compareParam(this.picked()) || null : null
-      }
+    this.replaceUrl({
+      dungeon: this.selectedDungeon()?.id ?? null,
+      period: this.period() === 'week' ? 'week' : null,
+      view: players ? 'players' : null,
+      sort: !players && this.runOrder() === 'latest' ? 'latest' : null,
+      realm: players ? this.realmFilter() ?? null : null,
+      class: players ? this.classFilter() ?? null : null,
+      spec: players ? this.specFilter() ?? null : null,
+      role: players ? this.roleFilter() ?? null : null,
+      character: character ? characterParam(character) : null,
+      page: this.currentPage() > 1 ? this.currentPage() : null,
+      compare: this.compareMode() ? compareParam(this.picked()) || null : null
     });
-
-    this.location.replaceState(this.router.serializeUrl(url));
   }
 
   private loadData(): void {

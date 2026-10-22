@@ -1,4 +1,4 @@
-import { Location, DecimalPipe } from '@angular/common';
+import { DecimalPipe } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -11,7 +11,7 @@ import {
   untracked
 } from '@angular/core';
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
-import { ActivatedRoute, Params, Router, RouterLink } from '@angular/router';
+import { ActivatedRoute, Params, RouterLink } from '@angular/router';
 import { getGuildArmoryUrl } from '../utils/armory';
 import { getLocalTimeZoneLabel } from '../utils/time-zone-label';
 import { BackToTopButtonComponent } from './back-to-top-button.component';
@@ -67,8 +67,9 @@ import {
 import { MythicPlusWeekAffixesComponent } from './mythic-plus-week-affixes.component';
 import { MythicPlusDataService, mythicPlusLoadError } from './services/mythic-plus-data.service';
 import { UpdateBarComponent } from './update-bar.component';
-import { CLASS_FILTER_OPTIONS, CLASS_NAMES, Role } from './wow';
-import { LEGION_SPECS } from './wow-specs';
+import { CLASS_FILTER_OPTIONS, CLASS_NAMES, parseClassId, parseRole, Role } from './wow';
+import { LEGION_SPECS, parseSpecName } from './wow-specs';
+import { injectReplaceUrl } from './url-state';
 
 type LadderPeriod = 'season' | 'week';
 
@@ -82,19 +83,6 @@ interface SummaryTile {
 
 const TOP_OVERALL = 100;
 
-function parseRole(value: string | null): Role | undefined {
-  return value === 'tank' || value === 'healer' || value === 'dps' ? value : undefined;
-}
-
-function parseClass(value: string | null): number | undefined {
-  const classId = Number(value);
-  return value && CLASS_NAMES[classId] ? classId : undefined;
-}
-
-function parseSpec(classId: number | undefined, value: string | null): string | undefined {
-  return LEGION_SPECS.find(spec => spec.classId === classId && spec.spec === value)?.spec;
-}
-
 @Component({
   selector: 'app-mythic-plus-guild-page',
   imports: [
@@ -106,8 +94,8 @@ function parseSpec(classId: number | undefined, value: string | null): string | 
     FilterDropdownComponent,
     MobileFilterToggleComponent,
     GlideDirective,
-    DecimalPipe,
-    ],
+    DecimalPipe
+  ],
   templateUrl: './mythic-plus-guild-page.component.html',
   styleUrl: './mythic-plus-guild-page.component.scss',
   providers: [FilterDropdownCoordinatorService],
@@ -117,8 +105,7 @@ export class MythicPlusGuildPageComponent implements OnInit {
   private readonly mythicPlusData = inject(MythicPlusDataService);
   private readonly destroyRef = inject(DestroyRef);
   private readonly route = inject(ActivatedRoute);
-  private readonly router = inject(Router);
-  private readonly location = inject(Location);
+  private readonly replaceUrl = injectReplaceUrl();
 
   readonly cards = injectCompactViewport(MYTHIC_PLUS_CARDS_QUERY);
   private readonly pageSize = computed(() => this.cards() ? MYTHIC_PLUS_CARDS_PAGE_SIZE : MYTHIC_PLUS_PAGE_SIZE);
@@ -139,8 +126,8 @@ export class MythicPlusGuildPageComponent implements OnInit {
   readonly period = signal<LadderPeriod>(this.query.get('period') === 'week' ? 'week' : 'season');
   readonly selectedDungeonId = signal<string | undefined>(this.query.get('dungeon') ?? undefined);
   readonly roleFilter = signal<Role | undefined>(parseRole(this.query.get('role')));
-  readonly classFilter = signal<number | undefined>(this.roleFilter() ? undefined : parseClass(this.query.get('class')));
-  readonly specFilter = signal<string | undefined>(parseSpec(this.classFilter(), this.query.get('spec')));
+  readonly classFilter = signal<number | undefined>(this.roleFilter() ? undefined : parseClassId(this.query.get('class')));
+  readonly specFilter = signal<string | undefined>(parseSpecName(this.classFilter(), this.query.get('spec')));
   readonly search = signal('');
   private readonly highlightParam = signal(parseCharacterParam(this.query.get('character')));
   private readonly limit = signal(this.pageSize());
@@ -469,17 +456,14 @@ export class MythicPlusGuildPageComponent implements OnInit {
     }
 
     const highlight = this.highlightParam();
-    const url = this.router.createUrlTree(guildLadderLink(guild), {
-      queryParams: {
-        period: this.period() === 'week' ? 'week' : null,
-        dungeon: this.selectedDungeon()?.id ?? null,
-        role: this.roleFilter() ?? null,
-        class: this.classFilter() ?? null,
-        spec: this.specFilter() ?? null,
-        character: highlight ? characterParam(highlight) : null
-      }
-    });
-    this.location.replaceState(this.router.serializeUrl(url));
+    this.replaceUrl({
+      period: this.period() === 'week' ? 'week' : null,
+      dungeon: this.selectedDungeon()?.id ?? null,
+      role: this.roleFilter() ?? null,
+      class: this.classFilter() ?? null,
+      spec: this.specFilter() ?? null,
+      character: highlight ? characterParam(highlight) : null
+    }, { path: guildLadderLink(guild) });
   }
 
   loadData(): void {

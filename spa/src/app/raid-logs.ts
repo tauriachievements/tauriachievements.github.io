@@ -1,7 +1,7 @@
 import { getClassColor } from './class-colors';
 import { formatClock } from './mythic-plus';
 import { compareSpecLists } from './mythic-plus-stats';
-import { CLASS_NAMES, Role } from './wow';
+import { CLASS_NAMES, parseRole, Role } from './wow';
 import { LEGION_SPECS, SpecDefinition } from './wow-specs';
 
 export const RAID_LOGS_DATA_DIR = 'raid-log-data';
@@ -995,7 +995,7 @@ export function defaultDifficulty(difficulties: readonly RaidDifficulty[]): Raid
 }
 
 export function parseRoleFilter(value: string | null | undefined): RoleFilter {
-  return value === 'tank' || value === 'healer' || value === 'dps' ? value : 'all';
+  return parseRole(value) ?? 'all';
 }
 
 export function realmSlug(realm: string): string {

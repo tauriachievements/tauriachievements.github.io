@@ -1,7 +1,7 @@
-import { Location, DatePipe, DecimalPipe } from '@angular/common';
+import { DatePipe, DecimalPipe } from '@angular/common';
 import { ChangeDetectionStrategy, Component, DestroyRef, OnInit, computed, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { ActivatedRoute, RouterLink } from '@angular/router';
 import { getLocalTimeZoneLabel } from '../utils/time-zone-label';
 import { BackToTopButtonComponent } from './back-to-top-button.component';
 import { getClassColor } from './class-colors';
@@ -25,6 +25,7 @@ import {
 import { RevealDirective } from './reveal.directive';
 import { RaidLogsDataService } from './services/raid-logs-data.service';
 import { UpdateBarComponent } from './update-bar.component';
+import { injectReplaceUrl } from './url-state';
 
 interface BossCard {
   boss: RaidBoss;
@@ -49,8 +50,7 @@ export class RaidLogsPageComponent implements OnInit {
   private readonly data = inject(RaidLogsDataService);
   private readonly destroyRef = inject(DestroyRef);
   private readonly route = inject(ActivatedRoute);
-  private readonly router = inject(Router);
-  private readonly location = inject(Location);
+  private readonly replaceUrl = injectReplaceUrl();
 
   readonly index = signal<RaidLogsIndex | undefined>(undefined);
   readonly isLoading = signal(true);
@@ -136,10 +136,6 @@ export class RaidLogsPageComponent implements OnInit {
   }
 
   private writeUrl(): void {
-    const url = this.router.createUrlTree([], {
-      relativeTo: this.route,
-      queryParams: { difficulty: this.difficulty()?.slug ?? null }
-    });
-    this.location.replaceState(this.router.serializeUrl(url));
+    this.replaceUrl({ difficulty: this.difficulty()?.slug ?? null });
   }
 }

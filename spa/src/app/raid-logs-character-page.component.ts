@@ -1,7 +1,7 @@
-import { Location, DatePipe, DecimalPipe } from '@angular/common';
+import { DatePipe, DecimalPipe } from '@angular/common';
 import { ChangeDetectionStrategy, Component, DestroyRef, computed, effect, inject, signal, untracked } from '@angular/core';
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
-import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { ActivatedRoute, RouterLink } from '@angular/router';
 import { Subscription, forkJoin, of } from 'rxjs';
 import { getArmoryUrl } from '../utils/armory';
 import { getClassCrestPath, getClassIconPath } from '../utils/classIconHelper';
@@ -38,6 +38,7 @@ import {
 import { RaidLogsDataService } from './services/raid-logs-data.service';
 import { UpdateBarComponent } from './update-bar.component';
 import { CLASS_NAMES } from './wow';
+import { injectReplaceUrl } from './url-state';
 
 interface Appearance {
   kill: RaidKillDetails;
@@ -83,8 +84,7 @@ export class RaidLogsCharacterPageComponent {
   private readonly data = inject(RaidLogsDataService);
   private readonly destroyRef = inject(DestroyRef);
   private readonly route = inject(ActivatedRoute);
-  private readonly router = inject(Router);
-  private readonly location = inject(Location);
+  private readonly replaceUrl = injectReplaceUrl();
 
   private readonly params = toSignal(this.route.paramMap, { initialValue: this.route.snapshot.paramMap });
 
@@ -347,15 +347,11 @@ export class RaidLogsCharacterPageComponent {
   }
 
   private writeUrl(): void {
-    const url = this.router.createUrlTree([], {
-      relativeTo: this.route,
-      queryParams: {
-        difficulty: this.requestedDifficulty() ?? null,
-        metric: this.pickedMetric() ?? null,
-        compare: this.comparison() === 'class' ? 'class' : null
-      }
+    this.replaceUrl({
+      difficulty: this.requestedDifficulty() ?? null,
+      metric: this.pickedMetric() ?? null,
+      compare: this.comparison() === 'class' ? 'class' : null
     });
-    this.location.replaceState(this.router.serializeUrl(url));
   }
 }
 

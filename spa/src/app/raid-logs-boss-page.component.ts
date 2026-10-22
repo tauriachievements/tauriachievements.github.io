@@ -1,7 +1,7 @@
-import { Location, DatePipe, DecimalPipe } from '@angular/common';
+import { DatePipe, DecimalPipe } from '@angular/common';
 import { ChangeDetectionStrategy, Component, DestroyRef, computed, effect, inject, signal, untracked } from '@angular/core';
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
-import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { ActivatedRoute, RouterLink } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { getClassIconPath } from '../utils/classIconHelper';
 import { getLocalTimeZoneLabel } from '../utils/time-zone-label';
@@ -50,6 +50,7 @@ import {
 import { RaidLogsDataService } from './services/raid-logs-data.service';
 import { UpdateBarComponent } from './update-bar.component';
 import { CLASS_FILTER_OPTIONS, REALMS } from './wow';
+import { injectReplaceUrl, parseInteger, parsePage } from './url-state';
 
 type BossTab = 'dps' | 'hps' | 'fastest' | 'latest';
 
@@ -59,7 +60,6 @@ const TABS: ReadonlyArray<{ id: BossTab; label: string }> = [
   { id: 'fastest', label: 'Fastest kills' },
   { id: 'latest', label: 'Latest kills' }
 ];
-
 
 interface KillRow {
   rank: number;
@@ -87,8 +87,8 @@ interface SummaryTile {
     GlideDirective,
     IconTipsComponent,
     DatePipe,
-    DecimalPipe,
-    ],
+    DecimalPipe
+  ],
   templateUrl: './raid-logs-boss-page.component.html',
   styleUrl: './raid-logs-boss-page.component.scss',
   providers: [FilterDropdownCoordinatorService],
@@ -101,8 +101,7 @@ export class RaidLogsBossPageComponent {
   private readonly data = inject(RaidLogsDataService);
   private readonly destroyRef = inject(DestroyRef);
   private readonly route = inject(ActivatedRoute);
-  private readonly router = inject(Router);
-  private readonly location = inject(Location);
+  private readonly replaceUrl = injectReplaceUrl();
 
   private readonly params = toSignal(this.route.paramMap, { initialValue: this.route.snapshot.paramMap });
   private readonly query = this.route.snapshot.queryParamMap;
@@ -120,11 +119,11 @@ export class RaidLogsBossPageComponent {
 
   private readonly requestedDifficulty = signal(this.query.get('difficulty') ?? undefined);
   readonly tab = signal<BossTab>(parseTab(this.query.get('tab')));
-  readonly classFilter = signal<number | undefined>(parseNumber(this.query.get('class')));
-  readonly specFilter = signal<number | undefined>(parseNumber(this.query.get('spec')));
+  readonly classFilter = signal<number | undefined>(parseInteger(this.query.get('class')));
+  readonly specFilter = signal<number | undefined>(parseInteger(this.query.get('spec')));
   readonly realmFilter = signal<string | undefined>(this.query.get('realm') ?? undefined);
   readonly search = signal(this.query.get('q') ?? '');
-  readonly page = signal(Math.max(1, parseNumber(this.query.get('page')) ?? 1));
+  readonly page = signal(parsePage(this.query.get('page')));
 
   readonly boss = computed<RaidBoss | undefined>(() =>
     this.index()?.bosses.find(boss => boss.slug === this.params().get('boss')));
@@ -381,25 +380,16 @@ export class RaidLogsBossPageComponent {
   }
 
   private writeUrl(): void {
-    const url = this.router.createUrlTree([], {
-      relativeTo: this.route,
-      queryParams: {
-        ...this.bossQueryParams(),
-        q: this.search() || null,
-        page: this.currentPage() > 1 ? this.currentPage() : null
-      }
+    this.replaceUrl({
+      ...this.bossQueryParams(),
+      q: this.search() || null,
+      page: this.currentPage() > 1 ? this.currentPage() : null
     });
-    this.location.replaceState(this.router.serializeUrl(url));
   }
 }
 
 function parseTab(value: string | null): BossTab {
   return TABS.some(tab => tab.id === value) ? value as BossTab : 'dps';
-}
-
-function parseNumber(value: string | null): number | undefined {
-  const number = value === null ? NaN : Number(value);
-  return Number.isInteger(number) ? number : undefined;
 }
 
 function pageSlice<T>(items: readonly T[], page: number): T[] {

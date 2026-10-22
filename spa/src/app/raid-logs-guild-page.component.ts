@@ -1,7 +1,7 @@
-import { Location, DatePipe } from '@angular/common';
+import { DatePipe } from '@angular/common';
 import { ChangeDetectionStrategy, Component, DestroyRef, computed, inject, signal } from '@angular/core';
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
-import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { ActivatedRoute, RouterLink } from '@angular/router';
 import { getGuildArmoryUrl } from '../utils/armory';
 import { getLocalTimeZoneLabel } from '../utils/time-zone-label';
 import { BackToTopButtonComponent } from './back-to-top-button.component';
@@ -26,6 +26,7 @@ import {
 } from './raid-logs';
 import { RaidLogsDataService } from './services/raid-logs-data.service';
 import { UpdateBarComponent } from './update-bar.component';
+import { injectReplaceUrl } from './url-state';
 
 interface BossRow {
   boss: RaidBoss;
@@ -55,8 +56,7 @@ export class RaidLogsGuildPageComponent {
   private readonly data = inject(RaidLogsDataService);
   private readonly destroyRef = inject(DestroyRef);
   private readonly route = inject(ActivatedRoute);
-  private readonly router = inject(Router);
-  private readonly location = inject(Location);
+  private readonly replaceUrl = injectReplaceUrl();
 
   private readonly params = toSignal(this.route.paramMap, { initialValue: this.route.snapshot.paramMap });
 
@@ -191,7 +191,6 @@ export class RaidLogsGuildPageComponent {
   setDifficulty(slug: string): void {
     this.requestedDifficulty.set(slug);
     this.showAllKills.set(false);
-    const url = this.router.createUrlTree([], { relativeTo: this.route, queryParams: { difficulty: slug } });
-    this.location.replaceState(this.router.serializeUrl(url));
+    this.replaceUrl({ difficulty: slug });
   }
 }

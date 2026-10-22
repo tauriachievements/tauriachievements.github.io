@@ -34,3 +34,14 @@ export const RACE_NAMES: Readonly<Record<number, string>> = {
   9: 'Goblin', 10: 'Blood Elf', 11: 'Draenei', 22: 'Worgen',
   24: 'Pandaren', 25: 'Pandaren', 26: 'Pandaren'
 };
+
+export const ROLES: readonly Role[] = ['tank', 'healer', 'dps'];
+
+export function parseRole(value: string | null | undefined): Role | undefined {
+  return ROLES.find(role => role === value);
+}
+
+export function parseClassId(value: string | null): number | undefined {
+  const classId = Number(value);
+  return value && CLASS_NAMES[classId] ? classId : undefined;
+}

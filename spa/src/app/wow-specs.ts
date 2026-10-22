@@ -71,3 +71,7 @@ export function specIconFor(classId: number, spec: string): string | undefined {
 export function specRoleFor(classId: number, spec: string): Role | undefined {
   return specFor(classId, spec)?.role;
 }
+
+export function parseSpecName(classId: number | undefined, value: string | null): string | undefined {
+  return LEGION_SPECS.find(spec => spec.classId === classId && spec.spec === value)?.spec;
+}

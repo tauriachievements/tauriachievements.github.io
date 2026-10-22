@@ -1,7 +1,7 @@
-import { Location, DecimalPipe, PercentPipe } from '@angular/common';
+import { DecimalPipe, PercentPipe } from '@angular/common';
 import { ChangeDetectionStrategy, Component, DestroyRef, ElementRef, OnInit, computed, inject, signal, viewChild } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute } from '@angular/router';
 import { getClassIconPath } from '../utils/classIconHelper';
 import { BackToTopButtonComponent } from './back-to-top-button.component';
 import { FilterDropdownCoordinatorService } from './filter-dropdown-coordinator.service';
@@ -34,6 +34,7 @@ import {
 } from './rated-battleground-view-switcher.component';
 import { UpdateBarComponent } from './update-bar.component';
 import { getLocalTimeZoneLabel } from '../utils/time-zone-label';
+import { injectReplaceUrl } from './url-state';
 
 const METRIC_OPTIONS: ReadonlyArray<{ value: RatedLeaderboardMetric; label: string }> = [
   { value: 'rating', label: 'Net rating change' },
@@ -73,9 +74,8 @@ export class RatedBattlegroundPageComponent implements OnInit {
 
   private readonly service = inject(RatedBattlegroundsService);
   private readonly route = inject(ActivatedRoute);
-  private readonly router = inject(Router);
-  private readonly location = inject(Location);
   private readonly destroyRef = inject(DestroyRef);
+  private readonly replaceUrl = injectReplaceUrl();
 
   readonly matches = signal<RatedBattlegroundMatch[]>([]);
   readonly isLoading = signal(true);
@@ -196,12 +196,7 @@ export class RatedBattlegroundPageComponent implements OnInit {
 
   setView(view: RatedBattlegroundContentView): void {
     this.selectedView.set(view);
-    const viewUrl = this.router.createUrlTree([], {
-      relativeTo: this.route,
-      queryParams: { view: view === 'matches' ? 'matches' : null },
-      queryParamsHandling: 'merge'
-    });
-    this.location.replaceState(this.router.serializeUrl(viewUrl));
+    this.replaceUrl({ view: view === 'matches' ? 'matches' : null }, { merge: true });
   }
 
   setLeaderboardPage(page: number): void {

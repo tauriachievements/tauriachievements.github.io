@@ -1,7 +1,7 @@
-import { Location, DecimalPipe } from '@angular/common';
+import { DecimalPipe } from '@angular/common';
 import { ChangeDetectionStrategy, Component, DestroyRef, OnInit, computed, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { ActivatedRoute, RouterLink } from '@angular/router';
 import { getLocalTimeZoneLabel } from '../utils/time-zone-label';
 import { BackToTopButtonComponent } from './back-to-top-button.component';
 import {
@@ -40,6 +40,7 @@ import { MythicPlusDataService, mythicPlusLoadError } from './services/mythic-pl
 import { TapTooltipDirective } from './tap-tooltip.directive';
 import { UpdateBarComponent } from './update-bar.component';
 import { Role } from './wow';
+import { injectReplaceUrl } from './url-state';
 
 type StatsPeriod = 'season' | 'week';
 type DaySplit = 'level' | 'result';
@@ -112,8 +113,7 @@ export class MythicPlusStatsPageComponent implements OnInit {
   private readonly mythicPlusData = inject(MythicPlusDataService);
   private readonly destroyRef = inject(DestroyRef);
   private readonly route = inject(ActivatedRoute);
-  private readonly router = inject(Router);
-  private readonly location = inject(Location);
+  private readonly replaceUrl = injectReplaceUrl();
 
   readonly levelBands = LEVEL_BANDS;
   readonly resultSegments = RESULT_SEGMENTS;
@@ -319,11 +319,7 @@ export class MythicPlusStatsPageComponent implements OnInit {
       return;
     }
     this.period.set(period);
-    const url = this.router.createUrlTree([], {
-      relativeTo: this.route,
-      queryParams: { period: period === 'week' ? 'week' : null }
-    });
-    this.location.replaceState(this.router.serializeUrl(url));
+    this.replaceUrl({ period: period === 'week' ? 'week' : null });
   }
 
   loadData(): void {

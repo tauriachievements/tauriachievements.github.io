@@ -1,4 +1,4 @@
-import { Location, DecimalPipe } from '@angular/common';
+import { DecimalPipe } from '@angular/common';
 import { ChangeDetectionStrategy, Component, DestroyRef, computed, effect, inject, signal, untracked } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
@@ -61,7 +61,8 @@ import {
 } from './raid-talents';
 import { RaidLogsDataService } from './services/raid-logs-data.service';
 import { UpdateBarComponent } from './update-bar.component';
-import { CLASS_FILTER_OPTIONS, CLASS_NAMES, Role } from './wow';
+import { CLASS_FILTER_OPTIONS, CLASS_NAMES, parseClassId, Role } from './wow';
+import { injectReplaceUrl, parseInteger } from './url-state';
 
 const SHOWN_BUILDS = 10;
 
@@ -148,8 +149,8 @@ interface SpecCard extends SpecTalentSummary {
     RaidDifficultySwitchComponent,
     IconTipsComponent,
     GlideDirective,
-    DecimalPipe,
-    ],
+    DecimalPipe
+  ],
   templateUrl: './raid-logs-talents-page.component.html',
   styleUrls: ['./raid-logs-talents-page.component.scss', './raid-logs-talents-page.motion.scss'],
   providers: [FilterDropdownCoordinatorService],
@@ -160,7 +161,7 @@ export class RaidLogsTalentsPageComponent {
   private readonly destroyRef = inject(DestroyRef);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
-  private readonly location = inject(Location);
+  private readonly replaceUrl = injectReplaceUrl();
 
   readonly index = signal<RaidLogsIndex | undefined>(undefined);
   readonly isLoading = signal(true);
@@ -499,9 +500,9 @@ export class RaidLogsTalentsPageComponent {
     this.route.queryParamMap
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe(params => {
-        this.specId.set(parseNumber(params.get('spec')));
+        this.specId.set(parseInteger(params.get('spec')));
         this.bossSlug.set(params.get('boss') ?? undefined);
-        this.classFilter.set(parseClass(params.get('class')));
+        this.classFilter.set(parseClassId(params.get('class')));
         this.requestedRole.set(parseRoleFilter(params.get('role')));
         const difficulty = params.get('difficulty');
         if (difficulty) {
@@ -632,21 +633,10 @@ export class RaidLogsTalentsPageComponent {
   }
 
   private writeUrl(): void {
-    const url = this.router.createUrlTree([], { relativeTo: this.route, queryParams: this.queryParams(this.specId()) });
-    this.location.replaceState(this.router.serializeUrl(url));
+    this.replaceUrl(this.queryParams(this.specId()));
   }
-}
-
-function parseNumber(value: string | null): number | undefined {
-  const number = value === null ? NaN : Number(value);
-  return Number.isInteger(number) ? number : undefined;
 }
 
 function talentMetaTitle(difficulty: string, boss: string | undefined): string {
   return `Talent meta · ${difficulty} · ${boss ?? 'All bosses'}`;
-}
-
-function parseClass(value: string | null): number | undefined {
-  const classId = parseNumber(value);
-  return classId !== undefined && CLASS_NAMES[classId] ? classId : undefined;
 }

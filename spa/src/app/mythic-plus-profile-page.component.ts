@@ -1,4 +1,4 @@
-import { Location, DatePipe, DecimalPipe, NgTemplateOutlet } from '@angular/common';
+import { DatePipe, DecimalPipe, NgTemplateOutlet } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -12,7 +12,7 @@ import {
   untracked
 } from '@angular/core';
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
-import { ActivatedRoute, Params, Router, RouterLink } from '@angular/router';
+import { ActivatedRoute, Params, RouterLink } from '@angular/router';
 import { getClassCrestPath } from '../utils/classIconHelper';
 import { getLocalTimeZoneLabel } from '../utils/time-zone-label';
 import { BackToTopButtonComponent } from './back-to-top-button.component';
@@ -72,6 +72,7 @@ import { TapTooltipDirective } from './tap-tooltip.directive';
 import { UpdateBarComponent } from './update-bar.component';
 import { CLASS_NAMES, Role } from './wow';
 import { specIconFor, specRoleFor } from './wow-specs';
+import { injectReplaceUrl } from './url-state';
 
 const TEAMMATE_COUNT = 8;
 const SEARCH_RESULT_COUNT = 20;
@@ -162,8 +163,7 @@ export class MythicPlusProfilePageComponent implements OnInit {
   private readonly mythicPlusData = inject(MythicPlusDataService);
   private readonly destroyRef = inject(DestroyRef);
   private readonly route = inject(ActivatedRoute);
-  private readonly router = inject(Router);
-  private readonly location = inject(Location);
+  private readonly replaceUrl = injectReplaceUrl();
 
   readonly cards = injectCompactViewport(MYTHIC_PLUS_CARDS_QUERY);
   private readonly phone = injectCompactViewport();
@@ -574,8 +574,7 @@ export class MythicPlusProfilePageComponent implements OnInit {
   }
 
   private writeUrl(member: { name: string; realm: string }): void {
-    const url = this.router.createUrlTree(characterProfileLink(member), { queryParams: { spec: this.selectedSpec() ?? null } });
-    this.location.replaceState(this.router.serializeUrl(url));
+    this.replaceUrl({ spec: this.selectedSpec() ?? null }, { path: characterProfileLink(member) });
   }
 
   ngOnInit(): void {
