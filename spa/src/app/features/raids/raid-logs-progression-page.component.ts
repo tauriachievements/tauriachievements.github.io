@@ -6,18 +6,10 @@ import { FilterDropdownComponent } from '../../shared/filter-dropdown.component'
 import { FilterDropdownCoordinatorService } from '../../shared/filter-dropdown-coordinator.service';
 import { FilterDropdownOption, FilterDropdownValue } from '../../shared/filter-dropdown.types';
 import { RaidDifficultySwitchComponent } from './raid-difficulty-switch.component';
-import {
-  GuildProgress,
-  RaidBoss,
-  RaidKill,
-  RaidLogsIndex,
-  bossesInKillOrder,
-  defaultDifficulty,
-  filterProgression,
-  guildKey,
-  guildProgression,
-  raidGuildLink
-} from './raid-logs';
+import { GuildProgress, filterProgression, guildProgression } from './raid-progression';
+import { RaidBoss, RaidKill, RaidLogsIndex } from './raid-logs.types';
+import { bossesInKillOrder, defaultDifficulty, guildKey } from './raid-logs';
+import { raidGuildLink } from './raid-display';
 import { RaidLogsDataService } from './raid-logs-data.service';
 import { REALMS, realmSlug } from '../../game/wow';
 import { injectReplaceUrl } from '../../core/url-state';

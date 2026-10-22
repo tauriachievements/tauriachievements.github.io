@@ -5,6 +5,14 @@ import {
   RAID_LOGS_DATA_DIR,
   RAID_TALENTS_PATH,
   RAID_TALENT_TOOLTIPS_PATH,
+  bossFilePath,
+  decodeBossFile,
+  decodeGenders,
+  decodeIndex,
+  decodeTalentTooltips,
+  decodeTalents
+} from './raid-logs';
+import {
   RaidBoss,
   RaidBossFile,
   RaidDifficulty,
@@ -16,14 +24,8 @@ import {
   RaidTalentTable,
   RaidTalentTooltips,
   RaidTalentTooltipsFile,
-  RaidTalentsFile,
-  bossFilePath,
-  decodeBossFile,
-  decodeGenders,
-  decodeIndex,
-  decodeTalentTooltips,
-  decodeTalents
-} from './raid-logs';
+  RaidTalentsFile
+} from './raid-logs.types';
 import { DataFileService } from '../../core/data-file.service';
 import { ObservableCache } from '../../core/observable-cache';
 import { realmSlug } from '../../game/wow';

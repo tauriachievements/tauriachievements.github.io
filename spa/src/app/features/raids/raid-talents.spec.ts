@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { RaidBoss, RaidCharacter, RaidDifficulty, RaidKillDetails, RaidMember, RaidSpec, RaidTalentTable, RoleFilter } from './raid-logs';
+import { RaidBoss, RaidCharacter, RaidDifficulty, RaidKillDetails, RaidMember, RaidSpec, RaidTalentTable } from './raid-logs.types';
+import { RoleFilter } from './raid-display';
 import {
   TalentSample,
   agreementLabel,

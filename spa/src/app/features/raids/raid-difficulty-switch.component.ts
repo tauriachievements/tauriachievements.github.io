@@ -1,7 +1,7 @@
 
 import { ChangeDetectionStrategy, Component, computed, input, output } from '@angular/core';
 import { GlideDirective } from '../../shared/motion/glide.directive';
-import { RaidDifficulty } from './raid-logs';
+import { RaidDifficulty } from './raid-logs.types';
 
 @Component({
   selector: 'app-raid-difficulty-switch',

@@ -10,28 +10,31 @@ import { GlideDirective } from '../../shared/motion/glide.directive';
 import { RaidDifficultySwitchComponent } from './raid-difficulty-switch.component';
 import {
   ITEM_QUALITY_COLORS,
+  formatFightTime,
+  formatPerSecond,
+  raidBossLink,
+  raidGuildLink,
+  raidLogLink
+} from './raid-display';
+import {
   MAX_SCORE,
+  RaidMetric,
+  RankedScore,
+  bossStanding,
+  countsFor,
+  performanceQuality,
+  rankScores,
+  scoreCharacters
+} from './raid-scores';
+import {
   RaidBoss,
   RaidDifficulty,
   RaidKillDetails,
   RaidLogsIndex,
   RaidMember,
-  RaidMetric,
-  RaidSpec,
-  RankedScore,
-  bossStanding,
-  characterKey,
-  countsFor,
-  formatFightTime,
-  formatPerSecond,
-  logKey,
-  performanceQuality,
-  raidBossLink,
-  raidGuildLink,
-  raidLogLink,
-  rankScores,
-  scoreCharacters
-} from './raid-logs';
+  RaidSpec
+} from './raid-logs.types';
+import { characterKey, logKey } from './raid-logs';
 import { RaidLogsDataService } from './raid-logs-data.service';
 import { CLASS_NAMES, realmSlug } from '../../game/wow';
 import { injectReplaceUrl } from '../../core/url-state';

@@ -4,22 +4,10 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { getClassColor } from '../../game/class-colors';
 import { RaidDifficultySwitchComponent } from './raid-difficulty-switch.component';
-import {
-  RaidBoss,
-  RaidKill,
-  RaidLogsIndex,
-  RaidPerformer,
-  defaultDifficulty,
-  encounterKey,
-  fastestKills,
-  formatAgo,
-  formatFightTime,
-  formatPerSecond,
-  latestKills,
-  logKey,
-  raidBossLink,
-  raidLogLink
-} from './raid-logs';
+import { RaidBoss, RaidKill, RaidLogsIndex, RaidPerformer } from './raid-logs.types';
+import { defaultDifficulty, encounterKey, logKey } from './raid-logs';
+import { fastestKills, latestKills } from './raid-progression';
+import { formatAgo, formatFightTime, formatPerSecond, raidBossLink, raidLogLink } from './raid-display';
 import { RevealDirective } from '../../shared/motion/reveal.directive';
 import { RaidLogsDataService } from './raid-logs-data.service';
 import { injectReplaceUrl } from '../../core/url-state';

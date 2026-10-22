@@ -13,29 +13,25 @@ import { GlideDirective } from '../../shared/motion/glide.directive';
 import { RaidDifficultySwitchComponent } from './raid-difficulty-switch.component';
 import {
   FACTION_NAMES,
-  MAX_SCORE,
   RAID_PAGE_SIZE,
-  RaidBoss,
-  RaidCharacter,
-  RaidDifficulty,
-  RaidKillDetails,
-  RaidLogsIndex,
+  formatPerSecond,
+  nameMatches,
+  pageCount,
+  raidCharacterLink
+} from './raid-display';
+import {
+  MAX_SCORE,
   RaidMetric,
   RankedScore,
   ScoreChange,
-  bossesInKillOrder,
-  characterKey,
   countsFor,
-  defaultDifficulty,
-  formatPerSecond,
   killsBefore,
-  nameMatches,
-  pageCount,
-  raidCharacterLink,
   rankScores,
   scoreChanges,
   scoreCharacters
-} from './raid-logs';
+} from './raid-scores';
+import { RaidBoss, RaidCharacter, RaidDifficulty, RaidKillDetails, RaidLogsIndex } from './raid-logs.types';
+import { bossesInKillOrder, characterKey, defaultDifficulty } from './raid-logs';
 import { RaidLogsDataService } from './raid-logs-data.service';
 import { CLASS_FILTER_OPTIONS, CLASS_NAMES, REALMS, realmSlug } from '../../game/wow';
 import { injectReplaceUrl, parseInteger, parsePage } from '../../core/url-state';

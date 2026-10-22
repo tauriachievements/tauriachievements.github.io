@@ -6,7 +6,7 @@ import { NavigationEnd, Router, provideRouter } from '@angular/router';
 import { RouterTestingHarness } from '@angular/router/testing';
 import { Observable, filter, firstValueFrom, of, throwError } from 'rxjs';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { RaidBossFile, RaidBossLogEntry, RaidLogsIndexFile, RaidMemberEntry } from './raid-logs';
+import { RaidBossFile, RaidBossLogEntry, RaidLogsIndexFile, RaidMemberEntry } from './raid-logs.types';
 import { RaidLogsCharacterPageComponent } from './raid-logs-character-page.component';
 import { DataFileService } from '../../core/data-file.service';
 

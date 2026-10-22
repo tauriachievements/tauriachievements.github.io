@@ -4,23 +4,10 @@ import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { getGuildArmoryUrl } from '../../game/armory';
 import { RaidDifficultySwitchComponent } from './raid-difficulty-switch.component';
-import {
-  RaidBoss,
-  RaidDifficulty,
-  RaidGuild,
-  RaidKill,
-  RaidLogsIndex,
-  defaultDifficulty,
-  fastestKills,
-  formatAgo,
-  formatFightTime,
-  guildKey,
-  guildProgression,
-  latestKills,
-  logKey,
-  raidBossLink,
-  raidLogLink
-} from './raid-logs';
+import { RaidBoss, RaidDifficulty, RaidGuild, RaidKill, RaidLogsIndex } from './raid-logs.types';
+import { defaultDifficulty, guildKey, logKey } from './raid-logs';
+import { fastestKills, guildProgression, latestKills } from './raid-progression';
+import { formatAgo, formatFightTime, raidBossLink, raidLogLink } from './raid-display';
 import { RaidLogsDataService } from './raid-logs-data.service';
 import { injectReplaceUrl } from '../../core/url-state';
 import { LoadStateComponent } from '../../shared/load-state.component';

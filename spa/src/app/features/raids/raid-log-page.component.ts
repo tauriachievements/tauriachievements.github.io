@@ -8,13 +8,7 @@ import { getClassColor } from '../../game/class-colors';
 import { GlideDirective } from '../../shared/motion/glide.directive';
 import {
   ITEM_QUALITY_COLORS,
-  RaidItem,
-  RaidKill,
-  RaidKillDetails,
-  RaidLogsIndex,
-  RaidMember,
   ROLE_NAMES,
-  characterKey,
   formatAmount,
   formatFightTime,
   formatPerSecond,
@@ -22,9 +16,11 @@ import {
   itemUrl,
   raidBossLink,
   raidCharacterLink,
-  raidGuildLink,
-  speedRank
-} from './raid-logs';
+  raidGuildLink
+} from './raid-display';
+import { RaidItem, RaidKill, RaidKillDetails, RaidLogsIndex, RaidMember } from './raid-logs.types';
+import { characterKey } from './raid-logs';
+import { speedRank } from './raid-progression';
 import { RevealDirective } from '../../shared/motion/reveal.directive';
 import { RaidLogsDataService } from './raid-logs-data.service';
 import { Role } from '../../game/wow';

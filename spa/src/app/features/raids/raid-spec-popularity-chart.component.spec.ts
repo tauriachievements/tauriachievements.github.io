@@ -1,6 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import { describe, expect, it } from 'vitest';
-import { MAX_SCORE, RaidBoss, RaidDifficulty, RaidKillDetails, RaidMember, RaidSpec } from './raid-logs';
+import { MAX_SCORE } from './raid-scores';
+import { RaidBoss, RaidDifficulty, RaidKillDetails, RaidMember, RaidSpec } from './raid-logs.types';
 import { RaidSpecPopularityChartComponent, parseChartView } from './raid-spec-popularity-chart.component';
 
 const DIFFICULTIES: RaidDifficulty[] = [

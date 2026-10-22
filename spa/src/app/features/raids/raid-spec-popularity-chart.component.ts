@@ -4,18 +4,16 @@ import { getClassIconPath } from '../../game/classIconHelper';
 import { FlipDirective } from '../../shared/motion/flip.directive';
 import { GlideDirective } from '../../shared/motion/glide.directive';
 import { formatShare, shareTicks, specPopularity } from '../../shared/spec-charts/spec-popularity';
+import { RaidBoss, RaidDifficulty, RaidKillDetails } from './raid-logs.types';
+import { RoleFilter } from './raid-display';
 import {
-  RaidBoss,
-  RaidDifficulty,
-  RaidKillDetails,
-  RoleFilter,
   SPEC_TOP_SCORES,
   SpecCharacterScore,
   formatScoreTick,
   scoreTicks,
   scoresBySpec,
   specPerformance
-} from './raid-logs';
+} from './raid-scores';
 import { RevealDirective } from '../../shared/motion/reveal.directive';
 import { TapTooltipDirective } from '../../shared/tap-tooltip.directive';
 import { SpecDefinition } from '../../game/wow-specs';

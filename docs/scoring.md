@@ -131,7 +131,7 @@ explains it together.
 
 ## Raid leaderboard
 
-- **Code:** `scoreCharacters` / `rankScores` in `spa/src/app/features/raids/raid-logs.ts`.
+- **Code:** `scoreCharacters` / `rankScores` in `spa/src/app/features/raids/raid-scores.ts`.
 - On each boss, the character's best counted kill is divided by the best anyone did there. The
   average of those shares, times `MAX_SCORE` (6969), floored, is the score. A boss the
   character hasn't killed counts as 0; a boss nobody has killed is left out of the average.
@@ -149,16 +149,16 @@ explains it together.
 - **Changes since the last scan:** the same ranking (metric, spec, class, realm) worked out
   again without the kills that scan didn't have (`newLogs`), compared with today's. A new best
   on a boss lowers everyone else's share of it, so a score can drop.
-- **Colours** (`performanceQuality` in `raid-logs.ts`) follow Warcraft Logs' parse colours, on the
-  share of the best in view: artifact for the best, legendary from 95%, epic from 75%, rare
-  from 50%, uncommon from 25%.
+- **Colours** (`performanceQuality` in `raid-scores.ts`) follow Warcraft Logs' parse colours,
+  on the share of the best in view: artifact for the best, legendary from 95%, epic from 75%,
+  rare from 50%, uncommon from 25%.
 - The search hides rows without renumbering them, as on every leaderboard.
-- **Tests:** `raid-logs.spec.ts`.
+- **Tests:** `raid-scores.spec.ts`.
 
 ## Raid guild progression and kill speed
 
 - **Code:** `guildProgression`, `filterProgression`, `fastestKills` and `speedRank` in
-  `spa/src/app/features/raids/raid-logs.ts`.
+  `spa/src/app/features/raids/raid-progression.ts`.
 - Guilds rank by most bosses down on the difficulty, then by who got there first (their latest
   first kill). Pickup groups and guilds the API couldn't name don't take part. A guild is its
   name on its realm, so one recreated under the same name keeps its row. A faction or realm
@@ -167,12 +167,12 @@ explains it together.
   Journal's order the files use.
 - Fastest kills: the shortest fight first; the earlier kill wins a tie. A log's speed rank is
   its place among the boss's kills on that difficulty.
-- **Tests:** `raid-logs.spec.ts`.
+- **Tests:** `raid-progression.spec.ts`.
 
 ## Raid spec performance
 
 - **Code:** `scoresBySpec`, `topAverage` and `specPerformance` in
-  `spa/src/app/features/raids/raid-logs.ts`; `sortByPerformance` in
+  `spa/src/app/features/raids/raid-scores.ts`; `sortByPerformance` in
   `spa/src/app/features/raids/raid-talents.ts`.
 - Every character gets the raid leaderboard score for each spec they played, as if that spec
   were picked on the leaderboard. A spec's performance is the average of its best
@@ -184,7 +184,7 @@ explains it together.
   - Talent Analytics lists each role's specs by it, best first. A tie keeps the game's order,
     the order is the same whichever boss is picked, and a picked class shows its specs in the
     game's order instead.
-- **Tests:** `raid-logs.spec.ts`, `raid-talents.spec.ts`.
+- **Tests:** `raid-scores.spec.ts`, `raid-talents.spec.ts`.
 
 ## Talent Analytics
 

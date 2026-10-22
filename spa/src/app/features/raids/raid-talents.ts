@@ -5,13 +5,11 @@ import {
   RaidMember,
   RaidSpec,
   RaidTalent,
-  RaidTalentTable,
-  RoleFilter,
-  SpecCharacterScore,
-  characterKey,
-  specMetric,
-  topAverage
-} from './raid-logs';
+  RaidTalentTable
+} from './raid-logs.types';
+import { RoleFilter } from './raid-display';
+import { SpecCharacterScore, specMetric, topAverage } from './raid-scores';
+import { characterKey } from './raid-logs';
 
 const TOP_SHARE = 0.1;
 

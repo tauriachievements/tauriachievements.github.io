@@ -17,19 +17,20 @@ import {
   RaidLogsIndex,
   RaidTalent,
   RaidTalentTable,
-  RaidTalentTooltips,
+  RaidTalentTooltips
+} from './raid-logs.types';
+import {
   RoleFilter,
-  defaultDifficulty,
   formatPerSecond,
   iconSrcset,
   itemIconUrl,
   parseRoleFilter,
   raidCharacterLink,
   raidLogLink,
-  scoresBySpec,
-  specMetric,
   spellUrl
-} from './raid-logs';
+} from './raid-display';
+import { defaultDifficulty } from './raid-logs';
+import { scoresBySpec, specMetric } from './raid-scores';
 import {
   NOTABLE_DIFFERENCE,
   NOTABLE_MIN_PICKS,

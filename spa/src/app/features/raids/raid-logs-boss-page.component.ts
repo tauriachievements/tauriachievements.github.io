@@ -14,36 +14,32 @@ import { RaidDifficultySwitchComponent } from './raid-difficulty-switch.componen
 import {
   ITEM_QUALITY_COLORS,
   RAID_PAGE_SIZE,
-  RaidBoss,
-  RaidDifficulty,
-  RaidKillDetails,
-  RaidLogsIndex,
-  RaidMetric,
-  RaidTalent,
-  RaidTalentTable,
-  RaidTalentTooltips,
-  RankedPerformance,
-  characterKey,
-  defaultDifficulty,
-  fastestKills,
   formatAgo,
   formatFightTime,
   formatPerSecond,
   iconSrcset,
   itemIconUrl,
   itemUrl,
-  latestKills,
-  logKey,
-  memberTalents,
   nameMatches,
   pageCount,
   raidBossLink,
   raidCharacterLink,
   raidGuildLink,
   raidLogLink,
-  rankCharacters,
   spellUrl
-} from './raid-logs';
+} from './raid-display';
+import {
+  RaidBoss,
+  RaidDifficulty,
+  RaidKillDetails,
+  RaidLogsIndex,
+  RaidTalent,
+  RaidTalentTable,
+  RaidTalentTooltips
+} from './raid-logs.types';
+import { RaidMetric, RankedPerformance, rankCharacters } from './raid-scores';
+import { characterKey, defaultDifficulty, logKey, memberTalents } from './raid-logs';
+import { fastestKills, latestKills } from './raid-progression';
 import { RaidLogsDataService } from './raid-logs-data.service';
 import { CLASS_FILTER_OPTIONS, REALMS, realmSlug } from '../../game/wow';
 import { injectReplaceUrl, parseInteger, parsePage } from '../../core/url-state';
