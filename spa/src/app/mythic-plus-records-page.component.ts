@@ -101,7 +101,7 @@ interface SummaryTile {
     DatePipe,
     DecimalPipe,
     NgTemplateOutlet
-],
+  ],
   templateUrl: './mythic-plus-records-page.component.html',
   styleUrl: './mythic-plus-records-page.component.scss',
   providers: [FilterDropdownCoordinatorService],

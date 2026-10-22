@@ -107,7 +107,7 @@ const isMiddle = (position: number, count: number) => position >= count / 3 && p
     RevealDirective,
     CountUpDirective,
     DecimalPipe
-],
+  ],
   templateUrl: './mythic-plus-stats-page.component.html',
   styleUrl: './mythic-plus-stats-page.component.scss',
   providers: [FilterDropdownCoordinatorService],

@@ -64,7 +64,7 @@ const LEADERBOARD_PAGE_SIZE = 25;
     RatedBattlegroundViewSwitcherComponent,
     DecimalPipe,
     PercentPipe
-],
+  ],
   providers: [FilterDropdownCoordinatorService],
   changeDetection: ChangeDetectionStrategy.OnPush
 })

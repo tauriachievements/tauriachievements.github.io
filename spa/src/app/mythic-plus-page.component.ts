@@ -131,7 +131,7 @@ function parseSpecFilter(classId: number | undefined, value: string | null): str
     GlideDirective,
     DecimalPipe,
     NgTemplateOutlet
-],
+  ],
   templateUrl: './mythic-plus-page.component.html',
   styleUrls: ['./mythic-plus-page.component.scss'],
   providers: [FilterDropdownCoordinatorService],

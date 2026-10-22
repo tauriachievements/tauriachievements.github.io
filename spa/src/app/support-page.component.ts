@@ -42,7 +42,7 @@ function shownName({ name, classId, realm, mythicPlusProfile }: PlayerName) {
     ScrollRiseDirective,
     SpotlightDirective,
     NgTemplateOutlet
-],
+  ],
   templateUrl: './support-page.component.html',
   styleUrls: ['./support-page.component.scss', './support-page.motion.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush

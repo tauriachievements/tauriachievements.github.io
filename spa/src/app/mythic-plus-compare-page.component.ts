@@ -109,7 +109,7 @@ const GAP_TICKS = [0, 1, 2, 5, 10, 20, 50, 100, 200, 500, 1000, 2000];
     CountUpDirective,
     DecimalPipe,
     NgTemplateOutlet
-],
+  ],
   templateUrl: './mythic-plus-compare-page.component.html',
   styleUrl: './mythic-plus-compare-page.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush

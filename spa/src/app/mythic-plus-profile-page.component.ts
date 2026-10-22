@@ -159,7 +159,7 @@ const formatScore = (score: number) => score.toLocaleString('en-GB', { minimumFr
     DatePipe,
     DecimalPipe,
     NgTemplateOutlet
-],
+  ],
   templateUrl: './mythic-plus-profile-page.component.html',
   styleUrls: ['./mythic-plus-profile-page.component.scss', './mythic-plus-profile-page.motion.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush
