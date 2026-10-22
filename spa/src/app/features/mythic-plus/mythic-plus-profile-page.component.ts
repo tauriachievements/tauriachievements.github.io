@@ -22,6 +22,7 @@ import {
   PlayerScore,
   characterKey,
   exportedAt,
+  hasScanChanges,
   keystoneUpgrades,
   memberNameMatches,
   rankPlayers,
@@ -234,7 +235,7 @@ export class MythicPlusProfilePageComponent implements OnInit {
   readonly scanChange = computed<ProfileScanChange | undefined>(() => {
     const index = this.index();
     const player = this.player();
-    if (!index?.previousGeneratedAt || !player || index.standings?.length !== index.players.length) {
+    if (!hasScanChanges(index) || !player) {
       return undefined;
     }
 

@@ -83,6 +83,12 @@ export interface MythicPlusIndex {
   standings?: MythicPlusStandingEntry[];
 }
 
+export function hasScanChanges(
+  index: MythicPlusIndex | undefined
+): index is MythicPlusIndex & { previousGeneratedAt: string; standings: MythicPlusStandingEntry[] } {
+  return !!index?.previousGeneratedAt && index.standings?.length === index.players.length;
+}
+
 export function exportedAt(index: Pick<MythicPlusIndex, 'generatedAt'> | undefined): Date | undefined {
   if (!index?.generatedAt) {
     return undefined;

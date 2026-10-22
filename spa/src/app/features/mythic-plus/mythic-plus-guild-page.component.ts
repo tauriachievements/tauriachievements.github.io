@@ -29,6 +29,7 @@ import {
   characterKey,
   currentAffixWeek,
   exportedAt,
+  hasScanChanges,
   memberNameMatches,
   rankPlayers,
   runScoreColor,
@@ -251,7 +252,7 @@ export class MythicPlusGuildPageComponent implements OnInit {
 
   private readonly rankChanges = computed(() => {
     const index = this.index();
-    if (!index?.previousGeneratedAt || index.standings?.length !== index.players.length || !this.defaultScope()) {
+    if (!hasScanChanges(index) || !this.defaultScope()) {
       return undefined;
     }
 

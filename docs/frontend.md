@@ -39,13 +39,16 @@ A file's name says what it is:
 | `<feature>.ts` + `<feature>.spec.ts` | pure logic: types, parsing, ranking, formatting (e.g. `mythic-plus.ts`, `raid-scores.ts`, `arena-games.ts`). A big area splits it by job: the Raids keep the file formats in `raid-logs.types.ts`, decoding in `raid-logs.ts`, scores in `raid-scores.ts`, guild progression in `raid-progression.ts` and display helpers in `raid-display.ts`, with their test fixtures in `raid-logs.fixture.ts` |
 | `<name>.directive.ts` | an attribute directive (`app` prefix: `[appReveal]`) |
 | `<name>.service.ts` | data loading shared by several pages |
+| `<page>.store.ts` | one page's loading and data state: an `@Injectable()` in the page's own `providers` (`LadderPageStore`, `MythicPlusPageStore`). The component re-exposes the signals its template reads (`readonly index = this.store.index;`) |
 | `_<area>-shared.scss` | SCSS mixins shared by an area's pages |
 | `<page>.motion.scss` | a page's motion, as a second `styleUrls` entry |
 
 Outside `app/`: `src/scss/` (`styles.scss`, `_motion.scss`).
 
-Keep components thin. A ranking, filter or count goes into the pure `<feature>.ts`, where a
-spec can pin it down without a TestBed.
+Keep components thin. A ranking, filter, count or empty-state message goes into the pure
+`<feature>.ts`, where a spec can pin it down without a TestBed. When a page's loading has more
+to it than one request (several files, retries, recovering from a newer export), it goes into
+the page's store. The component keeps the URL, the filters and the event handlers.
 
 ## Routing
 
@@ -135,8 +138,11 @@ finds Sósa), while a picked character matches name and realm exactly.
   fetches again.
 - `MythicPlusDataService` loads the Mythic+ files: `season()` (the index and every dungeon's
   runs) for the stats, records, compare, profile and guild pages; `index()` and
-  `dungeonRuns()` for the leaderboard, which loads only the dungeons its scope shows. Its
-  errors go through `mythicPlusLoadError()` for the message.
+  `dungeonRuns()` for the leaderboard (through `MythicPlusPageStore`), which loads only the
+  dungeons its scope shows. Its errors go through `mythicPlusLoadError()` for the message.
+  `hasScanChanges()` (`mythic-plus.ts`) says whether an index carries the previous scan's
+  standings for every player, which the movement arrows on the leaderboard, guild and profile
+  pages need.
 - `RaidLogsDataService` loads the raid files and keeps `lastDifficulty`, so the Raids tabs
   remember the difficulty within a session. A tab opened without `?difficulty=` starts on it,
   else on `defaultDifficulty`, the hardest one with a kill.

@@ -2,35 +2,28 @@ import { DecimalPipe, NgTemplateOutlet } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
-  DestroyRef,
   ElementRef,
   OnInit,
   computed,
   inject,
+  linkedSignal,
   signal,
   viewChild
 } from '@angular/core';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { injectCompactViewport } from '../../shared/compact-viewport';
 import {
   MythicPlusAffix,
-  MythicPlusIndex,
-  MythicPlusMember,
-  MythicPlusRun,
-  NEWER_DATA_MESSAGE,
   ROLE_LABELS,
   characterKey,
   currentAffixWeek,
   exportedAt,
+  hasScanChanges,
   memberNameMatches,
   pageCount,
   PlayerScore,
   playerRanks,
   rankPlayers,
-  rankRuns,
-  runIncludesCharacter,
-  runIncludesPlayer,
   runScoreColor,
   scoreColor,
   scoreTiers,
@@ -56,11 +49,24 @@ import { FilterDropdownComponent } from '../../shared/filter-dropdown.component'
 import { FilterDropdownCoordinatorService } from '../../shared/filter-dropdown-coordinator.service';
 import { FilterDropdownOption, FilterDropdownValue } from '../../shared/filter-dropdown.types';
 import { MobileFilterToggleComponent } from '../../shared/mobile-filter-toggle.component';
-import { MythicPlusDataService, NewerExportError } from './mythic-plus-data.service';
+import { MythicPlusPageStore } from './mythic-plus-page.store';
+import {
+  LeaderboardPeriod,
+  LeaderboardView,
+  PlayerStandingChange,
+  RankedRun,
+  RunOrder,
+  emptyLeaderboardMessage,
+  filterRuns,
+  memberFilter,
+  realmFilterOptions,
+  runsInScope,
+  scanStandingChanges
+} from './mythic-plus-leaderboard';
 import { getClassColor } from '../../game/class-colors';
 import { GlideDirective } from '../../shared/motion/glide.directive';
 import { characterTransitionName } from '../../shared/motion/motion';
-import { CLASS_FILTER_OPTIONS, CLASS_NAMES, parseClassId, parseRole, Role, realmSlug } from '../../game/wow';
+import { CLASS_FILTER_OPTIONS, CLASS_NAMES, parseClassId, parseRole, Role } from '../../game/wow';
 import { LEGION_SPECS, parseSpecName } from '../../game/wow-specs';
 import { injectReplaceUrl, parsePage } from '../../core/url-state';
 import { LoadStateComponent } from '../../shared/load-state.component';
@@ -68,22 +74,8 @@ import { setPageHeader } from '../../core/page-header';
 import { formatClock } from '../../shared/time-format';
 import { mythicPlusProfileLink } from '../../core/page-links';
 
-interface RankedRun {
-  run: MythicPlusRun;
-  rank: number;
-}
-
-type LeaderboardView = 'runs' | 'players';
-
-type LeaderboardPeriod = 'season' | 'week';
-
 interface RankedPlayer {
   player: PlayerScore;
-  rank: number;
-}
-
-interface PlayerStandingChange {
-  score: number;
   rank: number;
 }
 
@@ -112,12 +104,11 @@ interface CharacterFilter {
   ],
   templateUrl: './mythic-plus-page.component.html',
   styleUrls: ['./mythic-plus-page.component.scss'],
-  providers: [FilterDropdownCoordinatorService],
+  providers: [FilterDropdownCoordinatorService, MythicPlusPageStore],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class MythicPlusPageComponent implements OnInit {
-  private readonly mythicPlusData = inject(MythicPlusDataService);
-  private readonly destroyRef = inject(DestroyRef);
+  private readonly store = inject(MythicPlusPageStore);
   private readonly route = inject(ActivatedRoute);
   private readonly replaceUrl = injectReplaceUrl();
 
@@ -127,20 +118,23 @@ export class MythicPlusPageComponent implements OnInit {
   private readonly pageSize = computed(() => this.cards() ? MYTHIC_PLUS_CARDS_PAGE_SIZE : MYTHIC_PLUS_PAGE_SIZE);
   readonly filtersOpen = signal(false);
 
-  readonly index = signal<MythicPlusIndex | undefined>(undefined);
+  readonly index = this.store.index;
   readonly lastEdited = computed(() => exportedAt(this.index()));
-  readonly runsByDungeon = signal<ReadonlyMap<string, readonly MythicPlusRun[]>>(new Map());
-  readonly isLoading = signal(true);
-  readonly loadError = signal<string | undefined>(undefined);
-  readonly selectedDungeonId = signal<string | undefined>(
-    this.route.snapshot.queryParamMap.get('dungeon') ?? undefined);
+  readonly runsByDungeon = this.store.runsByDungeon;
+  readonly isLoading = this.store.isLoading;
+  readonly loadError = this.store.loadError;
+  readonly dungeons = this.store.dungeons;
+  readonly selectedDungeon = this.store.selectedDungeon;
   readonly page = signal(parsePage(this.route.snapshot.queryParamMap.get('page')));
   readonly search = signal('');
   private readonly characterParam = signal(parseCharacterParam(this.route.snapshot.queryParamMap.get('character')));
-  readonly expandedRunId = signal<string | undefined>(undefined);
+  readonly expandedRunId = linkedSignal<number, string | undefined>({
+    source: this.store.restarts,
+    computation: () => undefined
+  });
   readonly view = signal<LeaderboardView>(
     this.route.snapshot.queryParamMap.get('view') === 'players' ? 'players' : 'runs');
-  readonly runOrder = signal<'best' | 'latest'>(this.route.snapshot.queryParamMap.get('sort') === 'latest' ? 'latest' : 'best');
+  readonly runOrder = signal<RunOrder>(this.route.snapshot.queryParamMap.get('sort') === 'latest' ? 'latest' : 'best');
   readonly realmFilter = signal<string | undefined>(this.route.snapshot.queryParamMap.get('realm')?.toLowerCase() || undefined);
   readonly classFilter = signal<number | undefined>(parseClassId(this.route.snapshot.queryParamMap.get('class')));
   readonly specFilter = signal<string | undefined>(
@@ -164,17 +158,7 @@ export class MythicPlusPageComponent implements OnInit {
     ];
   });
 
-  readonly realmOptions = computed<FilterDropdownOption[]>(() => {
-    const players = new Map<string, number>();
-    for (const [, realm] of this.index()?.players ?? []) {
-      players.set(realm, (players.get(realm) ?? 0) + 1);
-    }
-
-    return [
-      { value: undefined, label: 'All realms' },
-      ...[...players].sort((a, b) => b[1] - a[1]).map(([realm]) => ({ value: realmSlug(realm), label: realm }))
-    ];
-  });
+  readonly realmOptions = computed(() => realmFilterOptions(this.index()?.players ?? []));
 
   private readonly realmName = computed(() => {
     const realm = this.realmFilter();
@@ -210,13 +194,6 @@ export class MythicPlusPageComponent implements OnInit {
     };
   });
 
-  private loadedIndex?: MythicPlusIndex;
-  private readonly requestedDungeons = new Set<string>();
-  private reloadedForNewerData = false;
-
-  readonly dungeons = computed(() => this.index()?.dungeons ?? []);
-  readonly selectedDungeon = computed(() =>
-    this.dungeons().find(dungeon => dungeon.id === this.selectedDungeonId()));
   readonly selectedDungeonTimer = computed(() => {
     const dungeon = this.selectedDungeon();
     return dungeon ? formatClock(dungeon.timerSeconds) : undefined;
@@ -236,25 +213,11 @@ export class MythicPlusPageComponent implements OnInit {
 
   private readonly scoreColors = computed(() => seasonScoreColors(this.index()));
 
-  readonly scopeRuns = computed<readonly MythicPlusRun[] | undefined>(() => {
-    const since = this.period() === 'week' ? this.affixWeek()?.since : undefined;
-    const inPeriod = (runs: readonly MythicPlusRun[]) => since === undefined
-      ? runs
-      : runs.filter(run => Date.parse(run.completedAt) >= since);
-    const loaded = this.runsByDungeon();
-    const dungeon = this.selectedDungeon();
-    if (dungeon) {
-      const runs = loaded.get(dungeon.id);
-      return runs && rankRuns(inPeriod(runs));
-    }
-
-    const dungeons = this.dungeons();
-    if (dungeons.some(entry => !loaded.has(entry.id))) {
-      return undefined;
-    }
-
-    return rankRuns(inPeriod(dungeons.flatMap(entry => loaded.get(entry.id) ?? [])));
-  });
+  readonly scopeRuns = computed(() => runsInScope(
+    this.runsByDungeon(),
+    this.dungeons(),
+    this.selectedDungeon(),
+    this.period() === 'week' ? this.affixWeek()?.since : undefined));
 
   readonly runsLoading = computed(() => !this.isLoading() && !this.loadError() && this.scopeRuns() === undefined);
 
@@ -263,23 +226,14 @@ export class MythicPlusPageComponent implements OnInit {
   private readonly rankedRuns = computed<RankedRun[]>(() =>
     this.dungeonRuns().map((run, index) => ({ run, rank: index + 1 })));
 
-  readonly filteredRows = computed<RankedRun[]>(() => {
-    const ranked = this.rankedRuns();
-    const character = this.characterFilter();
-    const query = this.search();
-    const rows = character
-      ? ranked.filter(entry => runIncludesCharacter(entry.run, character.key))
-      : query.trim() ? ranked.filter(entry => runIncludesPlayer(entry.run, query)) : ranked;
-    return this.runOrder() === 'latest'
-      ? [...rows].sort((a, b) => Date.parse(b.run.completedAt) - Date.parse(a.run.completedAt) || a.rank - b.rank)
-      : rows;
-  });
+  readonly filteredRows = computed(() =>
+    filterRuns(this.rankedRuns(), this.characterFilter()?.key, this.search(), this.runOrder()));
 
   constructor() {
     setPageHeader(() => ({ lastEdited: this.lastEdited() }));
   }
 
-  setRunOrder(order: 'best' | 'latest'): void {
+  setRunOrder(order: RunOrder): void {
     if (order === this.runOrder()) {
       return;
     }
@@ -290,16 +244,12 @@ export class MythicPlusPageComponent implements OnInit {
   }
 
   private readonly rankedPlayers = computed<RankedPlayer[]>(() => {
-    const realm = this.realmFilter();
-    const classId = this.classFilter();
-    const spec = this.specFilter();
-    const role = this.roleFilter();
-    const include = realm === undefined && classId === undefined && role === undefined
-      ? undefined
-      : (member: MythicPlusMember) => (realm === undefined || realmSlug(member.realm) === realm)
-        && (classId === undefined || (member.class === classId && (spec === undefined || member.spec === spec)))
-        && (role === undefined || member.role === role);
-
+    const include = memberFilter({
+      realm: this.realmFilter(),
+      classId: this.classFilter(),
+      spec: this.specFilter(),
+      role: this.roleFilter()
+    });
     const ranking = rankPlayers(this.dungeonRuns(), include);
     const ranks = playerRanks(ranking);
     return ranking.map((player, index) => ({ player, rank: ranks[index] }));
@@ -311,35 +261,17 @@ export class MythicPlusPageComponent implements OnInit {
     return query.trim() ? ranked.filter(entry => memberNameMatches(entry.player.member, query)) : ranked;
   });
 
-  private readonly showStandingChanges = computed(() => {
-    const index = this.index();
-    return !!index?.previousGeneratedAt
-      && index.standings?.length === index.players.length
+  private readonly showStandingChanges = computed(() =>
+    hasScanChanges(this.index())
       && this.period() === 'season'
       && !this.selectedDungeon()
       && this.realmFilter() === undefined
       && this.classFilter() === undefined
       && this.specFilter() === undefined
-      && this.roleFilter() === undefined;
-  });
+      && this.roleFilter() === undefined);
 
-  private readonly standingChanges = computed(() => {
-    const index = this.index();
-    const changes = new Map<string, PlayerStandingChange>();
-    if (!index?.previousGeneratedAt || index.standings?.length !== index.players.length) {
-      return changes;
-    }
-
-    index.standings.forEach((standing, playerIndex) => {
-      const score = standing[2];
-      const rank = standing[3];
-      const player = index.players[playerIndex];
-      if (player && score !== undefined && rank !== undefined) {
-        changes.set(characterKey({ name: player[0], realm: player[1] }), { score, rank });
-      }
-    });
-    return changes;
-  });
+  private readonly standingChanges = computed<ReadonlyMap<string, PlayerStandingChange>>(() =>
+    scanStandingChanges(this.index()));
 
   readonly resultCount = computed(() =>
     this.view() === 'players' ? this.filteredPlayers().length : this.filteredRows().length);
@@ -421,38 +353,20 @@ export class MythicPlusPageComponent implements OnInit {
     };
   });
 
-  readonly emptyMessage = computed(() => {
-    const query = this.search().trim();
-    const dungeon = this.selectedDungeon();
-    const character = this.characterFilter();
-
-    if (character && this.view() === 'runs') {
-      return `No runs with ${character.name} (${character.realm})${dungeon ? ` in ${dungeon.name}` : ''}.`;
-    }
-
-    if (query) {
-      const subject = this.view() === 'players' ? 'No players matching' : 'No runs with a player matching';
-      return `${subject} "${query}"${dungeon ? ` in ${dungeon.name}` : ''}.`;
-    }
-
-    const classId = this.classFilter();
-    const realm = this.realmName();
-    const role = this.roleFilter();
-    if (this.view() === 'players' && (classId !== undefined || realm || role)) {
-      const who = role ? (role === 'dps' ? 'DPS player' : role)
-        : classId === undefined ? 'player' : [this.specFilter(), CLASS_NAMES[classId]].filter(Boolean).join(' ');
-      return `No ${who}${realm ? ` on ${realm}` : ''} has a run${dungeon ? ` in ${dungeon.name}` : ''} yet.`;
-    }
-
-    if (this.period() === 'week') {
-      return dungeon ? `No ${dungeon.name} runs yet this week.` : 'No runs yet this week.';
-    }
-
-    return dungeon ? `No ${dungeon.name} runs recorded yet.` : 'No runs recorded yet this season.';
-  });
+  readonly emptyMessage = computed(() => emptyLeaderboardMessage({
+    view: this.view(),
+    period: this.period(),
+    query: this.search(),
+    dungeon: this.selectedDungeon(),
+    character: this.characterFilter(),
+    classId: this.classFilter(),
+    spec: this.specFilter(),
+    realmName: this.realmName(),
+    role: this.roleFilter()
+  }));
 
   ngOnInit(): void {
-    this.loadData();
+    this.store.load(this.route.snapshot.queryParamMap.get('dungeon') ?? undefined);
   }
 
   readonly compareLimit = COMPARE_LIMIT;
@@ -511,14 +425,7 @@ export class MythicPlusPageComponent implements OnInit {
   }
 
   retryLoad(): void {
-    if (this.reloadedForNewerData) {
-      this.startOver();
-    } else if (this.index()) {
-      this.loadError.set(undefined);
-      this.loadScopeRuns();
-    } else {
-      this.loadData();
-    }
+    this.store.retry();
   }
 
   setRealmFilter(value: FilterDropdownValue): void {
@@ -621,11 +528,11 @@ export class MythicPlusPageComponent implements OnInit {
   }
 
   selectDungeon(dungeonId: string | undefined): void {
-    this.selectedDungeonId.set(dungeonId);
+    this.store.selectedDungeonId.set(dungeonId);
     this.page.set(1);
     this.expandedRunId.set(undefined);
     this.syncQueryParams();
-    this.loadScopeRuns();
+    this.store.loadScopeRuns();
   }
 
   goToPage(page: number, scrollToLeaderboard = false): void {
@@ -680,86 +587,5 @@ export class MythicPlusPageComponent implements OnInit {
       page: this.currentPage() > 1 ? this.currentPage() : null,
       compare: this.compareMode() ? compareParam(this.picked()) || null : null
     });
-  }
-
-  private loadData(): void {
-    this.isLoading.set(true);
-    this.loadError.set(undefined);
-    this.mythicPlusData.index()
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe({
-        next: index => {
-          this.loadedIndex = index;
-          this.index.set(index);
-          this.isLoading.set(false);
-          this.loadScopeRuns();
-        },
-        error: error => this.failLoad(error)
-      });
-  }
-
-  private loadScopeRuns(): void {
-    const index = this.loadedIndex;
-    if (!index) {
-      return;
-    }
-
-    const selected = this.selectedDungeon();
-    const needed = selected ? [selected] : this.dungeons();
-
-    for (const dungeon of needed) {
-      if (this.requestedDungeons.has(dungeon.id)) {
-        continue;
-      }
-
-      this.requestedDungeons.add(dungeon.id);
-      this.mythicPlusData.dungeonRuns(index, dungeon.id)
-        .pipe(takeUntilDestroyed(this.destroyRef))
-        .subscribe({
-          next: runs => {
-            if (index === this.loadedIndex) {
-              this.runsByDungeon.update(loaded => new Map(loaded).set(dungeon.id, runs));
-            }
-          },
-          error: error => {
-            if (index !== this.loadedIndex) {
-              return;
-            }
-            if (error instanceof NewerExportError) {
-              this.reloadForNewerData(error);
-              return;
-            }
-            this.requestedDungeons.delete(dungeon.id);
-            this.failLoad(error);
-          }
-        });
-    }
-  }
-
-  private reloadForNewerData(error: NewerExportError): void {
-    const firstTime = !this.reloadedForNewerData;
-    this.reloadedForNewerData = true;
-    if (firstTime) {
-      this.startOver();
-      return;
-    }
-
-    this.loadedIndex = undefined;
-    this.failLoad(error, NEWER_DATA_MESSAGE);
-  }
-
-  private startOver(): void {
-    this.mythicPlusData.refresh();
-    this.loadedIndex = undefined;
-    this.requestedDungeons.clear();
-    this.runsByDungeon.set(new Map());
-    this.expandedRunId.set(undefined);
-    this.loadData();
-  }
-
-  private failLoad(error: unknown, message = 'The Mythic+ leaderboard could not be loaded.'): void {
-    console.error('Failed to load Mythic+ leaderboard:', error);
-    this.loadError.set(message);
-    this.isLoading.set(false);
   }
 }

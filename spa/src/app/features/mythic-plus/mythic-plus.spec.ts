@@ -8,6 +8,8 @@ import {
   currentAffixWeek,
   exportedAt,
   formatTimerDelta,
+  hasScanChanges,
+  MythicPlusIndex,
   keystoneUpgrades,
   memberNameMatches,
   pageCount,
@@ -113,6 +115,26 @@ describe('upgradeCutoffs', () => {
       { upgrades: 2, percent: 80, seconds: 1680 },
       { upgrades: 1, percent: 100, seconds: 2100 }
     ]);
+  });
+});
+
+describe('hasScanChanges', () => {
+  const index: MythicPlusIndex = {
+    version: 1,
+    season: { id: 'legion-s1', name: 'Legion Season 1', raid: 'Emerald Nightmare', startDate: '2026-09-16' },
+    dungeons: [],
+    affixes: [],
+    specs: [],
+    previousGeneratedAt: '2026-10-07T09:30:00Z',
+    players: [['Exkeito', 'Evermoon', '', 11, 4, 0]],
+    standings: [[196, 1, 4.5, 2]]
+  };
+
+  it('needs an earlier scan and a standing for every player', () => {
+    expect(hasScanChanges(index)).toBe(true);
+    expect(hasScanChanges({ ...index, previousGeneratedAt: undefined })).toBe(false);
+    expect(hasScanChanges({ ...index, standings: [] })).toBe(false);
+    expect(hasScanChanges(undefined)).toBe(false);
   });
 });
 
