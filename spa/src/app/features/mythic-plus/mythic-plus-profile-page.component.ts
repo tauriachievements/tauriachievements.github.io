@@ -16,13 +16,11 @@ import { ActivatedRoute, Params, RouterLink } from '@angular/router';
 import { getClassCrestPath } from '../../game/classIconHelper';
 import { injectCompactViewport } from '../../shared/compact-viewport';
 import {
-  MythicPlusAffix,
   MythicPlusIndex,
   MythicPlusRun,
   PlayerScore,
   characterKey,
   exportedAt,
-  hasScanChanges,
   keystoneUpgrades,
   memberNameMatches,
   rankPlayers,
@@ -33,16 +31,21 @@ import {
   upgradeStars,
   ROLE_LABELS
 } from './mythic-plus';
-import { affixWeeks, countTicks, dungeonTimers, isTimed, localDay, weekIndexAt } from './mythic-plus-activity';
+import { affixWeeks, localDay } from './mythic-plus-activity';
 import {
   ScopeRank,
-  ScoreDay,
   characterParam,
   findCharacters,
   formatTopPercent,
   frequentTeammates,
   pageOfRank,
+  profileScanChange,
+  rankChangeLabel,
+  runSummary,
+  runTimeSpan,
   scopeRank,
+  scoreChangeLabel,
+  scoreChart,
   scoreOverTime,
   specsPlayed
 } from './mythic-plus-profile';
@@ -90,33 +93,9 @@ interface RankTile {
   newSinceLastScan?: boolean;
 }
 
-interface ProfileScanChange {
-  score?: number;
-  rank?: number;
-  isNew: boolean;
-}
-
 interface DungeonBest {
   dungeon: RunView['dungeon'];
   run?: RunView;
-}
-
-interface ChartPoint {
-  day: ScoreDay;
-  label: string;
-  longLabel: string;
-  ariaLabel: string;
-  showLabel: boolean;
-  bottom: number;
-  flip: boolean;
-  middle: boolean;
-}
-
-interface WeekBand {
-  start: number;
-  span: number;
-  affixes: MythicPlusAffix[];
-  shade: boolean;
 }
 
 interface TeammateView {
@@ -134,9 +113,6 @@ interface CharacterLink {
   member: MemberView;
   score: number;
 }
-
-const percentOf = (part: number, whole: number) => whole > 0 ? (part / whole) * 100 : 0;
-const formatScore = (score: number) => score.toLocaleString('en-GB', { minimumFractionDigits: 1, maximumFractionDigits: 1 });
 
 @Component({
   selector: 'app-mythic-plus-profile-page',
@@ -232,23 +208,7 @@ export class MythicPlusProfilePageComponent implements OnInit {
       : [];
   });
 
-  readonly scanChange = computed<ProfileScanChange | undefined>(() => {
-    const index = this.index();
-    const player = this.player();
-    if (!hasScanChanges(index) || !player) {
-      return undefined;
-    }
-
-    const position = index.players.findIndex(entry => characterKey({ name: entry[0], realm: entry[1] }) === player.key);
-    const standing = position >= 0 ? index.standings[position] : undefined;
-    if (!standing) {
-      return undefined;
-    }
-
-    return standing[2] === undefined || standing[3] === undefined
-      ? { isNew: true }
-      : { score: standing[2], rank: standing[3], isNew: false };
-  });
+  readonly scanChange = computed(() => profileScanChange(this.index(), this.key()));
 
   readonly specs = computed(() => {
     const player = this.player();
@@ -308,17 +268,7 @@ export class MythicPlusProfilePageComponent implements OnInit {
     return spec ? `Not played as ${spec}` : 'Not played';
   });
 
-  readonly summary = computed(() => {
-    const runs = this.specRuns();
-    const timers = dungeonTimers(this.dungeons());
-    const timed = runs.filter(run => isTimed(run, timers));
-    const highest = Math.max(0, ...timed.map(run => run.keyLevel));
-    return [
-      { label: 'Runs', value: runs.length.toLocaleString('en-GB') },
-      { label: 'In time', value: `${Math.round(percentOf(timed.length, runs.length))}%` },
-      { label: 'Highest timed key', value: highest ? `+${highest}` : '-' }
-    ];
-  });
+  readonly summary = computed(() => runSummary(this.specRuns(), this.dungeons()));
 
   readonly ranks = computed<RankTile[]>(() => {
     const player = this.player();
@@ -388,95 +338,17 @@ export class MythicPlusProfilePageComponent implements OnInit {
   });
 
   readonly upgradeStars = upgradeStars;
-
-  rankChangeLabel(change: number): string {
-    return change > 0
-      ? `Climbed ${change} ${change === 1 ? 'rank' : 'ranks'} since the last scan`
-      : change < 0
-        ? `Fell ${Math.abs(change)} ${change === -1 ? 'rank' : 'ranks'} since the last scan`
-        : 'Rank unchanged since the last scan';
-  }
-
-  scoreChangeLabel(change: number): string {
-    return change > 0
-      ? `+${change.toFixed(1)} score since the last scan`
-      : change < 0
-        ? `−${Math.abs(change).toFixed(1)} score since the last scan`
-        : '0.0 score since the last scan';
-  }
+  readonly rankChangeLabel = rankChangeLabel;
+  readonly scoreChangeLabel = scoreChangeLabel;
 
   private readonly weeks = computed(() => affixWeeks(this.allRuns()));
-  private readonly seasonSpan = computed(() => {
-    let first = Infinity;
-    let last = -Infinity;
-    for (const run of this.allRuns()) {
-      const at = Date.parse(run.completedAt);
-      first = Math.min(first, at);
-      last = Math.max(last, at);
-    }
-    return { first, last };
-  });
+  private readonly seasonSpan = computed(() => runTimeSpan(this.allRuns()));
   readonly timeline = computed(() => {
     const { first, last } = this.seasonSpan();
     return this.player() ? scoreOverTime(this.specRuns(), first, last) : [];
   });
 
-  readonly chart = computed(() => {
-    const days = this.timeline();
-    if (!days.length) {
-      return undefined;
-    }
-
-    const ticks = countTicks(Math.max(0, ...days.map(day => day.score)));
-    const top = ticks[ticks.length - 1];
-    const count = days.length;
-    const labelEvery = Math.max(1, Math.ceil(count / (this.phone() ? 6 : 12)));
-    const weeks = this.weeks();
-    const affixes = this.affixesById();
-    const bands: WeekBand[] = [];
-    let previousWeek: number | undefined;
-
-    const points = days.map<ChartPoint>((day, position) => {
-      const date = new Date(`${day.day}T12:00:00`);
-      const week = weekIndexAt(weeks, date.getTime());
-      if (position > 0 && week === previousWeek) {
-        bands[bands.length - 1].span++;
-      } else {
-        bands.push({
-          start: position + 1,
-          span: 1,
-          affixes: (weeks[week]?.affixes ?? [])
-            .map(id => affixes.get(id))
-            .filter((affix): affix is MythicPlusAffix => affix !== undefined),
-          shade: bands.length % 2 === 1
-        });
-      }
-      previousWeek = week;
-
-      const longLabel = date.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' });
-      const played = day.runs ? `, ${day.runs} ${day.runs === 1 ? 'run' : 'runs'}, +${formatScore(day.gained)}` : '';
-      return {
-        day,
-        label: date.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }),
-        longLabel,
-        ariaLabel: `${longLabel}: ${formatScore(day.score)} points${played}`,
-        showLabel: position % labelEvery === 0,
-        bottom: percentOf(day.score, top),
-        flip: position >= count / 2,
-        middle: position >= count / 3 && position < (count * 2) / 3
-      };
-    });
-
-    const line = points.map((point, position) => `${position + 0.5},${(100 - point.bottom).toFixed(2)}`).join(' ');
-    return {
-      points,
-      bands,
-      viewBox: `0 0 ${count} 100`,
-      line,
-      area: `0.5,100 ${line} ${count - 0.5},100`,
-      gridlines: ticks.map(value => ({ value: value.toLocaleString('en-GB'), position: percentOf(value, top) }))
-    };
-  });
+  readonly chart = computed(() => scoreChart(this.timeline(), this.weeks(), this.affixesById(), this.phone() ? 6 : 12));
 
   readonly expandedRunId = linkedSignal<string | undefined, string | undefined>({ source: this.key, computation: () => undefined });
   readonly historyLimit = linkedSignal<string | undefined, number>({ source: this.key, computation: () => this.pageSize() });

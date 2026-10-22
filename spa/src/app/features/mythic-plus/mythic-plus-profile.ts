@@ -1,5 +1,16 @@
-import { localDay } from './mythic-plus-activity';
-import { MythicPlusMember, MythicPlusRun, PlayerScore, characterKey, isBetterRun, samePlace } from './mythic-plus';
+import { AffixWeekSpan, countTicks, dungeonTimers, isTimed, localDay, weekIndexAt } from './mythic-plus-activity';
+import {
+  MythicPlusAffix,
+  MythicPlusDungeon,
+  MythicPlusIndex,
+  MythicPlusMember,
+  MythicPlusRun,
+  PlayerScore,
+  characterKey,
+  hasScanChanges,
+  isBetterRun,
+  samePlace
+} from './mythic-plus';
 import { realmSlug } from '../../game/wow';
 
 type Character = Pick<MythicPlusMember, 'name' | 'realm'>;
@@ -199,4 +210,161 @@ export function specsPlayed(runs: readonly MythicPlusRun[], key: string, first?:
 
 function foldCase(value: string): string {
   return value.normalize('NFC').toLocaleLowerCase();
+}
+
+export interface ProfileScanChange {
+  score?: number;
+  rank?: number;
+  isNew: boolean;
+}
+
+export function profileScanChange(index: MythicPlusIndex | undefined, key: string | undefined): ProfileScanChange | undefined {
+  if (!hasScanChanges(index) || !key) {
+    return undefined;
+  }
+
+  const position = index.players.findIndex(entry => characterKey({ name: entry[0], realm: entry[1] }) === key);
+  const standing = position >= 0 ? index.standings[position] : undefined;
+  if (!standing) {
+    return undefined;
+  }
+
+  return standing[2] === undefined || standing[3] === undefined
+    ? { isNew: true }
+    : { score: standing[2], rank: standing[3], isNew: false };
+}
+
+export function rankChangeLabel(change: number): string {
+  return change > 0
+    ? `Climbed ${change} ${change === 1 ? 'rank' : 'ranks'} since the last scan`
+    : change < 0
+      ? `Fell ${Math.abs(change)} ${change === -1 ? 'rank' : 'ranks'} since the last scan`
+      : 'Rank unchanged since the last scan';
+}
+
+export function scoreChangeLabel(change: number): string {
+  return change > 0
+    ? `+${change.toFixed(1)} score since the last scan`
+    : change < 0
+      ? `−${Math.abs(change).toFixed(1)} score since the last scan`
+      : '0.0 score since the last scan';
+}
+
+const percentOf = (part: number, whole: number) => whole > 0 ? (part / whole) * 100 : 0;
+const formatScore = (score: number) => score.toLocaleString('en-GB', { minimumFractionDigits: 1, maximumFractionDigits: 1 });
+
+export interface ProfileStat {
+  label: string;
+  value: string;
+}
+
+export function runSummary(
+  runs: readonly Pick<MythicPlusRun, 'dungeon' | 'clearTimeSeconds' | 'keyLevel'>[],
+  dungeons: readonly Pick<MythicPlusDungeon, 'id' | 'timerSeconds'>[]
+): ProfileStat[] {
+  const timers = dungeonTimers(dungeons);
+  const timed = runs.filter(run => isTimed(run, timers));
+  const highest = Math.max(0, ...timed.map(run => run.keyLevel));
+  return [
+    { label: 'Runs', value: runs.length.toLocaleString('en-GB') },
+    { label: 'In time', value: `${Math.round(percentOf(timed.length, runs.length))}%` },
+    { label: 'Highest timed key', value: highest ? `+${highest}` : '-' }
+  ];
+}
+
+export function runTimeSpan(runs: readonly Pick<MythicPlusRun, 'completedAt'>[]): { first: number; last: number } {
+  let first = Infinity;
+  let last = -Infinity;
+  for (const run of runs) {
+    const at = Date.parse(run.completedAt);
+    first = Math.min(first, at);
+    last = Math.max(last, at);
+  }
+  return { first, last };
+}
+
+export interface ChartPoint {
+  day: ScoreDay;
+  label: string;
+  longLabel: string;
+  ariaLabel: string;
+  showLabel: boolean;
+  bottom: number;
+  flip: boolean;
+  middle: boolean;
+}
+
+export interface WeekBand {
+  start: number;
+  span: number;
+  affixes: MythicPlusAffix[];
+  shade: boolean;
+}
+
+export interface ScoreChart {
+  points: ChartPoint[];
+  bands: WeekBand[];
+  viewBox: string;
+  line: string;
+  area: string;
+  gridlines: Array<{ value: string; position: number }>;
+}
+
+export function scoreChart(
+  days: readonly ScoreDay[],
+  weeks: readonly AffixWeekSpan[],
+  affixesById: ReadonlyMap<number, MythicPlusAffix>,
+  maxLabels: number
+): ScoreChart | undefined {
+  if (!days.length) {
+    return undefined;
+  }
+
+  const ticks = countTicks(Math.max(0, ...days.map(day => day.score)));
+  const top = ticks[ticks.length - 1];
+  const count = days.length;
+  const labelEvery = Math.max(1, Math.ceil(count / maxLabels));
+  const bands: WeekBand[] = [];
+  let previousWeek: number | undefined;
+
+  const points = days.map<ChartPoint>((day, position) => {
+    const date = new Date(`${day.day}T12:00:00`);
+    const week = weekIndexAt(weeks, date.getTime());
+    if (position > 0 && week === previousWeek) {
+      bands[bands.length - 1].span++;
+    } else {
+      bands.push({
+        start: position + 1,
+        span: 1,
+        affixes: (weeks[week]?.affixes ?? [])
+          .map(id => affixesById.get(id))
+          .filter((affix): affix is MythicPlusAffix => affix !== undefined),
+        shade: bands.length % 2 === 1
+      });
+    }
+    previousWeek = week;
+
+    const longLabel = date.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' });
+    const played = day.runs ? `, ${day.runs} ${day.runs === 1 ? 'run' : 'runs'}, +${formatScore(day.gained)}` : '';
+    return {
+      day,
+      label: date.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }),
+      longLabel,
+      ariaLabel: `${longLabel}: ${formatScore(day.score)} points${played}`,
+      showLabel: position % labelEvery === 0,
+      bottom: percentOf(day.score, top),
+      flip: position >= count / 2,
+      middle: position >= count / 3 && position < (count * 2) / 3
+    };
+  });
+
+  const line = points.map((point, position) => `${position + 0.5},${(100 - point.bottom).toFixed(2)}`).join(' ');
+  return {
+    points,
+    bands,
+    viewBox: `0 0 ${count} 100`,
+    line,
+    area: `0.5,100 ${line} ${count - 0.5},100`,
+    gridlines: ticks.map(value => ({ value: value.toLocaleString('en-GB'), position: percentOf(value, top) }))
+  };
 }

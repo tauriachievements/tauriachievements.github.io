@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { MythicPlusMember, MythicPlusRun, characterKey, playerRanks, rankPlayers } from './mythic-plus';
+import { MythicPlusIndex, MythicPlusMember, MythicPlusRun, characterKey, playerRanks, rankPlayers } from './mythic-plus';
 import {
   characterParam,
   findCharacters,
@@ -7,7 +7,13 @@ import {
   frequentTeammates,
   pageOfRank,
   parseCharacterParam,
+  profileScanChange,
+  rankChangeLabel,
+  runSummary,
+  runTimeSpan,
   scopeRank,
+  scoreChangeLabel,
+  scoreChart,
   scoreOverTime,
   specsPlayed
 } from './mythic-plus-profile';
@@ -238,6 +244,105 @@ describe('specsPlayed', () => {
       { class: 10, spec: 'Windwalker', runs: 1 },
       { class: 10, spec: 'Mistweaver', runs: 2 },
       { class: 10, spec: 'Brewmaster', runs: 1 }
+    ]);
+  });
+});
+
+describe('profileScanChange', () => {
+  const index: MythicPlusIndex = {
+    version: 1,
+    season: { id: 'legion-s1', name: 'Legion Season 1', raid: 'Emerald Nightmare', startDate: '2026-09-16' },
+    dungeons: [],
+    affixes: [],
+    specs: [],
+    previousGeneratedAt: '2026-10-07T09:30:00Z',
+    players: [['Exkeito', 'Evermoon', '', 11, 4, 0], ['Napim', 'Tauri', '', 11, 4, 0]],
+    standings: [[196, 1, 4.5, 2], [160, 2]]
+  };
+
+  it('reads the change since the last scan, or that the character is new to the ladder', () => {
+    expect(profileScanChange(index, 'Exkeito|Evermoon')).toEqual({ score: 4.5, rank: 2, isNew: false });
+    expect(profileScanChange(index, 'Napim|Tauri')).toEqual({ isNew: true });
+    expect(profileScanChange(index, 'Nobody|Tauri')).toBeUndefined();
+    expect(profileScanChange({ ...index, previousGeneratedAt: undefined }, 'Exkeito|Evermoon')).toBeUndefined();
+  });
+});
+
+describe('change labels', () => {
+  it('says how the rank and the score moved since the last scan', () => {
+    expect(rankChangeLabel(1)).toBe('Climbed 1 rank since the last scan');
+    expect(rankChangeLabel(-3)).toBe('Fell 3 ranks since the last scan');
+    expect(rankChangeLabel(0)).toBe('Rank unchanged since the last scan');
+    expect(scoreChangeLabel(4.5)).toBe('+4.5 score since the last scan');
+    expect(scoreChangeLabel(-2)).toBe('−2.0 score since the last scan');
+    expect(scoreChangeLabel(0)).toBe('0.0 score since the last scan');
+  });
+});
+
+describe('runSummary', () => {
+  const dungeons = [{ id: 'cos', timerSeconds: 1800 }];
+
+  it('counts the runs, the share in time and the highest timed key', () => {
+    const runs = [
+      { dungeon: 'cos', keyLevel: 15, clearTimeSeconds: 1500 },
+      { dungeon: 'cos', keyLevel: 18, clearTimeSeconds: 1900 },
+      { dungeon: 'cos', keyLevel: 12, clearTimeSeconds: 1000 }
+    ];
+    expect(runSummary(runs, dungeons)).toEqual([
+      { label: 'Runs', value: '3' },
+      { label: 'In time', value: '67%' },
+      { label: 'Highest timed key', value: '+15' }
+    ]);
+  });
+
+  it('shows a dash for the highest key when nothing was timed', () => {
+    expect(runSummary([], dungeons).map(stat => stat.value)).toEqual(['0', '0%', '-']);
+  });
+});
+
+describe('runTimeSpan', () => {
+  it('finds the first and the last finish', () => {
+    expect(runTimeSpan([{ completedAt: '2026-10-02T00:00:00Z' }, { completedAt: '2026-09-20T00:00:00Z' }]))
+      .toEqual({ first: Date.parse('2026-09-20T00:00:00Z'), last: Date.parse('2026-10-02T00:00:00Z') });
+  });
+});
+
+describe('scoreChart', () => {
+  const tyrannical = { id: 9, name: 'Tyrannical', level: 4, icon: '', description: '' };
+  const weeks = [
+    { since: new Date(2026, 8, 16).getTime(), affixes: [9] },
+    { since: new Date(2026, 8, 23).getTime(), affixes: [] }
+  ];
+  const days = [
+    { day: '2026-09-20', score: 100, gained: 100, runs: 1 },
+    { day: '2026-09-21', score: 100, gained: 0, runs: 0 },
+    { day: '2026-09-24', score: 250.5, gained: 150.5, runs: 2 }
+  ];
+
+  it('has no chart without days', () => {
+    expect(scoreChart([], weeks, new Map(), 12)).toBeUndefined();
+  });
+
+  it('groups the days into affix weeks and labels every few days', () => {
+    const chart = scoreChart(days, weeks, new Map([[9, tyrannical]]), 2);
+
+    expect(chart?.bands).toEqual([
+      { start: 1, span: 2, affixes: [tyrannical], shade: false },
+      { start: 3, span: 1, affixes: [], shade: true }
+    ]);
+    expect(chart?.points.map(point => point.showLabel)).toEqual([true, false, true]);
+    expect(chart?.points.map(point => point.flip)).toEqual([false, false, true]);
+    expect(chart?.points.map(point => point.middle)).toEqual([false, true, false]);
+    expect(chart?.viewBox).toBe('0 0 3 100');
+  });
+
+  it('describes each day for screen readers', () => {
+    const chart = scoreChart(days, weeks, new Map(), 12);
+
+    expect(chart?.points.map(point => point.ariaLabel)).toEqual([
+      'Sunday 20 September: 100.0 points, 1 run, +100.0',
+      'Monday 21 September: 100.0 points',
+      'Thursday 24 September: 250.5 points, 2 runs, +150.5'
     ]);
   });
 });
