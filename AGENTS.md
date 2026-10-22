@@ -90,6 +90,10 @@ There is no root package manager; each half has its own toolchain.
   and fails.
 - `npm run build`: the production build. Always use `npm run build`, never plain `ng build`:
   the `prebuild` step generates data files the app needs.
+- `npm run test:visual:baseline`, then `npm run test:visual` after a change: Playwright
+  screenshots of every page at 360 and 1280 px against a local baseline, for changes that
+  should look the same ([docs/frontend.md](docs/frontend.md#visual-check)). Both run against
+  the last `npm run build`. The first run needs `npx playwright install chromium`.
 
 ### Backend (from `api/`)
 

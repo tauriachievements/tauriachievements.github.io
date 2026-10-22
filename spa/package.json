@@ -14,7 +14,9 @@
     "test": "ng test && npm run test:scripts",
     "test:unit": "ng test",
     "test:scripts": "node --test \"scripts/*.test.js\"",
-    "guild:players": "node ./scripts/list-guild-players.js"
+    "guild:players": "node ./scripts/list-guild-players.js",
+    "test:visual": "playwright test",
+    "test:visual:baseline": "playwright test --update-snapshots"
   },
   "private": true,
   "dependencies": {
@@ -36,6 +38,7 @@
     "@angular/cli": "^21.0.4",
     "@angular/compiler-cli": "^21.0.6",
     "@angular/language-service": "^21.0.6",
+    "@playwright/test": "^1.64.0",
     "@types/node": "^24.10.4",
     "jsdom": "^29.1.1",
     "typescript": "~5.9.3",

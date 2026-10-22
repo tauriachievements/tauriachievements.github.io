@@ -186,7 +186,32 @@ Phones come first (see the product rules in [AGENTS.md](../AGENTS.md)).
 
 1. `npm run build`.
 2. Serve `spa/dist/tauri-achievements/browser` with a static server that serves real files
-   first and falls back to `404.html`, as Pages does. `ng serve` resolves app routes first and
-   hides routing problems.
+   first and falls back to `404.html`, as Pages does: `node e2e/serve-dist.mjs` (port 4300).
+   `ng serve` resolves app routes first and hides routing problems.
 3. Drive it with Playwright. The app is zoneless, so wait a tick (about 150 ms) after a click
    before reading the DOM.
+
+## Visual check
+
+`npm run test:visual` screenshots every page in `e2e/visual-pages.ts` at 360 px (as a phone,
+with touch) and at 1280 px, and compares them with your local baseline. Use it for any change
+that should look the same: a refactor, a migration, moved styles.
+
+1. On the commit you start from: `npm run build`, then `npm run test:visual:baseline`.
+2. After your change: `npm run build`, then `npm run test:visual`. A failure leaves the
+   expected, actual and diff images in `e2e/.results/`, and `npx playwright show-report
+   e2e/.report` shows them side by side.
+
+How it stays deterministic:
+
+- The baselines (`e2e/__screenshots__/`) are local and git-ignored: font rendering differs
+  between machines, so they're never committed and CI doesn't run the check.
+- The data is whatever `spa/src` holds. A data sync between the baseline and the check
+  changes the pages, so take both on the same data.
+- The clock is fixed (22 Oct 2026, 12:00 UTC), the time zone is Europe/Budapest, and the
+  browser reports reduced motion, so counters and reveals show their end state.
+- External images are cached in `e2e/.cache/` on first use, and analytics are blocked.
+- Each page is compared in viewport-sized slices, not as one full-page image. Chromium
+  sometimes leaves images unpainted in a very tall full-page capture.
+
+To cover a new page or a new URL state, add it to `e2e/visual-pages.ts`.
