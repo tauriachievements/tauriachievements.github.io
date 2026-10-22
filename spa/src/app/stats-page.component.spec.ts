@@ -46,6 +46,12 @@ describe('toServerStats', () => {
     expect(stats.raceCounts).toEqual([2, 2]);
   });
 
+  it('tells the Pandaren of each faction apart: 25 is Alliance, 26 Horde', () => {
+    const stats = toServerStats(snapshot({ races: [{ id: 25, count: 1 }, { id: 26, count: 1 }, { id: 24, count: 1 }] }));
+
+    expect(stats.raceLabels).toEqual(['Pandaren (A)', 'Pandaren (H)', 'Pandaren']);
+  });
+
   it('pairs each class with its class color', () => {
     const stats = toServerStats(snapshot());
 

@@ -41,7 +41,7 @@ Chart.register(BarController, BarElement, CategoryScale, LinearScale, DoughnutCo
 Chart.defaults.color = '#9fa6b4';
 Chart.defaults.font.family = "'Arial', sans-serif";
 
-const PANDAREN_FACTION_LABELS: Readonly<Record<number, string>> = { 25: 'Pandaren (H)', 26: 'Pandaren (A)' };
+const PANDAREN_FACTION_LABELS: Readonly<Record<number, string>> = { 25: 'Pandaren (A)', 26: 'Pandaren (H)' };
 
 const UNKNOWN_CLASS_COLOR = '#888';
 
