@@ -3,9 +3,10 @@ import { ChangeDetectionStrategy, Component, computed, inject, input, output, si
 import { FilterDropdownComponent } from '../../shared/filter-dropdown.component';
 import { FilterDropdownCoordinatorService } from '../../shared/filter-dropdown-coordinator.service';
 import { FilterDropdownOption, FilterDropdownValue } from '../../shared/filter-dropdown.types';
-import { DEFAULT_PAGE_SIZE, DEFAULT_SORT, LadderClassOption, LadderSelectOption } from './ladder-options';
+import { DEFAULT_PAGE_SIZE, DEFAULT_SORT } from './ladder-options';
 import { MobileFilterToggleComponent } from '../../shared/mobile-filter-toggle.component';
 import { LadderSort } from './ladder.types';
+import { LadderClassOption, LadderSelectOption } from '../../players/player-filter-options';
 
 type DropdownKey = 'class' | 'sort' | 'realm' | 'faction';
 

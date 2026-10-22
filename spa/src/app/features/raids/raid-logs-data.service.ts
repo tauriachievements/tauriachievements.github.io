@@ -22,11 +22,11 @@ import {
   decodeGenders,
   decodeIndex,
   decodeTalentTooltips,
-  decodeTalents,
-  realmSlug
+  decodeTalents
 } from './raid-logs';
 import { DataFileService } from '../../core/data-file.service';
 import { ObservableCache } from '../../core/observable-cache';
+import { realmSlug } from '../../game/wow';
 
 export interface FoundKill {
   index: RaidLogsIndex;

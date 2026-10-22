@@ -1,11 +1,11 @@
 import { ParamMap, Params } from '@angular/router';
-import { CLASS_OPTIONS, REALM_OPTIONS } from '../ladder/ladder-options';
 import {
   GLADIATOR_MOUNT_OPTIONS,
   KEYSTONE_MASTER_OPTIONS,
   R1_GLADIATOR_OPTIONS,
   RATED_BATTLEGROUND_OPTIONS
 } from '../../players/rare-achievement-groups';
+import { CLASS_OPTIONS, REALM_OPTIONS } from '../../players/player-filter-options';
 
 export const ALL_GLADIATOR_TITLES_FILTER_VALUE = 'allGladiatorTitles';
 export const ALL_GLADIATOR_MOUNTS_FILTER_VALUE = 'allGladiatorMounts';

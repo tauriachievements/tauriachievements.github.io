@@ -1,14 +1,12 @@
 import { ParamMap, Params } from '@angular/router';
 import {
-  CLASS_OPTIONS,
   DEFAULT_PAGE_SIZE,
   DEFAULT_SORT,
-  FACTION_OPTIONS,
   PAGE_SIZE_OPTIONS,
-  REALM_OPTIONS,
   SORT_OPTIONS
 } from './ladder-options';
 import { LadderFilterState, LadderSort } from './ladder.types';
+import { CLASS_OPTIONS, FACTION_OPTIONS, REALM_OPTIONS } from '../../players/player-filter-options';
 
 const VALID_SORTS = new Set<LadderSort>(SORT_OPTIONS.map((option) => option.value));
 const VALID_REALMS = new Set<string>(

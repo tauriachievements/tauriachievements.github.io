@@ -1,6 +1,5 @@
 import { Role } from '../../game/wow';
-
-export type RunQuality = 'artifact' | 'legendary' | 'epic' | 'rare' | 'uncommon';
+import { formatClock } from '../../shared/time-format';
 
 export interface MythicPlusSeason {
   id: string;
@@ -180,20 +179,6 @@ export function upgradeCutoffs(timerSeconds: number): Array<UpgradeCutoff & { se
   }));
 }
 
-export function formatDuration(totalSeconds: number): string {
-  const seconds = normalizeSeconds(totalSeconds);
-  return [Math.floor(seconds / 3600), Math.floor(seconds / 60) % 60, seconds % 60].map(pad).join(':');
-}
-
-export function formatClock(totalSeconds: number): string {
-  const seconds = normalizeSeconds(totalSeconds);
-  const hours = Math.floor(seconds / 3600);
-  const minutes = Math.floor(seconds / 60) % 60;
-  const rest = pad(seconds % 60);
-
-  return hours > 0 ? `${hours}:${pad(minutes)}:${rest}` : `${minutes}:${rest}`;
-}
-
 export function formatTimerDelta(clearTimeSeconds: number, timerSeconds: number): string {
   const delta = Math.round(clearTimeSeconds - timerSeconds);
   if (!Number.isFinite(delta) || delta === 0) {
@@ -242,27 +227,6 @@ export function rankRuns<T extends Pick<MythicPlusRun, 'id' | 'score' | 'clearTi
     b.score - a.score
     || a.clearTimeSeconds - b.clearTimeSeconds
     || (a.id < b.id ? -1 : a.id > b.id ? 1 : 0));
-}
-
-export function scoreQuality(score: number, bestScore: number): RunQuality {
-  if (!(bestScore > 0)) {
-    return 'uncommon';
-  }
-
-  if (score >= bestScore) {
-    return 'artifact';
-  }
-
-  const ratio = score / bestScore;
-  if (ratio >= 0.9) {
-    return 'legendary';
-  }
-
-  if (ratio >= 0.84) {
-    return 'epic';
-  }
-
-  return ratio >= 0.76 ? 'rare' : 'uncommon';
 }
 
 export function scoreTiers(scores: readonly number[]): number[] | undefined {
@@ -452,12 +416,4 @@ function foldedMemberName(member: Pick<MythicPlusMember, 'name'>): string {
 
 function foldName(value: string): string {
   return value.normalize('NFD').replace(/\p{M}/gu, '').toLocaleLowerCase();
-}
-
-function normalizeSeconds(value: number): number {
-  return Number.isFinite(value) && value > 0 ? Math.floor(value) : 0;
-}
-
-function pad(value: number): string {
-  return String(value).padStart(2, '0');
 }

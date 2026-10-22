@@ -48,11 +48,9 @@ import {
 import { MythicPlusPlayersListComponent } from './mythic-plus-players-list.component';
 import {
   characterParam,
-  characterProfileLink,
   findCharacters,
   pageOfRank,
-  parseCharacterParam,
-  realmSlug
+  parseCharacterParam
 } from './mythic-plus-profile';
 import {
   MYTHIC_PLUS_CARDS_PAGE_SIZE,
@@ -64,11 +62,12 @@ import {
 } from './mythic-plus-views';
 import { MythicPlusWeekAffixesComponent } from './mythic-plus-week-affixes.component';
 import { MythicPlusDataService, mythicPlusLoadError } from './mythic-plus-data.service';
-import { CLASS_FILTER_OPTIONS, CLASS_NAMES, parseClassId, parseRole, Role } from '../../game/wow';
+import { CLASS_FILTER_OPTIONS, CLASS_NAMES, parseClassId, parseRole, Role, realmSlug } from '../../game/wow';
 import { LEGION_SPECS, parseSpecName } from '../../game/wow-specs';
 import { injectReplaceUrl } from '../../core/url-state';
 import { LoadStateComponent } from '../../shared/load-state.component';
 import { setPageHeader } from '../../core/page-header';
+import { mythicPlusProfileLink } from '../../core/page-links';
 
 type LadderPeriod = 'season' | 'week';
 
@@ -332,7 +331,7 @@ export class MythicPlusGuildPageComponent implements OnInit {
         value: best ? best.player.score.toLocaleString('en-GB', { minimumFractionDigits: 1, maximumFractionDigits: 1 }) : '-',
         note: best ? best.player.member.name : '',
         color: best && scoreColor(best.player.score, this.scoreColors().tiers),
-        link: best && characterProfileLink(best.player.member)
+        link: best && mythicPlusProfileLink(best.player.member)
       },
       {
         label: `Top ${TOP_OVERALL}`,

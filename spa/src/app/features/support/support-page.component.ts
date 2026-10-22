@@ -4,7 +4,6 @@ import { RouterLink } from '@angular/router';
 import { getArmoryUrl } from '../../game/armory';
 import { getClassColor } from '../../game/class-colors';
 import { DecodeDirective } from '../../shared/motion/decode.directive';
-import { characterProfileLink } from '../mythic-plus/mythic-plus-profile';
 import { RevealDirective } from '../../shared/motion/reveal.directive';
 import { ScrollRiseDirective } from '../../shared/motion/scroll-rise.directive';
 import { SpotlightDirective } from '../../shared/motion/spotlight.directive';
@@ -17,6 +16,7 @@ import {
   quoteSpans,
   testimonialSourceLabel
 } from './support';
+import { mythicPlusProfileLink } from '../../core/page-links';
 
 const QUOTE_SPANS = quoteSpans(TESTIMONIALS.map(({ quote }) => quote));
 
@@ -24,7 +24,7 @@ function shownName({ name, classId, realm, mythicPlusProfile }: PlayerName) {
   return {
     name,
     color: classId ? getClassColor(classId) : undefined,
-    profileLink: realm && mythicPlusProfile ? characterProfileLink({ name: mythicPlusProfile, realm }) : null,
+    profileLink: realm && mythicPlusProfile ? mythicPlusProfileLink({ name: mythicPlusProfile, realm }) : null,
     armoryUrl: realm ? getArmoryUrl(name, realm) : null
   };
 }

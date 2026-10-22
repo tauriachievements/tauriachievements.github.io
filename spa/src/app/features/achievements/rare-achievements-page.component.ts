@@ -6,7 +6,6 @@ import { Subject, debounceTime, distinctUntilChanged, forkJoin, map } from 'rxjs
 import { FilterDropdownCoordinatorService } from '../../shared/filter-dropdown-coordinator.service';
 import { FilterDropdownComponent } from '../../shared/filter-dropdown.component';
 import { FilterDropdownOption } from '../../shared/filter-dropdown.types';
-import { CLASS_OPTIONS, REALM_OPTIONS } from '../ladder/ladder-options';
 import {
   GLADIATOR_MOUNT_OPTIONS,
   KEYSTONE_MASTER_OPTIONS,
@@ -45,6 +44,7 @@ import { getGuildArmoryUrl, getArmoryUrl } from '../../game/armory';
 import { getClassIconPath } from '../../game/classIconHelper';
 import { getRaceIconPath } from '../../game/raceIconHelper';
 import { setPageHeader } from '../../core/page-header';
+import { CLASS_OPTIONS, REALM_OPTIONS } from '../../players/player-filter-options';
 
 type CharacterFaction = 'Alliance' | 'Horde';
 type CountRankingMetric = 'gladiatorTitleCount' | 'gladiatorMountCount';

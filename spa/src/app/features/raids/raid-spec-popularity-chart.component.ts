@@ -3,7 +3,7 @@ import { ChangeDetectionStrategy, Component, computed, input, model, output } fr
 import { getClassIconPath } from '../../game/classIconHelper';
 import { FlipDirective } from '../../shared/motion/flip.directive';
 import { GlideDirective } from '../../shared/motion/glide.directive';
-import { formatShare, shareTicks, specPopularity } from '../mythic-plus/mythic-plus-stats';
+import { formatShare, shareTicks, specPopularity } from '../../shared/spec-charts/spec-popularity';
 import {
   RaidBoss,
   RaidDifficulty,
@@ -48,7 +48,7 @@ export function parseChartView(value: string | null | undefined): ChartView {
   selector: 'app-raid-spec-popularity-chart',
   imports: [TapTooltipDirective, GlideDirective, RevealDirective, FlipDirective, DecimalPipe],
   templateUrl: './raid-spec-popularity-chart.component.html',
-  styleUrls: ['../mythic-plus/mythic-plus-spec-chart.component.scss', './raid-spec-popularity-chart.component.scss'],
+  styleUrls: ['../../shared/spec-charts/spec-chart.scss', './raid-spec-popularity-chart.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class RaidSpecPopularityChartComponent {

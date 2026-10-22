@@ -37,12 +37,10 @@ import {
   ScopeRank,
   ScoreDay,
   characterParam,
-  characterProfileLink,
   findCharacters,
   formatTopPercent,
   frequentTeammates,
   pageOfRank,
-  realmSlug,
   scopeRank,
   scoreOverTime,
   specsPlayed
@@ -67,11 +65,12 @@ import { ScrollToEndDirective } from '../../shared/motion/scroll-to-end.directiv
 import { MythicPlusDataService, mythicPlusLoadError } from './mythic-plus-data.service';
 import { SpotlightDirective } from '../../shared/motion/spotlight.directive';
 import { TapTooltipDirective } from '../../shared/tap-tooltip.directive';
-import { CLASS_NAMES, Role } from '../../game/wow';
+import { CLASS_NAMES, Role, realmSlug } from '../../game/wow';
 import { specIconFor, specRoleFor } from '../../game/wow-specs';
 import { injectReplaceUrl } from '../../core/url-state';
 import { LoadStateComponent } from '../../shared/load-state.component';
 import { setPageHeader } from '../../core/page-header';
+import { mythicPlusProfileLink } from '../../core/page-links';
 
 const TEAMMATE_COUNT = 8;
 const SEARCH_RESULT_COUNT = 20;
@@ -572,7 +571,7 @@ export class MythicPlusProfilePageComponent implements OnInit {
   }
 
   private writeUrl(member: { name: string; realm: string }): void {
-    this.replaceUrl({ spec: this.selectedSpec() ?? null }, { path: characterProfileLink(member) });
+    this.replaceUrl({ spec: this.selectedSpec() ?? null }, { path: mythicPlusProfileLink(member) });
   }
 
   ngOnInit(): void {

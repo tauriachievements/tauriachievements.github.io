@@ -1,8 +1,8 @@
 import { ChangeDetectionStrategy, Component, DestroyRef, OnInit, computed, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute } from '@angular/router';
-import { RaceBySpecComponent } from '../mythic-plus/race-by-spec.component';
-import { RaceSample } from '../mythic-plus/race-popularity';
+import { RaceBySpecComponent } from '../../shared/spec-charts/race-by-spec.component';
+import { RaceSample } from '../../shared/spec-charts/race-popularity';
 import { RaidDifficulty, RaidKillDetails, RaidLogsIndex, RoleFilter, defaultDifficulty, parseRoleFilter } from './raid-logs';
 import { ChartView, RaidSpecPopularityChartComponent, parseChartView } from './raid-spec-popularity-chart.component';
 import { RaidLogsDataService } from './raid-logs-data.service';

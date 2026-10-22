@@ -126,6 +126,9 @@ There is no root package manager; each half has its own toolchain.
 - Templates use the built-in control flow: `@if`, `@for`, `@switch`. A `@for` tracks a key of
   the item (`track row.id`), not a method. A block inside running text stays on one line
   (`side by side@if (season) { · {{ season }}}.`): a line break inside it renders as a space.
+- A feature never imports from another feature; what two features share moves down into
+  `shared/`, `game/`, `core/` or `players/`. `scripts/app-boundaries.test.js` enforces this
+  ([docs/frontend.md](docs/frontend.md#where-things-go)).
 - Pure logic lives in `<feature>.ts` with `<feature>.spec.ts` beside it, for example
   `arena-games.ts` next to `arena-games-page.component.ts`. Components stay thin. Most tests
   cover the pure functions.

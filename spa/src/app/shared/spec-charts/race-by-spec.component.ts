@@ -1,10 +1,10 @@
 import { DecimalPipe } from '@angular/common';
 import { ChangeDetectionStrategy, Component, computed, input, signal } from '@angular/core';
 import { getRaceIconPath } from '../../game/raceIconHelper';
-import { GlideDirective } from '../../shared/motion/glide.directive';
+import { GlideDirective } from '../motion/glide.directive';
 import { RaceFactionFilter, RaceSample, RaceShare, racesBySpec } from './race-popularity';
-import { RevealDirective } from '../../shared/motion/reveal.directive';
-import { TapTooltipDirective } from '../../shared/tap-tooltip.directive';
+import { RevealDirective } from '../motion/reveal.directive';
+import { TapTooltipDirective } from '../tap-tooltip.directive';
 import { Role } from '../../game/wow';
 
 interface RaceView extends RaceShare {
@@ -42,7 +42,7 @@ const ROLE_TITLES: Readonly<Record<Role, string>> = { dps: 'DPS', tank: 'tank', 
   selector: 'app-race-by-spec',
   imports: [GlideDirective, RevealDirective, TapTooltipDirective, DecimalPipe],
   templateUrl: './race-by-spec.component.html',
-  styleUrls: ['./mythic-plus-spec-chart.component.scss', './race-by-spec.component.scss'],
+  styleUrls: ['./spec-chart.scss', './race-by-spec.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class RaceBySpecComponent {

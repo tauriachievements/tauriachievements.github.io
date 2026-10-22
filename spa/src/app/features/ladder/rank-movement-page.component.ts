@@ -7,10 +7,11 @@ import { HistorySummaryComponent } from './history-summary.component';
 import { MobileFilterToggleComponent } from '../../shared/mobile-filter-toggle.component';
 import { buildHistoryComparisonLabel } from './ladder-history.mapper';
 import { LadderHistoryData, LadderHistoryMoverView } from './ladder-history.types';
-import { CLASS_OPTIONS, PAGE_SIZE_OPTIONS, REALM_OPTIONS } from './ladder-options';
+import { PAGE_SIZE_OPTIONS } from './ladder-options';
 import { LadderHistoryService } from './ladder-history.service';
 import { LadderLastUpdatedService } from '../../players/ladder-last-updated.service';
 import { setPageHeader } from '../../core/page-header';
+import { CLASS_OPTIONS, REALM_OPTIONS } from '../../players/player-filter-options';
 
 type TopGainersDropdownKey = 'limit' | 'realm' | 'class';
 

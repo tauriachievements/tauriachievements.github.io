@@ -23,7 +23,6 @@ import {
   characterKey,
   currentAffixWeek,
   exportedAt,
-  formatClock,
   memberNameMatches,
   pageCount,
   PlayerScore,
@@ -39,7 +38,7 @@ import {
 } from './mythic-plus';
 import { MythicPlusPlayersListComponent } from './mythic-plus-players-list.component';
 import { COMPARE_LIMIT, compareParam, parseCompareParam } from './mythic-plus-compare';
-import { characterParam, characterProfileLink, findCharacters, parseCharacterParam, realmSlug } from './mythic-plus-profile';
+import { characterParam, findCharacters, parseCharacterParam } from './mythic-plus-profile';
 import { MythicPlusRunsListComponent } from './mythic-plus-runs-list.component';
 import { MythicPlusSpecChartComponent } from './mythic-plus-spec-chart.component';
 import {
@@ -61,11 +60,13 @@ import { MythicPlusDataService, NewerExportError } from './mythic-plus-data.serv
 import { getClassColor } from '../../game/class-colors';
 import { GlideDirective } from '../../shared/motion/glide.directive';
 import { characterTransitionName } from '../../shared/motion/motion';
-import { CLASS_FILTER_OPTIONS, CLASS_NAMES, parseClassId, parseRole, Role } from '../../game/wow';
+import { CLASS_FILTER_OPTIONS, CLASS_NAMES, parseClassId, parseRole, Role, realmSlug } from '../../game/wow';
 import { LEGION_SPECS, parseSpecName } from '../../game/wow-specs';
 import { injectReplaceUrl, parsePage } from '../../core/url-state';
 import { LoadStateComponent } from '../../shared/load-state.component';
 import { setPageHeader } from '../../core/page-header';
+import { formatClock } from '../../shared/time-format';
+import { mythicPlusProfileLink } from '../../core/page-links';
 
 interface RankedRun {
   run: MythicPlusRun;
@@ -205,7 +206,7 @@ export class MythicPlusPageComponent implements OnInit {
       name: character.name,
       realm: character.realm,
       color: (found && getClassColor(found.classId)) ?? '#e0e0e0',
-      profileLink: characterProfileLink(character)
+      profileLink: mythicPlusProfileLink(character)
     };
   });
 

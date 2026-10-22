@@ -10,7 +10,6 @@ import { FilterDropdownComponent } from '../../shared/filter-dropdown.component'
 import { FilterDropdownCoordinatorService } from '../../shared/filter-dropdown-coordinator.service';
 import { FilterDropdownOption, FilterDropdownValue } from '../../shared/filter-dropdown.types';
 import { GlideDirective } from '../../shared/motion/glide.directive';
-import { RunQuality, scoreQuality } from '../mythic-plus/mythic-plus';
 import { RaidDifficultySwitchComponent } from './raid-difficulty-switch.component';
 import {
   FACTION_NAMES,
@@ -34,15 +33,15 @@ import {
   pageCount,
   raidCharacterLink,
   rankScores,
-  realmSlug,
   scoreChanges,
   scoreCharacters
 } from './raid-logs';
 import { RaidLogsDataService } from './raid-logs-data.service';
-import { CLASS_FILTER_OPTIONS, CLASS_NAMES, REALMS } from '../../game/wow';
+import { CLASS_FILTER_OPTIONS, CLASS_NAMES, REALMS, realmSlug } from '../../game/wow';
 import { injectReplaceUrl, parseInteger, parsePage } from '../../core/url-state';
 import { LoadStateComponent } from '../../shared/load-state.component';
 import { setPageHeader } from '../../core/page-header';
+import { RunQuality, scoreQuality } from '../../shared/score-quality';
 
 interface Loaded {
   difficulty: RaidDifficulty;

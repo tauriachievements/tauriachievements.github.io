@@ -19,13 +19,13 @@ import {
   latestKills,
   logKey,
   raidBossLink,
-  raidLogLink,
-  realmSlug
+  raidLogLink
 } from './raid-logs';
 import { RaidLogsDataService } from './raid-logs-data.service';
 import { injectReplaceUrl } from '../../core/url-state';
 import { LoadStateComponent } from '../../shared/load-state.component';
 import { setPageHeader } from '../../core/page-header';
+import { realmSlug } from '../../game/wow';
 
 interface BossRow {
   boss: RaidBoss;

@@ -33,7 +33,6 @@ import {
   nameMatches,
   parseRoleFilter,
   performanceQuality,
-  raceFaction,
   rankCharacters,
   rankScores,
   raidLogLink,
@@ -448,9 +447,8 @@ describe('scoreCharacters', () => {
   });
 });
 
-describe('raceFaction and performanceQuality', () => {
-  it('knows the sides and the parse colours', () => {
-    expect([raceFaction(1), raceFaction(10), raceFaction(25), raceFaction(26), raceFaction(24)]).toEqual([0, 1, 0, 1, undefined]);
+describe('performanceQuality', () => {
+  it('knows the parse colours', () => {
     expect([1, .97, .8, .6, .3, .1].map(performanceQuality)).toEqual([6, 5, 4, 3, 2, 0]);
   });
 });

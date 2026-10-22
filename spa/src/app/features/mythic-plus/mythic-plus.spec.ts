@@ -7,8 +7,6 @@ import {
   createRunDecoder,
   currentAffixWeek,
   exportedAt,
-  formatClock,
-  formatDuration,
   formatTimerDelta,
   keystoneUpgrades,
   memberNameMatches,
@@ -18,7 +16,6 @@ import {
   rankRuns,
   runIncludesCharacter,
   runIncludesPlayer,
-  scoreQuality,
   sortRoster,
   upgradeCutoffs,
   upgradeStars
@@ -119,22 +116,6 @@ describe('upgradeCutoffs', () => {
   });
 });
 
-describe('formatDuration', () => {
-  it('formats a fixed-width hours:minutes:seconds clock', () => {
-    expect(formatDuration(1747)).toBe('00:29:07');
-    expect(formatDuration(3725)).toBe('01:02:05');
-    expect(formatDuration(-5)).toBe('00:00:00');
-  });
-});
-
-describe('formatClock', () => {
-  it('omits the hour when under an hour', () => {
-    expect(formatClock(59)).toBe('0:59');
-    expect(formatClock(1747)).toBe('29:07');
-    expect(formatClock(3725)).toBe('1:02:05');
-  });
-});
-
 describe('formatTimerDelta', () => {
   it('signs the distance from the timer', () => {
     expect(formatTimerDelta(1747, 2100)).toBe('-5:53');
@@ -153,18 +134,6 @@ describe('rankRuns', () => {
 
     expect(rankRuns(runs).map(run => run.id)).toEqual(['b', 'c', 'a']);
     expect(runs.map(run => run.id)).toEqual(['a', 'b', 'c']);
-  });
-});
-
-describe('scoreQuality', () => {
-  it('maps the score relative to the best run onto item-quality tiers', () => {
-    expect(scoreQuality(200, 200)).toBe('artifact');
-    expect(scoreQuality(196, 200)).toBe('legendary');
-    expect(scoreQuality(180, 200)).toBe('legendary');
-    expect(scoreQuality(172, 200)).toBe('epic');
-    expect(scoreQuality(160, 200)).toBe('rare');
-    expect(scoreQuality(100, 200)).toBe('uncommon');
-    expect(scoreQuality(100, 0)).toBe('uncommon');
   });
 });
 

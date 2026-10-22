@@ -9,9 +9,9 @@ import {
   GUILD_SOURCE_LIMIT_OPTIONS
 } from './guild-presence-options';
 import { GuildPresencePageStore } from './guild-presence-page.store';
-import { LadderSelectOption } from './ladder-options';
 import { getGuildArmoryUrl } from '../../game/armory';
 import { setPageHeader } from '../../core/page-header';
+import { LadderSelectOption } from '../../players/player-filter-options';
 
 @Component({
   selector: 'app-guild-presence-page',

@@ -2,7 +2,6 @@ import { describe, expect, it } from 'vitest';
 import { MythicPlusMember, MythicPlusRun, characterKey, playerRanks, rankPlayers } from './mythic-plus';
 import {
   characterParam,
-  characterProfileLink,
   findCharacters,
   formatTopPercent,
   frequentTeammates,
@@ -25,12 +24,6 @@ function run(dungeon: string, score: number, roster: MythicPlusMember[], complet
 }
 
 describe('profile links', () => {
-  it('builds the profile path from the realm slug and the name as it is', () => {
-    expect(characterProfileLink(member('Táncoslány', { realm: 'Tauri' })))
-      .toEqual(['/mythic-plus', 'character', 'tauri', 'Táncoslány']);
-    expect(characterProfileLink(member('Stronoff', { realm: 'WoD' }))[2]).toBe('wod');
-  });
-
   it('writes and reads the leaderboard character parameter', () => {
     expect(characterParam(member('Progtrix'))).toBe('Progtrix-Evermoon');
     expect(parseCharacterParam('Progtrix-Evermoon')).toEqual({ name: 'Progtrix', realm: 'Evermoon' });

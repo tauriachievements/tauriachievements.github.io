@@ -1,7 +1,7 @@
 import { getClassColor } from '../../game/class-colors';
-import { formatClock } from '../mythic-plus/mythic-plus';
-import { compareSpecLists } from '../mythic-plus/mythic-plus-stats';
-import { CLASS_NAMES, parseRole, Role } from '../../game/wow';
+import { formatClock } from '../../shared/time-format';
+import { compareSpecLists } from '../../shared/spec-charts/spec-popularity';
+import { CLASS_NAMES, parseRole, raceFaction, realmSlug, Role } from '../../game/wow';
 import { LEGION_SPECS, SpecDefinition } from '../../game/wow-specs';
 
 export const RAID_LOGS_DATA_DIR = 'raid-log-data';
@@ -574,13 +574,6 @@ export function bossStanding(
 
 export const MAX_SCORE = 6969;
 
-const ALLIANCE_RACES: ReadonlySet<number> = new Set([1, 3, 4, 7, 11, 22, 25]);
-const HORDE_RACES: ReadonlySet<number> = new Set([2, 5, 6, 8, 9, 10, 26]);
-
-export function raceFaction(race: number): number | undefined {
-  return ALLIANCE_RACES.has(race) ? 0 : HORDE_RACES.has(race) ? 1 : undefined;
-}
-
 interface Appearance {
   member: RaidMember;
   kill: RaidKillDetails;
@@ -996,10 +989,6 @@ export function defaultDifficulty(difficulties: readonly RaidDifficulty[]): Raid
 
 export function parseRoleFilter(value: string | null | undefined): RoleFilter {
   return parseRole(value) ?? 'all';
-}
-
-export function realmSlug(realm: string): string {
-  return realm.toLowerCase();
 }
 
 export function guildKey(guild: Pick<RaidGuild, 'name' | 'realm'>): string {

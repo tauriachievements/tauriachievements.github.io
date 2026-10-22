@@ -52,8 +52,8 @@ explains it together.
   - Player scores (`scoreTiers`): Raider.IO-style stops at the score that the top 60%, 25%,
     10%, 1% and 0.1% of players reach, from white through green, blue, purple and orange to
     gold.
-  - Run scores (`scoreQuality`): the share of the best score; at least 90% is legendary, 84%
-    epic, 76% rare.
+  - Run scores (`scoreQuality`, `shared/score-quality.ts`, which the raid leaderboard uses
+    too): the share of the best score; at least 90% is legendary, 84% epic, 76% rare.
   - Which scale a score uses depends on the scope: one dungeon's score is a single run, which
     `runScoreColor` colours on the season's stops as if every dungeon had that run (score ×
     dungeons); "This week" places scores among this week's players; everything else uses the
@@ -117,17 +117,17 @@ explains it together.
 
 ## Spec and race popularity
 
-- **Mythic+ spec chart** (`specPopularity` in `mythic-plus-stats.ts`): classes are ordered by
-  their most-seen spec, then the next one, so one dominant spec outranks a class whose total is
-  spread out. A minimum key level keeps that level and everything above it. Only each class's
-  most-seen spec carries a value on its bar.
+- **Spec charts** (`specPopularity` in `shared/spec-charts/spec-popularity.ts`): classes are
+  ordered by their most-seen spec, then the next one, so one dominant spec outranks a class
+  whose total is spread out. On the Mythic+ chart, a minimum key level keeps that level and
+  everything above it. Only each class's most-seen spec carries a value on its bar.
 - **Raid spec popularity** counts player slots: a character who killed several bosses counts
   once per kill.
-- **Race by spec** (`race-popularity.ts`): a character counts once per spec, however many runs
-  or kills they played it in. The three Pandaren race ids (24, and 25 / 26 for the factions)
-  are one race. Every spec of the role is listed in the game's order, also one nobody played,
-  and a tie between races goes to the name.
-- **Tests:** `mythic-plus-stats.spec.ts`, `race-popularity.spec.ts`.
+- **Race by spec** (`shared/spec-charts/race-popularity.ts`): a character counts once per
+  spec, however many runs or kills they played it in. The three Pandaren race ids (24, and
+  25 / 26 for the factions) are one race. Every spec of the role is listed in the game's order,
+  also one nobody played, and a tie between races goes to the name.
+- **Tests:** `spec-popularity.spec.ts`, `race-popularity.spec.ts`.
 
 ## Raid leaderboard
 

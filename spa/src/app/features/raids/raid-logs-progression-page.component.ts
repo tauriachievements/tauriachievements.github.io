@@ -16,11 +16,10 @@ import {
   filterProgression,
   guildKey,
   guildProgression,
-  raidGuildLink,
-  realmSlug
+  raidGuildLink
 } from './raid-logs';
 import { RaidLogsDataService } from './raid-logs-data.service';
-import { REALMS } from '../../game/wow';
+import { REALMS, realmSlug } from '../../game/wow';
 import { injectReplaceUrl } from '../../core/url-state';
 import { LoadStateComponent } from '../../shared/load-state.component';
 import { setPageHeader } from '../../core/page-header';

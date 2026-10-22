@@ -1,5 +1,5 @@
 import { MythicPlusMember, MythicPlusStandingEntry, PlayerScore, playerRanks } from './mythic-plus';
-import { realmSlug } from './mythic-plus-profile';
+import { realmSlug } from '../../game/wow';
 
 export interface MythicPlusGuild {
   name: string;

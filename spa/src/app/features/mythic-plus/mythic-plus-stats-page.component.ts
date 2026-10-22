@@ -31,7 +31,7 @@ import { FilterDropdownCoordinatorService } from '../../shared/filter-dropdown-c
 import { FilterDropdownOption, FilterDropdownValue } from '../../shared/filter-dropdown.types';
 import { MYTHIC_PLUS_CARDS_QUERY } from './mythic-plus-views';
 import { MythicPlusWeekAffixesComponent } from './mythic-plus-week-affixes.component';
-import { RaceBySpecComponent } from './race-by-spec.component';
+import { RaceBySpecComponent } from '../../shared/spec-charts/race-by-spec.component';
 import { RevealDirective } from '../../shared/motion/reveal.directive';
 import { ScrollToEndDirective } from '../../shared/motion/scroll-to-end.directive';
 import { MythicPlusDataService, mythicPlusLoadError } from './mythic-plus-data.service';

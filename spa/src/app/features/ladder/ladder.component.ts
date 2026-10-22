@@ -4,10 +4,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { Subject, debounceTime, distinctUntilChanged, map } from 'rxjs';
 import { FilterBarComponent } from './filter-bar.component';
 import {
-  CLASS_OPTIONS,
-  FACTION_OPTIONS,
   PAGE_SIZE_OPTIONS,
-  REALM_OPTIONS,
   SORT_OPTIONS
 } from './ladder-options';
 import {
@@ -20,6 +17,7 @@ import { LadderPageStore } from './ladder-page.store';
 import { LeaderboardTableComponent } from './leaderboard-table.component';
 import { LadderFilterState, LadderSort } from './ladder.types';
 import { setPageHeader } from '../../core/page-header';
+import { CLASS_OPTIONS, FACTION_OPTIONS, REALM_OPTIONS } from '../../players/player-filter-options';
 
 @Component({
   selector: 'app-achievement-ladder',

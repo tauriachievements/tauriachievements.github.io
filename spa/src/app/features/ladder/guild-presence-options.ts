@@ -1,4 +1,4 @@
-import { LadderSelectOption } from './ladder-options';
+import { LadderSelectOption } from '../../players/player-filter-options';
 
 export const DEFAULT_GUILD_SOURCE_LIMIT = 1000;
 export const DEFAULT_GUILD_DISPLAY_LIMIT = 10;

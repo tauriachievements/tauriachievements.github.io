@@ -41,12 +41,11 @@ import {
   raidCharacterLink,
   raidGuildLink,
   raidLogLink,
-  realmSlug,
   rankCharacters,
   spellUrl
 } from './raid-logs';
 import { RaidLogsDataService } from './raid-logs-data.service';
-import { CLASS_FILTER_OPTIONS, REALMS } from '../../game/wow';
+import { CLASS_FILTER_OPTIONS, REALMS, realmSlug } from '../../game/wow';
 import { injectReplaceUrl, parseInteger, parsePage } from '../../core/url-state';
 import { LoadStateComponent } from '../../shared/load-state.component';
 import { setPageHeader } from '../../core/page-header';

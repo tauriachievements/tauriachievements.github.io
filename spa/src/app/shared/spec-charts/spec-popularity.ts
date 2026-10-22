@@ -1,11 +1,16 @@
 import { getClassColor } from '../../game/class-colors';
-import { MythicPlusMember } from './mythic-plus';
 import { CLASS_NAMES, Role } from '../../game/wow';
 import { LEGION_SPECS, SpecDefinition, specFor } from '../../game/wow-specs';
 
 const specKey = (classId: number, spec: string): string => `${classId}:${spec}`;
 
-type PopularityMember = Pick<MythicPlusMember, 'name' | 'realm' | 'class' | 'spec' | 'role'>;
+interface PopularityMember {
+  name: string;
+  realm: string;
+  class: number;
+  spec: string;
+  role: Role;
+}
 
 export interface SpecPopularityOptions {
   role?: Role;

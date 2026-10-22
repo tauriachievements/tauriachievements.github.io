@@ -9,11 +9,8 @@ import {
   MythicPlusDungeon,
   MythicPlusIndex,
   MythicPlusRun,
-  RunQuality,
   currentAffixWeek,
   exportedAt,
-  formatClock,
-  scoreQuality,
   seasonScoreColors
 } from './mythic-plus';
 import { dungeonTimers } from './mythic-plus-activity';
@@ -37,6 +34,8 @@ import { SpotlightDirective } from '../../shared/motion/spotlight.directive';
 import { injectReplaceUrl } from '../../core/url-state';
 import { LoadStateComponent } from '../../shared/load-state.component';
 import { setPageHeader } from '../../core/page-header';
+import { RunQuality, scoreQuality } from '../../shared/score-quality';
+import { formatClock } from '../../shared/time-format';
 
 type RecordsSection = 'record' | 'first';
 

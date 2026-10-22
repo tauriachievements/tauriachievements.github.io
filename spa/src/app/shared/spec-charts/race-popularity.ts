@@ -1,6 +1,5 @@
 import { getClassColor } from '../../game/class-colors';
-import { raceFaction } from '../raids/raid-logs';
-import { CLASS_NAMES, RACE_NAMES, Role } from '../../game/wow';
+import { CLASS_NAMES, RACE_NAMES, raceFaction, Role } from '../../game/wow';
 import { LEGION_SPECS } from '../../game/wow-specs';
 
 const PANDAREN = 24;

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { formatShare, shareTicks, specPopularity } from './mythic-plus-stats';
+import { formatShare, shareTicks, specPopularity } from './spec-popularity';
 import { Role } from '../../game/wow';
 
 const member = (name: string, classId: number, spec: string, role: Role) =>

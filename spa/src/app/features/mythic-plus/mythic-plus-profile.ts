@@ -1,15 +1,8 @@
 import { localDay } from './mythic-plus-activity';
 import { MythicPlusMember, MythicPlusRun, PlayerScore, characterKey, isBetterRun, samePlace } from './mythic-plus';
+import { realmSlug } from '../../game/wow';
 
 type Character = Pick<MythicPlusMember, 'name' | 'realm'>;
-
-export function realmSlug(realm: string): string {
-  return realm.toLowerCase();
-}
-
-export function characterProfileLink(character: Character): string[] {
-  return ['/mythic-plus', 'character', realmSlug(character.realm), character.name];
-}
 
 export function characterParam(character: Character): string {
   return `${character.name}-${character.realm}`;

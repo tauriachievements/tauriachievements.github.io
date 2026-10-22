@@ -8,6 +8,10 @@ export type Realm = 'Evermoon' | 'Tauri' | 'WoD';
 
 export const REALMS: readonly Realm[] = ['Evermoon', 'Tauri', 'WoD'];
 
+export function realmSlug(realm: string): string {
+  return realm.toLowerCase();
+}
+
 export const CLASS_NAMES: Readonly<Record<number, string>> = {
   1: 'Warrior', 2: 'Paladin', 3: 'Hunter', 4: 'Rogue',
   5: 'Priest', 6: 'Death Knight', 7: 'Shaman', 8: 'Mage',
@@ -34,6 +38,13 @@ export const RACE_NAMES: Readonly<Record<number, string>> = {
   9: 'Goblin', 10: 'Blood Elf', 11: 'Draenei', 22: 'Worgen',
   24: 'Pandaren', 25: 'Pandaren', 26: 'Pandaren'
 };
+
+const ALLIANCE_RACES: ReadonlySet<number> = new Set([1, 3, 4, 7, 11, 22, 25]);
+const HORDE_RACES: ReadonlySet<number> = new Set([2, 5, 6, 8, 9, 10, 26]);
+
+export function raceFaction(race: number): number | undefined {
+  return ALLIANCE_RACES.has(race) ? 0 : HORDE_RACES.has(race) ? 1 : undefined;
+}
 
 export const ROLES: readonly Role[] = ['tank', 'healer', 'dps'];
 

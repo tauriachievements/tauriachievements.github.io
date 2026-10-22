@@ -8,8 +8,6 @@ import {
   MythicPlusDungeon,
   MythicPlusMember,
   MythicPlusRun,
-  formatClock,
-  formatDuration,
   formatTimerDelta,
   keystoneUpgrades,
   runScoreColor,
@@ -18,9 +16,10 @@ import {
   upgradeCutoffs
 } from './mythic-plus';
 import { guildLadderLink, guildOf } from './mythic-plus-guild';
-import { characterProfileLink } from './mythic-plus-profile';
 import { CLASS_NAMES } from '../../game/wow';
 import { specIconFor } from '../../game/wow-specs';
+import { formatClock, formatDuration } from '../../shared/time-format';
+import { mythicPlusProfileLink } from '../../core/page-links';
 
 export const MYTHIC_PLUS_CARDS_QUERY = '(max-width: 900px)';
 
@@ -96,7 +95,7 @@ export function toMemberView(member: MythicPlusMember): MemberView {
     color: getClassColor(member.class) ?? '#e0e0e0',
     className: CLASS_NAMES[member.class] ?? 'Unknown',
     armoryUrl: getArmoryUrl(member.name, member.realm),
-    profileLink: characterProfileLink(member),
+    profileLink: mythicPlusProfileLink(member),
     guildLink: guild && guildLadderLink(guild),
     classIcon: getClassIconPath(member.class),
     raceIcon: getRaceIconPath(member.race, member.gender),

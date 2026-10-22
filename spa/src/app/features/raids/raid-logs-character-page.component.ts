@@ -30,11 +30,10 @@ import {
   raidGuildLink,
   raidLogLink,
   rankScores,
-  realmSlug,
   scoreCharacters
 } from './raid-logs';
 import { RaidLogsDataService } from './raid-logs-data.service';
-import { CLASS_NAMES } from '../../game/wow';
+import { CLASS_NAMES, realmSlug } from '../../game/wow';
 import { injectReplaceUrl } from '../../core/url-state';
 import { LoadStateComponent } from '../../shared/load-state.component';
 import { setPageHeader } from '../../core/page-header';

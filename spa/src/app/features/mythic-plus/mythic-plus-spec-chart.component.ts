@@ -2,7 +2,7 @@ import { ChangeDetectionStrategy, Component, computed, input, output, signal } f
 import { getClassIconPath } from '../../game/classIconHelper';
 import { injectCompactViewport } from '../../shared/compact-viewport';
 import { MythicPlusRun } from './mythic-plus';
-import { ClassShare, SpecShare, formatShare, shareTicks, specPopularity } from './mythic-plus-stats';
+import { ClassShare, SpecShare, formatShare, shareTicks, specPopularity } from '../../shared/spec-charts/spec-popularity';
 import { FlipDirective } from '../../shared/motion/flip.directive';
 import { GlideDirective } from '../../shared/motion/glide.directive';
 import { MYTHIC_PLUS_CARDS_QUERY } from './mythic-plus-views';
@@ -29,7 +29,7 @@ interface ClassGroup extends Omit<ClassShare, 'specs'> {
   selector: 'app-mythic-plus-spec-chart',
   imports: [TapTooltipDirective, GlideDirective, RevealDirective, FlipDirective],
   templateUrl: './mythic-plus-spec-chart.component.html',
-  styleUrls: ['./mythic-plus-spec-chart.component.scss'],
+  styleUrls: ['../../shared/spec-charts/spec-chart.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class MythicPlusSpecChartComponent {
