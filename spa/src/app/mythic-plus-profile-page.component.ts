@@ -73,6 +73,7 @@ import { UpdateBarComponent } from './update-bar.component';
 import { CLASS_NAMES, Role } from './wow';
 import { specIconFor, specRoleFor } from './wow-specs';
 import { injectReplaceUrl } from './url-state';
+import { LoadStateComponent } from './load-state.component';
 
 const TEAMMATE_COUNT = 8;
 const SEARCH_RESULT_COUNT = 20;
@@ -153,7 +154,8 @@ const formatScore = (score: number) => score.toLocaleString('en-GB', { minimumFr
     SpotlightDirective,
     DatePipe,
     DecimalPipe,
-    NgTemplateOutlet
+    NgTemplateOutlet,
+    LoadStateComponent
   ],
   templateUrl: './mythic-plus-profile-page.component.html',
   styleUrls: ['./mythic-plus-profile-page.component.scss', './mythic-plus-profile-page.motion.scss'],

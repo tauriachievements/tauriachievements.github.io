@@ -39,6 +39,7 @@ import { RaidLogsDataService } from './services/raid-logs-data.service';
 import { UpdateBarComponent } from './update-bar.component';
 import { CLASS_NAMES } from './wow';
 import { injectReplaceUrl } from './url-state';
+import { LoadStateComponent } from './load-state.component';
 
 interface Appearance {
   kill: RaidKillDetails;
@@ -73,7 +74,7 @@ const RECENT_KILLS = 20;
 
 @Component({
   selector: 'app-raid-logs-character-page',
-  imports: [RouterLink, UpdateBarComponent, BackToTopButtonComponent, RaidDifficultySwitchComponent, GlideDirective, DatePipe, DecimalPipe],
+  imports: [RouterLink, UpdateBarComponent, BackToTopButtonComponent, RaidDifficultySwitchComponent, GlideDirective, DatePipe, DecimalPipe, LoadStateComponent],
   templateUrl: './raid-logs-character-page.component.html',
   styleUrl: './raid-logs-character-page.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush

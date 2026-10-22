@@ -38,6 +38,7 @@ import { MythicPlusDataService, mythicPlusLoadError } from './services/mythic-pl
 import { SpotlightDirective } from './spotlight.directive';
 import { UpdateBarComponent } from './update-bar.component';
 import { injectReplaceUrl } from './url-state';
+import { LoadStateComponent } from './load-state.component';
 
 type RecordsSection = 'record' | 'first';
 
@@ -95,7 +96,8 @@ interface SummaryTile {
     SpotlightDirective,
     DatePipe,
     DecimalPipe,
-    NgTemplateOutlet
+    NgTemplateOutlet,
+    LoadStateComponent
   ],
   templateUrl: './mythic-plus-records-page.component.html',
   styleUrl: './mythic-plus-records-page.component.scss',

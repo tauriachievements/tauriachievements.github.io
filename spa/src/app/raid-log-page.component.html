@@ -14,19 +14,7 @@
     <a class="back-link" routerLink="/raid-logs"><span aria-hidden="true">‹</span> Back to Raid Logs</a>
   }
 
-  @if (isLoading()) {
-    <section class="feedback">
-      <span class="spinner" aria-hidden="true"></span>
-      <p>Reading the log...</p>
-    </section>
-  }
-
-  @if (!isLoading() && loadError()) {
-    <section class="feedback error">
-      <p>{{ loadError() }}</p>
-      <button type="button" (click)="reload()">Try again</button>
-    </section>
-  }
+  <app-load-state [loading]="isLoading()" [error]="loadError()" loadingText="Reading the log..." (retry)="reload()" />
 
   @if (!isLoading() && !loadError() && kill(); as current) {
     <header class="log-header">

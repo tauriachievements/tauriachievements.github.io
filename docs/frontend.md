@@ -162,6 +162,7 @@ decision (ask first).
 | `app-raid-difficulty-switch`, `app-race-by-spec` | the raid difficulty switch; the most-popular-race boxes |
 | `app-mythic-plus-week-affixes` | this week's affixes with their descriptions (leaderboard and stats page). On phones it shows icons only and its tooltips position against the row around it, which needs `position: relative` |
 | `app-back-to-top-button` | the floating back-to-top button |
+| `app-load-state` | a page's loading spinner and its error box with "Try again": `<app-load-state [loading]="isLoading()" [error]="loadError()" loadingText="Reading the logs..." (retry)="loadData()" />`. It renders nothing once loaded; content inside it shows in the error box (the character page's difficulty switch). The Mythic+ and Raids pages use it; the older pages and the themed Arena, Emerald Nightmare and Rare Items pages keep their own |
 | `class-colors.ts` | the one class-colour table: `getClassColor()` in code, `var(--class-<id>)` in SCSS |
 | `utils/armory.ts` | `getArmoryUrl()` for every armory link |
 | `utils/time-zone-label.ts` | the "GMT+2"-style label beside local times |
@@ -308,7 +309,9 @@ and point the server at its output: `DIST_DIR=<dir>/spa/dist/tauri-achievements/
 npm run test:visual:baseline`. Add `-- -g <name>` to capture only some pages.
 
 An entry in `e2e/visual-pages.ts` is a URL, optionally with `clicks` (selectors clicked in
-order before the screenshots, for menus, dropdowns and dialogs) and `only` (one viewport).
+order before the screenshots, for menus, dropdowns and dialogs), `only` (one viewport), and
+`fail` or `hold` (regular expressions for data paths that answer 500, or never answer), which
+show a page's error and loading states.
 
 How it stays deterministic:
 

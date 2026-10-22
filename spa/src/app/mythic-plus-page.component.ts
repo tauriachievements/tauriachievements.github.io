@@ -67,6 +67,7 @@ import { characterTransitionName } from './motion';
 import { CLASS_FILTER_OPTIONS, CLASS_NAMES, parseClassId, parseRole, Role } from './wow';
 import { LEGION_SPECS, parseSpecName } from './wow-specs';
 import { injectReplaceUrl, parsePage } from './url-state';
+import { LoadStateComponent } from './load-state.component';
 
 interface RankedRun {
   run: MythicPlusRun;
@@ -109,7 +110,8 @@ interface CharacterFilter {
     MobileFilterToggleComponent,
     GlideDirective,
     DecimalPipe,
-    NgTemplateOutlet
+    NgTemplateOutlet,
+    LoadStateComponent
   ],
   templateUrl: './mythic-plus-page.component.html',
   styleUrls: ['./mythic-plus-page.component.scss'],

@@ -26,6 +26,7 @@ import { RevealDirective } from './reveal.directive';
 import { RaidLogsDataService } from './services/raid-logs-data.service';
 import { UpdateBarComponent } from './update-bar.component';
 import { injectReplaceUrl } from './url-state';
+import { LoadStateComponent } from './load-state.component';
 
 interface BossCard {
   boss: RaidBoss;
@@ -39,7 +40,7 @@ const RECENT_KILLS = 12;
 
 @Component({
   selector: 'app-raid-logs-page',
-  imports: [RouterLink, UpdateBarComponent, BackToTopButtonComponent, RaidDifficultySwitchComponent, RevealDirective, DatePipe, DecimalPipe],
+  imports: [RouterLink, UpdateBarComponent, BackToTopButtonComponent, RaidDifficultySwitchComponent, RevealDirective, DatePipe, DecimalPipe, LoadStateComponent],
   templateUrl: './raid-logs-page.component.html',
   styleUrl: './raid-logs-page.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush

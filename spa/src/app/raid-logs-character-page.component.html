@@ -8,26 +8,15 @@
     <span aria-hidden="true">‹</span> Back to Raid Logs
   </a>
 
-  @if (isLoading()) {
-    <section class="feedback">
-      <span class="spinner" aria-hidden="true"></span>
-      <p>Looking through the logs...</p>
-    </section>
-  }
-
-  @if (!isLoading() && loadError()) {
-    <section class="feedback error">
-      <p>{{ loadError() }}</p>
-      @if (index(); as loadedIndex) {
-        <app-raid-difficulty-switch
-          [difficulties]="loadedIndex.difficulties"
-          [selected]="loaded()?.difficulty?.slug"
-          label="Look on another difficulty"
-          (selectedChange)="setDifficulty($event)" />
-      }
-      <button type="button" (click)="loadData()">Try again</button>
-    </section>
-  }
+  <app-load-state [loading]="isLoading()" [error]="loadError()" loadingText="Looking through the logs..." (retry)="loadData()">
+    @if (index(); as loadedIndex) {
+      <app-raid-difficulty-switch
+        [difficulties]="loadedIndex.difficulties"
+        [selected]="loaded()?.difficulty?.slug"
+        label="Look on another difficulty"
+        (selectedChange)="setDifficulty($event)" />
+    }
+  </app-load-state>
 
   @if (!isLoading() && !loadError() && character(); as current) {
     <header class="character-header" [style.--class-color]="classColor(current.classId)">

@@ -11,10 +11,11 @@ import { RaidLogsDataService } from './services/raid-logs-data.service';
 import { UpdateBarComponent } from './update-bar.component';
 import { Role } from './wow';
 import { injectReplaceUrl } from './url-state';
+import { LoadStateComponent } from './load-state.component';
 
 @Component({
   selector: 'app-raid-logs-stats-page',
-  imports: [UpdateBarComponent, BackToTopButtonComponent, RaidSpecPopularityChartComponent, RaceBySpecComponent],
+  imports: [UpdateBarComponent, BackToTopButtonComponent, RaidSpecPopularityChartComponent, RaceBySpecComponent, LoadStateComponent],
   templateUrl: './raid-logs-stats-page.component.html',
   styleUrl: './raid-logs-stats-page.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush

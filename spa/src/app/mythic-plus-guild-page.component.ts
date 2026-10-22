@@ -70,6 +70,7 @@ import { UpdateBarComponent } from './update-bar.component';
 import { CLASS_FILTER_OPTIONS, CLASS_NAMES, parseClassId, parseRole, Role } from './wow';
 import { LEGION_SPECS, parseSpecName } from './wow-specs';
 import { injectReplaceUrl } from './url-state';
+import { LoadStateComponent } from './load-state.component';
 
 type LadderPeriod = 'season' | 'week';
 
@@ -94,7 +95,8 @@ const TOP_OVERALL = 100;
     FilterDropdownComponent,
     MobileFilterToggleComponent,
     GlideDirective,
-    DecimalPipe
+    DecimalPipe,
+    LoadStateComponent
   ],
   templateUrl: './mythic-plus-guild-page.component.html',
   styleUrl: './mythic-plus-guild-page.component.scss',

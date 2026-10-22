@@ -41,6 +41,7 @@ import { TapTooltipDirective } from './tap-tooltip.directive';
 import { UpdateBarComponent } from './update-bar.component';
 import { Role } from './wow';
 import { injectReplaceUrl } from './url-state';
+import { LoadStateComponent } from './load-state.component';
 
 type StatsPeriod = 'season' | 'week';
 type DaySplit = 'level' | 'result';
@@ -101,7 +102,8 @@ const isMiddle = (position: number, count: number) => position >= count / 3 && p
     GlideDirective,
     RevealDirective,
     CountUpDirective,
-    DecimalPipe
+    DecimalPipe,
+    LoadStateComponent
   ],
   templateUrl: './mythic-plus-stats-page.component.html',
   styleUrl: './mythic-plus-stats-page.component.scss',

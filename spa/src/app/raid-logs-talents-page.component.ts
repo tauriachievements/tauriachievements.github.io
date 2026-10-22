@@ -63,6 +63,7 @@ import { RaidLogsDataService } from './services/raid-logs-data.service';
 import { UpdateBarComponent } from './update-bar.component';
 import { CLASS_FILTER_OPTIONS, CLASS_NAMES, parseClassId, Role } from './wow';
 import { injectReplaceUrl, parseInteger } from './url-state';
+import { LoadStateComponent } from './load-state.component';
 
 const SHOWN_BUILDS = 10;
 
@@ -149,7 +150,8 @@ interface SpecCard extends SpecTalentSummary {
     RaidDifficultySwitchComponent,
     IconTipsComponent,
     GlideDirective,
-    DecimalPipe
+    DecimalPipe,
+    LoadStateComponent
   ],
   templateUrl: './raid-logs-talents-page.component.html',
   styleUrls: ['./raid-logs-talents-page.component.scss', './raid-logs-talents-page.motion.scss'],

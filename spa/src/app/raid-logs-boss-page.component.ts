@@ -51,6 +51,7 @@ import { RaidLogsDataService } from './services/raid-logs-data.service';
 import { UpdateBarComponent } from './update-bar.component';
 import { CLASS_FILTER_OPTIONS, REALMS } from './wow';
 import { injectReplaceUrl, parseInteger, parsePage } from './url-state';
+import { LoadStateComponent } from './load-state.component';
 
 type BossTab = 'dps' | 'hps' | 'fastest' | 'latest';
 
@@ -87,7 +88,8 @@ interface SummaryTile {
     GlideDirective,
     IconTipsComponent,
     DatePipe,
-    DecimalPipe
+    DecimalPipe,
+    LoadStateComponent
   ],
   templateUrl: './raid-logs-boss-page.component.html',
   styleUrl: './raid-logs-boss-page.component.scss',

@@ -31,6 +31,7 @@ import { MythicPlusDataService, mythicPlusLoadError } from './services/mythic-pl
 import { TapTooltipDirective } from './tap-tooltip.directive';
 import { UpdateBarComponent } from './update-bar.component';
 import { CLASS_NAMES } from './wow';
+import { LoadStateComponent } from './load-state.component';
 
 const SEARCH_RESULT_COUNT = 8;
 const RECENT_DAYS = 7;
@@ -102,7 +103,8 @@ const GAP_TICKS = [0, 1, 2, 5, 10, 20, 50, 100, 200, 500, 1000, 2000];
     GlideDirective,
     CountUpDirective,
     DecimalPipe,
-    NgTemplateOutlet
+    NgTemplateOutlet,
+    LoadStateComponent
   ],
   templateUrl: './mythic-plus-compare-page.component.html',
   styleUrl: './mythic-plus-compare-page.component.scss',

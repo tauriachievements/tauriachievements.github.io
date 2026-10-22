@@ -27,6 +27,7 @@ import {
 import { RaidLogsDataService } from './services/raid-logs-data.service';
 import { UpdateBarComponent } from './update-bar.component';
 import { injectReplaceUrl } from './url-state';
+import { LoadStateComponent } from './load-state.component';
 
 interface BossRow {
   boss: RaidBoss;
@@ -45,7 +46,7 @@ const HISTORY_PREVIEW = 25;
 
 @Component({
   selector: 'app-raid-logs-guild-page',
-  imports: [RouterLink, UpdateBarComponent, BackToTopButtonComponent, RaidDifficultySwitchComponent, DatePipe],
+  imports: [RouterLink, UpdateBarComponent, BackToTopButtonComponent, RaidDifficultySwitchComponent, DatePipe, LoadStateComponent],
   templateUrl: './raid-logs-guild-page.component.html',
   styleUrl: './raid-logs-guild-page.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush

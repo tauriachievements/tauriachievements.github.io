@@ -6,19 +6,7 @@
 <main class="raid-page">
   <h1 class="visually-hidden">Talent analytics, {{ index()?.raid?.name ?? 'The Emerald Nightmare' }}</h1>
 
-  @if (isLoading()) {
-    <section class="feedback">
-      <span class="spinner" aria-hidden="true"></span>
-      <p>Reading the logs...</p>
-    </section>
-  }
-
-  @if (!isLoading() && loadError()) {
-    <section class="feedback error">
-      <p>{{ loadError() }}</p>
-      <button type="button" (click)="loadData()">Try again</button>
-    </section>
-  }
+  <app-load-state [loading]="isLoading()" [error]="loadError()" loadingText="Reading the logs..." (retry)="loadData()" />
 
   @if (!isLoading() && !loadError() && index(); as loaded) {
     <nav class="boss-picker" aria-label="Pick a boss">
@@ -92,19 +80,7 @@
       </div>
     </div>
 
-    @if (killsLoading()) {
-      <section class="feedback" role="status">
-        <span class="spinner" aria-hidden="true"></span>
-        <p>Reading the {{ difficulty()?.name }} raid rosters...</p>
-      </section>
-    }
-
-    @if (!killsLoading() && killsError()) {
-      <section class="feedback error">
-        <p>{{ killsError() }}</p>
-        <button type="button" (click)="retryKills()">Try again</button>
-      </section>
-    }
+    <app-load-state [loading]="killsLoading()" [error]="killsError()" loadingText="Reading the {{ difficulty()?.name }} raid rosters..." (retry)="retryKills()" />
 
     @if (!killsLoading() && !killsError()) {
       <app-icon-tips [spells]="talentTooltips()">

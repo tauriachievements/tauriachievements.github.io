@@ -44,6 +44,7 @@ import { RaidLogsDataService } from './services/raid-logs-data.service';
 import { UpdateBarComponent } from './update-bar.component';
 import { CLASS_FILTER_OPTIONS, CLASS_NAMES, REALMS } from './wow';
 import { injectReplaceUrl, parseInteger, parsePage } from './url-state';
+import { LoadStateComponent } from './load-state.component';
 
 interface Loaded {
   difficulty: RaidDifficulty;
@@ -70,7 +71,8 @@ const METRICS: ReadonlyArray<{ id: RaidMetric; label: string }> = [
     RaidDifficultySwitchComponent,
     GlideDirective,
     DatePipe,
-    DecimalPipe
+    DecimalPipe,
+    LoadStateComponent
   ],
   templateUrl: './raid-logs-leaderboard-page.component.html',
   styleUrl: './raid-logs-leaderboard-page.component.scss',

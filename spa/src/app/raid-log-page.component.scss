@@ -3,7 +3,6 @@
 :host { display: block; width: 100%; }
 
 @include back-link;
-@include feedback;
 @include summary-tiles;
 @include sections;
 @include raid-table;

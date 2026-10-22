@@ -31,6 +31,7 @@ import { RevealDirective } from './reveal.directive';
 import { RaidLogsDataService } from './services/raid-logs-data.service';
 import { UpdateBarComponent } from './update-bar.component';
 import { Role } from './wow';
+import { LoadStateComponent } from './load-state.component';
 
 type LogMetric = 'damage' | 'healing' | 'taken';
 
@@ -64,7 +65,7 @@ interface SummaryTile {
 
 @Component({
   selector: 'app-raid-log-page',
-  imports: [RouterLink, UpdateBarComponent, BackToTopButtonComponent, GlideDirective, RevealDirective, DatePipe, DecimalPipe],
+  imports: [RouterLink, UpdateBarComponent, BackToTopButtonComponent, GlideDirective, RevealDirective, DatePipe, DecimalPipe, LoadStateComponent],
   templateUrl: './raid-log-page.component.html',
   styleUrl: './raid-log-page.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush

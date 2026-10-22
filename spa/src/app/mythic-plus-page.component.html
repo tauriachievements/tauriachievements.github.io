@@ -6,19 +6,7 @@
 <main class="mplus-page">
   <h1 class="visually-hidden">Mythic+ Leaderboard</h1>
 
-  @if (isLoading()) {
-    <section class="feedback">
-      <span class="spinner" aria-hidden="true"></span>
-      <p>Charging the keystones...</p>
-    </section>
-  }
-
-  @if (!isLoading() && loadError()) {
-    <section class="feedback error">
-      <p>{{ loadError() }}</p>
-      <button type="button" (click)="retryLoad()">Try again</button>
-    </section>
-  }
+  <app-load-state [loading]="isLoading()" [error]="loadError()" loadingText="Charging the keystones..." (retry)="retryLoad()" />
 
   @if (!isLoading() && !loadError()) {
     <div class="period-bar">
@@ -76,12 +64,7 @@
       }
     </nav>
 
-    @if (runsLoading()) {
-      <section class="feedback">
-        <span class="spinner" aria-hidden="true"></span>
-        <p>Loading runs...</p>
-      </section>
-    }
+    <app-load-state [loading]="runsLoading()" loadingText="Loading runs..." />
     @if (!runsLoading()) {
       <app-mythic-plus-spec-chart
         class="spec-chart"

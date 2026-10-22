@@ -36,28 +36,6 @@ $plot-height: 180px;
   &:focus-visible { outline: 2px solid $gold; outline-offset: 2px; }
 }
 
-.feedback { display: flex; min-height: 280px; flex-direction: column; align-items: center; justify-content: center; gap: 14px; }
-
-.feedback button {
-  padding: 9px 15px;
-  border: 1px solid $gold;
-  border-radius: 5px;
-  background: #231d0a;
-  color: #fff;
-  cursor: pointer;
-}
-
-.spinner {
-  width: 34px;
-  height: 34px;
-  border: 3px solid rgba(255, 255, 255, .15);
-  border-top-color: $gold;
-  border-radius: 50%;
-  animation: spin .8s linear infinite;
-}
-
-@keyframes spin { to { transform: rotate(360deg); } }
-
 .profile-header {
   display: grid;
   grid-template-areas:
