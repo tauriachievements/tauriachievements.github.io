@@ -13,21 +13,16 @@ import {
 } from '@angular/core';
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Params, Router, RouterLink } from '@angular/router';
-import { forkJoin, map, switchMap } from 'rxjs';
 import { getClassCrestPath } from '../utils/classIconHelper';
 import { getLocalTimeZoneLabel } from '../utils/time-zone-label';
 import { BackToTopButtonComponent } from './back-to-top-button.component';
 import { injectCompactViewport } from './compact-viewport';
 import {
-  MYTHIC_PLUS_DATA_DIR,
   MythicPlusAffix,
-  MythicPlusDungeonFile,
   MythicPlusIndex,
   MythicPlusRun,
-  NEWER_DATA_MESSAGE,
   PlayerScore,
   characterKey,
-  createRunDecoder,
   exportedAt,
   keystoneUpgrades,
   memberNameMatches,
@@ -36,7 +31,6 @@ import {
   runIncludesCharacter,
   scoreColor,
   seasonScoreColors,
-  sharesTables,
   upgradeStars,
   ROLE_LABELS
 } from './mythic-plus';
@@ -72,7 +66,7 @@ import { CountUpDirective } from './count-up.directive';
 import { characterTransitionName } from './motion';
 import { RevealDirective } from './reveal.directive';
 import { ScrollToEndDirective } from './scroll-to-end.directive';
-import { DataFileService } from './services/data-file.service';
+import { MythicPlusDataService, mythicPlusLoadError } from './services/mythic-plus-data.service';
 import { SpotlightDirective } from './spotlight.directive';
 import { TapTooltipDirective } from './tap-tooltip.directive';
 import { UpdateBarComponent } from './update-bar.component';
@@ -165,7 +159,7 @@ const formatScore = (score: number) => score.toLocaleString('en-GB', { minimumFr
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class MythicPlusProfilePageComponent implements OnInit {
-  private readonly dataFiles = inject(DataFileService);
+  private readonly mythicPlusData = inject(MythicPlusDataService);
   private readonly destroyRef = inject(DestroyRef);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
@@ -181,7 +175,6 @@ export class MythicPlusProfilePageComponent implements OnInit {
   readonly allRuns = signal<readonly MythicPlusRun[]>([]);
   readonly isLoading = signal(true);
   readonly loadError = signal<string | undefined>(undefined);
-  private reloadedForNewerData = false;
 
   private readonly params = toSignal(this.route.paramMap, { initialValue: this.route.snapshot.paramMap });
   readonly urlRealm = computed(() => this.params().get('realm') ?? '');
@@ -636,34 +629,17 @@ export class MythicPlusProfilePageComponent implements OnInit {
   loadData(): void {
     this.isLoading.set(true);
     this.loadError.set(undefined);
-    this.dataFiles.getJson<MythicPlusIndex>(`${MYTHIC_PLUS_DATA_DIR}/index.json`)
-      .pipe(
-        switchMap(index => forkJoin(index.dungeons.map(dungeon =>
-          this.dataFiles.fetchJson<MythicPlusDungeonFile>(`${MYTHIC_PLUS_DATA_DIR}/${dungeon.id}.json`)))
-          .pipe(map(files => ({ index, files })))),
-        takeUntilDestroyed(this.destroyRef))
+    this.mythicPlusData.season()
+      .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
-        next: ({ index, files }) => {
-          if (files.some(file => !sharesTables(index, file))) {
-            this.dataFiles.refresh();
-            if (!this.reloadedForNewerData) {
-              this.reloadedForNewerData = true;
-              this.loadData();
-            } else {
-              this.loadError.set(NEWER_DATA_MESSAGE);
-              this.isLoading.set(false);
-            }
-            return;
-          }
-
-          const decode = createRunDecoder(index);
+        next: ({ index, runs }) => {
           this.index.set(index);
-          this.allRuns.set(files.flatMap(file => decode(file)));
+          this.allRuns.set(runs);
           this.isLoading.set(false);
         },
         error: error => {
           console.error('Failed to load Mythic+ profile:', error);
-          this.loadError.set('The Mythic+ runs could not be loaded.');
+          this.loadError.set(mythicPlusLoadError(error));
           this.isLoading.set(false);
         }
       });

@@ -93,6 +93,14 @@ finds Sósa), while a picked character matches name and realm exactly.
 - Never add `?v=Date.now()`: that defeats the manifest's caching.
 - Decode large files lazily. The M+ leaderboard's `createRunDecoder` builds views only for the
   visible page, and the ladder starts on the 25,000-row head snapshot.
+- An area with several pages loads its files through one service, which decodes each file
+  once per session, so moving between its pages reads nothing twice. Services memoize with
+  `ObservableCache` (`services/observable-cache.ts`), which forgets a failed load so a retry
+  fetches again.
+- `MythicPlusDataService` loads the Mythic+ files: `season()` (the index and every dungeon's
+  runs) for the stats, records, compare, profile and guild pages; `index()` and
+  `dungeonRuns()` for the leaderboard, which loads only the dungeons its scope shows. Its
+  errors go through `mythicPlusLoadError()` for the message.
 - `RaidLogsDataService` loads the raid files and keeps `lastDifficulty`, so the Raids tabs
   remember the difficulty within a session. A tab opened without `?difficulty=` starts on it,
   else on `defaultDifficulty`, the hardest one with a kill.

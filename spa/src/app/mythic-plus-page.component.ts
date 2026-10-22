@@ -16,16 +16,13 @@ import { getLocalTimeZoneLabel } from '../utils/time-zone-label';
 import { BackToTopButtonComponent } from './back-to-top-button.component';
 import { injectCompactViewport } from './compact-viewport';
 import {
-  MYTHIC_PLUS_DATA_DIR,
   MythicPlusAffix,
-  MythicPlusDungeonFile,
   MythicPlusIndex,
   MythicPlusMember,
   MythicPlusRun,
   NEWER_DATA_MESSAGE,
   ROLE_LABELS,
   characterKey,
-  createRunDecoder,
   currentAffixWeek,
   exportedAt,
   formatClock,
@@ -40,8 +37,7 @@ import {
   runScoreColor,
   scoreColor,
   scoreTiers,
-  seasonScoreColors,
-  sharesTables
+  seasonScoreColors
 } from './mythic-plus';
 import { MythicPlusPlayersListComponent } from './mythic-plus-players-list.component';
 import { COMPARE_LIMIT, compareParam, parseCompareParam } from './mythic-plus-compare';
@@ -64,7 +60,7 @@ import { FilterDropdownCoordinatorService } from './filter-dropdown-coordinator.
 import { FilterDropdownOption, FilterDropdownValue } from './filter-dropdown.types';
 import { MobileFilterToggleComponent } from './mobile-filter-toggle.component';
 import { UpdateBarComponent } from './update-bar.component';
-import { DataFileService } from './services/data-file.service';
+import { MythicPlusDataService, NewerExportError } from './services/mythic-plus-data.service';
 import { getClassColor } from './class-colors';
 import { GlideDirective } from './glide.directive';
 import { characterTransitionName } from './motion';
@@ -138,7 +134,7 @@ function parseSpecFilter(classId: number | undefined, value: string | null): str
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class MythicPlusPageComponent implements OnInit {
-  private readonly dataFiles = inject(DataFileService);
+  private readonly mythicPlusData = inject(MythicPlusDataService);
   private readonly destroyRef = inject(DestroyRef);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
@@ -234,7 +230,7 @@ export class MythicPlusPageComponent implements OnInit {
     };
   });
 
-  private decodeRuns?: (file: MythicPlusDungeonFile) => MythicPlusRun[];
+  private loadedIndex?: MythicPlusIndex;
   private readonly requestedDungeons = new Set<string>();
   private reloadedForNewerData = false;
 
@@ -710,11 +706,11 @@ export class MythicPlusPageComponent implements OnInit {
   private loadData(): void {
     this.isLoading.set(true);
     this.loadError.set(undefined);
-    this.dataFiles.getJson<MythicPlusIndex>(`${MYTHIC_PLUS_DATA_DIR}/index.json`)
+    this.mythicPlusData.index()
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: index => {
-          this.decodeRuns = createRunDecoder(index);
+          this.loadedIndex = index;
           this.index.set(index);
           this.isLoading.set(false);
           this.loadScopeRuns();
@@ -724,9 +720,8 @@ export class MythicPlusPageComponent implements OnInit {
   }
 
   private loadScopeRuns(): void {
-    const decode = this.decodeRuns;
-    const index = this.index();
-    if (!decode || !index) {
+    const index = this.loadedIndex;
+    if (!index) {
       return;
     }
 
@@ -739,22 +734,20 @@ export class MythicPlusPageComponent implements OnInit {
       }
 
       this.requestedDungeons.add(dungeon.id);
-      this.dataFiles.fetchJson<MythicPlusDungeonFile>(`${MYTHIC_PLUS_DATA_DIR}/${dungeon.id}.json`)
+      this.mythicPlusData.dungeonRuns(index, dungeon.id)
         .pipe(takeUntilDestroyed(this.destroyRef))
         .subscribe({
-          next: file => {
-            if (decode !== this.decodeRuns) {
-              return;
+          next: runs => {
+            if (index === this.loadedIndex) {
+              this.runsByDungeon.update(loaded => new Map(loaded).set(dungeon.id, runs));
             }
-            if (!sharesTables(index, file)) {
-              this.reloadForNewerData(dungeon.id);
-              return;
-            }
-            const runs = decode(file);
-            this.runsByDungeon.update(loaded => new Map(loaded).set(dungeon.id, runs));
           },
           error: error => {
-            if (decode !== this.decodeRuns) {
+            if (index !== this.loadedIndex) {
+              return;
+            }
+            if (error instanceof NewerExportError) {
+              this.reloadForNewerData(error);
               return;
             }
             this.requestedDungeons.delete(dungeon.id);
@@ -764,7 +757,7 @@ export class MythicPlusPageComponent implements OnInit {
     }
   }
 
-  private reloadForNewerData(dungeonId: string): void {
+  private reloadForNewerData(error: NewerExportError): void {
     const firstTime = !this.reloadedForNewerData;
     this.reloadedForNewerData = true;
     if (firstTime) {
@@ -772,13 +765,13 @@ export class MythicPlusPageComponent implements OnInit {
       return;
     }
 
-    this.decodeRuns = undefined;
-    this.failLoad(new Error(`${dungeonId}.json and index.json come from different exports`), NEWER_DATA_MESSAGE);
+    this.loadedIndex = undefined;
+    this.failLoad(error, NEWER_DATA_MESSAGE);
   }
 
   private startOver(): void {
-    this.dataFiles.refresh();
-    this.decodeRuns = undefined;
+    this.mythicPlusData.refresh();
+    this.loadedIndex = undefined;
     this.requestedDungeons.clear();
     this.runsByDungeon.set(new Map());
     this.expandedRunId.set(undefined);

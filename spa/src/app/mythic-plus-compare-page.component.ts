@@ -2,7 +2,6 @@ import { DecimalPipe, NgTemplateOutlet } from '@angular/common';
 import { ChangeDetectionStrategy, Component, DestroyRef, OnInit, computed, inject, signal } from '@angular/core';
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, RouterLink } from '@angular/router';
-import { forkJoin, map, switchMap } from 'rxjs';
 import { getClassCrestPath } from '../utils/classIconHelper';
 import { getLocalTimeZoneLabel } from '../utils/time-zone-label';
 import { BackToTopButtonComponent } from './back-to-top-button.component';
@@ -11,21 +10,16 @@ import { CountUpDirective } from './count-up.directive';
 import { GlideDirective } from './glide.directive';
 import { characterTransitionName } from './motion';
 import {
-  MYTHIC_PLUS_DATA_DIR,
   MythicPlusAffix,
-  MythicPlusDungeonFile,
   MythicPlusIndex,
   MythicPlusRun,
-  NEWER_DATA_MESSAGE,
   PlayerScore,
-  createRunDecoder,
   exportedAt,
   memberNameMatches,
   rankPlayers,
   runIncludesCharacter,
   scoreColor,
   seasonScoreColors,
-  sharesTables,
   upgradeStars
 } from './mythic-plus';
 import { affixWeeks, countTicks, dungeonTimers, isTimed, weekIndexAt } from './mythic-plus-activity';
@@ -33,7 +27,7 @@ import { COMPARE_LIMIT, compareParam, parseCompareParam, seriesColors } from './
 import { characterParam, findCharacters, formatTopPercent, scopeRank, scoreOverTime } from './mythic-plus-profile';
 import { MemberView, RunView, toMemberView, toRunView } from './mythic-plus-views';
 import { ScrollToEndDirective } from './scroll-to-end.directive';
-import { DataFileService } from './services/data-file.service';
+import { MythicPlusDataService, mythicPlusLoadError } from './services/mythic-plus-data.service';
 import { TapTooltipDirective } from './tap-tooltip.directive';
 import { UpdateBarComponent } from './update-bar.component';
 import { CLASS_NAMES } from './wow';
@@ -115,7 +109,7 @@ const GAP_TICKS = [0, 1, 2, 5, 10, 20, 50, 100, 200, 500, 1000, 2000];
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class MythicPlusComparePageComponent implements OnInit {
-  private readonly dataFiles = inject(DataFileService);
+  private readonly mythicPlusData = inject(MythicPlusDataService);
   private readonly destroyRef = inject(DestroyRef);
   private readonly route = inject(ActivatedRoute);
 
@@ -128,7 +122,6 @@ export class MythicPlusComparePageComponent implements OnInit {
   readonly allRuns = signal<readonly MythicPlusRun[]>([]);
   readonly isLoading = signal(true);
   readonly loadError = signal<string | undefined>(undefined);
-  private reloadedForNewerData = false;
 
   private readonly query = toSignal(this.route.queryParamMap, { initialValue: this.route.snapshot.queryParamMap });
   private readonly wanted = computed(() => parseCompareParam(this.query().get('players')));
@@ -421,34 +414,17 @@ export class MythicPlusComparePageComponent implements OnInit {
   loadData(): void {
     this.isLoading.set(true);
     this.loadError.set(undefined);
-    this.dataFiles.getJson<MythicPlusIndex>(`${MYTHIC_PLUS_DATA_DIR}/index.json`)
-      .pipe(
-        switchMap(index => forkJoin(index.dungeons.map(dungeon =>
-          this.dataFiles.fetchJson<MythicPlusDungeonFile>(`${MYTHIC_PLUS_DATA_DIR}/${dungeon.id}.json`)))
-          .pipe(map(files => ({ index, files })))),
-        takeUntilDestroyed(this.destroyRef))
+    this.mythicPlusData.season()
+      .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
-        next: ({ index, files }) => {
-          if (files.some(file => !sharesTables(index, file))) {
-            this.dataFiles.refresh();
-            if (!this.reloadedForNewerData) {
-              this.reloadedForNewerData = true;
-              this.loadData();
-            } else {
-              this.loadError.set(NEWER_DATA_MESSAGE);
-              this.isLoading.set(false);
-            }
-            return;
-          }
-
-          const decode = createRunDecoder(index);
+        next: ({ index, runs }) => {
           this.index.set(index);
-          this.allRuns.set(files.flatMap(file => decode(file)));
+          this.allRuns.set(runs);
           this.isLoading.set(false);
         },
         error: error => {
           console.error('Failed to load Mythic+ compare:', error);
-          this.loadError.set('The Mythic+ runs could not be loaded.');
+          this.loadError.set(mythicPlusLoadError(error));
           this.isLoading.set(false);
         }
       });

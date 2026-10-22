@@ -144,7 +144,9 @@ needs adding to `angular.json`.
 
 GitHub Pages ignores `?v=`, so a tab left open across a deploy can mix old and new files. The
 Mythic+ files guard against this: `index.json` and every dungeon file carry a `tables`
-fingerprint. When they don't match, the page calls `DataFileService.refresh()` and loads again.
+fingerprint. When they don't match, `MythicPlusDataService` refreshes the session and loads
+again, once; a second mismatch means the deploy is still going out, and the page says so
+(`NEWER_DATA_MESSAGE`) instead of retrying in a loop.
 Any new data split across several files needs the same guard. Raid boss files carry their own
 tables, so they don't.
 

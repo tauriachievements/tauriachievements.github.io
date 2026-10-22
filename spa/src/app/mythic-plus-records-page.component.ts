@@ -2,27 +2,21 @@ import { Location, DatePipe, DecimalPipe, NgTemplateOutlet } from '@angular/comm
 import { ChangeDetectionStrategy, Component, DestroyRef, OnInit, computed, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { forkJoin, map, switchMap } from 'rxjs';
 import { getLocalTimeZoneLabel } from '../utils/time-zone-label';
 import { BackToTopButtonComponent } from './back-to-top-button.component';
 import { FilterDropdownComponent } from './filter-dropdown.component';
 import { FilterDropdownCoordinatorService } from './filter-dropdown-coordinator.service';
 import { FilterDropdownOption, FilterDropdownValue } from './filter-dropdown.types';
 import {
-  MYTHIC_PLUS_DATA_DIR,
   MythicPlusDungeon,
-  MythicPlusDungeonFile,
   MythicPlusIndex,
   MythicPlusRun,
-  NEWER_DATA_MESSAGE,
   RunQuality,
-  createRunDecoder,
   currentAffixWeek,
   exportedAt,
   formatClock,
   scoreQuality,
-  seasonScoreColors,
-  sharesTables
+  seasonScoreColors
 } from './mythic-plus';
 import { dungeonTimers } from './mythic-plus-activity';
 import {
@@ -40,7 +34,7 @@ import { MythicPlusRunDetailsComponent } from './mythic-plus-run-details.compone
 import { MemberView, RunView, toMemberView, toRunView } from './mythic-plus-views';
 import { CountUpDirective } from './count-up.directive';
 import { RevealDirective } from './reveal.directive';
-import { DataFileService } from './services/data-file.service';
+import { MythicPlusDataService, mythicPlusLoadError } from './services/mythic-plus-data.service';
 import { SpotlightDirective } from './spotlight.directive';
 import { UpdateBarComponent } from './update-bar.component';
 
@@ -108,7 +102,7 @@ interface SummaryTile {
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class MythicPlusRecordsPageComponent implements OnInit {
-  private readonly dataFiles = inject(DataFileService);
+  private readonly mythicPlusData = inject(MythicPlusDataService);
   private readonly destroyRef = inject(DestroyRef);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
@@ -126,7 +120,6 @@ export class MythicPlusRecordsPageComponent implements OnInit {
   readonly runs = signal<readonly MythicPlusRun[]>([]);
   readonly isLoading = signal(true);
   readonly loadError = signal<string | undefined>(undefined);
-  private reloadedForNewerData = false;
   readonly now = signal(Date.now());
 
   readonly firstsDungeon = signal<string | undefined>(this.route.snapshot.queryParamMap.get('dungeon') ?? undefined);
@@ -234,35 +227,18 @@ export class MythicPlusRecordsPageComponent implements OnInit {
   loadData(): void {
     this.isLoading.set(true);
     this.loadError.set(undefined);
-    this.dataFiles.getJson<MythicPlusIndex>(`${MYTHIC_PLUS_DATA_DIR}/index.json`)
-      .pipe(
-        switchMap(index => forkJoin(index.dungeons.map(dungeon =>
-          this.dataFiles.fetchJson<MythicPlusDungeonFile>(`${MYTHIC_PLUS_DATA_DIR}/${dungeon.id}.json`)))
-          .pipe(map(files => ({ index, files })))),
-        takeUntilDestroyed(this.destroyRef))
+    this.mythicPlusData.season()
+      .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
-        next: ({ index, files }) => {
-          if (files.some(file => !sharesTables(index, file))) {
-            this.dataFiles.refresh();
-            if (!this.reloadedForNewerData) {
-              this.reloadedForNewerData = true;
-              this.loadData();
-            } else {
-              this.loadError.set(NEWER_DATA_MESSAGE);
-              this.isLoading.set(false);
-            }
-            return;
-          }
-
-          const decode = createRunDecoder(index);
+        next: ({ index, runs }) => {
           this.index.set(index);
-          this.runs.set(files.flatMap(file => decode(file)));
+          this.runs.set(runs);
           this.now.set(Date.now());
           this.isLoading.set(false);
         },
         error: error => {
           console.error('Failed to load Mythic+ records:', error);
-          this.loadError.set('The Mythic+ runs could not be loaded.');
+          this.loadError.set(mythicPlusLoadError(error));
           this.isLoading.set(false);
         }
       });

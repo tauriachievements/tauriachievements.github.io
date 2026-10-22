@@ -2,20 +2,14 @@ import { Location, DecimalPipe } from '@angular/common';
 import { ChangeDetectionStrategy, Component, DestroyRef, OnInit, computed, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { forkJoin, map, switchMap } from 'rxjs';
 import { getLocalTimeZoneLabel } from '../utils/time-zone-label';
 import { BackToTopButtonComponent } from './back-to-top-button.component';
 import {
-  MYTHIC_PLUS_DATA_DIR,
   MythicPlusAffix,
-  MythicPlusDungeonFile,
   MythicPlusIndex,
   MythicPlusRun,
-  NEWER_DATA_MESSAGE,
-  createRunDecoder,
   currentAffixWeek,
-  exportedAt,
-  sharesTables
+  exportedAt
 } from './mythic-plus';
 import {
   DayActivity,
@@ -42,7 +36,7 @@ import { MythicPlusWeekAffixesComponent } from './mythic-plus-week-affixes.compo
 import { RaceBySpecComponent } from './race-by-spec.component';
 import { RevealDirective } from './reveal.directive';
 import { ScrollToEndDirective } from './scroll-to-end.directive';
-import { DataFileService } from './services/data-file.service';
+import { MythicPlusDataService, mythicPlusLoadError } from './services/mythic-plus-data.service';
 import { TapTooltipDirective } from './tap-tooltip.directive';
 import { UpdateBarComponent } from './update-bar.component';
 import { Role } from './wow';
@@ -115,7 +109,7 @@ const isMiddle = (position: number, count: number) => position >= count / 3 && p
   host: { '(window:scroll)': 'hideAffixTooltip()' }
 })
 export class MythicPlusStatsPageComponent implements OnInit {
-  private readonly dataFiles = inject(DataFileService);
+  private readonly mythicPlusData = inject(MythicPlusDataService);
   private readonly destroyRef = inject(DestroyRef);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
@@ -133,7 +127,6 @@ export class MythicPlusStatsPageComponent implements OnInit {
   readonly allRuns = signal<readonly MythicPlusRun[]>([]);
   readonly isLoading = signal(true);
   readonly loadError = signal<string | undefined>(undefined);
-  private reloadedForNewerData = false;
   readonly period = signal<StatsPeriod>(this.route.snapshot.queryParamMap.get('period') === 'week' ? 'week' : 'season');
   readonly daySplit = signal<DaySplit>('level');
   readonly dungeonSplit = signal<DungeonSplit>('result');
@@ -336,34 +329,17 @@ export class MythicPlusStatsPageComponent implements OnInit {
   loadData(): void {
     this.isLoading.set(true);
     this.loadError.set(undefined);
-    this.dataFiles.getJson<MythicPlusIndex>(`${MYTHIC_PLUS_DATA_DIR}/index.json`)
-      .pipe(
-        switchMap(index => forkJoin(index.dungeons.map(dungeon =>
-          this.dataFiles.fetchJson<MythicPlusDungeonFile>(`${MYTHIC_PLUS_DATA_DIR}/${dungeon.id}.json`)))
-          .pipe(map(files => ({ index, files })))),
-        takeUntilDestroyed(this.destroyRef))
+    this.mythicPlusData.season()
+      .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
-        next: ({ index, files }) => {
-          if (files.some(file => !sharesTables(index, file))) {
-            this.dataFiles.refresh();
-            if (!this.reloadedForNewerData) {
-              this.reloadedForNewerData = true;
-              this.loadData();
-            } else {
-              this.loadError.set(NEWER_DATA_MESSAGE);
-              this.isLoading.set(false);
-            }
-            return;
-          }
-
-          const decode = createRunDecoder(index);
+        next: ({ index, runs }) => {
           this.index.set(index);
-          this.allRuns.set(files.flatMap(file => decode(file)));
+          this.allRuns.set(runs);
           this.isLoading.set(false);
         },
         error: error => {
           console.error('Failed to load Mythic+ stats:', error);
-          this.loadError.set('The Mythic+ runs could not be loaded.');
+          this.loadError.set(mythicPlusLoadError(error));
           this.isLoading.set(false);
         }
       });

@@ -1,5 +1,5 @@
 import { Injectable, inject, signal } from '@angular/core';
-import { Observable, catchError, forkJoin, map, of, shareReplay, switchMap, throwError } from 'rxjs';
+import { Observable, catchError, forkJoin, map, of, switchMap } from 'rxjs';
 import {
   RAID_GENDERS_PATH,
   RAID_LOGS_DATA_DIR,
@@ -26,6 +26,7 @@ import {
   realmSlug
 } from '../raid-logs';
 import { DataFileService } from './data-file.service';
+import { ObservableCache } from './observable-cache';
 
 export interface FoundKill {
   index: RaidLogsIndex;
@@ -36,12 +37,12 @@ export interface FoundKill {
 @Injectable({ providedIn: 'root' })
 export class RaidLogsDataService {
   private readonly dataFiles = inject(DataFileService);
-  private readonly memoized = new Map<string, Observable<unknown>>();
+  private readonly cache = new ObservableCache();
 
   readonly lastDifficulty = signal<string | undefined>(undefined);
 
   index(): Observable<RaidLogsIndex> {
-    return this.memoize('index', () =>
+    return this.cache.get('index', () =>
       this.dataFiles.fetchJson<RaidLogsIndexFile>(`${RAID_LOGS_DATA_DIR}/index.json`).pipe(map(decodeIndex)));
   }
 
@@ -52,7 +53,7 @@ export class RaidLogsDataService {
     }
 
     const path = bossFilePath(boss, difficulty);
-    return this.memoize(path, () =>
+    return this.cache.get(path, () =>
       this.dataFiles.fetchJson<RaidBossFile>(path).pipe(map(file => decodeBossFile(file, boss, difficulty, index.specs))));
   }
 
@@ -67,7 +68,7 @@ export class RaidLogsDataService {
   }
 
   genders(): Observable<ReadonlyMap<string, number>> {
-    return this.memoize('genders', () => this.dataFiles.fetchJson<RaidGendersFile>(RAID_GENDERS_PATH).pipe(
+    return this.cache.get('genders', () => this.dataFiles.fetchJson<RaidGendersFile>(RAID_GENDERS_PATH).pipe(
       map(decodeGenders),
       catchError((error: unknown) => {
         console.warn('Could not load the raid genders; race icons keep the gender from the raid logs.', error);
@@ -77,7 +78,7 @@ export class RaidLogsDataService {
   }
 
   talents(): Observable<RaidTalentTable> {
-    return this.memoize('talents', () => this.dataFiles.fetchJson<RaidTalentsFile>(RAID_TALENTS_PATH).pipe(
+    return this.cache.get('talents', () => this.dataFiles.fetchJson<RaidTalentsFile>(RAID_TALENTS_PATH).pipe(
       map(decodeTalents),
       catchError((error: unknown) => {
         console.warn('Could not load the talents; the boss rankings show none.', error);
@@ -87,7 +88,7 @@ export class RaidLogsDataService {
   }
 
   talentTooltips(): Observable<RaidTalentTooltips> {
-    return this.memoize('talentTooltips', () => this.dataFiles.fetchJson<RaidTalentTooltipsFile>(RAID_TALENT_TOOLTIPS_PATH).pipe(
+    return this.cache.get('talentTooltips', () => this.dataFiles.fetchJson<RaidTalentTooltipsFile>(RAID_TALENT_TOOLTIPS_PATH).pipe(
       map(decodeTalentTooltips),
       catchError((error: unknown) => {
         console.warn('Could not load the talent tooltips; talents show their names only.', error);
@@ -115,7 +116,7 @@ export class RaidLogsDataService {
 
   refresh(): void {
     this.dataFiles.refresh();
-    this.memoized.clear();
+    this.cache.clear();
   }
 
   private findIn(realm: string, logId: number): Observable<FoundKill> {
@@ -124,22 +125,5 @@ export class RaidLogsDataService {
       index,
       kill: index.kills.find(kill => kill.logId === logId && realmSlug(kill.realm) === slug)
     })));
-  }
-
-  private memoize<T>(key: string, load: () => Observable<T>): Observable<T> {
-    let cached = this.memoized.get(key) as Observable<T> | undefined;
-
-    if (!cached) {
-      cached = load().pipe(
-        catchError((error: unknown) => {
-          this.memoized.delete(key);
-          return throwError(() => error);
-        }),
-        shareReplay({ bufferSize: 1, refCount: false })
-      );
-      this.memoized.set(key, cached);
-    }
-
-    return cached;
   }
 }

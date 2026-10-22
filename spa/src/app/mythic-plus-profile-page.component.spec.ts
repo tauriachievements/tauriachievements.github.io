@@ -317,7 +317,7 @@ describe('MythicPlusProfilePageComponent', () => {
     const dataFiles = new FakeDataFiles('bbbbbbbbbbbb', true);
     const { page } = await open('/mythic-plus/character/evermoon/Progtrix', dataFiles);
 
-    expect(dataFiles.refreshes).toBe(2);
+    expect(dataFiles.refreshes).toBe(1);
     expect(page.loadError()).toBe(NEWER_DATA_MESSAGE);
   });
 });

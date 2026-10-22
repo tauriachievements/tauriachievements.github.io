@@ -12,7 +12,6 @@ import {
 } from '@angular/core';
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Params, Router, RouterLink } from '@angular/router';
-import { forkJoin, map, switchMap } from 'rxjs';
 import { getGuildArmoryUrl } from '../utils/armory';
 import { getLocalTimeZoneLabel } from '../utils/time-zone-label';
 import { BackToTopButtonComponent } from './back-to-top-button.component';
@@ -23,17 +22,13 @@ import { FilterDropdownOption, FilterDropdownValue } from './filter-dropdown.typ
 import { GlideDirective } from './glide.directive';
 import { MobileFilterToggleComponent } from './mobile-filter-toggle.component';
 import {
-  MYTHIC_PLUS_DATA_DIR,
   MythicPlusAffix,
-  MythicPlusDungeonFile,
   MythicPlusIndex,
   MythicPlusMember,
   MythicPlusRun,
   MythicPlusStandingEntry,
-  NEWER_DATA_MESSAGE,
   ROLE_LABELS,
   characterKey,
-  createRunDecoder,
   currentAffixWeek,
   exportedAt,
   memberNameMatches,
@@ -41,8 +36,7 @@ import {
   runScoreColor,
   scoreColor,
   scoreTiers,
-  seasonScoreColors,
-  sharesTables
+  seasonScoreColors
 } from './mythic-plus';
 import {
   GuildLadderEntry,
@@ -71,7 +65,7 @@ import {
   toMemberView
 } from './mythic-plus-views';
 import { MythicPlusWeekAffixesComponent } from './mythic-plus-week-affixes.component';
-import { DataFileService } from './services/data-file.service';
+import { MythicPlusDataService, mythicPlusLoadError } from './services/mythic-plus-data.service';
 import { UpdateBarComponent } from './update-bar.component';
 import { CLASS_FILTER_OPTIONS, CLASS_NAMES, Role } from './wow';
 import { LEGION_SPECS } from './wow-specs';
@@ -120,7 +114,7 @@ function parseSpec(classId: number | undefined, value: string | null): string | 
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class MythicPlusGuildPageComponent implements OnInit {
-  private readonly dataFiles = inject(DataFileService);
+  private readonly mythicPlusData = inject(MythicPlusDataService);
   private readonly destroyRef = inject(DestroyRef);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
@@ -136,7 +130,6 @@ export class MythicPlusGuildPageComponent implements OnInit {
   readonly allRuns = signal<readonly MythicPlusRun[]>([]);
   readonly isLoading = signal(true);
   readonly loadError = signal<string | undefined>(undefined);
-  private reloadedForNewerData = false;
 
   private readonly params = toSignal(this.route.paramMap, { initialValue: this.route.snapshot.paramMap });
   readonly urlRealm = computed(() => this.params().get('realm') ?? '');
@@ -492,34 +485,17 @@ export class MythicPlusGuildPageComponent implements OnInit {
   loadData(): void {
     this.isLoading.set(true);
     this.loadError.set(undefined);
-    this.dataFiles.getJson<MythicPlusIndex>(`${MYTHIC_PLUS_DATA_DIR}/index.json`)
-      .pipe(
-        switchMap(index => forkJoin(index.dungeons.map(dungeon =>
-          this.dataFiles.fetchJson<MythicPlusDungeonFile>(`${MYTHIC_PLUS_DATA_DIR}/${dungeon.id}.json`)))
-          .pipe(map(files => ({ index, files })))),
-        takeUntilDestroyed(this.destroyRef))
+    this.mythicPlusData.season()
+      .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
-        next: ({ index, files }) => {
-          if (files.some(file => !sharesTables(index, file))) {
-            this.dataFiles.refresh();
-            if (!this.reloadedForNewerData) {
-              this.reloadedForNewerData = true;
-              this.loadData();
-            } else {
-              this.loadError.set(NEWER_DATA_MESSAGE);
-              this.isLoading.set(false);
-            }
-            return;
-          }
-
-          const decode = createRunDecoder(index);
+        next: ({ index, runs }) => {
           this.index.set(index);
-          this.allRuns.set(files.flatMap(file => decode(file)));
+          this.allRuns.set(runs);
           this.isLoading.set(false);
         },
         error: error => {
           console.error('Failed to load the Mythic+ guild ladder:', error);
-          this.loadError.set('The Mythic+ runs could not be loaded.');
+          this.loadError.set(mythicPlusLoadError(error));
           this.isLoading.set(false);
         }
       });
