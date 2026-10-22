@@ -3,7 +3,8 @@
 Guild pages are unlisted statistics pages, one per guild, at `/<key>-<8 hex>` (for example
 `/endless-f8c2a91d`). All of them are `GuildAnalysisPageComponent`, reading
 `spa/src/guild-analysis/<key>.json`, which `api/Guildkukker` writes. `GUILD_PAGES` in
-`spa/src/app/guild-analysis.ts` lists them, and `app.routes.ts` makes one route per entry.
+`spa/src/app/features/guild-analysis/guild-analysis.ts` lists them, and `app.routes.ts` makes
+one route per entry.
 
 The owner asks for these by guild name and realm. They're routine and don't need an
 architecture discussion.
@@ -13,9 +14,9 @@ architecture discussion.
 1. **Pick the key.** It's the guild name, lowercased and kebab-cased, with accents dropped
    ("Témérité" → `temerite`). Guildkukker names the JSON file the same way. Check the first run's
    output file name before you rely on it.
-2. **`GUILD_PAGES` in `spa/src/app/guild-analysis.ts`:** add one line. The page's address is
-   the key, a hyphen and `hash`, 8 random hex characters, so it can't be guessed. `name` and
-   `realm` show until the scan's own guild details load:
+2. **`GUILD_PAGES` in `spa/src/app/features/guild-analysis/guild-analysis.ts`:** add one
+   line. The page's address is the key, a hyphen and `hash`, 8 random hex characters, so it
+   can't be guessed. `name` and `realm` show until the scan's own guild details load:
 
    ```ts
    { key: '<key>', hash: '<8 hex>', name: '<Guild Name>', realm: '<Realm>' },

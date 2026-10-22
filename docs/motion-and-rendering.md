@@ -8,7 +8,7 @@ touching motion or layering.
 
 - **Tokens** in `src/scss/_motion.scss`: `--ease-out`, `--ease-in-out`, `--ease-spring`,
   `--dur-fast`, `--dur`, `--dur-slow`. `--ease-spring` must stay in step with `SPRING` in
-  `src/app/motion.ts`, which the directives use for Web Animations.
+  `src/app/shared/motion/motion.ts`, which the directives use for Web Animations.
 - **Keyframes:** every one the M+ and Support motion uses is global in `_motion.scss`, with an
   `mp-` prefix (see the first gotcha).
 - **Page changes:** `withViewTransitions()`. `_motion.scss` styles `::view-transition-old/new`

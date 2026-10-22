@@ -16,9 +16,10 @@ explains it together.
 - What's still tied falls back to the achievement-point order, which ends on the player key
   (`realm::name`). That's only correct because every ranking also compares achievement points
   and honorable kills, and the module asserts this when it loads.
-- **The `#` column** (`collectRanked` in `spa/src/app/ladder.service.ts`) is a row's place on
-  the ladder being shown: the whole server, or inside the realm, faction or class filter when
-  one is on. That's the same group the movement arrows measure (`buildCohortRankDeltas`).
+- **The `#` column** (`collectRanked` in `spa/src/app/features/ladder/ladder.service.ts`) is a
+  row's place on the ladder being shown: the whole server, or inside the realm, faction or
+  class filter when one is on. That's the same group the movement arrows measure
+  (`buildCohortRankDeltas`).
   **A search only hides rows. It never renumbers them**, so a character looked up keeps their
   real place, as on the Mythic+ leaderboard. The order has no ties, so no two rows share a place.
 - **Tests:** `scripts/player-ranking.test.js`, `ladder.service.spec.ts`.
@@ -130,7 +131,7 @@ explains it together.
 
 ## Raid leaderboard
 
-- **Code:** `scoreCharacters` / `rankScores` in `spa/src/app/raid-logs.ts`.
+- **Code:** `scoreCharacters` / `rankScores` in `spa/src/app/features/raids/raid-logs.ts`.
 - On each boss, the character's best counted kill is divided by the best anyone did there. The
   average of those shares, times `MAX_SCORE` (6969), floored, is the score. A boss the
   character hasn't killed counts as 0; a boss nobody has killed is left out of the average.
@@ -157,7 +158,7 @@ explains it together.
 ## Raid guild progression and kill speed
 
 - **Code:** `guildProgression`, `filterProgression`, `fastestKills` and `speedRank` in
-  `spa/src/app/raid-logs.ts`.
+  `spa/src/app/features/raids/raid-logs.ts`.
 - Guilds rank by most bosses down on the difficulty, then by who got there first (their latest
   first kill). Pickup groups and guilds the API couldn't name don't take part. A guild is its
   name on its realm, so one recreated under the same name keeps its row. A faction or realm
@@ -170,8 +171,9 @@ explains it together.
 
 ## Raid spec performance
 
-- **Code:** `scoresBySpec`, `topAverage` and `specPerformance` in `spa/src/app/raid-logs.ts`;
-  `sortByPerformance` in `spa/src/app/raid-talents.ts`.
+- **Code:** `scoresBySpec`, `topAverage` and `specPerformance` in
+  `spa/src/app/features/raids/raid-logs.ts`; `sortByPerformance` in
+  `spa/src/app/features/raids/raid-talents.ts`.
 - Every character gets the raid leaderboard score for each spec they played, as if that spec
   were picked on the leaderboard. A spec's performance is the average of its best
   `SPEC_TOP_SCORES` (10) character scores, or of all of them when it has fewer, and 0 when
@@ -186,7 +188,7 @@ explains it together.
 
 ## Talent Analytics
 
-- **Code:** `spa/src/app/raid-talents.ts`.
+- **Code:** `spa/src/app/features/raids/raid-talents.ts`.
 - Each character counts once per boss and spec, with the talents of their best kill there by the
   spec's metric (the earlier kill on a tie), so a guild farming a boss every week doesn't
   outweigh everyone else. Members without a spec or talents are left out.
@@ -207,9 +209,9 @@ explains it together.
 
 ## Arena titles
 
-- **Code:** `ARENA_TITLES`, `getTitleCutoffs` and `getTitle` in `spa/src/app/arena-games.ts`.
-  The page lists characters with 50 or more rated games this season (`MIN_GAMES`). A season
-  reward needs 50 wins (`REWARD_MIN_WINS`).
+- **Code:** `ARENA_TITLES`, `getTitleCutoffs` and `getTitle` in
+  `spa/src/app/features/pvp/arena-games.ts`. The page lists characters with 50 or more rated
+  games this season (`MIN_GAMES`). A season reward needs 50 wins (`REWARD_MIN_WINS`).
 - Each title covers a cumulative "top X%" of the listed players by rating:
   - 2v2: Gladiator 0.6%, Duelist 3%, Rival 10%, Challenger 35%;
   - 3v3: Season Gladiator 0.5%, Gladiator 3%, Duelist 10%, Rival 35%, Challenger 45%.

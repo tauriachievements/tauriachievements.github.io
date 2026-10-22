@@ -43,7 +43,9 @@ this file, so Claude Code reads it at the start of every session.
 ## Repository layout
 
 - `spa/` is the Angular 21 single-page app served by GitHub Pages at
-  <https://tauriachievements.github.io/>. All app code sits flat in `spa/src/app/`.
+  <https://tauriachievements.github.io/>. App code sits in `spa/src/app/`: `core/`, `shared/`,
+  `game/`, `players/`, and one folder per menu section under `features/`
+  ([docs/frontend.md](docs/frontend.md#where-things-go)).
 - `api/` holds .NET 10 console apps (batch jobs, not a web API). They call the Tauri API and
   write the data files into `spa/src/`. Solution: `api/AchievementLadder.sln`. Shared code is
   in `api/Tauri.Core`, tests in `api/tests`.

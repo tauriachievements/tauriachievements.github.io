@@ -5,7 +5,7 @@ const { sortByAchievementPoints, sortByRanking } = require("./player-ranking");
 const outputDir = path.join(__dirname, "..", "src", "assets", "data");
 const outputPath = path.join(outputDir, "guilds.snapshot.json");
 
-// Must match GUILD_SOURCE_LIMIT_OPTIONS in src/app/guild-presence-options.ts: the Guilds page
+// Must match GUILD_SOURCE_LIMIT_OPTIONS in src/app/features/ladder/guild-presence-options.ts: the Guilds page
 // offers exactly these "count guild members among the top N players" choices.
 const GUILD_SOURCE_LIMITS = [100, 500, 1000];
 

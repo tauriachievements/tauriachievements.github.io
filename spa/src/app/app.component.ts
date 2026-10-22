@@ -2,8 +2,8 @@ import { Component, computed, inject } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRouteSnapshot, Data, NavigationEnd, Router, RouterOutlet } from '@angular/router';
 import { filter, map, startWith } from 'rxjs';
-import { BackToTopButtonComponent } from './back-to-top-button.component';
-import { UpdateBarComponent } from './update-bar.component';
+import { BackToTopButtonComponent } from './core/back-to-top-button.component';
+import { UpdateBarComponent } from './core/update-bar.component';
 
 function deepestRoute(route: ActivatedRouteSnapshot): ActivatedRouteSnapshot {
   return route.firstChild ? deepestRoute(route.firstChild) : route;

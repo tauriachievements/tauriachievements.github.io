@@ -1,7 +1,7 @@
 # How to add a page
 
-The Arena page (`arena-games-page.component.*` with `arena-games.ts`) is a compact recent
-example to copy from.
+The Arena page (`features/pvp/arena-games-page.component.*` with `arena-games.ts`) is a
+compact recent example to copy from.
 
 ## 0. Agree the shape first
 
@@ -15,7 +15,7 @@ A new route, its URL parameters and its place in the navigation are architectura
 
 ## 1. Files
 
-In `spa/src/app/`:
+In the folder of the page's menu section, `spa/src/app/features/<area>/`:
 
 - `<name>-page.component.ts`, `.html`, `.scss`: the page.
 - `<name>.ts` with `<name>.spec.ts`: everything the page computes (filters, ranking, counts,
@@ -61,7 +61,7 @@ Add a lazy route in `app.routes.ts`, above the guild pages and the final `'**'` 
 ```ts
 {
   path: '<path>',
-  loadComponent: () => import('./<name>-page.component')
+  loadComponent: () => import('./features/<area>/<name>-page.component')
     .then(module => module.<Name>PageComponent)
 },
 ```
@@ -71,7 +71,7 @@ Never put a dot in a path or parameter: `404.html` won't redirect it.
 
 ## 4. The navigation
 
-Add the page to its section in `nav-sections.ts` (`label`, optional short `tab`, `icon`,
+Add the page to its section in `core/nav-sections.ts` (`label`, optional short `tab`, `icon`,
 `path`; `includes` lists the deep routes that should highlight it). Then raise the page count
 in both specs that pin it (22 today):
 

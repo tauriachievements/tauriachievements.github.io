@@ -6,7 +6,19 @@ serves.
 
 ## Where things go
 
-Everything sits flat in `spa/src/app/`. A file's name says what it is:
+`spa/src/app/` holds the shell (`app.component.ts`, `app.config.ts`, `app.routes.ts`) and these
+folders:
+
+| Folder | Holds |
+|---|---|
+| `core/` | what the whole app runs on: the header (`update-bar`, `nav-sections.ts`, `page-header.ts`), the back-to-top button, `url-state.ts`, `DataFileService`, `ObservableCache`, `time-zone-label.ts` |
+| `shared/` | UI building blocks any page may use: the filter dropdown, the mobile filter toggle, `app-load-state`, `app-icon-tips`, `appTapTooltip`, `compact-viewport.ts`, `_mythic-plus-shared.scss` |
+| `shared/motion/` | the motion directives and their helpers (`motion.ts`, `count-up.ts`, `decode-text.ts`) |
+| `game/` | the game's own tables and links: `wow.ts`, `wow-specs.ts`, `class-colors.ts`, `armory.ts`, the class and race icon helpers |
+| `players/` | the ladder's data, `Players.csv` and `RareAchievements.json`: the `Character` model, `DataSyncService`, `LadderLastUpdatedService`, the rare-achievement service, groups and summaries, and the player test fixture. The Ladder, Achievements and Realm Stats pages read it |
+| `features/<area>/` | one folder per menu section (`ladder`, `achievements`, `pvp`, `raids`, `mythic-plus`, `realm-stats`), plus `guild-analysis` (the unlisted guild pages) and `support`. A feature holds its pages, their pure logic and specs, its child components, its data service and its SCSS partial |
+
+A file's name says what it is:
 
 | Name | Holds |
 |---|---|
@@ -14,12 +26,11 @@ Everything sits flat in `spa/src/app/`. A file's name says what it is:
 | `<name>.component.*` | a child or shared component |
 | `<feature>.ts` + `<feature>.spec.ts` | pure logic: types, parsing, ranking, formatting (e.g. `mythic-plus.ts`, `raid-logs.ts`, `arena-games.ts`) |
 | `<name>.directive.ts` | an attribute directive (`app` prefix: `[appReveal]`) |
-| `services/<name>.service.ts` | data loading shared by several pages |
+| `<name>.service.ts` | data loading shared by several pages |
 | `_<area>-shared.scss` | SCSS mixins shared by an area's pages |
 | `<page>.motion.scss` | a page's motion, as a second `styleUrls` entry |
 
-Outside `app/`: `src/utils/` (`armory.ts`, class and race icon helpers, `time-zone-label.ts`)
-and `src/scss/` (`styles.scss`, `_motion.scss`).
+Outside `app/`: `src/scss/` (`styles.scss`, `_motion.scss`).
 
 Keep components thin. A ranking, filter or count goes into the pure `<feature>.ts`, where a
 spec can pin it down without a TestBed.
@@ -105,7 +116,7 @@ finds Sósa), while a picked character matches name and realm exactly.
   visible page, and the ladder starts on the 25,000-row head snapshot.
 - An area with several pages loads its files through one service, which decodes each file
   once per session, so moving between its pages reads nothing twice. Services memoize with
-  `ObservableCache` (`services/observable-cache.ts`), which forgets a failed load so a retry
+  `ObservableCache` (`core/observable-cache.ts`), which forgets a failed load so a retry
   fetches again.
 - `MythicPlusDataService` loads the Mythic+ files: `season()` (the index and every dungeon's
   runs) for the stats, records, compare, profile and guild pages; `index()` and
@@ -164,8 +175,8 @@ decision (ask first).
 | `app-back-to-top-button` | the floating back-to-top button |
 | `app-load-state` | a page's loading spinner and its error box with "Try again": `<app-load-state [loading]="isLoading()" [error]="loadError()" loadingText="Reading the logs..." (retry)="loadData()" />`. It renders nothing once loaded; content inside it shows in the error box (the character page's difficulty switch). The Mythic+ and Raids pages use it; the older pages and the themed Arena, Emerald Nightmare and Rare Items pages keep their own |
 | `class-colors.ts` | the one class-colour table: `getClassColor()` in code, `var(--class-<id>)` in SCSS |
-| `utils/armory.ts` | `getArmoryUrl()` for every armory link |
-| `utils/time-zone-label.ts` | the "GMT+2"-style label beside local times |
+| `game/armory.ts` | `getArmoryUrl()` for every armory link |
+| `core/time-zone-label.ts` | the "GMT+2"-style label beside local times |
 | `raid-logs.ts` helpers | `nameMatches` and `realmSlug` for name search and realm URLs; `parseRoleFilter` for `?role=` (`tank`, `healer`, `dps`); `bossShortName` (a boss's `shortName`) for tiles, table cells and other tight spots: the name up to its first comma, or a shorter name from `BOSS_SHORT_NAMES` ("Elerethe", "Dragons"). A long boss name in a new raid gets an entry there |
 | `_mythic-plus-shared.scss` | mixins such as `tooltip-box`, `quality-colors`, `visually-hidden`, `motion-safe`, `glide-pill`, `table-scroll`, `details-reveal` ([motion](motion-and-rendering.md)). `crest-glow` needs `isolation: isolate` on the crest's parent, so the glow sits under the crest and above the parent's background. `spotlight-card` takes the card's `::before` and `::after` |
 | `_raid-logs-shared.scss` | forwards the M+ mixins, and adds `raid-table`, `ranking-toolbar`, `filter-reset`, `pager`, `difficulty-switch`, and `segmented-switch` (the difficulty switch's pill look, for any other switch beside it) |
