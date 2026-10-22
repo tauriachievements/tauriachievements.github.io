@@ -2,7 +2,7 @@ import { createHash } from 'node:crypto';
 import { existsSync, mkdirSync, readFileSync, renameSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { Page, Route, expect, test } from '@playwright/test';
-import { VISUAL_PAGES, VISUAL_VIEWPORTS } from './visual-pages';
+import { VISUAL_PAGES, VISUAL_VIEWPORTS, VisualPage } from './visual-pages';
 
 const FIXED_TIME = new Date('2026-10-22T12:00:00Z');
 const EXTERNAL_CACHE_DIR = join(__dirname, '.cache', 'external');
@@ -70,7 +70,23 @@ async function serveExternalFromCache(page: Page): Promise<void> {
   });
 }
 
-async function settle(page: Page): Promise<void> {
+async function interceptData(page: Page, visualPage: VisualPage): Promise<void> {
+  const matches = (patterns: readonly string[] | undefined) => (url: URL) =>
+    url.hostname === 'localhost' && (patterns ?? []).some(pattern => new RegExp(pattern).test(url.pathname));
+  if (visualPage.fail) {
+    await page.route(matches(visualPage.fail), route => route.fulfill({ status: 500, body: '' }));
+  }
+  if (visualPage.hold) {
+    await page.route(matches(visualPage.hold), () => new Promise<void>(() => undefined));
+  }
+}
+
+async function settle(page: Page, visualPage?: VisualPage): Promise<void> {
+  if (visualPage?.hold) {
+    await page.waitForLoadState('load');
+    await page.waitForTimeout(1500);
+    return;
+  }
   await page.waitForLoadState('networkidle');
   await page.evaluate(() => document.fonts.ready);
   await page.evaluate(() => document.querySelectorAll('img[loading="lazy"]').forEach(image => {
@@ -105,8 +121,9 @@ for (const viewport of VISUAL_VIEWPORTS) {
       test(visualPage.name, async ({ page }) => {
         await page.clock.setFixedTime(FIXED_TIME);
         await serveExternalFromCache(page);
+        await interceptData(page, visualPage);
         await page.goto(visualPage.path);
-        await settle(page);
+        await settle(page, visualPage);
         for (const selector of visualPage.clicks ?? []) {
           await page.locator(selector).click();
           await page.waitForTimeout(400);

@@ -5,6 +5,8 @@ export interface VisualPage {
   readonly path: string;
   readonly clicks?: readonly string[];
   readonly only?: ViewportName;
+  readonly fail?: readonly string[];
+  readonly hold?: readonly string[];
 }
 
 export const VISUAL_PAGES: readonly VisualPage[] = [
@@ -83,7 +85,18 @@ export const VISUAL_PAGES: readonly VisualPage[] = [
   { name: 'state-raid-logs-stats-performance', path: '/raid-logs/stats?view=performance&role=healer' },
   { name: 'state-raid-logs-boss-hps-class', path: '/raid-logs/boss/xavius?difficulty=mythic&tab=hps&class=5' },
   { name: 'state-raid-logs-guilds-filtered', path: '/raid-logs/guilds?difficulty=heroic&realm=evermoon&faction=horde' },
-  { name: 'state-raid-logs-talents-role', path: '/raid-logs/talents?difficulty=heroic&role=healer' }
+  { name: 'state-raid-logs-talents-role', path: '/raid-logs/talents?difficulty=heroic&role=healer' },
+  { name: 'state-loading-mythic-plus', path: '/mythic-plus', hold: ['mythic-plus-data/index\\.json'] },
+  { name: 'state-loading-mythic-plus-runs', path: '/mythic-plus', hold: ['mythic-plus-data/(?!index)'] },
+  { name: 'state-error-mythic-plus-stats', path: '/mythic-plus/stats', fail: ['mythic-plus-data/'] },
+  { name: 'state-error-mythic-plus-profile', path: '/mythic-plus/character/evermoon/Pashao', fail: ['mythic-plus-data/'] },
+  { name: 'state-loading-raid-logs', path: '/raid-logs', hold: ['raid-log-data/index\\.json'] },
+  { name: 'state-error-raid-logs-leaderboard', path: '/raid-logs/leaderboard', fail: ['raid-log-data/'] },
+  { name: 'state-error-raid-logs-character', path: '/raid-logs/character/evermoon/Gankuh?difficulty=mythic', fail: ['-mythic\\.json'] },
+  { name: 'state-loading-raid-logs-talents-rosters', path: '/raid-logs/talents', hold: ['-mythic\\.json'] },
+  { name: 'state-error-raid-log', path: '/raid-logs/log/tauri/1684762', fail: ['raid-log-data/'] },
+  { name: 'state-error-arena', path: '/arena', fail: ['arena-games\\.json'] },
+  { name: 'state-error-ladder', path: '/', fail: ['players\\.(head\\.)?snapshot\\.json'] }
 ];
 
 export const VISUAL_VIEWPORTS: ReadonlyArray<{ readonly name: ViewportName; readonly width: number; readonly height: number }> = [
