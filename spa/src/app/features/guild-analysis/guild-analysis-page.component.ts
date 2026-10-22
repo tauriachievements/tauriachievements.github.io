@@ -14,12 +14,27 @@ import {
 import { ActivatedRoute } from '@angular/router';
 import {
   GuildAnalysis,
-  GuildAnalysisLegendary,
   GuildAnalysisPlayer,
   GuildPage
 } from './guild-analysis';
 import { getArmoryUrl } from '../../game/armory';
 import { getClassIconPath } from '../../game/classIconHelper';
+import {
+  CombatRole,
+  SortColumn,
+  SortDirection,
+  countClasses,
+  defaultSortDirection,
+  guildRankNames,
+  guildRankOrder,
+  isSortColumn,
+  legendaryTooltipHtml,
+  legendaryUrl,
+  parseGuildTimestamp,
+  rosterRows,
+  timeZoneLabelOf,
+  timeZoneOffset
+} from './guild-roster';
 import { getRaceIconPath } from '../../game/raceIconHelper';
 import { ArtifactSpecTraits, artifactSpecTraits } from './guild-artifact-specs';
 import { FilterDropdownComponent } from '../../shared/filter-dropdown.component';
@@ -29,56 +44,9 @@ import { getClassColor } from '../../game/class-colors';
 import { injectCompactViewport } from '../../shared/compact-viewport';
 import { MobileFilterToggleComponent } from '../../shared/mobile-filter-toggle.component';
 import { TapTooltipDirective } from '../../shared/tap-tooltip.directive';
-import { CLASS_NAMES } from '../../game/wow';
 import { setPageHeader } from '../../core/page-header';
 
 const MOBILE_ROSTER_PAGE_SIZE = 25;
-
-interface ClassCountEntry {
-  id: number;
-  name: string;
-  count: number;
-  percentage: number;
-}
-
-type CombatRole = 'Tank' | 'Heal' | 'Ranged' | 'Melee';
-
-const LEGACY_GUILD_RANK_ORDER = [
-  'Guild Master',
-  'Officer',
-  'Officer Alt',
-  'Core',
-  'Raider',
-  'Trial',
-  'Alt',
-  'Family'
-] as const;
-
-function guildRankOrderIndex(rankName: string): number {
-  const normalizedRankName = rankName.trim().toLocaleLowerCase();
-  const rankIndex = LEGACY_GUILD_RANK_ORDER.findIndex(
-    (rank) => rank.toLocaleLowerCase() === normalizedRankName
-  );
-
-  return rankIndex === -1 ? LEGACY_GUILD_RANK_ORDER.length : rankIndex;
-}
-
-type SortColumn =
-  | 'name'
-  | 'guildRankName'
-  | 'artifactTraits'
-  | 'artifactKnowledge'
-  | 'itemLevel';
-
-type SortDirection = 'asc' | 'desc';
-
-const SORT_COLUMNS = new Set<SortColumn>([
-  'name',
-  'guildRankName',
-  'artifactTraits',
-  'artifactKnowledge',
-  'itemLevel'
-]);
 
 @Component({
   selector: 'app-guild-analysis-page',
@@ -104,12 +72,7 @@ export class GuildAnalysisPageComponent {
   private readonly specTraitsByPlayer = new Map(
     this.sourcePlayers.map((player) => [player.name, artifactSpecTraits(player)])
   );
-  private readonly guildRankOrderByName = new Map(
-    (this.analysis.ranks ?? []).map((rank) => [
-      rank.name.trim().toLocaleLowerCase(),
-      rank.order
-    ])
-  );
+  private readonly guildRankOrderByName = guildRankOrder(this.analysis.ranks ?? []);
 
   readonly guildName = this.analysis.guild?.name ?? this.guild.name;
   readonly realmName = this.analysis.guild?.realm ?? this.guild.realm;
@@ -123,9 +86,9 @@ export class GuildAnalysisPageComponent {
   );
   readonly hiddenPlayerCount = computed(() => this.players().length - this.renderedPlayers().length);
   readonly nextRosterPageSize = computed(() => Math.min(MOBILE_ROSTER_PAGE_SIZE, this.hiddenPlayerCount()));
-  readonly lastEdited = this.parseTimestamp(this.analysis.timestamp);
-  readonly lastEditedTimeZoneLabel = this.analysis.timestamp.trim().split(/\s+/).at(-1) || 'Local time';
-  readonly lastEditedTimeZone = this.timeZoneOffset(this.lastEditedTimeZoneLabel);
+  readonly lastEdited = parseGuildTimestamp(this.analysis.timestamp);
+  readonly lastEditedTimeZoneLabel = timeZoneLabelOf(this.analysis.timestamp);
+  readonly lastEditedTimeZone = timeZoneOffset(this.lastEditedTimeZoneLabel);
   readonly sortColumn = signal<SortColumn>('artifactTraits');
   readonly sortDirection = signal<SortDirection>('desc');
   readonly getClassIconPath = getClassIconPath;
@@ -134,7 +97,7 @@ export class GuildAnalysisPageComponent {
   readonly selectedCombatRole = signal<CombatRole | ''>('');
   readonly filtersOpen = signal(false);
   readonly classBreakdownOpen = signal(false);
-  readonly guildRanks = this.buildGuildRanks();
+  readonly guildRanks = guildRankNames(this.sourcePlayers, this.analysis.ranks ?? []);
   readonly guildRankFilterOptions: ReadonlyArray<FilterDropdownOption<string | undefined>> = [
     { value: undefined, label: 'All ranks' },
     ...this.guildRanks.map((rank) => ({ value: rank, label: rank }))
@@ -147,7 +110,7 @@ export class GuildAnalysisPageComponent {
     { value: 'Melee', label: 'Melee' }
   ];
 
-  readonly classCounts = this.buildClassCounts();
+  readonly classCounts = countClasses(this.sourcePlayers);
   readonly classFilterOptions: ReadonlyArray<FilterDropdownOption<number | undefined>> = [
     { value: undefined, label: 'All Classes' },
     ...this.classCounts
@@ -206,30 +169,19 @@ export class GuildAnalysisPageComponent {
       this.sortDirection.update((direction) => direction === 'asc' ? 'desc' : 'asc');
     } else {
       this.sortColumn.set(column);
-      this.sortDirection.set(
-        column === 'name'
-        || column === 'guildRankName'
-          ? 'asc'
-          : 'desc'
-      );
+      this.sortDirection.set(defaultSortDirection(column));
     }
 
     this.applySort();
   }
 
   selectMobileSort(column: string): void {
-    if (!SORT_COLUMNS.has(column as SortColumn)) {
+    if (!isSortColumn(column)) {
       return;
     }
 
-    const selectedColumn = column as SortColumn;
-    this.sortColumn.set(selectedColumn);
-    this.sortDirection.set(
-      selectedColumn === 'name'
-      || selectedColumn === 'guildRankName'
-        ? 'asc'
-        : 'desc'
-    );
+    this.sortColumn.set(column);
+    this.sortDirection.set(defaultSortDirection(column));
     this.applySort();
   }
 
@@ -262,20 +214,8 @@ export class GuildAnalysisPageComponent {
     return this.specTraitsByPlayer.get(player.name) ?? [];
   }
 
-  legendaryUrl(item: Pick<GuildAnalysisLegendary, 'id'>): string {
-    return `https://legion-shoot.tauri.hu/?item=${item.id}`;
-  }
-
-  legendaryTooltipHtml(tooltipHtml: string): string {
-    return tooltipHtml
-      .replace(/(?:&nbsp;)?<small\b[^>]*>.*?<\/small>/gis, '')
-      .replace(
-        /<br\s*\/?>\s*(?:<!--sockets-->)?\s*Durability[^<]*<br\s*\/?>/gi,
-        '<br />'
-      )
-      .replace(/<br\s*\/?>\s*Requires Level[^<]*<br\s*\/?>/gi, '<br />')
-      .replace(/<br\s*\/?>Sell Price:.*?(?=<\/td>)/is, '');
-  }
+  readonly legendaryUrl = legendaryUrl;
+  readonly legendaryTooltipHtml = legendaryTooltipHtml;
 
   showLegendaryTooltip(
     event: MouseEvent | FocusEvent,
@@ -361,58 +301,6 @@ export class GuildAnalysisPageComponent {
     this.applySort();
   }
 
-  private buildClassCounts(): ClassCountEntry[] {
-    const counts = new Map<number, number>();
-
-    for (const player of this.sourcePlayers) {
-      if (!CLASS_NAMES[player.class]) {
-        continue;
-      }
-
-      counts.set(player.class, (counts.get(player.class) ?? 0) + 1);
-    }
-
-    const largestClassCount = Math.max(0, ...counts.values());
-    return [...counts.entries()]
-      .map(([id, count]) => ({
-        id,
-        name: CLASS_NAMES[id],
-        count,
-        percentage: largestClassCount === 0 ? 0 : count / largestClassCount * 100
-      }))
-      .sort((left, right) => right.count - left.count || left.name.localeCompare(right.name));
-  }
-
-  private buildGuildRanks(): string[] {
-    const playerRankNames = [...new Set(
-      this.sourcePlayers
-        .map((player) => player.guildRankName?.trim())
-        .filter((rank): rank is string => Boolean(rank))
-    )];
-    const playerRankNamesByKey = new Map(
-      playerRankNames.map((rank) => [rank.toLocaleLowerCase(), rank])
-    );
-    const exportedRanks = (this.analysis.ranks ?? [])
-      .filter((rank) => rank.name.trim().length > 0)
-      .sort((left, right) => left.order - right.order || left.name.localeCompare(right.name))
-      .map((rank) => playerRankNamesByKey.get(rank.name.trim().toLocaleLowerCase()) ?? rank.name.trim());
-    const exportedRankKeys = new Set(exportedRanks.map((rank) => rank.toLocaleLowerCase()));
-    const unlistedPlayerRanks = playerRankNames
-      .filter((rank) => !exportedRankKeys.has(rank.toLocaleLowerCase()))
-      .sort((left, right) => left.localeCompare(right, undefined, { sensitivity: 'base' }));
-
-    if (exportedRanks.length > 0) {
-      return [...exportedRanks, ...unlistedPlayerRanks];
-    }
-
-    return playerRankNames.sort((left, right) => {
-      const leftIndex = guildRankOrderIndex(left);
-      const rightIndex = guildRankOrderIndex(right);
-      return leftIndex - rightIndex
-        || left.localeCompare(right, undefined, { sensitivity: 'base' });
-    });
-  }
-
   showMorePlayers(): void {
     this.mobileRosterLimit.update((limit) => limit + MOBILE_ROSTER_PAGE_SIZE);
   }
@@ -423,131 +311,12 @@ export class GuildAnalysisPageComponent {
 
   private applySort(): void {
     this.mobileRosterLimit.set(MOBILE_ROSTER_PAGE_SIZE);
-    const column = this.sortColumn();
-    const multiplier = this.sortDirection() === 'asc' ? 1 : -1;
-    const classFilteredPlayers = this.selectedClassId() === null
-      ? this.sourcePlayers
-      : this.sourcePlayers.filter((player) => player.class === this.selectedClassId());
-    const rankFilteredPlayers = this.selectedGuildRank()
-      ? classFilteredPlayers.filter((player) =>
-          player.guildRankName?.localeCompare(
-            this.selectedGuildRank(),
-            undefined,
-            { sensitivity: 'base' }
-          ) === 0
-        )
-      : classFilteredPlayers;
-    const visiblePlayers = this.selectedCombatRole()
-      ? rankFilteredPlayers.filter((player) =>
-          this.combatRole(player) === this.selectedCombatRole()
-        )
-      : rankFilteredPlayers;
-
-    this.players.set([...visiblePlayers].sort((left, right) => {
-      const leftValue = this.sortValue(left, column);
-      const rightValue = this.sortValue(right, column);
-
-      if (leftValue === null && rightValue === null) {
-        return left.name.localeCompare(right.name);
-      }
-      if (leftValue === null) {
-        return 1;
-      }
-      if (rightValue === null) {
-        return -1;
-      }
-
-      const comparison = typeof leftValue === 'string'
-        ? leftValue.localeCompare(rightValue as string, undefined, { sensitivity: 'base' })
-        : leftValue - (rightValue as number);
-
-      return comparison === 0 ? left.name.localeCompare(right.name) : comparison * multiplier;
-    }));
-  }
-
-  private sortValue(player: GuildAnalysisPlayer, column: SortColumn): string | number | null {
-    switch (column) {
-      case 'name':
-        return player.name;
-      case 'guildRankName':
-        if (Number.isInteger(player.guildRank)) {
-          return player.guildRank as number;
-        }
-
-        if (!player.guildRankName) {
-          return null;
-        }
-
-        return this.guildRankOrderByName.get(
-          player.guildRankName.trim().toLocaleLowerCase()
-        ) ?? guildRankOrderIndex(player.guildRankName);
-      default:
-        return player[column] ?? null;
-    }
-  }
-
-  private combatRole(player: GuildAnalysisPlayer): CombatRole | undefined {
-    const specialization = player.specialization?.trim();
-    if (!specialization) {
-      return undefined;
-    }
-
-    switch (player.class) {
-      case 1:
-        return specialization === 'Protection' ? 'Tank' : 'Melee';
-      case 2:
-        return specialization === 'Protection' ? 'Tank'
-          : specialization === 'Holy' ? 'Heal'
-          : 'Melee';
-      case 3:
-        return specialization === 'Survival' ? 'Melee' : 'Ranged';
-      case 4:
-        return 'Melee';
-      case 5:
-        return specialization === 'Shadow' ? 'Ranged' : 'Heal';
-      case 6:
-        return specialization === 'Blood' ? 'Tank' : 'Melee';
-      case 7:
-        return specialization === 'Restoration' ? 'Heal'
-          : specialization === 'Elemental' ? 'Ranged'
-          : 'Melee';
-      case 8:
-      case 9:
-        return 'Ranged';
-      case 10:
-        return specialization === 'Brewmaster' ? 'Tank'
-          : specialization === 'Mistweaver' ? 'Heal'
-          : 'Melee';
-      case 11:
-        return specialization === 'Guardian' ? 'Tank'
-          : specialization === 'Restoration' ? 'Heal'
-          : specialization === 'Balance' ? 'Ranged'
-          : 'Melee';
-      case 12:
-        return specialization === 'Vengeance' ? 'Tank' : 'Melee';
-      default:
-        return undefined;
-    }
-  }
-
-  private parseTimestamp(timestamp: string): Date | undefined {
-    const match = timestamp.match(
-      /^(\d{4})-(\d{2})-(\d{2})[ T](\d{2}):(\d{2}):(\d{2})\s+(CET|CEST|UTC)$/
-    );
-    if (!match) {
-      return undefined;
-    }
-
-    const [, year, month, day, hour, minute, second, zone] = match;
-    const offset = zone === 'CEST' ? '+02:00' : zone === 'CET' ? '+01:00' : '+00:00';
-    const parsedDate = new Date(`${year}-${month}-${day}T${hour}:${minute}:${second}${offset}`);
-    return Number.isNaN(parsedDate.getTime()) ? undefined : parsedDate;
-  }
-
-  private timeZoneOffset(timeZoneLabel: string): string | undefined {
-    return timeZoneLabel === 'CEST' ? '+0200'
-      : timeZoneLabel === 'CET' ? '+0100'
-      : timeZoneLabel === 'UTC' ? '+0000'
-      : undefined;
+    this.players.set(rosterRows(
+      this.sourcePlayers,
+      { classId: this.selectedClassId(), guildRank: this.selectedGuildRank(), combatRole: this.selectedCombatRole() },
+      this.sortColumn(),
+      this.sortDirection(),
+      this.guildRankOrderByName
+    ));
   }
 }
