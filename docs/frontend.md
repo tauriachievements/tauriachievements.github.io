@@ -82,7 +82,7 @@ decision (ask first).
 | `app-update-bar` (`update-bar.component`) | the site header; every page renders it. `lastEditedLabel` / `lastEdited` set the timestamp on the right |
 | `nav-sections.ts` | the header's sections and pages, and route matching for deep routes (`includes`) |
 | `app-filter-dropdown` + `filter-dropdown.types.ts` | every dropdown filter. The page must list `FilterDropdownCoordinatorService` in its own `providers`, or it fails with NG0201 |
-| `CLASS_FILTER_OPTIONS` (`mythic-plus.ts`) | a class dropdown's options: "All classes", then every class with its icon and colour |
+| `CLASS_FILTER_OPTIONS` (`mythic-plus.ts`) | a class dropdown's options: "All classes", then every class A–Z with its icon and colour. Filter it when a page offers fewer classes (the raid leaderboard on HPS) |
 | `app-mobile-filter-toggle` | folds a page's filters behind one button on phones |
 | `injectCompactViewport()` (`compact-viewport.ts`) | a signal that's true on phone-sized screens (`(max-width: 640px)`, or a wider query you pass) |
 | `appTapTooltip` | makes a hover tooltip open on tap on touch screens |

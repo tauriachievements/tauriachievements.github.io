@@ -206,12 +206,14 @@ export const CLASS_NAMES: Readonly<Record<number, string>> = {
 
 export const CLASS_FILTER_OPTIONS: ReadonlyArray<FilterDropdownOption> = [
   { value: undefined, label: 'All classes' },
-  ...Object.entries(CLASS_NAMES).map(([id, name]) => ({
-    value: Number(id),
-    label: name,
-    icon: getClassIconPath(Number(id)),
-    color: getClassColor(Number(id))
-  }))
+  ...Object.entries(CLASS_NAMES)
+    .sort(([, a], [, b]) => a.localeCompare(b))
+    .map(([id, name]) => ({
+      value: Number(id),
+      label: name,
+      icon: getClassIconPath(Number(id)),
+      color: getClassColor(Number(id))
+    }))
 ];
 
 export function keystoneUpgrades(clearTimeSeconds: number, timerSeconds: number): number {
