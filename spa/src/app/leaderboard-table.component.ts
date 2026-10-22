@@ -46,12 +46,10 @@ export class LeaderboardTableComponent {
     return 'player-details-' + player.rank;
   }
 
-  /** Opens or closes the details panel under a row. One row is open at a time. */
   togglePlayerDetails(player: LadderPlayerView): void {
     this.expandedPlayerKey = this.isExpanded(player) ? null : this.playerKey(player);
   }
 
-  /** On phones the whole row toggles its details; links in the row keep working as links. */
   onRowClick(event: MouseEvent, player: LadderPlayerView): void {
     const target = event.target as Element | null;
     if (target?.closest('a, button') || !window.matchMedia(COMPACT_VIEWPORT_QUERY).matches) {
@@ -231,7 +229,6 @@ export class LeaderboardTableComponent {
     return this.buildRankTitle(player.name, player.playedTimeRankDelta);
   }
 
-  /** What the name's badges mean: shown in the hover tooltip, and in the details panel on phones. */
   getRareAchievementLines(player: LadderPlayerView): string[] {
     if (!player.rareAchievementSummaryLabel) {
       return [];

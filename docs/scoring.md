@@ -39,6 +39,9 @@ explains it together.
   - rounded to one decimal.
 
   So a depleted key sits just below a barely timed key one level lower.
+- **Keystone upgrades** (the stars, `keystoneUpgrades` in `mythic-plus.ts`), Legion's rule:
+  +3 within 60% of the timer, +2 within 80%, +1 within the timer. The comparison is in whole
+  numbers, so the 60% and 80% boundaries are exact.
 - **Player score** (`rankPlayers` in `mythic-plus.ts`): the sum of the character's best run
   score in each dungeon, Raider.IO's classic model. A spec, role or class filter scores a
   character only on the runs played that way.
@@ -50,9 +53,14 @@ explains it together.
     gold.
   - Run scores (`scoreQuality`): the share of the best score; at least 90% is legendary, 84%
     epic, 76% rare.
-  - Which scale a score uses depends on the scope: one dungeon's score is a single run, so it
-    takes the run scale; "This week" places scores among this week's players; everything else
-    uses the season's tiers.
+  - Which scale a score uses depends on the scope: one dungeon's score is a single run, which
+    `runScoreColor` colours on the season's stops as if every dungeon had that run (score ×
+    dungeons); "This week" places scores among this week's players; everything else uses the
+    season's tiers.
+- **"Top X%"** beside a rank is the share of players at or above it, rounded up so it never
+  flatters: to a tenth of a percent below 10%, to whole percents above (`mythic-plus-profile.ts`).
+- **Frequent teammates** (profile): most shared runs first, then the better best run
+  together, then the name.
 - **"Timed"** is `isTimed` (`mythic-plus-activity.ts`) everywhere: the leaderboard, the stats
   page and the records agree on it.
 - **Weeks** (`currentAffixWeek` in `mythic-plus.ts`, `affixWeeks` in
@@ -138,8 +146,26 @@ explains it together.
   empty list. A class with one spec the tab ranks gets that spec picked: on HPS that's every
   healing class but the Priest. No class has a single DPS spec.
 - **Changes since the last scan:** the same ranking (metric, spec, class, realm) worked out
-  again without the kills that scan didn't have, compared with today's.
+  again without the kills that scan didn't have (`newLogs`), compared with today's. A new best
+  on a boss lowers everyone else's share of it, so a score can drop.
+- **Colours** (`performanceQuality` in `raid-logs.ts`) follow Warcraft Logs' parse colours, on the
+  share of the best in view: artifact for the best, legendary from 95%, epic from 75%, rare
+  from 50%, uncommon from 25%.
 - The search hides rows without renumbering them, as on every leaderboard.
+- **Tests:** `raid-logs.spec.ts`.
+
+## Raid guild progression and kill speed
+
+- **Code:** `guildProgression`, `filterProgression`, `fastestKills` and `speedRank` in
+  `spa/src/app/raid-logs.ts`.
+- Guilds rank by most bosses down on the difficulty, then by who got there first (their latest
+  first kill). Pickup groups and guilds the API couldn't name don't take part. A guild is its
+  name on its realm, so one recreated under the same name keeps its row. A faction or realm
+  filter ranks the remaining guilds among themselves.
+- The progress squares show the bosses in the order raiders kill them, not the Dungeon
+  Journal's order the files use.
+- Fastest kills: the shortest fight first; the earlier kill wins a tie. A log's speed rank is
+  its place among the boss's kills on that difficulty.
 - **Tests:** `raid-logs.spec.ts`.
 
 ## Raid spec performance
@@ -169,6 +195,14 @@ explains it together.
 - A talent is marked as picked for a boss when it's picked `NOTABLE_DIFFERENCE` (10 points)
   more there than on the other bosses, and only with at least `NOTABLE_MIN_PICKS` (10) picks on
   both sides.
+- **Agreement** is how often players take each tier's most picked talent, averaged over the
+  tiers. It reads, on the whole percent shown: 80% and up "Settled", 65% and up "Mixed", below
+  that "Wide open".
+- **The top players' edge:** the talent the top players pick furthest above (or below)
+  everyone else, shown only with at least five top picks and a difference of five points.
+- **Talent changes between bosses:** without a boss, the characters with picks on two or more
+  bosses who picked more than one talent on a tier; with a boss, those whose pick there isn't
+  the one they made most often on the other bosses.
 - **Tests:** `raid-talents.spec.ts`.
 
 ## Arena titles

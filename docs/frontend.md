@@ -80,7 +80,9 @@ The query parameters each page reads:
 | every `/raid-logs` page | `difficulty`, plus: Guilds `faction`, `realm`; Statistics `view`, `role`; Talents `boss`, `role`, `class`, `spec`; Rankings `metric`, `class`, `spec`, `realm`, `q`, `page`; a boss `tab`, `class`, `spec`, `realm`, `q`, `page`; a character `metric`, `compare=class` |
 
 On the Mythic+ leaderboard and guild ladder, a `spec` counts only when it belongs to the
-`class` in the same URL.
+`class` in the same URL. A `Name-Realm` value splits on its last hyphen: character names can't
+hold one. Name searches ignore case and accents (`nameMatches`, `memberNameMatches`: `sosa`
+finds Sósa), while a picked character matches name and realm exactly.
 
 ## Loading data
 
@@ -92,7 +94,15 @@ On the Mythic+ leaderboard and guild ladder, a `spec` counts only when it belong
 - Decode large files lazily. The M+ leaderboard's `createRunDecoder` builds views only for the
   visible page, and the ladder starts on the 25,000-row head snapshot.
 - `RaidLogsDataService` loads the raid files and keeps `lastDifficulty`, so the Raids tabs
-  remember the difficulty within a session.
+  remember the difficulty within a session. A tab opened without `?difficulty=` starts on it,
+  else on `defaultDifficulty`, the hardest one with a kill.
+- Files only some icons or names depend on (raid genders, talent tables and tooltips) fail
+  soft: a file that won't load is an empty table, not an error. A kill the raid index doesn't
+  list may be newer than the index this tab loaded, so it's loaded fresh once before the page
+  gives up.
+- When a control switches which file a page shows (the arena bracket, a boss), drop a response
+  for a choice that's no longer current: a quick switch back and forth mustn't let the slower
+  file land last.
 
 ### The ladder's two stages
 
@@ -109,7 +119,8 @@ rows of the achievement-point order, and loads every player only when a view nee
   would look right and be wrong.
 - A deep link straight to a sort or search loads every player in its first request, not the
   head and then the rest.
-- A failed full load is retried from "Try again" only, not on every keystroke.
+- A failed full load is retried from "Try again" only, not on every keystroke. It leaves the
+  head's rows on screen; only a failure with nothing to show is an error page.
 - `DataSyncService` shares one in-flight request between the components that ask on the same
   navigation, and a head response that arrives late never replaces the full set.
 
@@ -129,6 +140,7 @@ decision (ask first).
 | `appTapTooltip` | makes a hover tooltip open on tap on touch screens |
 | `app-icon-tips` | one fixed tooltip for every talent or trinket icon inside it ([below](#app-icon-tips)) |
 | `app-raid-difficulty-switch`, `app-race-by-spec` | the raid difficulty switch; the most-popular-race boxes |
+| `app-mythic-plus-week-affixes` | this week's affixes with their descriptions (leaderboard and stats page). On phones it shows icons only and its tooltips position against the row around it, which needs `position: relative` |
 | `app-back-to-top-button` | the floating back-to-top button |
 | `class-colors.ts` | the one class-colour table: `getClassColor()` in code, `var(--class-<id>)` in SCSS |
 | `utils/armory.ts` | `getArmoryUrl()` for every armory link |
@@ -175,6 +187,9 @@ decision (ask first).
   Support and Discord move into the drawer. The drawer opens with `showModal()`, so it sits in
   the top layer: nothing a page draws covers it, and no ancestor's transform or overflow clips
   it. The page behind it doesn't scroll while it's open.
+- A mouse opens a section's dropdown by pointing at it (the click that usually follows keeps it
+  open); touch and keyboard toggle it. Tabbing out of a section closes it, and a click
+  elsewhere closes it through a document listener.
 
 ## Mobile
 
@@ -221,7 +236,9 @@ Phones come first (see the product rules in [AGENTS.md](../AGENTS.md)).
 - `styles.scss` holds the few global rules: the tokens, the iOS zoom rule, `.tap-area`, the
   class colours, and the styles of item tooltips injected as HTML from TauriShoot
   (`.legendary-tooltip-content`), which component styles can't reach.
-- Plain SCSS per component, with no CSS framework. Most colours are literals. The shared
+- Plain SCSS per component, with no CSS framework.
+- Text on a coloured cell keeps 4.5:1 contrast: the talents heatmap's gold stops at about half
+  strength under its white figures. Most colours are literals. The shared
   tokens are the motion variables (`_motion.scss`), `--update-bar-height` and `--class-<id>`.
   The site colours are background `#050505`, text `#e0e0e0` and gold `#f7b500`. Body text is
   Arial, and no web fonts are loaded. Introducing a design-token system is an architectural

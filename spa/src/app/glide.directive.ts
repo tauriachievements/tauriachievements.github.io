@@ -45,7 +45,6 @@ export class GlideDirective {
     style.setProperty('--glide-y', `${active.offsetTop}px`);
     style.setProperty('--glide-w', `${active.offsetWidth}px`);
     style.setProperty('--glide-h', `${active.offsetHeight}px`);
-    // Checked first: re-adding a class it already has would still notify the MutationObserver.
     if (!this.host.classList.contains('glide-ready')) {
       this.host.classList.add('glide-ready');
     }

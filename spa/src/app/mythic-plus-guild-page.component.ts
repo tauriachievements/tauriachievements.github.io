@@ -387,7 +387,6 @@ export class MythicPlusGuildPageComponent implements OnInit {
   });
 
   constructor() {
-    // A typed /evermoon/skill issue that found Skill Issue: show the address to share, the guild's own.
     effect(() => {
       const guild = this.guild();
       if (guild && (guild.name !== this.urlGuild() || realmSlug(guild.realm) !== this.urlRealm())) {
@@ -416,7 +415,6 @@ export class MythicPlusGuildPageComponent implements OnInit {
     this.resetRows();
   }
 
-  /** Players: everyone on all their runs. Roles: tanks first, and class and spec don't apply. */
   showRoles(on: boolean): void {
     if (on === !!this.roleFilter()) {
       return;
@@ -469,16 +467,11 @@ export class MythicPlusGuildPageComponent implements OnInit {
     this.limit.set(this.shownCount() + this.pageSize());
   }
 
-  /** After a filter change: back to the first rows, and the filters into the address bar. */
   private resetRows(): void {
     this.limit.set(this.pageSize());
     this.writeUrl();
   }
 
-  /**
-   * The guild's own address with the filters. Written straight into the address bar: navigating
-   * would scroll to the top and run a full-page view transition.
-   */
   private writeUrl(): void {
     const guild = this.guild();
     if (!guild) {
@@ -510,8 +503,6 @@ export class MythicPlusGuildPageComponent implements OnInit {
         takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: ({ index, files }) => {
-          // Files from another export than the index (a deploy landed while the tab was open):
-          // fetch everything fresh, once. A second mismatch means the deploy is still going out.
           if (files.some(file => !sharesTables(index, file))) {
             this.dataFiles.refresh();
             if (!this.reloadedForNewerData) {

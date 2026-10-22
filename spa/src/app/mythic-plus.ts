@@ -61,11 +61,18 @@ export interface MythicPlusSpecEntry {
   role: MythicPlusRole;
 }
 
-export type MythicPlusPlayerEntry = [string, string, string, number, number, number];
+export type MythicPlusPlayerEntry = [name: string, realm: string, guild: string, classId: number, race: number, gender: number];
 
-export type MythicPlusStandingEntry = [number, number, number?, number?];
+export type MythicPlusStandingEntry = [score: number, rank: number, scoreChange?: number, rankChange?: number];
 
-export type MythicPlusRunEntry = [number, number, number, number, number[], Array<[number, number]>];
+export type MythicPlusRunEntry = [
+  keyLevel: number,
+  clearTimeMs: number,
+  completedAtUnix: number,
+  score: number,
+  affixIds: number[],
+  roster: Array<[player: number, spec: number]>
+];
 
 export interface MythicPlusIndex {
   version: number;
@@ -147,7 +154,6 @@ export interface UpgradeCutoff {
   percent: number;
 }
 
-/** Legion keystone upgrades: +3 within 60% of the timer, +2 within 80%, +1 within the timer. */
 export const UPGRADE_CUTOFFS: ReadonlyArray<UpgradeCutoff> = [
   { upgrades: 3, percent: 60 },
   { upgrades: 2, percent: 80 },
@@ -185,7 +191,6 @@ export function keystoneUpgrades(clearTimeSeconds: number, timerSeconds: number)
     return 0;
   }
 
-  // Integer comparison keeps the 60% / 80% boundaries exact.
   return UPGRADE_CUTOFFS.find(cutoff => clearTimeSeconds * 100 <= timerSeconds * cutoff.percent)?.upgrades ?? 0;
 }
 
@@ -196,13 +201,11 @@ export function upgradeCutoffs(timerSeconds: number): Array<UpgradeCutoff & { se
   }));
 }
 
-/** Fixed-width `00:29:07`, used in the leaderboard's Time column. */
 export function formatDuration(totalSeconds: number): string {
   const seconds = normalizeSeconds(totalSeconds);
   return [Math.floor(seconds / 3600), Math.floor(seconds / 60) % 60, seconds % 60].map(pad).join(':');
 }
 
-/** Compact `29:07`, or `1:02:05` past the hour. */
 export function formatClock(totalSeconds: number): string {
   const seconds = normalizeSeconds(totalSeconds);
   const hours = Math.floor(seconds / 3600);
@@ -212,7 +215,6 @@ export function formatClock(totalSeconds: number): string {
   return hours > 0 ? `${hours}:${pad(minutes)}:${rest}` : `${minutes}:${rest}`;
 }
 
-/** Signed distance from the timer: `-5:53` when under, `+2:10` when over. */
 export function formatTimerDelta(clearTimeSeconds: number, timerSeconds: number): string {
   const delta = Math.round(clearTimeSeconds - timerSeconds);
   if (!Number.isFinite(delta) || delta === 0) {
@@ -222,17 +224,11 @@ export function formatTimerDelta(clearTimeSeconds: number, timerSeconds: number)
   return `${delta < 0 ? '-' : '+'}${formatClock(Math.abs(delta))}`;
 }
 
-/** The affixes of one reset week, and the earliest moment (ms) a run of that week finished. */
 export interface AffixWeek {
   affixes: number[];
   since: number;
 }
 
-/**
- * The current affix week: the affixes of the newest run that has all three, starting just after
- * the last run whose affixes contradict them. Keys below +4 carry no affixes, so they are placed
- * by time alone; +4 to +9 keys carry the first one or two of the week's affixes.
- */
 export function currentAffixWeek(runs: readonly Pick<MythicPlusRun, 'affixes' | 'completedAt'>[]): AffixWeek | undefined {
   let newest: { affixes: number[]; at: number } | undefined;
   for (const run of runs) {
@@ -258,12 +254,10 @@ export function currentAffixWeek(runs: readonly Pick<MythicPlusRun, 'affixes' | 
   return { affixes: [...week], since: lastOtherWeek + 1 };
 }
 
-/** One star per keystone upgrade: ★ for +1, ★★ for +2, ★★★ for +3. */
 export function upgradeStars(upgrades: number): string {
   return '★'.repeat(Math.max(0, Math.min(3, upgrades)));
 }
 
-/** Highest score first; a faster clear breaks ties. Returns a new array. */
 export function rankRuns<T extends Pick<MythicPlusRun, 'id' | 'score' | 'clearTimeSeconds'>>(runs: readonly T[]): T[] {
   return [...runs].sort((a, b) =>
     b.score - a.score
@@ -271,7 +265,6 @@ export function rankRuns<T extends Pick<MythicPlusRun, 'id' | 'score' | 'clearTi
     || (a.id < b.id ? -1 : a.id > b.id ? 1 : 0));
 }
 
-/** WoW item-quality tier for a run, relative to the season's best score. */
 export function scoreQuality(score: number, bestScore: number): RunQuality {
   if (!(bestScore > 0)) {
     return 'uncommon';
@@ -293,11 +286,6 @@ export function scoreQuality(score: number, bestScore: number): RunQuality {
   return ratio >= 0.76 ? 'rare' : 'uncommon';
 }
 
-/**
- * Raider.IO-style colour stops, from the season's player scores (best first): the lowest score,
- * then the score the top 60%, 25%, 10%, 1% and 0.1% of players reach. Undefined with too few
- * players to tell.
- */
 export function scoreTiers(scores: readonly number[]): number[] | undefined {
   const sorted = scores.filter(score => score > 0).sort((a, b) => b - a);
   const n = sorted.length;
@@ -309,15 +297,10 @@ export function scoreTiers(scores: readonly number[]): number[] | undefined {
   return [sorted[n - 1], top(0.6), top(0.25), top(0.1), top(0.01), top(0.001)];
 }
 
-// White, green, blue, purple, orange and gold, one per stop in scoreTiers.
 const TIER_COLORS: ReadonlyArray<readonly [number, number, number]> = [
   [255, 255, 255], [31, 255, 0], [0, 112, 222], [163, 54, 237], [255, 128, 0], [255, 209, 0]
 ];
 
-/**
- * A player score's colour by where it stands this season, like Raider.IO: green for the top 60%,
- * blue 25%, purple 10%, orange 1% and gold for the top 0.1%, blended in between; grey below.
- */
 export function scoreColor(score: number, tiers: readonly number[] | undefined): string {
   if (!tiers || !(score > 0)) {
     return '#9e9e9e';
@@ -343,7 +326,6 @@ export function scoreColor(score: number, tiers: readonly number[] | undefined):
   return `rgb(${TIER_COLORS[last].join(', ')})`;
 }
 
-/** The season's colour stops (from the index's standings) and how many dungeons count. */
 export interface ScoreColors {
   tiers: number[] | undefined;
   dungeons: number;
@@ -356,26 +338,19 @@ export function seasonScoreColors(index: MythicPlusIndex | undefined): ScoreColo
   };
 }
 
-/** One run's colour on the same stops: as if every dungeon had that run (score x dungeons). */
 export function runScoreColor(score: number, colors: ScoreColors): string {
   return scoreColor(score * Math.max(1, colors.dungeons), colors.tiers);
 }
 
-/** Case- and accent-insensitive partial match, so `bjorn` finds `Björñ`. An empty query matches every run. */
 export function runIncludesPlayer(run: { roster: ReadonlyArray<Pick<MythicPlusMember, 'name'>> }, query: string): boolean {
   const needle = foldName(query.trim());
   return !needle || run.roster.some(member => foldedMemberName(member).includes(needle));
 }
 
-/** `name|realm`: one character, whichever spec they played. */
 export function characterKey(member: Pick<MythicPlusMember, 'name' | 'realm'>): string {
   return `${member.name}|${member.realm}`;
 }
 
-/**
- * Exact match on one character, name and realm, for a player picked from the players view.
- * Unlike the typed search, `Nap` doesn't find `Napim`, nor a `Nap` on another realm.
- */
 export function runIncludesCharacter(
   run: { roster: ReadonlyArray<Pick<MythicPlusMember, 'name' | 'realm'>> },
   key: string
@@ -383,35 +358,20 @@ export function runIncludesCharacter(
   return run.roster.some(member => characterKey(member) === key);
 }
 
-/** The same match as `runIncludesPlayer`, for a single character. */
 export function memberNameMatches(member: Pick<MythicPlusMember, 'name'>, query: string): boolean {
   const needle = foldName(query.trim());
   return !needle || foldedMemberName(member).includes(needle);
 }
 
 export interface PlayerScore {
-  /** `characterKey`: a character, whichever spec they played. */
   key: string;
-  /** The character as they appear in their highest-scoring run, so with that run's spec. */
   member: MythicPlusMember;
-  /** Their most-played spec in these runs; the highest-scoring run's spec wins a count tie. */
   primarySpec: string;
   score: number;
-  /** The clear times of those best runs added up, in seconds; breaks a score tie. */
   totalTime: number;
-  /** The character's best run in each dungeon they have played, by dungeon id. */
   bestRuns: ReadonlyMap<string, MythicPlusRun>;
 }
 
-/**
- * Player score, raider.io's classic model: the sum of a character's best run score in each
- * dungeon. Playing every dungeon counts; farming one doesn't. Given one dungeon's runs, the
- * score is simply the character's best run there. Highest first; on the same score the
- * lower total time of those best runs goes first, then the name (see playerRanks).
- *
- * `include` limits which roster slots count, e.g. one spec: a character is then scored only on
- * the runs they played as that spec.
- */
 export function rankPlayers(
   runs: readonly MythicPlusRun[],
   include?: (member: MythicPlusMember) => boolean
@@ -464,8 +424,6 @@ export function rankPlayers(
       }
     }
 
-    // Scores carry one decimal; rounding keeps float noise out of ties.
-    // Times to the millisecond, the export's precision, so float noise never splits a tie.
     return {
       key, member: player.member, primarySpec, score: Math.round(total * 10) / 10,
       totalTime: Math.round(time * 1000) / 1000, bestRuns: player.bestRuns
@@ -473,15 +431,10 @@ export function rankPlayers(
   }).sort((a, b) => b.score - a.score || a.totalTime - b.totalTime || (a.key < b.key ? -1 : a.key > b.key ? 1 : 0));
 }
 
-/** Two players share a place only with the same score and the same total time. */
 export function samePlace(a: Pick<PlayerScore, 'score' | 'totalTime'>, b: Pick<PlayerScore, 'score' | 'totalTime'>): boolean {
   return a.score === b.score && a.totalTime === b.totalTime;
 }
 
-/**
- * The rank of each player in `ranking` (rankPlayers order). Players in the same place
- * share a rank and the places they take are skipped: 1, 1, 1, 4 (competition ranking).
- */
 export function playerRanks(ranking: readonly Pick<PlayerScore, 'score' | 'totalTime'>[]): number[] {
   const ranks: number[] = [];
   ranking.forEach((player, index) => {
@@ -490,7 +443,6 @@ export function playerRanks(ranking: readonly Pick<PlayerScore, 'score' | 'total
   return ranks;
 }
 
-/** Whether `candidate` beats `current`: a higher score, or the same score cleared faster. */
 export function isBetterRun(
   candidate: Pick<MythicPlusRun, 'score' | 'clearTimeSeconds'>,
   current: Pick<MythicPlusRun, 'score' | 'clearTimeSeconds'>
@@ -499,7 +451,6 @@ export function isBetterRun(
     || (candidate.score === current.score && candidate.clearTimeSeconds < current.clearTimeSeconds);
 }
 
-/** Tank, healer, then DPS — keeping the DPS in their original order. */
 export function sortRoster<T extends Pick<MythicPlusMember, 'role'>>(roster: readonly T[]): T[] {
   return [...roster].sort((a, b) => ROLE_ORDER[a.role] - ROLE_ORDER[b.role]);
 }
@@ -508,7 +459,6 @@ export function pageCount(totalItems: number, pageSize: number): number {
   return Math.max(1, Math.ceil(totalItems / pageSize));
 }
 
-// Decoded runs share their member objects, so each name is folded once, not once per run per keystroke.
 const foldedNames = new WeakMap<object, string>();
 
 function foldedMemberName(member: Pick<MythicPlusMember, 'name'>): string {

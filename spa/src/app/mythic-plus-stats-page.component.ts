@@ -90,15 +90,8 @@ const WEEK_SEGMENTS: ReadonlyArray<{ key: 'fortified' | 'tyrannical'; label: str
 
 const percentOf = (part: number, whole: number) => whole > 0 ? (part / whole) * 100 : 0;
 const formatPercent = (part: number, whole: number) => `${Math.round(percentOf(part, whole))}%`;
-/** Whether a column sits in the middle third of its chart. */
 const isMiddle = (position: number, count: number) => position >= count / 3 && position < (count * 2) / 3;
 
-/**
- * /mythic-plus/stats: how much Mythic+ is being played. Runs per day, per dungeon and per key
- * level for the season or the current affix week, every affix week side by side, and the most
- * popular race of every spec.
- * Reads the same data files as the leaderboard.
- */
 @Component({
   selector: 'app-mythic-plus-stats-page',
   imports: [
@@ -117,10 +110,8 @@ const isMiddle = (position: number, count: number) => position >= count / 3 && p
 ],
   templateUrl: './mythic-plus-stats-page.component.html',
   styleUrl: './mythic-plus-stats-page.component.scss',
-  // Keeps one of this page's dropdowns open at a time.
   providers: [FilterDropdownCoordinatorService],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  // The weeks table's affix tooltip is fixed to the viewport, so it would stay behind on scroll.
   host: { '(window:scroll)': 'hideAffixTooltip()' }
 })
 export class MythicPlusStatsPageComponent implements OnInit {
@@ -133,9 +124,7 @@ export class MythicPlusStatsPageComponent implements OnInit {
   readonly levelBands = LEVEL_BANDS;
   readonly resultSegments = RESULT_SEGMENTS;
 
-  /** Narrow screens list the affix weeks as cards instead of a six-column table. */
   readonly cards = injectCompactViewport(MYTHIC_PLUS_CARDS_QUERY);
-  /** Phones: the charts' columns get narrower, so fewer of them carry a label. */
   private readonly phone = injectCompactViewport();
 
   readonly index = signal<MythicPlusIndex | undefined>(undefined);
@@ -144,7 +133,6 @@ export class MythicPlusStatsPageComponent implements OnInit {
   readonly allRuns = signal<readonly MythicPlusRun[]>([]);
   readonly isLoading = signal(true);
   readonly loadError = signal<string | undefined>(undefined);
-  /** Set once files from another export made the page load everything again. */
   private reloadedForNewerData = false;
   readonly period = signal<StatsPeriod>(this.route.snapshot.queryParamMap.get('period') === 'week' ? 'week' : 'season');
   readonly daySplit = signal<DaySplit>('level');
@@ -152,7 +140,6 @@ export class MythicPlusStatsPageComponent implements OnInit {
   readonly dungeonLegend = computed<ReadonlyArray<{ key: string; label: string }>>(() =>
     this.dungeonSplit() === 'result' ? RESULT_SEGMENTS : WEEK_SEGMENTS);
   readonly levelSplit = signal<DungeonSplit>('result');
-  /** Runs per key level for one dungeon, or all of them. */
   readonly levelDungeon = signal<string | undefined>(undefined);
   readonly levelDungeonOptions = computed<FilterDropdownOption[]>(() => [
     { value: undefined, label: 'All dungeons' },
@@ -168,16 +155,13 @@ export class MythicPlusStatsPageComponent implements OnInit {
   readonly currentWeek = computed(() => currentAffixWeek(this.allRuns()));
   readonly weekAffixes = computed(() => this.affixList(this.currentWeek()?.affixes ?? []));
 
-  /** Runs in the selected period. */
   readonly runs = computed(() => {
     const since = this.period() === 'week' ? this.currentWeek()?.since : undefined;
     const runs = this.allRuns();
     return since === undefined ? runs : runs.filter(run => Date.parse(run.completedAt) >= since);
   });
 
-  /** One race-by-spec box each, in this order. */
   readonly raceRoles: readonly MythicPlusRole[] = ['dps', 'tank', 'healer'];
-  /** Every roster slot of the period, for the race-by-spec boxes. */
   readonly rosterSlots = computed(() => this.runs().flatMap(run => run.roster));
 
   readonly summary = computed(() => {
@@ -205,14 +189,12 @@ export class MythicPlusStatsPageComponent implements OnInit {
     ];
   });
 
-  // Runs per day
   readonly days = computed(() => runsPerDay(this.runs(), this.timers(), this.weeks()));
   readonly dayTicks = computed(() => countTicks(Math.max(0, ...this.days().map(day => day.total))));
   readonly dayGridlines = computed(() => this.gridlines(this.dayTicks()));
   readonly dayBars = computed<DayBar[]>(() => {
     const days = this.days();
     const top = this.dayTicks()[this.dayTicks().length - 1];
-    // About 16 date labels across a desktop chart, 6 across a phone's narrower one.
     const labelEvery = Math.max(1, Math.ceil(days.length / (this.phone() ? 6 : 16)));
     const split = this.daySplit();
     const today = localDay(new Date());
@@ -254,7 +236,6 @@ export class MythicPlusStatsPageComponent implements OnInit {
     return bands;
   });
 
-  // Runs per dungeon
   readonly dungeons = computed(() => {
     const rows = runsPerDungeon(this.runs(), this.index()?.dungeons ?? [], this.weeks());
     const top = Math.max(1, ...rows.map(row => row.runs));
@@ -267,7 +248,6 @@ export class MythicPlusStatsPageComponent implements OnInit {
     }));
   });
 
-  // Key levels
   readonly levels = computed(() => {
     const dungeon = this.levelDungeon();
     const runs = dungeon ? this.runs().filter(run => run.dungeon === dungeon) : this.runs();
@@ -279,7 +259,6 @@ export class MythicPlusStatsPageComponent implements OnInit {
     const top = this.levelTicks()[this.levelTicks().length - 1];
     const levels = this.levels();
     const split = this.levelSplit();
-    // "+10 +11 +12" runs together in a phone's ~20 px columns: label every other level there.
     const labelEvery = this.phone() && levels.length > 10 ? 2 : 1;
     return levels.map((level, position) => ({
       ...level,
@@ -294,10 +273,8 @@ export class MythicPlusStatsPageComponent implements OnInit {
     }));
   });
 
-  // Affix weeks (always the whole season)
   readonly weekRows = computed(() => {
     const day = (at: number) => new Date(at).toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' });
-    // The current week is still being played, so it ends a week after it began, not at its latest run.
     const weekEnd = (at: number) => {
       const end = new Date(at);
       end.setDate(end.getDate() + 7);
@@ -316,14 +293,12 @@ export class MythicPlusStatsPageComponent implements OnInit {
     }).reverse();
   });
 
-  /** The affix description shown for the hovered affix in the weeks table, in viewport pixels. */
   readonly affixTooltip = signal<{ text: string; left: number; top?: number; bottom?: number } | undefined>(undefined);
 
   ngOnInit(): void {
     this.loadData();
   }
 
-  /** Mouse only, like the other affix tooltips. Opens below the affix, or above it near the bottom of the screen. */
   showAffixTooltip(event: PointerEvent, affix: MythicPlusAffix): void {
     if (event.pointerType !== 'mouse' || !affix.description) {
       return;
@@ -369,8 +344,6 @@ export class MythicPlusStatsPageComponent implements OnInit {
         takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: ({ index, files }) => {
-          // Files from another export than the index (a deploy landed while the tab was open):
-          // fetch everything fresh, once. A second mismatch means the deploy is still going out.
           if (files.some(file => !sharesTables(index, file))) {
             this.dataFiles.refresh();
             if (!this.reloadedForNewerData) {

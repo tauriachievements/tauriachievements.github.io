@@ -31,10 +31,6 @@ export class DataFileService {
     );
   }
 
-  /**
-   * Fetches a JSON file without keeping the parsed result. Meant for large files that the
-   * caller converts into its own structures; the browser's HTTP cache still applies.
-   */
   fetchJson<T>(path: string): Observable<T> {
     return this.versionedUrl(path).pipe(switchMap((url) => this.http.get<T>(url)));
   }

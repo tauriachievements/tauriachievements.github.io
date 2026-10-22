@@ -15,11 +15,6 @@ export class MythicPlusWeekAffixesComponent {
   readonly idPrefix = `week-affix-${MythicPlusWeekAffixesComponent.instances++}-`;
 
   readonly affixes = input.required<readonly MythicPlusAffix[]>();
-  /** Names the list for screen readers. */
   readonly label = input("This week's affixes");
-  /**
-   * On phones, icons only, and a tap shows the name with the description. The list is then too
-   * narrow to hold the tooltips, so the row around it positions them: give it position: relative.
-   */
   readonly compact = input(false);
 }

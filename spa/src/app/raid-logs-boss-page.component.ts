@@ -208,7 +208,6 @@ export class RaidLogsBossPageComponent {
 
   readonly classOptions = CLASS_FILTER_OPTIONS;
 
-  /** Only the specs the tab ranks: healers on Healing, everyone else on Damage. */
   readonly specOptions = computed<FilterDropdownOption[]>(() => {
     const classId = this.classFilter();
     const metric = this.metric();
@@ -234,7 +233,6 @@ export class RaidLogsBossPageComponent {
   readonly itemUrl = itemUrl;
   readonly spellUrl = spellUrl;
 
-  /** The query string a boss picker link keeps: the same view of another boss. */
   readonly bossQueryParams = computed(() => ({
     difficulty: this.difficulty()?.slug ?? null,
     tab: this.tab() === 'dps' ? null : this.tab(),
@@ -243,7 +241,6 @@ export class RaidLogsBossPageComponent {
     realm: this.isRanking() ? this.realmFilter() ?? null : null
   }));
 
-  /** The talent analytics of this boss and difficulty, for the spec filtered on if there is one. */
   readonly talentsQueryParams = computed(() => ({
     difficulty: this.difficulty()?.slug ?? null,
     boss: this.boss()?.slug ?? null,
@@ -259,14 +256,12 @@ export class RaidLogsBossPageComponent {
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe(table => this.talentTable.set(table));
 
-    // A different boss, or a different difficulty: load that boss file.
     effect(() => {
       const index = this.index();
       const boss = this.boss();
       const difficulty = this.difficulty();
       if (index && boss && difficulty) {
         untracked(() => {
-          // Another boss from the picker: the component stays, its page and search don't.
           if (this.shownBoss && this.shownBoss !== boss.slug) {
             this.page.set(1);
             this.search.set('');
@@ -310,7 +305,6 @@ export class RaidLogsBossPageComponent {
       return;
     }
     this.tab.set(tab);
-    // A spec of the other metric would empty the list.
     if (this.specFilter() !== undefined && !this.specOptions().some(option => option.value === this.specFilter())) {
       this.specFilter.set(undefined);
     }
@@ -387,7 +381,6 @@ export class RaidLogsBossPageComponent {
       .subscribe(tooltips => this.talentTooltips.set(tooltips));
   }
 
-  /** In-page filters keep the scroll position: no navigation, only the address bar changes. */
   private writeUrl(): void {
     const url = this.router.createUrlTree([], {
       relativeTo: this.route,

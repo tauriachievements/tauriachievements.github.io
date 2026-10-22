@@ -180,7 +180,6 @@ export class ArenaGamesPageComponent implements OnInit {
     return this.titles().get(player);
   }
 
-  /** A group heading carries its title's colour, or the muted one for the players without a title. */
   groupClasses(index: number): string {
     const group = this.titleGroups().get(index);
     return group ? `tier-${group.title.slug}` : 'is-untitled';
@@ -200,7 +199,6 @@ export class ArenaGamesPageComponent implements OnInit {
     this.loadError.set(undefined);
     this.dataset.set(undefined);
 
-    // A quick switch back and forth must not let the slower file land last.
     this.loading?.unsubscribe();
     this.loading = this.dataFiles.getJson<RatedArenaGames>(getArenaGamesFile(bracket))
       .pipe(takeUntilDestroyed(this.destroyRef))

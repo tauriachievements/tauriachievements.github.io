@@ -249,7 +249,6 @@ export class BattlegroundPageComponent implements OnInit {
     const leftMinute = left.startMinuteOfDay ?? Number.MAX_SAFE_INTEGER;
     const rightMinute = right.startMinuteOfDay ?? Number.MAX_SAFE_INTEGER;
 
-    // Array sort is stable: starts in the same minute keep the order they were collected in.
     return leftMinute - rightMinute;
   }
 

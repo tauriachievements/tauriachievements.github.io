@@ -371,7 +371,6 @@ export class RaidLogsLeaderboardPageComponent {
     this.isLoading.set(false);
   }
 
-  /** In-page filters keep the scroll position: no navigation, only the address bar changes. */
   private writeUrl(): void {
     const url = this.router.createUrlTree([], {
       relativeTo: this.route,

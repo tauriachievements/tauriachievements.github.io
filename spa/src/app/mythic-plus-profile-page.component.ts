@@ -362,7 +362,6 @@ export class MythicPlusProfilePageComponent implements OnInit {
       }];
     };
 
-    // The guild ladder shows every member on one list, so the tile picks out the row there.
     const guild = guildOf(member);
     const isMember = guild && inGuild(guild);
     const guildRank = isMember && scopeRank(ranking, key, entry => isMember(entry.member));
@@ -417,9 +416,7 @@ export class MythicPlusProfilePageComponent implements OnInit {
         : '0.0 score since the last scan';
   }
 
-  // Score over the season
   private readonly weeks = computed(() => affixWeeks(this.allRuns()));
-  /** The season so far, epoch ms: first and last run of anyone. */
   private readonly seasonSpan = computed(() => {
     let first = Infinity;
     let last = -Infinity;
@@ -444,7 +441,6 @@ export class MythicPlusProfilePageComponent implements OnInit {
     const ticks = countTicks(Math.max(0, ...days.map(day => day.score)));
     const top = ticks[ticks.length - 1];
     const count = days.length;
-    // About 12 date labels across a desktop chart, 6 across a phone's narrower one.
     const labelEvery = Math.max(1, Math.ceil(count / (this.phone() ? 6 : 12)));
     const weeks = this.weeks();
     const affixes = this.affixesById();
@@ -453,7 +449,6 @@ export class MythicPlusProfilePageComponent implements OnInit {
 
     const points = days.map<ChartPoint>((day, position) => {
       const date = new Date(`${day.day}T12:00:00`);
-      // As on the stats page: a reset day counts as the new week.
       const week = weekIndexAt(weeks, date.getTime());
       if (position > 0 && week === previousWeek) {
         bands[bands.length - 1].span++;
@@ -483,7 +478,6 @@ export class MythicPlusProfilePageComponent implements OnInit {
       };
     });
 
-    // One unit per day across, 100 up; the line is drawn through the middle of each day's column.
     const line = points.map((point, position) => `${position + 0.5},${(100 - point.bottom).toFixed(2)}`).join(' ');
     return {
       points,
@@ -495,18 +489,14 @@ export class MythicPlusProfilePageComponent implements OnInit {
     };
   });
 
-  // Run history
   readonly expandedRunId = linkedSignal<string | undefined, string | undefined>({ source: this.key, computation: () => undefined });
   readonly historyLimit = linkedSignal<string | undefined, number>({ source: this.key, computation: () => this.pageSize() });
-  /** Newest first (default) or best season rank first. */
   readonly historyOrder = linkedSignal<string | undefined, 'best' | 'latest'>({ source: this.key, computation: () => 'latest' });
-  /** A day clicked on the score chart (YYYY-MM-DD, local); the runs list shows only that day. */
   readonly selectedDay = linkedSignal<string | undefined, string | undefined>({ source: this.key, computation: () => undefined });
   readonly selectedDayLabel = computed(() => {
     const day = this.selectedDay();
     return day ? new Date(`${day}T12:00:00`).toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' }) : undefined;
   });
-  /** The runs the list shows, in its order, before "Show more". */
   readonly historyRuns = computed(() => {
     const day = this.selectedDay();
     const runs = day ? this.specRuns().filter(run => localDay(new Date(run.completedAt)) === day) : this.specRuns();
@@ -524,7 +514,6 @@ export class MythicPlusProfilePageComponent implements OnInit {
       return dungeon ? [{ ...toRunView(run, dungeon, affixes, colors), rank: ranks.get(run.id) ?? 0 }] : [];
     });
   });
-  /** How many runs "Show more" adds; 0 once every run is shown. */
   readonly nextRuns = computed(() => Math.min(this.pageSize(), Math.max(0, this.historyRuns().length - this.historyLimit())));
 
   readonly teammates = computed<TeammateView[]>(() => {
@@ -546,7 +535,6 @@ export class MythicPlusProfilePageComponent implements OnInit {
       : [];
   });
 
-  // Not found: look the character up by name
   readonly searchQuery = linkedSignal(() => this.urlName());
   readonly searchResults = computed<CharacterLink[]>(() => {
     const query = this.searchQuery().trim();
@@ -558,7 +546,6 @@ export class MythicPlusProfilePageComponent implements OnInit {
       : [];
   });
 
-  // Compare: a "compare with" search beside the links out, and a compare link per teammate.
   readonly compareOpen = linkedSignal<string | undefined, boolean>({ source: this.key, computation: () => false });
   readonly compareQuery = linkedSignal<string | undefined, string>({ source: this.key, computation: () => '' });
   readonly compareResults = computed<CharacterLink[]>(() => {
@@ -571,7 +558,6 @@ export class MythicPlusProfilePageComponent implements OnInit {
         .map(toCharacterLink)
       : [];
   });
-  /** The leaderboard's players view in pick mode, this character already picked. */
   readonly comparePickParams = computed<Params>(() => {
     const member = this.player()?.member;
     return member ? { view: 'players', compare: characterParam(member) } : {};
@@ -587,7 +573,6 @@ export class MythicPlusProfilePageComponent implements OnInit {
   }
 
   constructor() {
-    // A typed /evermoon/progtrix that found Progtrix: show the address to share, Progtrix's own.
     effect(() => {
       const member = this.player()?.member;
       if (member && (member.name !== this.urlName() || realmSlug(member.realm) !== this.urlRealm())) {
@@ -596,10 +581,6 @@ export class MythicPlusProfilePageComponent implements OnInit {
     });
   }
 
-  /**
-   * The character's own address, with the selected spec. Written straight into the address bar:
-   * navigating would scroll to the top and run a full-page view transition.
-   */
   private writeUrl(member: { name: string; realm: string }): void {
     const url = this.router.createUrlTree(characterProfileLink(member), { queryParams: { spec: this.selectedSpec() ?? null } });
     this.location.replaceState(this.router.serializeUrl(url));
@@ -609,7 +590,6 @@ export class MythicPlusProfilePageComponent implements OnInit {
     this.loadData();
   }
 
-  /** A spec pill: the profile in that spec only. All, or the selected pill again, shows every spec. */
   selectSpec(spec: string | undefined): void {
     const member = this.player()?.member;
     const next = spec === this.selectedSpec() ? undefined : spec;
@@ -628,7 +608,6 @@ export class MythicPlusProfilePageComponent implements OnInit {
     this.expandedRunId.update(current => current === runId ? undefined : runId);
   }
 
-  /** Clicking a day with runs shows only its runs; clicking it again (or Clear) shows them all. */
   selectDay(day: string | undefined, runs = 1): void {
     if (!runs) {
       return;
@@ -666,8 +645,6 @@ export class MythicPlusProfilePageComponent implements OnInit {
         takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: ({ index, files }) => {
-          // Files from another export than the index (a deploy landed while the tab was open):
-          // fetch everything fresh, once. A second mismatch means the deploy is still going out.
           if (files.some(file => !sharesTables(index, file))) {
             this.dataFiles.refresh();
             if (!this.reloadedForNewerData) {

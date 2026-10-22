@@ -33,7 +33,6 @@ export function formatCountText(shape: CountText, value: number): string {
   return `${shape.prefix}${number}${shape.suffix}`;
 }
 
-/** Fast start, soft landing: most of the distance in the first third. */
 export function easeOutExpo(progress: number): number {
   return progress >= 1 ? 1 : 1 - Math.pow(2, -10 * progress);
 }

@@ -185,13 +185,11 @@ describe('decodeBossFile', () => {
     const [frost, fire] = kill.members;
     expect(frost.talents).toBe('1022.20');
     expect(frost.trinkets.map(trinket => `${trinket.name} ${trinket.itemLevel}`)).toEqual(['Infernal Alchemist Stone 835', 'Memento of Angerboda 820']);
-    // One object per trinket in the file, like the characters.
     expect(fire.trinkets[0]).toBe(frost.trinkets[1]);
   });
 });
 
 describe('memberTalents', () => {
-  // Frost: tier 0 has all three choices, tier 1 only its first two.
   const table = decodeTalents({
     version: 2,
     specs: [[64, [
@@ -240,7 +238,6 @@ describe('decodeGenders', () => {
 describe('rankCharacters', () => {
   it("ranks each character's best kill, healers only by healing", () => {
     const dps = rankCharacters(kills, 'dps');
-    // Kael: 168M over 280 s = 600k beats Sósa's 500k; the paladin tank counts as damage, the healer doesn't.
     expect(dps.map(entry => [entry.rank, entry.member.character.name, Math.round(entry.value)])).toEqual([
       [1, 'Kael', 600_000],
       [2, 'Sósa', 500_000],
@@ -265,7 +262,6 @@ describe('bossStanding', () => {
   const sosa = characterKey({ name: 'Sósa', realm: 'Evermoon' });
 
   it('ranks the character among everyone, against the best anyone did', () => {
-    // The paladin tank's 200k is third of three, a third of Kael's 600k.
     expect(bossStanding(kills, 'dps', light)).toEqual({ rank: 3, ranked: 3, relative: 1 / 3 });
     expect(bossStanding(kills, 'dps', sosa)).toEqual({ rank: 2, ranked: 3, relative: 500_000 / 600_000 });
   });
@@ -276,7 +272,6 @@ describe('bossStanding', () => {
   });
 
   it('has no rank or share for a character the ranking leaves out, but counts the others', () => {
-    // A mage has no healing spec: Light is ranked alone.
     expect(bossStanding(kills, 'hps', sosa)).toEqual({ rank: undefined, ranked: 1, relative: 0 });
     expect(bossStanding(kills, 'hps', sosa, { classId: 8 })).toEqual({ rank: undefined, ranked: 0, relative: 0 });
     expect(bossStanding([], 'dps', sosa)).toEqual({ rank: undefined, ranked: 0, relative: 0 });
@@ -291,11 +286,9 @@ describe('scoreCharacters', () => {
   const holy = index.specs.get(65)!;
   const protection = index.specs.get(66)!;
 
-  // A new character object each time, as each boss file has its own.
   const character = (name: string, race = 10, classId = 8): RaidCharacter =>
     ({ name, realm: 'Tauri', classId, race, gender: 0, guild: '' });
 
-  // One-second fights, so damage is the DPS and healing the HPS.
   function kill(boss: number, killedAt: number, members: Array<[RaidCharacter, RaidSpec, number, number?]>): RaidKillDetails {
     return {
       realm: 'Tauri', logId: boss * 100 + killedAt, boss: bosses[boss], difficulty: mythic, killedAt, fightMs: 1_000,
@@ -307,7 +300,6 @@ describe('scoreCharacters', () => {
     };
   }
 
-  // The worked example: 10/100, 160/200, 300/1000 and no kill of the fourth boss make 30%.
   const bossKills = [
     [kill(0, 1, [[character('Best'), fire, 100], [character('Example'), fire, 10], [character('Light', 10, 2), holy, 0, 50]])],
     [kill(1, 2, [[character('Best'), fire, 200], [character('Example'), frost, 160]])],
@@ -351,7 +343,6 @@ describe('scoreCharacters', () => {
     const example = scores.find(entry => entry.character.name === 'Example')!;
     expect(example.spec?.name).toBe('Frost');
     expect(example.itemLevel).toBe(863);
-    // A Blood Elf is Horde; the human tank is Alliance though the kill was Horde.
     expect(example.faction).toBe(1);
     expect(scores.find(entry => entry.character.name === 'Tank')?.faction).toBe(0);
   });
@@ -364,7 +355,6 @@ describe('scoreCharacters', () => {
   });
 
   it('scores a spec on the kills played as it, against the best of any spec', () => {
-    // Example played Fire only on the first boss: 10 of the best 100 there, nothing elsewhere.
     const fireOnly = scoreCharacters(bosses, bossKills, 'dps', fire.id);
     expect(fireOnly.map(entry => [entry.character.name, entry.score, entry.killed])).toEqual([
       ['Best', MAX_SCORE, 4],
@@ -400,12 +390,10 @@ describe('scoreCharacters', () => {
         ['Frost', 1916, 1, 'Example'],
         ['Arcane', 0, 0, undefined]
       ]);
-      // Example counts once, at their better spec.
       expect([mage.count, mage.score]).toEqual([2, Math.round((MAX_SCORE + 1916) / 2)]);
       expect(damage.characterCount).toBe(2);
       expect(damage.classes.every(group => group.specs.every(spec => spec.role === 'dps'))).toBe(true);
 
-      // With every role, Paladin leads: Light's Holy, alone at the top, beats Fire's average.
       const everyone = specPerformance(scores);
       expect(everyone.classes.slice(0, 2).map(group => [group.className, group.score])).toEqual([
         ['Paladin', Math.round((MAX_SCORE + 871) / 2)],
@@ -440,13 +428,11 @@ describe('scoreCharacters', () => {
     });
 
     it('measures the ranks climbed and the score gained', () => {
-      // B's new kill beats A's best on the second boss: B climbs to first, and A's share of that boss halves.
       const newKill = kill(1, 5, [[character('B'), fire, 200]]);
       const kills = [
         [kill(0, 1, [[character('A'), fire, 100], [character('B'), fire, 90]])],
         [kill(1, 2, [[character('A'), fire, 100], [character('B'), fire, 50]]), newKill]
       ];
-      // Before: A 6969, B (90% + 50%) / 2 = 4878. Now: A (100% + 50%) / 2 = 5226, B (90% + 100%) / 2 = 6620.
       expect([...changesWithout(kills, newKill, 2)]).toEqual([
         ['tauri/B', { rank: 1, score: 6620 - 4878, isNew: false }],
         ['tauri/A', { rank: -1, score: 5226 - MAX_SCORE, isNew: false }]
@@ -454,7 +440,6 @@ describe('scoreCharacters', () => {
     });
 
     it("marks a character new to the ranking and leaves out one who didn't move", () => {
-      // Before the fourth boss's first kill: Best 3/3, Example (10% + 80% + 30%) / 3 = 2787, no Tank.
       const changes = changesWithout(bossKills, bossKills[3][0]);
       expect(changes.has('tauri/Best')).toBe(false);
       expect(changes.get('tauri/Example')).toEqual({ rank: 0, score: 2090 - 2787, isNew: false });
@@ -473,7 +458,6 @@ describe('raceFaction and performanceQuality', () => {
 describe('guildProgression', () => {
   it('ranks the most bosses down first, then who got there first', () => {
     const heroic = guildProgression(index.kills, 15, index.bosses.length);
-    // Outlaws killed Il'gynoth; the unnamed guild and the pickup group don't take part.
     expect(heroic.map(row => [row.rank, row.guild.name, row.killed])).toEqual([[1, 'Outlaws', 1]]);
 
     const mythicRows = guildProgression(index.kills, 16, index.bosses.length);
@@ -504,7 +488,6 @@ describe('filterProgression', () => {
     expect(shown({ realm: 'evermoon' })).toEqual(['1 A', '2 C']);
     expect(shown({ faction: 1, realm: 'wod' })).toEqual(['1 D']);
     expect(shown({ faction: 0, realm: 'wod' })).toEqual([]);
-    // The unfiltered ranks are left alone.
     expect(rows.map(row => row.rank)).toEqual([1, 2, 3, 4]);
   });
 });

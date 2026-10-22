@@ -70,7 +70,6 @@ function kill(raidBoss: RaidBoss, killedAt: number, members: RaidMember[]): Raid
 }
 
 const talent = (id: number) => ({ id, name: `Talent ${id}`, icon: `icon_${id}` });
-// Fire's table: tier t, column c is talent 10t + c.
 const table: RaidTalentTable = new Map([[63, Array.from({ length: 7 }, (_, tier) => [0, 1, 2].map(column => talent(tier * 10 + column)))]]);
 
 describe('talentSamples', () => {
@@ -93,7 +92,6 @@ describe('talentSamples', () => {
       ['Beta', 2, false, .75]
     ]);
 
-    // Healers are measured on healing.
     expect(samples.find(sample => sample.spec === holy)?.value).toBe(500);
   });
 
@@ -183,7 +181,6 @@ describe('talentBuilds', () => {
       ['1111111', 2, 1, 'Gamma', 'ursoc']
     ]);
     expect(summary.builds[0].share).toBeCloseTo(.6);
-    // Top players: Alpha on Nythendra and Gamma on Ursoc.
     expect(summary.builds.map(build => build.topShare)).toEqual([.5, .5]);
   });
 

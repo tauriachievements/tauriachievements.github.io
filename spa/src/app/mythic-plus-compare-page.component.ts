@@ -236,7 +236,6 @@ export class MythicPlusComparePageComponent implements OnInit {
     ];
   });
 
-  // Best run per dungeon, the best of them marked and the others' gap to it.
   readonly dungeonRows = computed<DungeonRow[]>(() => {
     const players = this.players();
     const affixes = this.affixesById();
@@ -254,7 +253,6 @@ export class MythicPlusComparePageComponent implements OnInit {
       };
     });
 
-    // Two players: a bar per dungeon towards whoever leads, the longest for the biggest lead.
     if (players.length === 2) {
       const leads = rows.map(row => row.cells[1].behind - row.cells[0].behind);
       const largest = Math.max(1, ...leads.map(Math.abs));
@@ -267,7 +265,6 @@ export class MythicPlusComparePageComponent implements OnInit {
     return rows;
   });
 
-  /** Two players: the score difference, the sum of the dungeon leads. */
   readonly totalLead = computed<Lead | undefined>(() => {
     const players = this.players();
     if (players.length !== 2) {
@@ -275,12 +272,10 @@ export class MythicPlusComparePageComponent implements OnInit {
     }
     const diff = Math.round((players[0].player.score - players[1].player.score) * 10) / 10;
     const side = diff >= 0 ? 0 : 1;
-    // On the same scale as the dungeon bars, so a small overall lead looks small.
     const largest = Math.max(1, Math.abs(diff), ...this.dungeonRows().map(row => row.lead?.points ?? 0));
     return { points: Math.abs(diff), side, width: (Math.abs(diff) / largest) * 100, color: players[side].color };
   });
 
-  // Score over the season, a line per player.
   private readonly weeks = computed(() => affixWeeks(this.allRuns()));
   private readonly seasonSpan = computed(() => {
     let first = Infinity;
@@ -293,10 +288,6 @@ export class MythicPlusComparePageComponent implements OnInit {
     return { first, last };
   });
 
-  /**
-   * Score: everyone's score from 0. Gap: points behind the best of them that day, on a square-root
-   * axis, so a 5-point gap late in the season shows as clearly as a 300-point one on day one.
-   */
   readonly chartMode = signal<'score' | 'gap'>('score');
 
   readonly chart = computed(() => {
@@ -309,15 +300,12 @@ export class MythicPlusComparePageComponent implements OnInit {
       return undefined;
     }
 
-    // Each player's points behind the best of them, per day.
     const leader = days.map((_, position) => Math.max(0, ...timelines.map(timeline => timeline[position]?.score ?? 0)));
     const gapOf = (index: number, position: number) =>
       Math.round(((timelines[index][position]?.score ?? 0) - leader[position]) * 10) / 10;
     const largestGap = Math.max(1, ...timelines.flatMap((timeline, index) => timeline.map((_, position) => -gapOf(index, position))));
     const gapTop = Math.sqrt(GAP_TICKS.find(value => value >= largestGap) ?? largestGap);
-    // The best of them sits a little under the top edge, clear of the affix icons.
     const gapPercent = (gap: number) => 90 - (Math.sqrt(Math.max(0, -gap)) / gapTop) * 90;
-    // Marks at least 9% apart, so the small ones near the top don't run into each other.
     const gapTicks: number[] = [];
     for (const value of GAP_TICKS.filter(tick => tick <= largestGap)) {
       const last = gapTicks[gapTicks.length - 1];
@@ -327,7 +315,6 @@ export class MythicPlusComparePageComponent implements OnInit {
     }
     const ticks = countTicks(Math.max(0, ...timelines.flatMap(timeline => timeline.map(day => day.score))));
     const top = ticks[ticks.length - 1];
-    // Height in percent: score from 0 up, or the gap from the top (the best of them) down.
     const bottomOf = (index: number, position: number) => gapMode
       ? gapPercent(gapOf(index, position))
       : percentOf(timelines[index][position]?.score ?? 0, top);
@@ -391,7 +378,6 @@ export class MythicPlusComparePageComponent implements OnInit {
     };
   });
 
-  // Add a player
   readonly searchQuery = signal('');
   readonly searchResults = computed(() => {
     const query = this.searchQuery().trim();
@@ -410,7 +396,6 @@ export class MythicPlusComparePageComponent implements OnInit {
     this.loadData();
   }
 
-  /** The address with `members` compared. */
   paramsFor(members: ReadonlyArray<{ name: string; realm: string }>): { players: string | null } {
     return { players: members.length ? compareParam(members) : null };
   }
@@ -423,7 +408,6 @@ export class MythicPlusComparePageComponent implements OnInit {
     return this.paramsFor(this.players().filter(player => player.key !== key).map(player => player.player.member));
   }
 
-  /** The leaderboard's players view, picking more players, with these already picked. */
   readonly pickParams = computed(() => ({ view: 'players', compare: compareParam(this.players().map(player => player.player.member)) }));
 
   onSearch(event: Event): void {

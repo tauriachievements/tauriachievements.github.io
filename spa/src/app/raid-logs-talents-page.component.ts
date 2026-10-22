@@ -323,7 +323,6 @@ export class RaidLogsTalentsPageComponent {
     });
   });
 
-  /** What the swap notes on the tiers count. */
   readonly swapExplanation = computed(() => {
     const swaps = this.swaps();
     if (swaps.characters < MIN_SWAP_CHARACTERS) {
@@ -594,10 +593,6 @@ export class RaidLogsTalentsPageComponent {
     return getClassColor(classId) ?? '#e0e0e0';
   }
 
-  /**
-   * A heatmap cell's gold: one hue, stronger with the share. It stops at about half strength so
-   * the white figure on it keeps 4.5:1 contrast.
-   */
   heatColor(share: number): string {
     return `rgba(247, 181, 0, ${(.04 + share * .5).toFixed(3)})`;
   }

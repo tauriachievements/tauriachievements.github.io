@@ -227,7 +227,6 @@ export class MythicPlusRecordsPageComponent implements OnInit {
     this.expanded.update(current => ({ ...current, [section]: current[section] === runId ? undefined : runId }));
   }
 
-  /** A click anywhere on a Most runs row, as on the leaderboard's players table. */
   openProfile(runner: RunnerRow): void {
     this.router.navigate(runner.member.profileLink);
   }
@@ -243,8 +242,6 @@ export class MythicPlusRecordsPageComponent implements OnInit {
         takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: ({ index, files }) => {
-          // Files from another export than the index (a deploy landed while the tab was open):
-          // fetch everything fresh, once. A second mismatch means the deploy is still going out.
           if (files.some(file => !sharesTables(index, file))) {
             this.dataFiles.refresh();
             if (!this.reloadedForNewerData) {
@@ -271,7 +268,6 @@ export class MythicPlusRecordsPageComponent implements OnInit {
       });
   }
 
-  /** Undefined for a run of a dungeon the index doesn't list. */
   private view(run: MythicPlusRun): RunView | undefined {
     const dungeon = this.dungeonsById().get(run.dungeon);
     return dungeon && toRunView(run, dungeon, this.affixesById(), this.scoreColors());
@@ -286,7 +282,6 @@ export class MythicPlusRecordsPageComponent implements OnInit {
       level: bounty.level,
       attempts: bounty.attempts,
       closest,
-      // Rounded like the run details' timer delta, so both say the same.
       missedBy: attempt && closest
         ? formatClock(Math.round(attempt.clearTimeSeconds - closest.dungeon.timerSeconds))
         : undefined,
@@ -294,7 +289,6 @@ export class MythicPlusRecordsPageComponent implements OnInit {
     };
   }
 
-  /** In-page filters keep the scroll position: no navigation, only the address bar changes. */
   private writeUrl(): void {
     const url = this.router.createUrlTree([], {
       relativeTo: this.route,

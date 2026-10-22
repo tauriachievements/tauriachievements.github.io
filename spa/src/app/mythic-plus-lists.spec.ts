@@ -54,7 +54,6 @@ function playerRow(name: string, guild?: string): PlayerRow {
   };
 }
 
-// Names link to profile pages.
 beforeEach(() => TestBed.configureTestingModule({ providers: [provideRouter([])] }));
 
 describe('MythicPlusRunsListComponent', () => {
@@ -181,7 +180,6 @@ describe('MythicPlusPlayersListComponent', () => {
       const links = fixture.nativeElement.querySelectorAll(cards ? 'a.card-guild' : 'a.guild-link');
       expect(links).toHaveLength(1);
       expect(links[0].getAttribute('href')).toBe('/mythic-plus/guild/evermoon/Skill%20Issue');
-      // The guild link is its own: it doesn't also open the profile.
       links[0].click();
       expect(follow).toHaveBeenCalledTimes(1);
       expect(navigate).not.toHaveBeenCalled();

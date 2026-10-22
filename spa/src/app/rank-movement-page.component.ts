@@ -170,7 +170,6 @@ export class TopGainersPageComponent implements OnInit {
     ];
   }
 
-  /** The page filters that differ from the defaults. The per-list source dropdowns stay in each list. */
   get activeFilterLabels(): string[] {
     const labels: string[] = [];
     if (this.topGainersLimit() !== DEFAULT_TOP_GAINERS_LIMIT) {

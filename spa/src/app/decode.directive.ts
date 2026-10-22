@@ -196,11 +196,6 @@ class Decoding {
     return element;
   }
 
-  /**
-   * Adds to an element's class or style, to be put back exactly as it was (or taken away). Through
-   * the attribute rather than element.style: the browser writes a change made through element.style
-   * back to the attribute lazily, and after the attribute is taken away would leave style="".
-   */
   private extend(element: HTMLElement, attribute: 'class' | 'style', addition: string): void {
     const before = element.getAttribute(attribute);
     element.setAttribute(attribute, before ? `${before}${attribute === 'class' ? ' ' : '; '}${addition}` : addition);
@@ -215,7 +210,6 @@ class Decoding {
 
   private play(delay: number, duration: number): void {
     const lands = landingTimes(this.letters.length, duration).map(time => time + delay);
-    // The letters in the order they land: the first `landed` have, the first `near` are about to.
     const order = this.letters.map((_, index) => index).sort((a, b) => lands[a] - lands[b]);
     let landed = 0;
     let near = 0;
@@ -252,7 +246,6 @@ class Decoding {
   }
 }
 
-/** The host's text nodes with something to read, outside anything aria-hidden. */
 function decodableTexts(host: HTMLElement): Text[] {
   const walker = document.createTreeWalker(host, NodeFilter.SHOW_TEXT, {
     acceptNode: (node) => (node.nodeValue?.trim() && !node.parentElement?.closest('[aria-hidden="true"], svg')
@@ -266,12 +259,10 @@ function decodableTexts(host: HTMLElement): Text[] {
   return texts;
 }
 
-/** The element's first text with something to read: where a ::first-letter would fall. */
 function firstText(element: HTMLElement): Text | undefined {
   return Array.from(element.childNodes).find((node): node is Text => node instanceof Text && !!node.data.trim());
 }
 
-/** The box of the nearest element between `element` and the host that cuts off what overflows it. */
 function clippingBox(element: HTMLElement, host: HTMLElement): DOMRect | null {
   for (let current: HTMLElement | null = element; current && current !== host; current = current.parentElement) {
     if (getComputedStyle(current).overflowX !== 'visible') {

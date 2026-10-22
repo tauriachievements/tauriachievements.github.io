@@ -15,7 +15,6 @@ export function characterParam(character: Character): string {
   return `${character.name}-${character.realm}`;
 }
 
-/** Reads `characterParam`. Character names can't contain a hyphen, so the last one splits it. */
 export function parseCharacterParam(value: string | null | undefined): Character | undefined {
   const split = value?.lastIndexOf('-') ?? -1;
   if (!value || split <= 0 || split === value.length - 1) {
@@ -25,11 +24,6 @@ export function parseCharacterParam(value: string | null | undefined): Character
   return { name: value.slice(0, split), realm: value.slice(split + 1) };
 }
 
-/**
- * The characters a profile URL names. The realm is matched without regard to case. The name is
- * matched exactly first, then without regard to case, so a typed `/evermoon/progtrix` still
- * finds Progtrix; that second match can return more than one character.
- */
 export function findCharacters<T extends Character>(candidates: readonly T[], realm: string, name: string): T[] {
   const wantedRealm = realmSlug(realm);
   const onRealm = candidates.filter(candidate => realmSlug(candidate.realm) === wantedRealm);
@@ -45,15 +39,9 @@ export function findCharacters<T extends Character>(candidates: readonly T[], re
 export interface ScopeRank {
   rank: number;
   total: number;
-  /** The row the character is on (1-based); ranks are shared, so it can be below `rank`. */
   position?: number;
 }
 
-/**
- * A character's place among the players `inScope` keeps, in the order of `ranking`
- * (rankPlayers). Ranks count from 1 and are shared like on the players view (playerRanks):
- * the same score and total time share a rank. Undefined when the character isn't in scope.
- */
 export function scopeRank(
   ranking: readonly PlayerScore[],
   key: string,
@@ -69,7 +57,6 @@ export function scopeRank(
     }
 
     total++;
-    // The same score and total time share a rank (see playerRanks).
     if (!previous || !samePlace(player, previous)) {
       place = total;
     }
@@ -82,42 +69,26 @@ export function scopeRank(
   return found === undefined ? undefined : { ...found, total };
 }
 
-/**
- * `top 2.3%`: the share of the players at or above this rank, rounded up so it never flatters,
- * to a tenth of a percent below 10% and to whole percents above.
- */
 export function formatTopPercent({ rank, total }: ScopeRank): string {
   if (!(total > 0)) {
     return '';
   }
 
-  // In tenths of a percent, rounded up; integer maths keeps 23 of 1000 at exactly 2.3%.
   const tenths = Math.max(1, Math.ceil((rank * 1000) / total));
   return tenths < 100 ? `top ${(tenths / 10).toFixed(1)}%` : `top ${Math.ceil(tenths / 10)}%`;
 }
 
-/** The leaderboard page (1-based) that shows a rank, at a page size. */
 export function pageOfRank(rank: number, pageSize: number): number {
   return Math.max(1, Math.ceil(rank / pageSize));
 }
 
 export interface ScoreDay {
-  /** Local calendar day, YYYY-MM-DD. */
   day: string;
-  /** Player score at the end of the day. */
   score: number;
-  /** Score added that day. */
   gained: number;
-  /** Runs finished that day. */
   runs: number;
 }
 
-/**
- * The character's player score at the end of each local day from `from` to `to` (epoch ms),
- * both included. Replays their runs in the order they finished, keeping the best score per
- * dungeon as rankPlayers does, so the last day ends on their current score. Runs before `from`
- * count on the first day.
- */
 export function scoreOverTime(
   runs: readonly Pick<MythicPlusRun, 'dungeon' | 'score' | 'completedAt'>[],
   from: number,
@@ -151,7 +122,6 @@ export function scoreOverTime(
     for (const value of best.values()) {
       total += value;
     }
-    // Scores carry one decimal; rounding keeps float noise out, as in rankPlayers.
     const rounded = Math.round(total * 10) / 10;
     days.push({ day, score: rounded, gained: Math.round((rounded - score) * 10) / 10, runs: finished });
     score = rounded;
@@ -167,18 +137,11 @@ export function scoreOverTime(
 
 export interface Teammate {
   key: string;
-  /** As they appear in the best run played together. */
   member: MythicPlusMember;
-  /** Runs played together. */
   runs: number;
-  /** The highest-scoring run played together; a faster clear breaks ties. */
   bestRun: MythicPlusRun;
 }
 
-/**
- * The characters someone has played with most, from their runs: most shared runs first, then
- * the better best run together, then by name. At most `limit`.
- */
 export function frequentTeammates(runs: readonly MythicPlusRun[], key: string, limit: number): Teammate[] {
   const teammates = new Map<string, Teammate>();
   for (const run of runs) {
@@ -219,7 +182,6 @@ export interface SpecPlayed {
   runs: number;
 }
 
-/** The specs a character played and in how many runs: `first` (their top run's spec) first, then the most played. */
 export function specsPlayed(runs: readonly MythicPlusRun[], key: string, first?: string): SpecPlayed[] {
   const specs = new Map<string, SpecPlayed>();
   for (const run of runs) {

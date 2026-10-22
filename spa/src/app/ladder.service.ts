@@ -247,7 +247,6 @@ function currentValue(player: Player, field: PlayerRankingField): number {
   return player[field];
 }
 
-/** The value a field had in the previous scan. */
 function previousValue(player: Player, field: PlayerRankingField): number {
   const deltaField = DELTA_FIELD[field];
   return deltaField ? player[field] - player[deltaField] : player[field];

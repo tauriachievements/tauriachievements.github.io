@@ -305,7 +305,6 @@ export function buildTeamSummary(match: RatedBattlegroundMatch, side: number): R
   };
 }
 
-/** The API winner flag is one-based/inverted relative to the zero-based member side value. */
 export function getWinningSide(match: Pick<RatedBattlegroundMatch, 'winner'>): number {
   return match.winner === 1 ? 0 : 1;
 }

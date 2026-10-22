@@ -141,7 +141,6 @@ export class RaidSpecPopularityChartComponent {
       }));
     }
 
-    // Shares are 0–1 and the ticks percentages.
     return this.popularity().classes.map(group => ({
       classId: group.classId,
       className: group.className,
@@ -186,7 +185,6 @@ export class RaidSpecPopularityChartComponent {
     ].join(' · ');
   });
 
-  /** Which leaderboard the scores come from: healers are ranked by HPS, everyone else by DPS. */
   private scoreNoun(): string {
     switch (this.role()) {
       case 'healer': return 'HPS scores';
@@ -195,12 +193,10 @@ export class RaidSpecPopularityChartComponent {
     }
   }
 
-  /** "DPS score" or "HPS score", for a bar's tooltip. */
   scoreKind(spec: SpecBar): string {
     return spec.role === 'healer' ? 'HPS score' : 'DPS score';
   }
 
-  /** Whose scores a performance bar averages, as a sentence. */
   scoreSample(spec: SpecBar): string {
     if (spec.count === 1) {
       return 'Only 1 character';

@@ -119,7 +119,6 @@ export class RaidLogsCharacterPageComponent {
   });
   readonly classPlural = computed(() => `${this.ownClass()}s`);
 
-  /** The Of best and Rank headings explained, for the comparison shown. */
   readonly columnTitles = computed(() => this.comparison() === 'class'
     ? { relative: `The best kill against the best any ${this.ownClass()} did on the boss`, rank: `Among every ${this.ownClass()}'s best kill of the boss` }
     : { relative: 'The best kill against the best anyone did on the boss', rank: "Among every character's best kill of the boss" });
@@ -196,7 +195,6 @@ export class RaidLogsCharacterPageComponent {
     return [
       { label: 'Bosses killed', value: `${killed.length}/${rows.length}`, note: `${this.appearances().length} kills` },
       {
-        // The score always compares with every player, as the leaderboard does; say so when the table doesn't.
         label: `${this.metric().toUpperCase()} score`,
         value: score ? String(score.score) : '-',
         note: score
@@ -318,7 +316,6 @@ export class RaidLogsCharacterPageComponent {
       });
   }
 
-  /** The realm must match; the name exactly, else ignoring case. */
   private findCharacterKey(bossKills: RaidKillDetails[][]): string | undefined {
     const realm = realmSlug(this.params().get('realm') ?? '');
     const name = this.params().get('name') ?? '';

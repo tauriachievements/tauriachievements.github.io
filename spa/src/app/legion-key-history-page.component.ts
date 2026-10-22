@@ -94,6 +94,5 @@ export class LegionKeyHistoryPageComponent {
   protected readonly installGuideUrl = `${REPO_URL}#install`;
   protected readonly screenshots = SCREENSHOTS;
   protected readonly features = FEATURES;
-  /** The screenshot shown in the showcase. */
   protected readonly shown = signal(SCREENSHOTS[0]);
 }

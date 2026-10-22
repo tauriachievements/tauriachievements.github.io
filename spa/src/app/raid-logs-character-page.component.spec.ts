@@ -97,7 +97,6 @@ async function open(url: string) {
         { path: 'raid-logs/character/:realm/:name', component: RaidLogsCharacterPageComponent },
         { path: 'raid-logs/leaderboard', component: ElsewhereComponent }
       ]),
-      // A history the Back button can be pressed in.
       provideLocationMocks(),
       { provide: DataFileService, useValue: new FakeDataFiles() }
     ]
@@ -108,12 +107,10 @@ async function open(url: string) {
   return { harness, page, element: harness.routeNativeElement as HTMLElement, location: TestBed.inject(Location) };
 }
 
-/** Each boss row as [boss, of best, rank, out of]. */
 function rows(page: RaidLogsCharacterPageComponent) {
   return page.bossRows().map(row => [row.boss.shortName, row.relative, row.rank, row.ranked]);
 }
 
-/** The Bosses table as shown: boss, of best and rank cells. */
 function cells(element: HTMLElement) {
   return [...element.querySelectorAll('section[aria-labelledby="character-bosses-title"] tbody tr')]
     .map(row => [...row.querySelectorAll('td')].slice(0, 4).map(cell => cell.textContent?.replace(/\s+/g, ' ').trim()))
@@ -156,11 +153,9 @@ describe('RaidLogsCharacterPageComponent comparison', () => {
       ["Il'gynoth", .375, 3, 3],
       ['Elerethe', 0, undefined, 0]
     ]);
-    // The same shares the score averages.
     expect(page.bossRows().map(row => row.relative)).toEqual(page.score()?.bosses.map(entry => entry.relative));
     expect(cells(element)).toEqual([['Nythendra', '80%', '#2 / 4'], ["Il'gynoth", '37%', '#3 / 3'], ['Elerethe', '', '']]);
 
-    // (.8 + .375 + 0) / 3 of 6969; Kael and Ret score higher.
     expect(summaryTile(element, 'DPS score')).toEqual({ value: '2729', note: '#3 of 4 on the leaderboard' });
     expect(summaryTile(element, 'Best damage rank')).toEqual({ value: '#2', note: 'Nythendra, of 4' });
     expect(element.querySelector('th[title]')?.getAttribute('title')).toBe('The best kill against the best anyone did on the boss');
@@ -176,7 +171,6 @@ describe('RaidLogsCharacterPageComponent comparison', () => {
     expect(page.comparison()).toBe('class');
     expect(location.path()).toBe('/raid-logs/character/evermoon/Frosty?compare=class');
     expect(comparisonButtons(element).map(button => button.getAttribute('aria-pressed'))).toEqual(['false', 'true']);
-    // Among the two mages: first on Nythendra, second (at half Kael's) on Il'gynoth; Elerethe stays empty.
     expect(rows(page)).toEqual([
       ['Nythendra', 1, 1, 2],
       ["Il'gynoth", .5, 2, 2],
@@ -193,7 +187,6 @@ describe('RaidLogsCharacterPageComponent comparison', () => {
     const note = element.querySelector('.list-note')?.textContent?.replace(/\s+/g, ' ');
     expect(note).toContain('"Of best" and Rank compare with Mages only');
     expect(note).toContain('The DPS score above still compares each boss with the best of all players');
-    // The boss pages open on the same ranking: the class only.
     expect(element.querySelector('a.boss-cell')?.getAttribute('href')).toBe('/raid-logs/boss/nythendra?difficulty=mythic&tab=dps&class=8');
 
     comparisonButtons(element)[0].click();
@@ -212,14 +205,12 @@ describe('RaidLogsCharacterPageComponent comparison', () => {
     page.setDifficulty('heroic');
     harness.detectChanges();
     expect(location.path()).toBe('/raid-logs/character/evermoon/Frosty?difficulty=heroic&compare=class');
-    // Kael's 500 beats Frosty's 400; the paladin's 300 doesn't count among mages.
     expect(rows(page)[0]).toEqual(['Nythendra', .8, 2, 2]);
 
     [...element.querySelectorAll<HTMLButtonElement>('[role="tab"]')][1].click();
     harness.detectChanges();
     expect(location.path()).toBe('/raid-logs/character/evermoon/Frosty?difficulty=heroic&metric=hps&compare=class');
     expect(page.comparison()).toBe('class');
-    // A mage heals nothing the Healing ranking counts.
     expect(rows(page)[0]).toEqual(['Nythendra', 0, undefined, 0]);
   });
 
@@ -229,7 +220,6 @@ describe('RaidLogsCharacterPageComponent comparison', () => {
     harness.detectChanges();
 
     await harness.navigateByUrl('/raid-logs/leaderboard', ElsewhereComponent);
-    // The app's first navigation starts the router listening for Back; a test bed never makes one.
     const router = TestBed.inject(Router);
     router.setUpLocationChangeListener();
     const navigated = firstValueFrom(router.events.pipe(filter(event => event instanceof NavigationEnd)));

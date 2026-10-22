@@ -85,7 +85,6 @@ describe('ranks', () => {
   const blood = member('Blood', { class: 6, spec: 'Blood', role: 'tank' });
   const frost = member('Frost', { class: 6, spec: 'Frost', realm: 'Tauri' });
   const monk = member('Monk');
-  // Frost 350, Blood 300, Monk 250 overall; only 150 of Frost's score comes from playing Blood.
   const runs = [
     run('nl', 150, [blood, monk]),
     run('dht', 150, [blood]),
@@ -110,7 +109,6 @@ describe('ranks', () => {
   });
 
   it('shares a rank only on the same score and the same total time', () => {
-    // A, B and C ran the same keys together; D has the same score but slower runs; E scores less.
     const [a, b, c, d, e] = ['A', 'B', 'C', 'D', 'E'].map(name => member(name));
     const tied = rankPlayers([
       run('nl', 200, [a, b, c], at(9, 20), 1500),
@@ -122,7 +120,6 @@ describe('ranks', () => {
     expect(scopeRank(tied, characterKey(c))).toEqual({ rank: 1, position: 3, total: 5 });
     expect(scopeRank(tied, characterKey(d))).toEqual({ rank: 4, position: 4, total: 5 });
     expect(scopeRank(tied, characterKey(e))).toEqual({ rank: 5, position: 5, total: 5 });
-    // Only the players in scope count: D alone in a scope after the three is 4th of 4 too.
     expect(scopeRank(tied, characterKey(d), player => player.member.name !== 'E')).toEqual({ rank: 4, position: 4, total: 4 });
   });
 
@@ -208,7 +205,6 @@ describe('frequentTeammates', () => {
     run('dht', 170, [tank, me], at(9, 21), 1600),
     run('dht', 170, [{ ...tank, spec: 'Frost', role: 'dps' }, me], at(9, 22), 1400),
     run('eoa', 120, [healer, other, me]),
-    // Not one of mine: neither its count nor its key may leak into the teammates.
     run('cos', 200, [tank, stranger])
   ];
 

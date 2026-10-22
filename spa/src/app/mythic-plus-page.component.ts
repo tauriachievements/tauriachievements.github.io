@@ -478,14 +478,10 @@ export class MythicPlusPageComponent implements OnInit {
     this.loadData();
   }
 
-  // Compare: pick players on the players view, then open /mythic-plus/compare with them.
   readonly compareLimit = COMPARE_LIMIT;
-  /** On with `?compare=` (from a profile's or the compare page's "pick on the leaderboard"). */
   readonly compareMode = signal(this.route.snapshot.queryParamMap.has('compare'));
   private readonly comparePicks = signal(parseCompareParam(this.route.snapshot.queryParamMap.get('compare')));
-  /** Where Cancel goes back to; a `?compare=` link comes from outside the leaderboard, so the default view. */
   private viewBeforeCompare: LeaderboardView = 'runs';
-  /** The picks, with their class colour once the export is loaded. */
   readonly picked = computed(() => {
     const characters = this.indexCharacters();
     return this.comparePicks().map(pick => {
@@ -612,7 +608,6 @@ export class MythicPlusPageComponent implements OnInit {
   }
 
   setView(view: LeaderboardView): void {
-    // Players again from Roles: the same view, without the role.
     if (view === this.view() && !(view === 'players' && this.roleFilter())) {
       return;
     }
@@ -624,7 +619,6 @@ export class MythicPlusPageComponent implements OnInit {
     this.syncQueryParams();
   }
 
-  /** Roles: the players ladder by role, tanks first. Class and spec filters don't apply there. */
   showRoles(): void {
     if (this.view() === 'players' && this.roleFilter()) {
       return;
@@ -682,7 +676,6 @@ export class MythicPlusPageComponent implements OnInit {
   onSearch(event: Event): void {
     this.search.set((event.target as HTMLInputElement).value);
 
-    // Search isn't in the URL, so the URL only changes when it replaces a character or resets `?page`.
     if (this.characterParam() || this.page() !== 1) {
       this.characterParam.set(undefined);
       this.page.set(1);
@@ -694,12 +687,6 @@ export class MythicPlusPageComponent implements OnInit {
     this.expandedRunId.update(current => current === runId ? undefined : runId);
   }
 
-  /**
-   * Mirrors the filters into the address bar so links and reloads keep them. This writes the
-   * URL directly instead of navigating: every router navigation scrolls to the top
-   * (scrollPositionRestoration) and runs a full-page view transition, and a filter change
-   * should leave the reader where they are.
-   */
   private syncQueryParams(): void {
     const players = this.view() === 'players';
     const character = this.characterFilter();
@@ -710,7 +697,6 @@ export class MythicPlusPageComponent implements OnInit {
         period: this.period() === 'week' ? 'week' : null,
         view: players ? 'players' : null,
         sort: !players && this.runOrder() === 'latest' ? 'latest' : null,
-        // The filters only apply to the players view; they wait there when the runs view is open.
         realm: players ? this.realmFilter() ?? null : null,
         class: players ? this.classFilter() ?? null : null,
         spec: players ? this.specFilter() ?? null : null,
@@ -740,7 +726,6 @@ export class MythicPlusPageComponent implements OnInit {
       });
   }
 
-  /** Fetches the dungeon files the selected scope still needs: one dungeon, or all of them. */
   private loadScopeRuns(): void {
     const decode = this.decodeRuns;
     const index = this.index();
@@ -757,12 +742,10 @@ export class MythicPlusPageComponent implements OnInit {
       }
 
       this.requestedDungeons.add(dungeon.id);
-      // fetchJson rather than getJson: the decoded runs are what we keep, not the raw file.
       this.dataFiles.fetchJson<MythicPlusDungeonFile>(`${MYTHIC_PLUS_DATA_DIR}/${dungeon.id}.json`)
         .pipe(takeUntilDestroyed(this.destroyRef))
         .subscribe({
           next: file => {
-            // A file requested before startOver(): the page has moved on to a newer index.
             if (decode !== this.decodeRuns) {
               return;
             }
@@ -784,11 +767,6 @@ export class MythicPlusPageComponent implements OnInit {
     }
   }
 
-  /**
-   * A dungeon file from another export than the index, usually because a deploy landed while
-   * the tab was open. Loads everything again once; a second mismatch means the deploy is still
-   * going out, and is reported instead of retried in a loop.
-   */
   private reloadForNewerData(dungeonId: string): void {
     const firstTime = !this.reloadedForNewerData;
     this.reloadedForNewerData = true;
@@ -801,7 +779,6 @@ export class MythicPlusPageComponent implements OnInit {
     this.failLoad(new Error(`${dungeonId}.json and index.json come from different exports`), NEWER_DATA_MESSAGE);
   }
 
-  /** Drops every loaded file and the session's manifest, then loads the page from scratch. */
   private startOver(): void {
     this.dataFiles.refresh();
     this.decodeRuns = undefined;

@@ -198,18 +198,15 @@ export function formatHeldFor(since: number, now: number): string {
   return hours >= 1 ? `held for ${hours} ${hours === 1 ? 'hour' : 'hours'}` : 'set in the last hour';
 }
 
-/** Clear time as a share of the dungeon's timer: under 1 when timed. */
 function timerShare(run: Pick<MythicPlusRun, 'dungeon' | 'clearTimeSeconds'>, timers: DungeonTimers): number {
   const timer = timers.get(run.dungeon) ?? 0;
   return timer > 0 ? run.clearTimeSeconds / timer : Infinity;
 }
 
-/** Closer to the timer first, then the higher key, then the earlier finish. */
 function compareAttempts(a: RecordRun, b: RecordRun, timers: DungeonTimers): number {
   return timerShare(a, timers) - timerShare(b, timers) || b.keyLevel - a.keyLevel || compareFinish(a, b);
 }
 
-/** Earlier finish first; in the same second the faster clear. */
 function compareFinish(a: RecordRun, b: RecordRun): number {
   return compareText(a.completedAt, b.completedAt) || a.clearTimeSeconds - b.clearTimeSeconds || compareText(a.id, b.id);
 }

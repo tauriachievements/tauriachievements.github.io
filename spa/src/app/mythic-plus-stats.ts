@@ -10,7 +10,6 @@ export interface SpecDefinition {
 
 const specIcon = (name: string): string => `https://legion-static.tauri.hu/images/icons/large/${name}.png`;
 
-/** Every Legion spec, in the game's class and spec order. */
 export const LEGION_SPECS: ReadonlyArray<SpecDefinition> = [
   { classId: 1, spec: 'Arms', role: 'dps', icon: specIcon('ability_warrior_savageblow') },
   { classId: 1, spec: 'Fury', role: 'dps', icon: specIcon('ability_warrior_innerrage') },
@@ -54,14 +53,12 @@ const specKey = (classId: number, spec: string): string => `${classId}:${spec}`;
 const KNOWN_SPEC_KEYS = new Set(LEGION_SPECS.map(definition => specKey(definition.classId, definition.spec)));
 const SPEC_ICONS = new Map(LEGION_SPECS.map(definition => [specKey(definition.classId, definition.spec), definition.icon]));
 
-/** The icon for a class's spec, when it's one of the Legion specs. */
 export function specIconFor(classId: number, spec: string): string | undefined {
   return SPEC_ICONS.get(specKey(classId, spec));
 }
 
 const SPEC_ROLES = new Map(LEGION_SPECS.map(definition => [specKey(definition.classId, definition.spec), definition.role]));
 
-/** Tank, healer or DPS for a class's spec, when it's one of the Legion specs. */
 export function specRoleFor(classId: number, spec: string): MythicPlusRole | undefined {
   return SPEC_ROLES.get(specKey(classId, spec));
 }
@@ -70,13 +67,11 @@ type PopularityMember = Pick<MythicPlusMember, 'name' | 'realm' | 'class' | 'spe
 
 export interface SpecPopularityOptions {
   role?: MythicPlusRole;
-  /** Count each character once per spec, instead of once per run it appears in. */
   uniqueCharacters?: boolean;
 }
 
 export interface SpecShare extends SpecDefinition {
   count: number;
-  /** 0–1, of every counted slot (or character) in the selection. */
   share: number;
 }
 
@@ -90,18 +85,11 @@ export interface ClassShare {
 }
 
 export interface SpecPopularity {
-  /** Player slots (or unique characters) the shares are measured against. */
   total: number;
   runCount: number;
   classes: ClassShare[];
 }
 
-/**
- * How often each spec was seen, grouped by class. Specs inside a class are ordered by popularity (ties
- * keep the game's order), and classes are ordered by their most-seen spec — then their next one — like
- * raider.io, rather than by the class total. Every spec of the selected role is listed, so a spec nobody
- * played still shows up at 0%.
- */
 export function specPopularity(
   runs: ReadonlyArray<{ roster: ReadonlyArray<PopularityMember> }>,
   options: SpecPopularityOptions = {}
@@ -169,10 +157,6 @@ export function specPopularity(
   return { total, runCount: runs.length, classes };
 }
 
-/**
- * Descending by the top spec's value, then the next one's, and so on: how the spec charts order
- * their classes. Expects each list already sorted, highest first.
- */
 export function compareSpecLists<T>(a: readonly T[], b: readonly T[], value: (spec: T) => number): number {
   for (let index = 0; index < Math.max(a.length, b.length); index++) {
     const difference = (b[index] ? value(b[index]) : 0) - (a[index] ? value(a[index]) : 0);
@@ -184,7 +168,6 @@ export function compareSpecLists<T>(a: readonly T[], b: readonly T[], value: (sp
   return 0;
 }
 
-/** Clean percentage gridlines (0, 5, 10, …) whose top value covers the largest share. */
 export function shareTicks(maxShare: number): number[] {
   const maxPercent = Math.max(0, Math.round(maxShare * 1e6) / 1e4);
   const step = [1, 2, 5, 10, 20, 25, 50].find(candidate => maxPercent / candidate <= 5) ?? 50;

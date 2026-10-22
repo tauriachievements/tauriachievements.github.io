@@ -104,7 +104,6 @@ export function localDay(date: Date): string {
   return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
 }
 
-/** Runs per local calendar day, from the first run to the last, days without runs included. */
 export function runsPerDay(runs: readonly ActivityRun[], timers: DungeonTimers, weeks: readonly AffixWeekSpan[] = []): DayActivity[] {
   if (runs.length === 0) {
     return [];
@@ -153,16 +152,13 @@ export interface DungeonActivity {
   runs: number;
   timed: number;
   depleted: number;
-  /** Highest key finished in time, 0 if none was. */
   highestTimed: number;
   fortified: number;
   tyrannical: number;
-  /** Highest key finished in time on each week type, 0 if none was. */
   highestFortified: number;
   highestTyrannical: number;
 }
 
-/** Runs per dungeon, most-run first. Dungeons without runs in scope are kept, at the end. */
 export function runsPerDungeon(runs: readonly ActivityRun[], dungeons: readonly MythicPlusDungeon[],
   weeks: readonly AffixWeekSpan[] = []): DungeonActivity[] {
   const timers = dungeonTimers(dungeons);
@@ -205,7 +201,6 @@ export interface LevelActivity {
   tyrannical: number;
 }
 
-/** Runs per key level, every level from the lowest to the highest run included. */
 export function keyLevelSpread(runs: readonly ActivityRun[], timers: DungeonTimers,
   weeks: readonly AffixWeekSpan[] = []): LevelActivity[] {
   if (runs.length === 0) {
@@ -241,14 +236,11 @@ export interface WeekActivity {
   runs: number;
   timed: number;
   highestTimed: number;
-  /** Distinct players (character name and realm) with a run that week. */
   players: number;
-  /** First and last run of the week, epoch ms. */
   firstRun: number;
   lastRun: number;
 }
 
-/** One summary per affix week, oldest first. */
 export function weekSummaries(runs: readonly ActivityRun[], timers: DungeonTimers, weeks: readonly AffixWeekSpan[]): WeekActivity[] {
   const rows = weeks.map(week => ({
     week, runs: 0, timed: 0, highestTimed: 0, players: new Set<string>(), firstRun: Infinity, lastRun: -Infinity
@@ -275,7 +267,6 @@ export function weekSummaries(runs: readonly ActivityRun[], timers: DungeonTimer
   return rows.map(row => ({ ...row, players: row.players.size }));
 }
 
-/** Round axis steps (1, 2 or 5 times a power of ten) from 0 up to at least `max`. */
 export function countTicks(max: number, targetSteps = 4): number[] {
   if (!(max > 0)) {
     return [0, 1];

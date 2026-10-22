@@ -45,7 +45,6 @@ export class RaidLogsDataService {
       this.dataFiles.fetchJson<RaidLogsIndexFile>(`${RAID_LOGS_DATA_DIR}/index.json`).pipe(map(decodeIndex)));
   }
 
-  /** A boss's kills on one difficulty, oldest first. A difficulty without kills has no file. */
   bossKills(index: RaidLogsIndex, boss: RaidBoss, difficulty: RaidDifficulty): Observable<RaidKillDetails[]> {
     const hasKills = index.kills.some(kill => kill.boss === boss && kill.difficulty === difficulty);
     if (!hasKills) {
@@ -57,7 +56,6 @@ export class RaidLogsDataService {
       this.dataFiles.fetchJson<RaidBossFile>(path).pipe(map(file => decodeBossFile(file, boss, difficulty, index.specs))));
   }
 
-  /** Every detailed kill on one difficulty, in boss order. Used for raid-wide roster analytics. */
   difficultyKills(index: RaidLogsIndex, difficulty: RaidDifficulty): Observable<RaidKillDetails[]> {
     if (!index.bosses.length) {
       return of([]);
@@ -68,10 +66,6 @@ export class RaidLogsDataService {
     );
   }
 
-  /**
-   * The ladder's gender for the raid characters the raid logs have wrong, by characterKey. Only
-   * race icons depend on it, so a file that won't load is an empty map, not an error.
-   */
   genders(): Observable<ReadonlyMap<string, number>> {
     return this.memoize('genders', () => this.dataFiles.fetchJson<RaidGendersFile>(RAID_GENDERS_PATH).pipe(
       map(decodeGenders),
@@ -82,10 +76,6 @@ export class RaidLogsDataService {
     ));
   }
 
-  /**
-   * Every spec's talent tiers, to name the talents members picked. Only talent icons depend on
-   * it, so a file that won't load is an empty table, not an error.
-   */
   talents(): Observable<RaidTalentTable> {
     return this.memoize('talents', () => this.dataFiles.fetchJson<RaidTalentsFile>(RAID_TALENTS_PATH).pipe(
       map(decodeTalents),
@@ -106,10 +96,6 @@ export class RaidLogsDataService {
     ));
   }
 
-  /**
-   * One kill and its details. A kill the index doesn't list may be newer than the index this tab
-   * loaded, so the data is loaded fresh once before giving up.
-   */
   findKill(realm: string, logId: number): Observable<FoundKill> {
     return this.findIn(realm, logId).pipe(
       switchMap(found => {
@@ -127,7 +113,6 @@ export class RaidLogsDataService {
     );
   }
 
-  /** Forgets everything loaded, for a tab left open across a deploy. */
   refresh(): void {
     this.dataFiles.refresh();
     this.memoized.clear();

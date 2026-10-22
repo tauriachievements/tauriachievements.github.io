@@ -9,7 +9,6 @@ describe('character age', () => {
   });
 
   it('never produces negative days across a short month', () => {
-    // The old string-based calculation turned this into "0 years 1 months -2 days".
     expect(getCharacterAgeParts(day('2021-01-31'), day('2021-03-01'))).toEqual({ years: 0, months: 1, days: 1 });
   });
 

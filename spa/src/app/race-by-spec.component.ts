@@ -38,11 +38,6 @@ const shareLabel = (share: number): string => `${Math.round(share * 100)}%`;
 
 const ROLE_TITLES: Readonly<Record<MythicPlusRole, string>> = { dps: 'DPS', tank: 'tank', healer: 'healer' };
 
-/**
- * The most popular race of every spec of one role, from whatever rosters the page has loaded
- * (Mythic+ runs or raid kills). Each row names the leading race; its bar splits the spec's
- * characters between the top three races and everyone else, and its tooltip lists every race.
- */
 @Component({
   selector: 'app-race-by-spec',
   imports: [GlideDirective, RevealDirective, TapTooltipDirective, DecimalPipe],
@@ -53,7 +48,6 @@ const ROLE_TITLES: Readonly<Record<MythicPlusRole, string>> = { dps: 'DPS', tank
 export class RaceBySpecComponent {
   readonly samples = input.required<readonly RaceSample[]>();
   readonly role = input.required<MythicPlusRole>();
-  /** What the samples are, first in the subtitle: "Season", "Mythic raids". */
   readonly context = input.required<string>();
   readonly loading = input(false);
 
@@ -65,7 +59,6 @@ export class RaceBySpecComponent {
   readonly faction = signal<RaceFactionFilter>('all');
 
   readonly title = computed(() => `Most popular race by ${ROLE_TITLES[this.role()]} spec`);
-  /** Two columns on a wide card, filled top to bottom. */
   readonly rowsPerColumn = computed(() => Math.ceil(this.result().specs.length / 2));
 
   private readonly result = computed(() => racesBySpec(this.samples(), this.role(), this.faction()));
@@ -73,7 +66,6 @@ export class RaceBySpecComponent {
   readonly rows = computed<SpecRow[]>(() => this.result().specs.map(spec => {
     const races = spec.races.map((race): RaceView => ({
       ...race,
-      // The Pandaren icons of both factions are the same picture; there is none for the island id.
       icon: getRaceIconPath(race.race === 24 ? 25 : race.race, 0),
       shareLabel: shareLabel(race.share)
     }));

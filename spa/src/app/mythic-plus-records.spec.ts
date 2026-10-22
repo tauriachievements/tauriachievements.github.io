@@ -76,7 +76,6 @@ describe('dungeonRecords', () => {
   });
 
   it('puts the record that used less of its timer first at the same key', () => {
-    // 1300 of 1980 s (66%) against 1000 of 1440 s (69%).
     const nl = run('nl', 17, 1300, 1);
     const mos = run('mos', 17, 1000, 1);
     expect(dungeonRecords([mos, nl], dungeons).map(record => record.run)).toEqual([nl, mos, undefined]);
@@ -90,10 +89,10 @@ describe('serverFirsts', () => {
     const runs = [
       run('nl', 16, 1500, 6),
       first16,
-      run('nl', 17, 2500, 3), // over time
+      run('nl', 17, 2500, 3),
       first15,
       run('hov', 15, 2000, 2),
-      run('mos', 9, 1000, 0) // below +10
+      run('mos', 9, 1000, 0)
     ];
 
     expect(serverFirsts(runs, timers)).toEqual([{ level: 16, run: first16 }, { level: 15, run: first15 }]);
@@ -114,10 +113,10 @@ describe('serverFirsts', () => {
 describe('openBounty', () => {
   const mosRuns = [
     run('mos', 17, 1174, 10),
-    run('mos', 17, 1100, 5), // the first +17 timed: it claimed the +17 bounty
-    run('mos', 18, 1453, 12), // 13 s over
-    run('mos', 19, 1600, 13), // 160 s over
-    run('mos', 18, 1500, 14) // 60 s over
+    run('mos', 17, 1100, 5),
+    run('mos', 18, 1453, 12),
+    run('mos', 19, 1600, 13),
+    run('mos', 18, 1500, 14)
   ];
   const mosNow = Date.parse(mosRuns[1].completedAt) + CLAIM_SHOWN_FOR_MS;
 
@@ -144,7 +143,6 @@ describe('openBounty', () => {
   });
 
   it('works across dungeons, measuring each attempt against its own timer', () => {
-    // 1490 of 1440 s is 3.5% over; 2020 of 1980 s only 2%.
     const mos = run('mos', 21, 1490, 3);
     const nl = run('nl', 21, 2020, 4);
     const bounty = openBounty([run('nl', 20, 1900, 1), mos, nl], timers, NOW);
@@ -183,7 +181,6 @@ describe('mostRuns', () => {
 
     expect(mostRuns(runs, timers).map(count => [count.key, count.runs, count.timed, count.highestTimed])).toEqual([
       ['Progtrix|Evermoon', 3, 2, 18],
-      // The same name on another realm is another character.
       ['Napim|Evermoon', 2, 1, 18],
       ['Napim|Tauri', 2, 1, 12]
     ]);

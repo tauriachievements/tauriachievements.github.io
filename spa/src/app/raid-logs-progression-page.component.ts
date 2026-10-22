@@ -144,7 +144,6 @@ export class RaidLogsProgressionPageComponent implements OnInit {
     return kill ? `${boss.shortName}: first kill ${new Date(kill.killedAt).toLocaleDateString('en-GB')}` : `${boss.shortName}: not killed yet`;
   }
 
-  /** The switch and the dropdowns keep the scroll position: no navigation, only the address bar changes. */
   private writeUrl(): void {
     const url = this.router.createUrlTree([], {
       relativeTo: this.route,

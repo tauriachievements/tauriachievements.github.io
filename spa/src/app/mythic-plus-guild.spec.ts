@@ -149,7 +149,6 @@ describe('previousOverallRank', () => {
 
 describe('guildRankChanges', () => {
   it('orders the guild by the previous overall ranks for its previous guild ranks', () => {
-    // Overall, B passed A; inside the guild that is one place each.
     const changes = guildRankChanges([
       { key: 'B', rank: 1, previousOverallRank: 40 },
       { key: 'A', rank: 2, previousOverallRank: 25 },

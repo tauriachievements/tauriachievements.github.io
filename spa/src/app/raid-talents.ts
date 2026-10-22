@@ -90,39 +90,28 @@ export function talentSamples(kills: readonly RaidKillDetails[]): TalentSample[]
   return samples;
 }
 
-/** How many of a ranking's players are its top players: a tenth, rounded up. */
 export function topPlayerCount(ranked: number): number {
   return ranked > 0 ? Math.max(1, Math.ceil(ranked * TOP_SHARE)) : 0;
 }
 
-// --- Picks per tier ---------------------------------------------------------------------
-
 export interface TalentChoice {
-  /** The column on the tier, from 0 at the left. */
   column: number;
-  /** Undefined when the talent table doesn't name it. */
   talent?: RaidTalent;
   count: number;
-  /** Of all picks: 0 to 1. */
   share: number;
   topCount: number;
-  /** Of the top players' picks: 0 to 1. */
   topShare: number;
 }
 
 export interface TalentTier {
-  /** From 0 at the top. */
   tier: number;
   level: number;
   choices: TalentChoice[];
-  /** Picks that left the tier empty. */
   none: number;
-  /** The most picked choice, the leftmost on a tie; undefined while nobody picked any. */
   leader?: TalentChoice;
 }
 
 export interface TalentPicks {
-  /** One per character per boss. */
   picks: number;
   topPicks: number;
   characters: number;
@@ -131,12 +120,10 @@ export interface TalentPicks {
 
 type TalentTiers = ReadonlyArray<ReadonlyArray<RaidTalent | undefined>>;
 
-/** The tiers of a spec's talent table; without one, seven unnamed tiers of three. */
 export function specTiers(table: RaidTalentTable, spec: Pick<RaidSpec, 'id'>): TalentTiers {
   return table.get(spec.id) ?? Array.from({ length: 7 }, () => [undefined, undefined, undefined]);
 }
 
-/** How often each talent was picked, by everyone and by the top players. Samples of one spec. */
 export function talentPicks(samples: readonly TalentSample[], tiers: TalentTiers, levels: readonly number[]): TalentPicks {
   const counts = tiers.map(choices => ({
     all: new Array<number>(Math.max(3, choices.length)).fill(0),
@@ -184,16 +171,11 @@ export function talentPicks(samples: readonly TalentSample[], tiers: TalentTiers
   };
 }
 
-/** How often players pick each tier's most picked talent, averaged over the tiers: 0 to 1. */
 export function talentAgreement(picks: TalentPicks): number {
   const shares = picks.tiers.flatMap(tier => tier.leader ? [tier.leader.share] : []);
   return shares.length ? shares.reduce((sum, share) => sum + share, 0) / shares.length : 0;
 }
 
-/**
- * How a talentAgreement reads: most specs land between half and 85%. Judged on the whole percent
- * shown beside it, so "80%" never reads as Mixed.
- */
 export function agreementLabel(agreement: number): string {
   const percent = Math.round(agreement * 100);
   return percent >= 80 ? 'Settled' : percent >= 65 ? 'Mixed' : 'Wide open';
@@ -202,14 +184,9 @@ export function agreementLabel(agreement: number): string {
 export interface TalentEdge {
   tier: TalentTier;
   choice: TalentChoice;
-  /** The top players' share minus everyone's. */
   difference: number;
 }
 
-/**
- * The talent the top players pick furthest above everyone else (`more`), or below. Nothing when
- * there are fewer than five top picks, or no talent differs by five points.
- */
 export function topPlayerEdge(picks: TalentPicks, direction: 'more' | 'less'): TalentEdge | undefined {
   if (picks.topPicks < 5) {
     return undefined;
@@ -228,39 +205,31 @@ export function topPlayerEdge(picks: TalentPicks, direction: 'more' | 'less'): T
   return edge;
 }
 
-/** The tier whose most picked talent has the smallest share: where players agree least. */
 export function mostContestedTier(picks: TalentPicks): TalentTier | undefined {
   return picks.tiers.reduce<TalentTier | undefined>((found, tier) =>
     tier.leader && (!found || tier.leader.share < found.leader!.share) ? tier : found, undefined);
 }
 
-/** The tier whose most picked talent has the largest share: where players agree most. */
 export function mostSettledTier(picks: TalentPicks): TalentTier | undefined {
   return picks.tiers.reduce<TalentTier | undefined>((found, tier) =>
     tier.leader && (!found || tier.leader.share > found.leader!.share) ? tier : found, undefined);
 }
 
-// --- Builds -----------------------------------------------------------------------------
-
 export interface TalentBuild {
-  /** The column on each tier, as RaidMember.talents has it. */
   talents: string;
   count: number;
   share: number;
   topCount: number;
   topShare: number;
   characters: number;
-  /** The pick closest to the best on its boss: the build's best showing. */
   best: TalentSample;
 }
 
 export interface BuildSummary {
   picks: number;
-  /** Every build seen, most picked first. */
   builds: TalentBuild[];
 }
 
-/** Every full build played, most picked first, then most picked by the top players. Samples of one spec. */
 export function talentBuilds(samples: readonly TalentSample[]): BuildSummary {
   const builds = new Map<string, { count: number; topCount: number; characters: Set<string>; best: TalentSample }>();
   let topPicks = 0;
@@ -300,24 +269,18 @@ export function talentBuilds(samples: readonly TalentSample[]): BuildSummary {
   };
 }
 
-/** The talent picked on each tier of a build; undefined for an empty tier or one the table lacks. */
 export function buildTalents(talents: string, tiers: TalentTiers): Array<RaidTalent | undefined> {
   return tiers.map((choices, tier) => choices[Number(talents[tier])]);
 }
 
-// --- Boss by boss -----------------------------------------------------------------------
-
 export interface BossTalentShares {
   boss: RaidBoss;
   picks: number;
-  /** By tier, then column: the share of this boss's picks. */
   shares: number[][];
-  /** The same over the spec's other bosses together. */
   elsewhere: number[][];
   elsewherePicks: number;
 }
 
-/** Each boss's talent shares, beside the other bosses'. Samples of one spec. */
 export function bossTalentShares(samples: readonly TalentSample[], bosses: readonly RaidBoss[], tiers: TalentTiers): BossTalentShares[] {
   const empty = () => tiers.map(choices => new Array<number>(Math.max(3, choices.length)).fill(0));
   const counts = bosses.map(() => ({ picks: 0, columns: empty() }));
@@ -361,10 +324,6 @@ export interface NotablePick {
   difference: number;
 }
 
-/**
- * The talents picked on a boss NOTABLE_DIFFERENCE or more above the other bosses, the biggest
- * difference first. Nothing when either side has fewer than NOTABLE_MIN_PICKS picks.
- */
 export function notablePicks(shares: BossTalentShares): NotablePick[] {
   if (shares.picks < NOTABLE_MIN_PICKS || shares.elsewherePicks < NOTABLE_MIN_PICKS) {
     return [];
@@ -379,24 +338,12 @@ export function notablePicks(shares: BossTalentShares): NotablePick[] {
     .sort((a, b) => b.difference - a.difference || a.tier - b.tier);
 }
 
-// --- Changing talents between bosses ----------------------------------------------------
-
 export interface TalentSwaps {
-  /** The characters the counts are out of. */
   characters: number;
-  /** Those who changed at least one tier. */
   changed: number;
-  /** By tier: those who changed it. */
   tiers: number[];
 }
 
-/**
- * How often players change talents between bosses. Samples of one spec.
- *
- * Without a boss: of the characters with picks on two or more bosses, those who picked more than
- * one talent on a tier. With one: of the characters with picks on it and on another boss, those
- * whose pick there isn't their usual one, the pick they made most often on the other bosses.
- */
 export function talentSwaps(samples: readonly TalentSample[], tierCount: number, boss?: RaidBoss): TalentSwaps {
   const byCharacter = new Map<string, TalentSample[]>();
   for (const sample of samples) {
@@ -434,7 +381,6 @@ export function talentSwaps(samples: readonly TalentSample[], tierCount: number,
   return result;
 }
 
-/** The pick (or picks, on a tie) made most often on a tier. */
 function usualPicks(samples: readonly TalentSample[], tier: number): Set<string> {
   const counts = new Map<string, number>();
   for (const sample of samples) {
@@ -444,18 +390,14 @@ function usualPicks(samples: readonly TalentSample[], tier: number): Set<string>
   return new Set([...counts].filter(([, count]) => count === most).map(([pick]) => pick));
 }
 
-// --- Every spec at a glance -------------------------------------------------------------
-
 export interface SpecTalentSummary {
   spec: RaidSpec;
   picks: TalentPicks;
   agreement: number;
-  /** The most picked build; undefined without picks. */
   topBuild?: TalentBuild;
   buildCount: number;
 }
 
-/** Each spec's picks, in the order given; a spec nobody played has none. */
 export function specTalentSummaries(samples: readonly TalentSample[], specs: readonly RaidSpec[], table: RaidTalentTable): SpecTalentSummary[] {
   const bySpec = new Map<RaidSpec, TalentSample[]>();
   for (const sample of samples) {
@@ -487,9 +429,6 @@ export function sortByPerformance<T extends { spec: RaidSpec }>(
   return [...items].sort((a, b) => (performance.get(b.spec) ?? 0) - (performance.get(a.spec) ?? 0));
 }
 
-// --- Formatting -------------------------------------------------------------------------
-
-/** `57%`; `<1%` for a share above 0 that would round to it. */
 export function formatShare(share: number): string {
   if (!(share > 0)) {
     return '0%';
@@ -498,7 +437,6 @@ export function formatShare(share: number): string {
   return percent < 1 ? '<1%' : `${percent}%`;
 }
 
-/** `+23`, `−8`: a difference between two shares, in percentage points. */
 export function formatPoints(difference: number): string {
   const points = Math.round(difference * 100);
   return points > 0 ? `+${points}` : points < 0 ? `−${-points}` : '0';

@@ -119,8 +119,6 @@ export class DataSyncService {
 
       this.updateProgress(false, players.length, totalPlayerCount, `Sync complete! ${players.length} players loaded.`);
     } catch (error) {
-      // An upgrade that fails leaves the head data on screen, so this is only fatal
-      // when there was nothing to show in the first place.
       this.updateProgress(false, alreadyLoaded, this.totalPlayerCount$.value, alreadyLoaded > 0 ? '' : 'Sync failed. See console for details.');
       throw error;
     }

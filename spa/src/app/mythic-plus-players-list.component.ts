@@ -44,11 +44,9 @@ export class MythicPlusPlayersListComponent {
         : '0.0 score since the last scan';
   }
 
-  /** The highlighted player already scrolled to, so paging back to them doesn't scroll again. */
   private scrolledTo?: string;
 
   constructor() {
-    // Bring the highlighted player into view once their row is on the page.
     afterRenderEffect(() => {
       const key = this.highlightKey();
       if (!key || key === this.scrolledTo || !this.rows().some(row => row.key === key)) {
@@ -60,7 +58,6 @@ export class MythicPlusPlayersListComponent {
     });
   }
 
-  /** A click anywhere on a table row or card; the links inside them are links of their own. */
   openProfile(row: PlayerRow): void {
     if (this.pickMode()) {
       this.pick.emit(row);
@@ -69,7 +66,6 @@ export class MythicPlusPlayersListComponent {
     this.router.navigate(row.member.profileLink);
   }
 
-  /** A name link: in pick mode it picks, otherwise it opens the profile as a link. */
   onLink(event: Event, row: PlayerRow): void {
     event.stopPropagation();
     if (this.pickMode()) {
@@ -84,7 +80,6 @@ export class MythicPlusPlayersListComponent {
       : '';
   }
 
-  /** The dungeons a card lists: only those the player has a run in. */
   playedBests(row: PlayerRow): BestRunCell[] {
     return row.bests.filter((best): best is BestRunCell => best !== undefined);
   }

@@ -37,15 +37,12 @@ export class UpdateBarComponent {
       return [section.id, `calc(60px + ${Math.ceil(longestLabel * 1.2)}ch)`] as const;
     })
   );
-  /** The section whose dropdown is open, if any. */
   protected readonly openSectionId = signal<string | null>(null);
-  /** Whether the side drawer, the menu on narrow screens, is open. */
   protected readonly drawerOpen = signal(false);
 
   private readonly drawer = viewChild.required<ElementRef<HTMLDialogElement>>('drawer');
   private readonly router = inject(Router);
   private readonly host: HTMLElement = inject(ElementRef<HTMLElement>).nativeElement;
-  /** A section opened by pointing at it; the click that usually follows keeps it open. */
   private hoverOpenedId: string | null = null;
 
   private readonly url = toSignal(
@@ -56,12 +53,9 @@ export class UpdateBarComponent {
     { initialValue: this.router.url }
   );
 
-  /** Where the current page sits in the navigation. */
   protected readonly location = computed(() => findNavLocation(this.url()));
 
-  /** The menu button shows the current page; off the navigation it just reads "Menu". */
   protected readonly menuText = computed(() => this.location()?.page.label ?? 'Menu');
-  /** The menu button's name, which keeps its visible text. */
   protected readonly menuLabel = computed(() => (this.location() ? `Menu: ${this.menuText()}` : null));
 
   openDrawer(): void {
@@ -73,7 +67,6 @@ export class UpdateBarComponent {
     }
     this.drawerOpen.set(true);
 
-    // The list is taller than a phone; start with the current page in view.
     const list = dialog.querySelector<HTMLElement>('.site-drawer-nav');
     const current = list?.querySelector<HTMLElement>('.is-current');
     if (list && current) {
@@ -86,11 +79,9 @@ export class UpdateBarComponent {
     if (dialog.open) {
       dialog.close();
     }
-    // The dialog's close event comes a task later; it also covers Escape.
     this.drawerOpen.set(false);
   }
 
-  /** The drawer fills the dialog, so a click that lands on the dialog itself is on the backdrop. */
   onDrawerClick(event: MouseEvent): void {
     if (event.target === event.currentTarget) {
       this.closeDrawer();
@@ -106,7 +97,6 @@ export class UpdateBarComponent {
     }
   }
 
-  /** Mouse users can browse the menus without clicking; touch and keyboard users still toggle them. */
   onTriggerPointerEnter(section: NavSection, event: PointerEvent): void {
     if (event.pointerType !== 'mouse') {
       return;
@@ -116,14 +106,12 @@ export class UpdateBarComponent {
     this.openSectionId.set(section.id);
   }
 
-  /** Keep the menu open while the pointer is over either its trigger or its dropdown. */
   onSectionPointerLeave(section: NavSection, event: PointerEvent): void {
     if (event.pointerType === 'mouse' && this.openSectionId() === section.id) {
       this.closeMenu();
     }
   }
 
-  /** Tabbing out of a section closes its dropdown. Clicks elsewhere are handled on the document. */
   onSectionFocusOut(section: NavSection, event: FocusEvent): void {
     const next = event.relatedTarget;
     const item = event.currentTarget as HTMLElement;
@@ -161,8 +149,6 @@ export class UpdateBarComponent {
     }
   }
 
-  // Looked up by id, not by an open class: the click that opens a section reaches the document
-  // before the change is rendered.
   private openSectionItem(): HTMLElement | null {
     const openId = this.openSectionId();
     return openId === null ? null : this.host.querySelector<HTMLElement>(`[data-nav-section="${openId}"]`);

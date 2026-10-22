@@ -8,14 +8,11 @@ export const RAID_TALENTS_PATH = `${RAID_LOGS_DATA_DIR}/talents.json`;
 
 export const RAID_TALENT_TOOLTIPS_PATH = `${RAID_LOGS_DATA_DIR}/talent-tooltips.json`;
 
-/** Written at build time by scripts/generate-raid-genders.js. */
 export const RAID_GENDERS_PATH = 'assets/data/raid-genders.json';
 
 export type RaidRole = 'tank' | 'healer' | 'dps';
 export type RaidMetric = 'dps' | 'hps';
 export type RoleFilter = RaidRole | 'all';
-
-// --- File format ------------------------------------------------------------------------
 
 export interface RaidDifficultyEntry {
   id: number;
@@ -38,10 +35,8 @@ export interface RaidSpecEntry {
   role: RaidRole;
 }
 
-/** `[name, realm, faction, guildId]`; an empty name is a guild that could not be named. */
 export type RaidGuildEntry = [name: string, realm: string, faction: number, id: number];
 
-/** `[realm, logId, boss, difficultyId, killedAtUnix, fightMs, guild, faction, wipes, deaths, members]` */
 export type RaidIndexLogEntry = [
   realm: string,
   logId: number,
@@ -56,7 +51,6 @@ export type RaidIndexLogEntry = [
   members: number
 ];
 
-/** `[name, realm, class, spec, perSecond, logRealm, logId]` */
 export type RaidPerformerEntry = [
   name: string,
   realm: string,
@@ -74,13 +68,11 @@ export interface RaidTopEntry {
   hps: RaidPerformerEntry | null;
 }
 
-/** `[id, name, quality, icon]` */
 export type RaidItemEntry = [id: number, name: string, quality: number, icon: string];
 
 export interface RaidLogsIndexFile {
   version: number;
   generatedAt: string;
-  /** The export the `newLogs` are new to; missing on a first export. */
   previousGeneratedAt?: string;
   raid: { id: number; slug: string; name: string };
   difficulties: RaidDifficultyEntry[];
@@ -88,21 +80,13 @@ export interface RaidLogsIndexFile {
   specs: RaidSpecEntry[];
   guilds: RaidGuildEntry[];
   logs: RaidIndexLogEntry[];
-  /** `[realm, logId]`: the kills added since `previousGeneratedAt`. */
   newLogs?: Array<[realm: string, logId: number]>;
   top: RaidTopEntry[];
   items: RaidItemEntry[];
 }
 
-/** `[name, realm, class, race, gender, guild]` */
 export type RaidPlayerEntry = [name: string, realm: string, classId: number, race: number, gender: number, guild: string];
 
-/**
- * `[player, spec, ilvl, damage, healing, absorbs, overhealing, damageTaken, interrupts, dispels,
- * talents, [trinket, ...]]`. `talents` is the column picked on each tier, top to bottom: `0` to
- * `2` from the left, `.` for none; trinkets are positions in the file's `trinkets`. Files of
- * format version 1 stop after `dispels`.
- */
 export type RaidMemberEntry = [
   player: number,
   spec: number,
@@ -118,13 +102,10 @@ export type RaidMemberEntry = [
   trinkets?: number[]
 ];
 
-/** `[id, itemLevel, name, quality, icon]`: one item worn at one item level. */
 export type RaidTrinketEntry = [id: number, itemLevel: number, name: string, quality: number, icon: string];
 
-/** `[spellId, name, icon]` */
 export type RaidTalentEntry = [spellId: number, name: string, icon: string];
 
-/** Each spec's tiers, top to bottom, each with its choices left to right (null for none). */
 export interface RaidTalentsFile {
   version: number;
   specs: Array<[specId: number, tiers: Array<Array<RaidTalentEntry | null>>]>;
@@ -137,7 +118,6 @@ export interface RaidTalentTooltipsFile {
   spells: RaidTalentTooltipEntry[];
 }
 
-/** `[realm, logId, killedAtUnix, fightMs, guild, faction, wipes, deaths, resurrects, members, items]` */
 export type RaidBossLogEntry = [
   realm: string,
   logId: number,
@@ -152,10 +132,6 @@ export type RaidBossLogEntry = [
   items: number[]
 ];
 
-/**
- * The ladder's gender (Players.csv) for the raid characters whose gender the raid logs have
- * wrong; the API reports nearly everyone as male. Names by realm.
- */
 export interface RaidGendersFile {
   v: number;
   female: Record<string, string[]>;
@@ -168,12 +144,9 @@ export interface RaidBossFile {
   difficulty: string;
   guilds: RaidGuildEntry[];
   players: RaidPlayerEntry[];
-  /** Missing in format version 1. */
   trinkets?: RaidTrinketEntry[];
   logs: RaidBossLogEntry[];
 }
-
-// --- Decoded ----------------------------------------------------------------------------
 
 export interface RaidDifficulty extends RaidDifficultyEntry {}
 
@@ -181,9 +154,7 @@ export interface RaidBoss {
   id: number;
   slug: string;
   name: string;
-  /** "Il'gynoth" for "Il'gynoth, The Heart of Corruption". */
   shortName: string;
-  /** Position in the raid, from 0. */
   index: number;
   portrait: string;
 }
@@ -225,13 +196,11 @@ export interface RaidTrinket extends RaidItem {
 }
 
 export interface RaidTalent {
-  /** The spell, as TauriShoot's `?spell=` names it. */
   id: number;
   name: string;
   icon: string;
 }
 
-/** By spec id: the tiers top to bottom, each with its choices left to right. */
 export type RaidTalentTable = ReadonlyMap<number, ReadonlyArray<ReadonlyArray<RaidTalent | undefined>>>;
 
 export interface RaidTalentTooltip {
@@ -241,16 +210,13 @@ export interface RaidTalentTooltip {
 
 export type RaidTalentTooltips = ReadonlyMap<number, RaidTalentTooltip>;
 
-/** A kill as the index lists it. */
 export interface RaidKill {
   realm: string;
   logId: number;
   boss: RaidBoss;
   difficulty: RaidDifficulty;
-  /** Milliseconds since the epoch. */
   killedAt: number;
   fightMs: number;
-  /** Undefined for a pickup group. A guild that could not be named has an empty name. */
   guild?: RaidGuild;
   faction: number;
   wipes: number;
@@ -268,9 +234,7 @@ export interface RaidCharacter {
 }
 
 export interface RaidMember {
-  /** One object per character per boss file, so it can key maps. */
   character: RaidCharacter;
-  /** Undefined for the odd member whose spec belongs to another class. */
   spec?: RaidSpec;
   itemLevel: number;
   damage: number;
@@ -281,15 +245,11 @@ export interface RaidMember {
   interrupts: number;
   dispels: number;
   dps: number;
-  /** Healing plus absorbs, per second. */
   hps: number;
-  /** The column picked on each talent tier (see RaidMemberEntry); empty when unknown. */
   talents: string;
-  /** None to two, shared by every member wearing the same item at the same level. */
   trinkets: RaidTrinket[];
 }
 
-/** A kill with everything the boss file knows about it. */
 export interface RaidKillDetails extends Omit<RaidKill, 'memberCount'> {
   resurrects: number;
   members: RaidMember[];
@@ -298,21 +258,16 @@ export interface RaidKillDetails extends Omit<RaidKill, 'memberCount'> {
 
 export interface RaidLogsIndex {
   generatedAt?: Date;
-  /** The export before this one; undefined when there is nothing to compare with. */
   previousGeneratedAt?: Date;
-  /** The kills added since `previousGeneratedAt`, by logKey. */
   newLogs: ReadonlySet<string>;
   raid: { id: number; slug: string; name: string };
   difficulties: RaidDifficulty[];
   bosses: RaidBoss[];
   specs: ReadonlyMap<number, RaidSpec>;
-  /** Every kill, oldest first. */
   kills: RaidKill[];
   items: ReadonlyMap<number, RaidItem>;
   top: ReadonlyMap<string, { dps?: RaidPerformer; hps?: RaidPerformer }>;
 }
-
-// --- Static lookups ---------------------------------------------------------------------
 
 const BOSS_PORTRAITS: Readonly<Record<string, string>> = {
   nythendra: 'assets/emerald-nightmare/01-nythendra.png',
@@ -333,13 +288,8 @@ export function bossShortName(boss: { slug: string; name: string }): string {
   return BOSS_SHORT_NAMES[boss.slug] ?? boss.name.split(',')[0].trim();
 }
 
-/**
- * The order the progress squares and the per-boss bars show the bosses in: the order raiders kill
- * them, not the Dungeon Journal's that the files use.
- */
 const KILL_ORDER: ReadonlyArray<string> = ['nythendra', 'ursoc', 'dragons-of-nightmare', 'elerethe-renferal', 'ilgynoth', 'cenarius', 'xavius'];
 
-/** The bosses in kill order. One the order doesn't name goes after them, in raid order. */
 export function bossesInKillOrder<T extends Pick<RaidBoss, 'slug' | 'index'>>(bosses: readonly T[]): T[] {
   const place = (boss: T) => {
     const position = KILL_ORDER.indexOf(boss.slug);
@@ -350,24 +300,20 @@ export function bossesInKillOrder<T extends Pick<RaidBoss, 'slug' | 'index'>>(bo
 
 export const FACTION_NAMES: Readonly<Record<number, string>> = { 0: 'Alliance', 1: 'Horde' };
 
-/** The realms the raid logs cover, for realm filters; `realmSlug` of one is its filter value. */
 export const RAID_REALMS: ReadonlyArray<string> = ['Evermoon', 'Tauri', 'WoD'];
 
 export const ROLE_NAMES: Readonly<Record<RaidRole, string>> = { tank: 'Tank', healer: 'Healer', dps: 'Damage' };
 
-/** WoW's item quality colours, poor to heirloom. */
 export const ITEM_QUALITY_COLORS: ReadonlyArray<string> = [
   '#9d9d9d', '#ffffff', '#1eff00', '#0070dd', '#a335ee', '#ff8000', '#e6cc80', '#00ccff'
 ];
 
 const ICON_BASE = 'https://legion-static.tauri.hu/images/icons/';
 
-/** TauriShoot's icons: medium is 36 px square, large 56. */
 export function itemIconUrl(icon: string, size: 'medium' | 'large' = 'large'): string {
   return `${ICON_BASE}${size}/${icon || 'inv_misc_questionmark'}.png`;
 }
 
-/** For an icon shown about 22 px wide: the medium one, the large one on a sharper screen. */
 export function iconSrcset(icon: string): string {
   return `${itemIconUrl(icon, 'medium')} 36w, ${itemIconUrl(icon)} 56w`;
 }
@@ -379,8 +325,6 @@ export function itemUrl(itemId: number): string {
 export function spellUrl(spellId: number): string {
   return `https://legion-shoot.tauri.hu/?spell=${spellId}`;
 }
-
-// --- Decoding ---------------------------------------------------------------------------
 
 export function decodeIndex(file: RaidLogsIndexFile): RaidLogsIndex {
   const generatedAt = new Date(file.generatedAt);
@@ -443,7 +387,6 @@ export function decodeIndex(file: RaidLogsIndexFile): RaidLogsIndex {
   };
 }
 
-/** Decodes a boss file. Each character becomes one object, shared by all of its kills. */
 export function decodeBossFile(
   file: RaidBossFile,
   boss: RaidBoss,
@@ -513,10 +456,6 @@ export function decodeTalentTooltips(file: RaidTalentTooltipsFile): RaidTalentTo
   return new Map(file.spells.map(([spellId, details, description]) => [spellId, { details: details.join(' · '), description }]));
 }
 
-/**
- * The talent a member picked on each tier, top to bottom; undefined for a tier left empty or a
- * column the table doesn't have. Nothing when the log has no talents or the spec no table.
- */
 export function memberTalents(member: Pick<RaidMember, 'spec' | 'talents'>, table: RaidTalentTable): Array<RaidTalent | undefined> {
   const tiers = member.spec ? table.get(member.spec.id) : undefined;
   if (!tiers || !member.talents) {
@@ -526,7 +465,6 @@ export function memberTalents(member: Pick<RaidMember, 'spec' | 'talents'>, tabl
   return [...member.talents].map((column, tier) => tiers[tier]?.[Number(column)]);
 }
 
-/** The corrected gender, 0 male and 1 female, by characterKey. */
 export function decodeGenders(file: RaidGendersFile): Map<string, number> {
   const genders = new Map<string, number>();
   for (const [gender, byRealm] of [[0, file.male], [1, file.female]] as const) {
@@ -561,8 +499,6 @@ function decodePerformer(
   return { name, realm, classId, spec: specs.get(specId), perSecond, logRealm, logId };
 }
 
-// --- Rankings ---------------------------------------------------------------------------
-
 export interface RankingFilter {
   classId?: number;
   specId?: number;
@@ -577,7 +513,6 @@ export interface RankedPerformance {
   value: number;
 }
 
-/** Who a metric ranks: healers by healing, everyone else by damage. */
 export function countsFor(metric: RaidMetric, spec: RaidSpec | undefined): boolean {
   if (!spec) {
     return false;
@@ -586,10 +521,6 @@ export function countsFor(metric: RaidMetric, spec: RaidSpec | undefined): boole
   return metric === 'hps' ? spec.role === 'healer' : spec.role !== 'healer';
 }
 
-/**
- * Each character's best kill by the metric, best first. With a spec filter a character is ranked
- * on kills played as that spec only. Ties keep the earlier kill first.
- */
 export function rankCharacters(
   kills: readonly RaidKillDetails[],
   metric: RaidMetric,
@@ -624,20 +555,11 @@ function matchesFilter(member: RaidMember, filter: RankingFilter): boolean {
 }
 
 export interface BossStanding {
-  /** From 1; undefined while the character has no kill the ranking counts. */
   rank?: number;
-  /** How many characters the ranking holds. */
   ranked: number;
-  /** The character's best over the best in the ranking: 0 to 1. */
   relative: number;
 }
 
-/**
- * Where one character's best kill of a boss stands among the characters rankCharacters ranks
- * with the filter: their rank, out of how many, and their best over the ranking's best. Without
- * a filter the relative value is the one the character's score counts for the boss; with a class,
- * every number is among that class only.
- */
 export function bossStanding(
   kills: readonly RaidKillDetails[],
   metric: RaidMetric,
@@ -650,15 +572,11 @@ export function bossStanding(
   return { rank: own?.rank, ranked: ranking.length, relative: own && top > 0 ? own.value / top : 0 };
 }
 
-// --- Character score --------------------------------------------------------------------
-
-/** The score of a character who did the most damage (or healing) on every boss. */
 export const MAX_SCORE = 6969;
 
 const ALLIANCE_RACES: ReadonlySet<number> = new Set([1, 3, 4, 7, 11, 22, 25]);
 const HORDE_RACES: ReadonlySet<number> = new Set([2, 5, 6, 8, 9, 10, 26]);
 
-/** 0 Alliance, 1 Horde; undefined for a race on neither side (a Pandaren still on the island). */
 export function raceFaction(race: number): number | undefined {
   return ALLIANCE_RACES.has(race) ? 0 : HORDE_RACES.has(race) ? 1 : undefined;
 }
@@ -668,10 +586,6 @@ interface Appearance {
   kill: RaidKillDetails;
 }
 
-/**
- * characterKey, worked out once per character object: scoring needs it for every member of every
- * kill, twice when the changes since the previous scan show, and the strings were most of its time.
- */
 const characterKeys = new WeakMap<RaidCharacter, string>();
 
 function cachedCharacterKey(character: RaidCharacter): string {
@@ -685,27 +599,19 @@ function cachedCharacterKey(character: RaidCharacter): string {
 
 export interface BossPerformance {
   boss: RaidBoss;
-  /** The character's best kill of the boss by the metric; undefined while they have none. */
   best?: Appearance;
   value: number;
-  /** The value over the best anyone did on the boss: 0 to 1. */
   relative: number;
 }
 
 export interface CharacterScore {
-  /** As the character's latest kill has it, so the guild is the current one. */
   character: RaidCharacter;
-  /** The spec played most often, the latest kill breaking a tie. */
   spec?: RaidSpec;
   faction: number;
-  /** At the latest kill. */
   itemLevel: number;
-  /** One per boss, in raid order. */
   bosses: BossPerformance[];
   killed: number;
-  /** The average of the bosses' relative values, a boss not killed counting 0: 0 to 1. */
   performance: number;
-  /** MAX_SCORE times the performance, floored. */
   score: number;
 }
 
@@ -713,15 +619,6 @@ export interface RankedScore extends CharacterScore {
   rank: number;
 }
 
-/**
- * Every character's score on one difficulty, best first. On each boss the character's best kill
- * is divided by the best anyone did there, so a boss where big numbers come easy weighs no more
- * than any other; the average over the bosses, times MAX_SCORE, is the score. A boss nobody has
- * killed is left out of the average. `bossKills` holds each boss's kills by boss index.
- *
- * With a spec, characters are scored on the kills they played as that spec only, as the M+
- * leaderboard does; the best on each boss is still the best anyone did there, any spec.
- */
 export function scoreCharacters(
   bosses: readonly RaidBoss[],
   bossKills: ReadonlyArray<readonly RaidKillDetails[]>,
@@ -734,7 +631,6 @@ export function scoreCharacters(
     bests: Array<Appearance | undefined>;
   }
 
-  // Each boss file has its own character objects, so characters are keyed by name and realm.
   const tallies = new Map<string, Tally>();
   const tops = bosses.map(() => 0);
 
@@ -805,13 +701,9 @@ export function scoreCharacters(
 }
 
 function toScore(performance: number): number {
-  // A float sum can land a hair under a whole number; the nudge keeps that from costing a point.
   return Math.floor(MAX_SCORE * performance + 1e-9);
 }
 
-// --- Spec performance -------------------------------------------------------------------
-
-/** The metric a spec is scored on, as the leaderboard ranks it: healing for healers, damage for the rest. */
 export function specMetric(spec: RaidSpec): RaidMetric {
   return spec.role === 'healer' ? 'hps' : 'dps';
 }
@@ -821,16 +713,11 @@ export interface SpecCharacterScore {
   score: number;
 }
 
-/**
- * Every character's score as each spec they played, best first: the score the leaderboard shows
- * with that spec picked (scoreCharacters with its specId), for every spec in one pass.
- */
 export function scoresBySpec(
   bosses: readonly RaidBoss[],
   bossKills: ReadonlyArray<readonly RaidKillDetails[]>
 ): Map<RaidSpec, SpecCharacterScore[]> {
   const tops: Record<RaidMetric, number[]> = { dps: bosses.map(() => 0), hps: bosses.map(() => 0) };
-  // Each character's best value on each boss, by spec and characterKey.
   const bests = new Map<RaidSpec, Map<string, { character: RaidCharacter; values: number[] }>>();
 
   bosses.forEach((boss, bossIndex) => {
@@ -881,22 +768,15 @@ export function scoresBySpec(
   return scores;
 }
 
-/**
- * How many of a spec's best scores its performance averages. Averaging everyone would mostly
- * measure attendance, as a character who killed one boss scores a seventh of one who killed all.
- */
 export const SPEC_TOP_SCORES = 10;
 
-/** The average of the best `count` scores, or of all of them when there are fewer; 0 for none. */
 export function topAverage(scores: readonly number[], count: number = SPEC_TOP_SCORES): number {
   const top = [...scores].sort((a, b) => b - a).slice(0, count);
   return top.length ? Math.round(top.reduce((sum, score) => sum + score, 0) / top.length) : 0;
 }
 
 export interface SpecPerformance extends SpecDefinition {
-  /** Characters scored as the spec. */
   count: number;
-  /** The topAverage of their scores; 0 when nobody played the spec. */
   score: number;
   best?: SpecCharacterScore;
 }
@@ -905,24 +785,16 @@ export interface ClassPerformance {
   classId: number;
   className: string;
   color: string;
-  /** Characters scored as any of the listed specs, each counted once. */
   count: number;
-  /** The topAverage of those characters, each at their best listed spec. */
   score: number;
   specs: SpecPerformance[];
 }
 
 export interface SpecPerformanceSummary {
-  /** Characters scored as any listed spec, each counted once. */
   characterCount: number;
   classes: ClassPerformance[];
 }
 
-/**
- * Each spec's performance, grouped by class like specPopularity: specs inside a class best first
- * (ties keep the game's order), and classes by their best spec, then their next one. Every Legion
- * spec of the role is listed, so a spec nobody played still shows, at 0.
- */
 export function specPerformance(
   scores: ReadonlyMap<RaidSpec, readonly SpecCharacterScore[]>,
   role?: RaidRole
@@ -978,14 +850,12 @@ export function specPerformance(
   return { characterCount: characters.size, classes };
 }
 
-/** Clean score gridlines (0, 1000, 2000, …), at most five steps, whose top value covers the best score. */
 export function scoreTicks(maxScore: number): number[] {
   const step = [100, 200, 250, 500, 1000, 2000].find(candidate => maxScore / candidate <= 5) ?? 2000;
   const top = Math.max(step, Math.ceil(maxScore / step) * step);
   return Array.from({ length: top / step + 1 }, (_, index) => index * step);
 }
 
-/** A gridline's score as the axis shows it: 500, 1k, 2.5k. */
 export function formatScoreTick(score: number): string {
   return score >= 1000 ? `${score / 1000}k` : String(score);
 }
@@ -995,7 +865,6 @@ export interface ScoreFilter {
   realm?: string;
 }
 
-/** The scores the filter lets through, ranked from 1. Each score is still measured against everyone. */
 export function rankScores(scores: readonly CharacterScore[], filter: ScoreFilter = {}): RankedScore[] {
   return scores
     .filter(entry => (filter.classId === undefined || entry.character.classId === filter.classId)
@@ -1003,13 +872,6 @@ export function rankScores(scores: readonly CharacterScore[], filter: ScoreFilte
     .map((entry, index) => ({ ...entry, rank: index + 1 }));
 }
 
-// --- Since the previous scan ------------------------------------------------------------
-
-/**
- * Each boss's kills as the previous export had them: without the ones it didn't have yet
- * (`newLogs`, by logKey). Scored and ranked like the current ones, they give the standings
- * that the rank and score changes measure from.
- */
 export function killsBefore(
   bossKills: ReadonlyArray<readonly RaidKillDetails[]>,
   newLogs: ReadonlySet<string>
@@ -1018,19 +880,11 @@ export function killsBefore(
 }
 
 export interface ScoreChange {
-  /** Ranks climbed since the previous ranking, negative for ranks lost. */
   rank: number;
-  /** Score gained, negative for score lost: a new best on a boss lowers everyone else's share of it. */
   score: number;
-  /** Not in the previous ranking: a first kill, or a first as the spec filtered on. Rank and score are 0. */
   isNew: boolean;
 }
 
-/**
- * How each character moved from one ranking to the other, by characterKey. Both have to be
- * ranked the same way (difficulty, metric, spec and filters). A character whose rank and score
- * held is left out.
- */
 export function scoreChanges(current: readonly RankedScore[], previous: readonly RankedScore[]): Map<string, ScoreChange> {
   const before = new Map(previous.map(entry => [cachedCharacterKey(entry.character), entry]));
   const changes = new Map<string, ScoreChange>();
@@ -1048,10 +902,6 @@ export function scoreChanges(current: readonly RankedScore[], previous: readonly
   return changes;
 }
 
-/**
- * The item quality whose colour shows a share of the best, as Warcraft Logs colours parses:
- * artifact for the best, then legendary from 95%, epic from 75%, rare from 50%, uncommon from 25%.
- */
 export function performanceQuality(relative: number): number {
   if (relative >= 1) {
     return 6;
@@ -1068,7 +918,6 @@ export function performanceQuality(relative: number): number {
   return relative >= .25 ? 2 : 0;
 }
 
-/** Shortest fight first; the earlier kill wins a tie. */
 export function fastestKills<T extends Pick<RaidKill, 'fightMs' | 'killedAt'>>(kills: readonly T[]): T[] {
   return [...kills].sort((a, b) => a.fightMs - b.fightMs || a.killedAt - b.killedAt);
 }
@@ -1080,19 +929,12 @@ export function latestKills<T extends Pick<RaidKill, 'killedAt'>>(kills: readonl
 export interface GuildProgress {
   rank: number;
   guild: RaidGuild;
-  /** The guild's first kill of each boss, by boss index; undefined while it is alive. */
   firsts: Array<RaidKill | undefined>;
   killed: number;
-  /** When the guild reached its current progress: its latest first kill. */
   progressedAt: number;
   kills: number;
 }
 
-/**
- * The guilds' progress on one difficulty: most bosses down first, then whoever got there first.
- * Pickup groups and guilds without a name don't take part. A guild is its name on its realm, so
- * a guild that was recreated under the same name keeps one row.
- */
 export function guildProgression(
   kills: readonly RaidKill[],
   difficultyId: number,
@@ -1132,13 +974,10 @@ export function guildProgression(
 }
 
 export interface ProgressionFilter {
-  /** 0 Alliance, 1 Horde (FACTION_NAMES). */
   faction?: number;
-  /** A realm's `realmSlug`. */
   realm?: string;
 }
 
-/** The guilds a filter keeps, ranked among themselves, as `rankScores` ranks characters. */
 export function filterProgression(rows: readonly GuildProgress[], filter: ProgressionFilter = {}): GuildProgress[] {
   return rows
     .filter(row => (filter.faction === undefined || row.guild.faction === filter.faction)
@@ -1146,16 +985,11 @@ export function filterProgression(rows: readonly GuildProgress[], filter: Progre
     .map((row, index) => ({ ...row, rank: index + 1 }));
 }
 
-/** The kill's place among the boss's kills on its difficulty by fight time, from 1. */
 export function speedRank(kill: Pick<RaidKill, 'realm' | 'logId'>, kills: readonly RaidKill[]): number {
   const fastest = fastestKills(kills);
   return fastest.findIndex(other => other.realm === kill.realm && other.logId === kill.logId) + 1;
 }
 
-/**
- * The hardest difficulty with at least one kill, else the first listed. The overview and boss
- * pages open on it.
- */
 export function defaultDifficulty(difficulties: readonly RaidDifficulty[]): RaidDifficulty | undefined {
   return [...difficulties].reverse().find(difficulty => difficulty.kills > 0) ?? difficulties[0];
 }
@@ -1164,9 +998,6 @@ export function parseRoleFilter(value: string | null | undefined): RoleFilter {
   return value === 'tank' || value === 'healer' || value === 'dps' ? value : 'all';
 }
 
-// --- Identity and links -----------------------------------------------------------------
-
-/** The realm as it appears in URLs: `evermoon`, `tauri`, `wod`. */
 export function realmSlug(realm: string): string {
   return realm.toLowerCase();
 }
@@ -1199,14 +1030,10 @@ export function raidCharacterLink(character: Pick<RaidCharacter, 'name' | 'realm
   return ['/raid-logs', 'character', realmSlug(character.realm), character.name];
 }
 
-// --- Formatting -------------------------------------------------------------------------
-
-/** `4:12`, or `1:02:05` past the hour. */
 export function formatFightTime(milliseconds: number): string {
   return formatClock(Math.round(milliseconds / 1000));
 }
 
-/** `594.2k`, `1.24M`: a per-second figure in a table cell. */
 export function formatPerSecond(value: number): string {
   if (!Number.isFinite(value) || value <= 0) {
     return '0';
@@ -1220,7 +1047,6 @@ export function formatPerSecond(value: number): string {
   return String(Math.round(value));
 }
 
-/** `63.0M`, `850k`: a fight's total damage or healing. */
 export function formatAmount(value: number): string {
   if (!Number.isFinite(value) || value <= 0) {
     return '0';
@@ -1237,7 +1063,6 @@ export function formatAmount(value: number): string {
   return String(Math.round(value));
 }
 
-/** `12 min ago`, `5 h ago`, `3 d ago`. */
 export function formatAgo(at: number, now: number): string {
   const minutes = Math.max(0, Math.floor((now - at) / 60_000));
   if (minutes < 1) {
@@ -1251,7 +1076,6 @@ export function formatAgo(at: number, now: number): string {
   return hours < 24 ? `${hours} h ago` : `${Math.floor(hours / 24)} d ago`;
 }
 
-/** Whether a name contains the typed text, ignoring case and accents (`sosa` finds Sósa). */
 export function nameMatches(name: string, query: string): boolean {
   const wanted = foldText(query.trim());
   return !wanted || foldText(name).includes(wanted);
