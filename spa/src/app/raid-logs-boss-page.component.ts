@@ -12,7 +12,7 @@ import { FilterDropdownCoordinatorService } from './filter-dropdown-coordinator.
 import { FilterDropdownOption, FilterDropdownValue } from './filter-dropdown.types';
 import { GlideDirective } from './glide.directive';
 import { IconTipsComponent } from './icon-tips.component';
-import { CLASS_NAMES } from './mythic-plus';
+import { CLASS_FILTER_OPTIONS } from './mythic-plus';
 import { RaidDifficultySwitchComponent } from './raid-difficulty-switch.component';
 import {
   ITEM_QUALITY_COLORS,
@@ -213,15 +213,7 @@ export class RaidLogsBossPageComponent {
     ];
   });
 
-  readonly classOptions: ReadonlyArray<FilterDropdownOption> = [
-    { value: undefined, label: 'All classes' },
-    ...Object.entries(CLASS_NAMES).map(([id, name]) => ({
-      value: Number(id),
-      label: name,
-      icon: getClassIconPath(Number(id)),
-      color: getClassColor(Number(id))
-    }))
-  ];
+  readonly classOptions = CLASS_FILTER_OPTIONS;
 
   /** Only the specs the tab ranks: healers on Healing, everyone else on Damage. */
   readonly specOptions = computed<FilterDropdownOption[]>(() => {

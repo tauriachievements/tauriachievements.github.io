@@ -54,8 +54,9 @@ difficulty, the page number. Defaults are left out of it.
 
   `syncQueryParams()` in `mythic-plus-page.component.ts` is the reference.
 - **Real navigation** is only for a change the Back button should undo. For example, on the
-  Talent Analytics page, picking a spec navigates, while difficulty and boss use
-  `replaceState`.
+  Talent Analytics page, opening a spec's card navigates, while difficulty, boss and class use
+  `replaceState`. On a spec's page, picking a class or pressing Reset navigates back to the
+  overview.
 - The router never sees parameters written with `replaceState`. When you build a link or
   navigation from the current state, spell out every parameter you want kept.
 
@@ -81,6 +82,7 @@ decision (ask first).
 | `app-update-bar` (`update-bar.component`) | the site header; every page renders it. `lastEditedLabel` / `lastEdited` set the timestamp on the right |
 | `nav-sections.ts` | the header's sections and pages, and route matching for deep routes (`includes`) |
 | `app-filter-dropdown` + `filter-dropdown.types.ts` | every dropdown filter. The page must list `FilterDropdownCoordinatorService` in its own `providers`, or it fails with NG0201 |
+| `CLASS_FILTER_OPTIONS` (`mythic-plus.ts`) | a class dropdown's options: "All classes", then every class with its icon and colour |
 | `app-mobile-filter-toggle` | folds a page's filters behind one button on phones |
 | `injectCompactViewport()` (`compact-viewport.ts`) | a signal that's true on phone-sized screens (`(max-width: 640px)`, or a wider query you pass) |
 | `appTapTooltip` | makes a hover tooltip open on tap on touch screens |

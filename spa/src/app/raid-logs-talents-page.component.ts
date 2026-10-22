@@ -8,9 +8,9 @@ import { BackToTopButtonComponent } from './back-to-top-button.component';
 import { getClassColor } from './class-colors';
 import { FilterDropdownComponent } from './filter-dropdown.component';
 import { FilterDropdownCoordinatorService } from './filter-dropdown-coordinator.service';
-import { FilterDropdownOption, FilterDropdownValue } from './filter-dropdown.types';
+import { FilterDropdownValue } from './filter-dropdown.types';
 import { IconTipsComponent } from './icon-tips.component';
-import { CLASS_NAMES } from './mythic-plus';
+import { CLASS_FILTER_OPTIONS, CLASS_NAMES } from './mythic-plus';
 import { RaidDifficultySwitchComponent } from './raid-difficulty-switch.component';
 import {
   RaidBoss,
@@ -18,7 +18,6 @@ import {
   RaidKillDetails,
   RaidLogsIndex,
   RaidRole,
-  RaidSpec,
   RaidTalent,
   RaidTalentTable,
   defaultDifficulty,
@@ -69,9 +68,6 @@ const MIN_SWAP_CHARACTERS = 5;
 
 /** A top-player share this far from everyone's is called out beside it. */
 const EDGE_POINTS = .05;
-
-/** Top players a spec needs for the overview's biggest top-player edge. */
-const EDGE_MIN_TOP_PICKS = 20;
 
 const ROLE_GROUPS: ReadonlyArray<{ role: RaidRole; title: string }> = [
   { role: 'dps', title: 'Damage' },
@@ -144,22 +140,6 @@ interface SpecCard extends SpecTalentSummary {
   consensus: Array<{ talent?: RaidTalent; share: number; level: number }>;
 }
 
-interface Highlight {
-  label: string;
-  spec: RaidSpec;
-  className: string;
-  color: string;
-  title: string;
-  text: string;
-}
-
-/**
- * /raid-logs/talents: what raiders pick on every talent tier, on one difficulty and one boss or
- * all of them (`?difficulty=`, `?boss=`). Without `?spec=` it shows every spec's most picked
- * talents; with one, that spec in detail: each tier's picks by everyone and by the top players,
- * the most played builds, how picks differ from boss to boss, and how often players change them.
- * Loads the index, talents.json and the difficulty's seven boss files.
- */
 @Component({
   selector: 'app-raid-logs-talents-page',
   standalone: true,
@@ -198,6 +178,7 @@ export class RaidLogsTalentsPageComponent {
   private readonly requestedDifficulty = signal(this.route.snapshot.queryParamMap.get('difficulty') ?? this.data.lastDifficulty());
   readonly specId = signal<number | undefined>(undefined);
   private readonly bossSlug = signal<string | undefined>(undefined);
+  private readonly classFilter = signal<number | undefined>(undefined);
 
   readonly difficulty = computed(() => {
     const difficulties = this.index()?.difficulties ?? [];
@@ -210,18 +191,24 @@ export class RaidLogsTalentsPageComponent {
     return id === undefined ? undefined : this.index()?.specs.get(id);
   });
   readonly specs = computed(() => [...(this.index()?.specs.values() ?? [])]);
+  readonly selectedClass = computed(() => this.spec()?.classId ?? this.classFilter());
+  readonly classFilterName = computed(() => {
+    const classId = this.classFilter();
+    return classId === undefined ? undefined : CLASS_NAMES[classId];
+  });
+  readonly hasFilters = computed(() => this.classFilter() !== undefined || this.spec() !== undefined || this.boss() !== undefined);
 
   /** Every character's talents on every boss of the difficulty, for every spec. */
   private readonly samples = computed(() => talentSamples(this.kills()));
   /** The bosses with kills on the difficulty; a boss without any can't be picked. */
   readonly bossesWithKills = computed(() => new Set(this.kills().map(kill => kill.boss)));
 
-  // --- Every spec ---
-
   readonly specGroups = computed(() => {
     const boss = this.boss();
+    const classId = this.classFilter();
     const samples = boss ? this.samples().filter(sample => sample.boss === boss) : this.samples();
-    const cards = specTalentSummaries(samples, this.specs(), this.talentTable()).map((summary): SpecCard => {
+    const specs = classId === undefined ? this.specs() : this.specs().filter(spec => spec.classId === classId);
+    const cards = specTalentSummaries(samples, specs, this.talentTable()).map((summary): SpecCard => {
       const className = CLASS_NAMES[summary.spec.classId] ?? 'Unknown';
       return {
         ...summary,
@@ -231,54 +218,10 @@ export class RaidLogsTalentsPageComponent {
         consensus: summary.picks.tiers.map(tier => ({ talent: tier.leader?.talent, share: tier.leader?.share ?? 0, level: tier.level }))
       };
     });
-    return ROLE_GROUPS.map(group => ({ ...group, cards: cards.filter(card => card.spec.role === group.role) }));
+    return ROLE_GROUPS
+      .map(group => ({ ...group, cards: cards.filter(card => card.spec.role === group.role) }))
+      .filter(group => group.cards.length);
   });
-
-  readonly highlights = computed<Highlight[]>(() => {
-    const cards = this.specGroups().flatMap(group => group.cards).filter(card => card.picks.characters >= 20);
-    if (!cards.length) {
-      return [];
-    }
-
-    const settled = cards.reduce((best, card) => card.agreement > best.agreement ? card : best);
-    const open = cards.reduce((best, card) => card.agreement < best.agreement ? card : best);
-    const highlights: Highlight[] = [
-      {
-        label: 'Most settled',
-        ...this.cardIdentity(settled),
-        title: `${formatShare(settled.agreement)} agreement`,
-        text: `${settled.spec.name} ${settled.className}s mostly play the same talents: the most played build alone is ${formatShare(settled.topBuild?.share ?? 0)} of them.`
-      },
-      {
-        label: 'Most open',
-        ...this.cardIdentity(open),
-        title: `${formatShare(open.agreement)} agreement`,
-        text: `${open.spec.name} ${open.className}s disagree the most: ${open.buildCount.toLocaleString('en-US')} different builds, and the most played is only ${formatShare(open.topBuild?.share ?? 0)} of them.`
-      }
-    ];
-
-    // The biggest gap between what the best players pick and what everyone picks, any spec. A
-    // spec with a handful of top players would win it on chance, so it needs EDGE_MIN_TOP_PICKS
-    // when any spec has them.
-    const edgesFrom = (minimum: number) => cards.flatMap(card => {
-      const edge = card.picks.topPicks >= minimum ? topPlayerEdge(card.picks, 'more') : undefined;
-      return edge ? [{ card, edge }] : [];
-    });
-    const strong = edgesFrom(EDGE_MIN_TOP_PICKS);
-    const edges = strong.length ? strong : edgesFrom(NOTABLE_MIN_PICKS);
-    if (edges.length) {
-      const { card, edge } = edges.reduce((best, entry) => entry.edge.difference > best.edge.difference ? entry : best);
-      highlights.push({
-        label: 'Biggest top-player edge',
-        ...this.cardIdentity(card),
-        title: edge.choice.talent?.name ?? 'A talent',
-        text: `${formatShare(edge.choice.topShare)} of the top 10% of ${card.spec.name} ${card.className}s take it, against ${formatShare(edge.choice.share)} of everyone.`
-      });
-    }
-    return highlights;
-  });
-
-  // --- One spec ---
 
   private readonly specSamples = computed(() => {
     const spec = this.spec();
@@ -503,16 +446,7 @@ export class RaidLogsTalentsPageComponent {
     })));
   });
 
-  readonly specOptions = computed<FilterDropdownOption[]>(() => [
-    { value: undefined, label: 'All specs' },
-    ...this.specs().map(spec => ({
-      value: spec.id,
-      label: `${spec.name} ${CLASS_NAMES[spec.classId] ?? ''}`.trim(),
-      icon: spec.icon,
-      color: this.classColor(spec.classId)
-    }))
-  ]);
-
+  readonly classOptions = CLASS_FILTER_OPTIONS;
   readonly notableDifference = Math.round(NOTABLE_DIFFERENCE * 100);
   readonly icon = itemIconUrl;
   readonly iconSrcset = iconSrcset;
@@ -531,13 +465,12 @@ export class RaidLogsTalentsPageComponent {
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe(table => this.talentTable.set(table));
 
-    // Picking a spec is a navigation (it can be gone back from); the router hands every one,
-    // the first included, to these signals. Difficulty and boss changes only rewrite the address.
     this.route.queryParamMap
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe(params => {
         this.specId.set(parseNumber(params.get('spec')));
         this.bossSlug.set(params.get('boss') ?? undefined);
+        this.classFilter.set(parseClass(params.get('class')));
         const difficulty = params.get('difficulty');
         if (difficulty) {
           this.requestedDifficulty.set(difficulty);
@@ -594,15 +527,22 @@ export class RaidLogsTalentsPageComponent {
     this.writeUrl();
   }
 
-  setSpec(value: FilterDropdownValue): void {
-    void this.router.navigate([], { relativeTo: this.route, queryParams: this.queryParams(typeof value === 'number' ? value : undefined) });
+  setClass(value: FilterDropdownValue): void {
+    this.classFilter.set(typeof value === 'number' ? value : undefined);
+    this.applyFilters();
   }
 
-  /** The query string of this view with the given spec; undefined for every spec. */
+  resetFilters(): void {
+    this.classFilter.set(undefined);
+    this.bossSlug.set(undefined);
+    this.applyFilters();
+  }
+
   queryParams(specId: number | undefined): Record<string, string | number | null> {
     return {
       difficulty: this.difficulty()?.slug ?? null,
       boss: this.boss()?.slug ?? null,
+      class: this.classFilter() ?? null,
       spec: specId ?? null
     };
   }
@@ -651,10 +591,6 @@ export class RaidLogsTalentsPageComponent {
     return entry.label;
   }
 
-  private cardIdentity(card: SpecCard): Pick<Highlight, 'spec' | 'className' | 'color'> {
-    return { spec: card.spec, className: card.className, color: card.color };
-  }
-
   private loadKills(index: RaidLogsIndex, difficulty: RaidDifficulty): void {
     this.killsSubscription?.unsubscribe();
     this.kills.set([]);
@@ -675,7 +611,14 @@ export class RaidLogsTalentsPageComponent {
       });
   }
 
-  /** Difficulty and boss keep the scroll position: no navigation, only the address bar changes. */
+  private applyFilters(): void {
+    if (this.specId() === undefined) {
+      this.writeUrl();
+    } else {
+      void this.router.navigate([], { relativeTo: this.route, queryParams: this.queryParams(undefined) });
+    }
+  }
+
   private writeUrl(): void {
     const url = this.router.createUrlTree([], { relativeTo: this.route, queryParams: this.queryParams(this.specId()) });
     this.location.replaceState(this.router.serializeUrl(url));
@@ -685,4 +628,9 @@ export class RaidLogsTalentsPageComponent {
 function parseNumber(value: string | null): number | undefined {
   const number = value === null ? NaN : Number(value);
   return Number.isInteger(number) ? number : undefined;
+}
+
+function parseClass(value: string | null): number | undefined {
+  const classId = parseNumber(value);
+  return classId !== undefined && CLASS_NAMES[classId] ? classId : undefined;
 }
