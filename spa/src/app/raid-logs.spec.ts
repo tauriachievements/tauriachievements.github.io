@@ -14,6 +14,7 @@ import {
   decodeIndex,
   decodeTalents,
   memberTalents,
+  bossShortName,
   bossStanding,
   bossesInKillOrder,
   characterKey,
@@ -114,6 +115,15 @@ const bossFile: RaidBossFile = {
 };
 
 const kills = decodeBossFile(bossFile, nythendra, mythic, index.specs);
+
+describe('bossShortName', () => {
+  it('cuts the name at its first comma, except for the bosses with a shorter name of their own', () => {
+    expect(bossShortName({ slug: 'ilgynoth', name: "Il'gynoth, The Heart of Corruption" })).toBe("Il'gynoth");
+    expect(bossShortName({ slug: 'ursoc', name: 'Ursoc' })).toBe('Ursoc');
+    expect(bossShortName({ slug: 'elerethe-renferal', name: 'Elerethe Renferal' })).toBe('Elerethe');
+    expect(bossShortName({ slug: 'dragons-of-nightmare', name: 'Dragons of Nightmare' })).toBe('Dragons');
+  });
+});
 
 describe('decodeIndex', () => {
   it('reads kills, guilds, the top performers and the loot', () => {

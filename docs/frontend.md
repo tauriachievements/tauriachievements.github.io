@@ -92,7 +92,7 @@ decision (ask first).
 | `class-colors.ts` | the one class-colour table: `getClassColor()` in code, `var(--class-<id>)` in SCSS |
 | `utils/armory.ts` | `getArmoryUrl()` for every armory link |
 | `utils/time-zone-label.ts` | the "GMT+2"-style label beside local times |
-| `raid-logs.ts` helpers | `nameMatches`, `realmSlug`, `RAID_REALMS` for name search and realm URLs; `parseRoleFilter` for `?role=` (`tank`, `healer`, `dps`) |
+| `raid-logs.ts` helpers | `nameMatches`, `realmSlug`, `RAID_REALMS` for name search and realm URLs; `parseRoleFilter` for `?role=` (`tank`, `healer`, `dps`); `bossShortName` (a boss's `shortName`) for tiles, table cells and other tight spots: the name up to its first comma, or a shorter name from `BOSS_SHORT_NAMES` ("Elerethe", "Dragons"). A long boss name in a new raid gets an entry there |
 | `_mythic-plus-shared.scss` | mixins such as `tooltip-box`, `quality-colors`, `visually-hidden`, `motion-safe`, `glide-pill`, `table-scroll` |
 | `_raid-logs-shared.scss` | forwards the M+ mixins, and adds `raid-table`, `ranking-toolbar`, `filter-reset`, `pager`, `difficulty-switch`, and `segmented-switch` (the difficulty switch's pill look, for any other switch beside it) |
 | `.tap-area` (global) | an empty span inside a small link that grows its tap target |

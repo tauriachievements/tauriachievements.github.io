@@ -315,6 +315,15 @@ const BOSS_PORTRAITS: Readonly<Record<string, string>> = {
   xavius: 'assets/emerald-nightmare/07-xavious.png'
 };
 
+const BOSS_SHORT_NAMES: Readonly<Record<string, string>> = {
+  'elerethe-renferal': 'Elerethe',
+  'dragons-of-nightmare': 'Dragons'
+};
+
+export function bossShortName(boss: { slug: string; name: string }): string {
+  return BOSS_SHORT_NAMES[boss.slug] ?? boss.name.split(',')[0].trim();
+}
+
 /**
  * The order the progress squares and the per-boss bars show the bosses in: the order raiders kill
  * them, not the Dungeon Journal's that the files use.
@@ -373,7 +382,7 @@ export function decodeIndex(file: RaidLogsIndexFile): RaidLogsIndex {
     id: boss.id,
     slug: boss.slug,
     name: boss.name,
-    shortName: boss.name.split(',')[0].trim(),
+    shortName: bossShortName(boss),
     index,
     portrait: BOSS_PORTRAITS[boss.slug] ?? ''
   }));
