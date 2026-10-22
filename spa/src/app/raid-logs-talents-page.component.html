@@ -94,9 +94,9 @@
     <app-icon-tips *ngIf="!killsLoading() && !killsError()">
       <ng-container *ngIf="!spec(); else specView">
         <section class="section">
-          <div class="role-group" *ngFor="let group of specGroups()">
+          <div class="role-group" *ngFor="let group of specGroups(); trackBy: trackKey">
             <h3 class="visually-hidden">{{ group.title }}</h3>
-            <ul class="spec-grid">
+            <ul class="spec-grid" [style.--spec-columns]="group.columns">
               <li *ngFor="let card of group.cards; trackBy: trackSpec">
                 <a
                   class="spec-card"

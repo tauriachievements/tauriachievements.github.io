@@ -73,6 +73,8 @@ const MIN_SWAP_CHARACTERS = 5;
 /** A top-player share this far from everyone's is called out beside it. */
 const EDGE_POINTS = .05;
 
+const SPEC_COLUMNS = 3;
+
 const ROLE_GROUPS: ReadonlyArray<{ role: RaidRole; title: string; noun: string }> = [
   { role: 'dps', title: 'Damage', noun: 'damage' },
   { role: 'tank', title: 'Tanks', noun: 'tank' },
@@ -232,8 +234,12 @@ export class RaidLogsTalentsPageComponent {
         consensus: summary.picks.tiers.map(tier => ({ talent: tier.leader?.talent, share: tier.leader?.share ?? 0, level: tier.level }))
       };
     });
+    const className = this.classFilterName();
+    if (className) {
+      return [{ key: 'class', title: className, columns: Math.max(SPEC_COLUMNS, cards.length), cards }];
+    }
     return ROLE_GROUPS
-      .map(group => ({ ...group, cards: cards.filter(card => card.spec.role === group.role) }))
+      .map(group => ({ key: group.role, title: group.title, columns: SPEC_COLUMNS, cards: cards.filter(card => card.spec.role === group.role) }))
       .filter(group => group.cards.length);
   });
 
