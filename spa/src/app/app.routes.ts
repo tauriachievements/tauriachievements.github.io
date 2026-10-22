@@ -1,14 +1,5 @@
 import { Routes } from '@angular/router';
 import { AchievementLadderComponent } from './ladder.component';
-import { BattlegroundPageComponent } from './battleground-page.component';
-import { ComparePageComponent } from './compare-page.component';
-import { GuildPresencePageComponent } from './guild-presence-page.component';
-import { GuildRealmFirstsPageComponent } from './guild-realm-firsts-page.component';
-import { NewRareCharactersPageComponent } from './new-rare-characters-page.component';
-import { RareAchievementsPageComponent } from './rare-achievements-page.component';
-import { TopGainersPageComponent } from './rank-movement-page.component';
-import { StatsPageComponent } from './stats-page.component';
-import { ApChestLootersPageComponent } from './ap-chest-looters-page.component';
 import { guildAnalysisResolver } from './guild-analysis';
 
 export const routes: Routes = [
@@ -18,15 +9,18 @@ export const routes: Routes = [
   },
   {
     path: 'guilds',
-    component: GuildPresencePageComponent
+    loadComponent: () => import('./guild-presence-page.component')
+      .then(module => module.GuildPresencePageComponent)
   },
   {
     path: 'rare-achievements',
-    component: RareAchievementsPageComponent
+    loadComponent: () => import('./rare-achievements-page.component')
+      .then(module => module.RareAchievementsPageComponent)
   },
   {
     path: 'raid-history',
-    component: GuildRealmFirstsPageComponent
+    loadComponent: () => import('./guild-realm-firsts-page.component')
+      .then(module => module.GuildRealmFirstsPageComponent)
   },
   {
     path: 'emerald-nightmare',
@@ -125,19 +119,23 @@ export const routes: Routes = [
   },
   {
     path: 'top-gainers',
-    component: TopGainersPageComponent
+    loadComponent: () => import('./rank-movement-page.component')
+      .then(module => module.TopGainersPageComponent)
   },
   {
     path: 'new-rare-characters',
-    component: NewRareCharactersPageComponent
+    loadComponent: () => import('./new-rare-characters-page.component')
+      .then(module => module.NewRareCharactersPageComponent)
   },
   {
     path: 'stats',
-    component: StatsPageComponent
+    loadComponent: () => import('./stats-page.component')
+      .then(module => module.StatsPageComponent)
   },
   {
     path: 'battleground',
-    component: BattlegroundPageComponent
+    loadComponent: () => import('./battleground-page.component')
+      .then(module => module.BattlegroundPageComponent)
   },
   {
     path: 'rated-battleground',
@@ -150,18 +148,19 @@ export const routes: Routes = [
       .then(module => module.ArenaGamesPageComponent)
   },
   {
-    // The page's first, unlisted address; links to it were already shared.
     path: '50-games-played-arenas',
     redirectTo: 'arena',
     pathMatch: 'full'
   },
   {
     path: 'ap-chest-looters',
-    component: ApChestLootersPageComponent
+    loadComponent: () => import('./ap-chest-looters-page.component')
+      .then(module => module.ApChestLootersPageComponent)
   },
   {
     path: 'compare',
-    component: ComparePageComponent
+    loadComponent: () => import('./compare-page.component')
+      .then(module => module.ComparePageComponent)
   },
   {
     path: 'support',

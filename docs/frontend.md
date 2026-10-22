@@ -26,9 +26,10 @@ spec can pin it down without a TestBed.
 
 ## Routing
 
-- `app.routes.ts` loads the oldest pages eagerly. Every page added since then uses
-  `loadComponent`, and new pages are lazy too
-  ([guides/howto-add-page.md](guides/howto-add-page.md)).
+- Every page loads lazily through `loadComponent`, except the ladder: it's the home page,
+  so it ships in the initial bundle and the first visit needs no extra request. New pages are
+  lazy too ([guides/howto-add-page.md](guides/howto-add-page.md)). Importing a page or its
+  heavy dependency (Chart.js) from an eager file pulls it back into the initial bundle.
 - `app.config.ts` turns on `withViewTransitions()` and `scrollPositionRestoration: 'top'`, so
   **every router navigation, even one that only changes query parameters, runs a full-page
   view transition and scrolls to the top.**
@@ -165,10 +166,10 @@ Phones come first (see the product rules in [AGENTS.md](../AGENTS.md)).
   Arial, and no web fonts are loaded. Introducing a design-token system is an architectural
   decision.
 - Budgets (`angular.json`, production): the initial bundle warns at 700 kB and errors at 1 MB;
-  a component stylesheet warns at 16 kB and errors at 24 kB. The initial bundle is already
-  past its warning, and several page stylesheets are at or past theirs (`npm run build` lists
-  them). Don't add to either. Move a page's motion into `<page>.motion.scss`, shared rules
-  into a mixin, and anything a first visit doesn't need into a lazy route.
+  a component stylesheet warns at 16 kB and errors at 24 kB. Several page stylesheets are
+  close to theirs (`npm run build` lists any over it). Don't add to either. Move a page's
+  motion into `<page>.motion.scss`, shared rules into a mixin, and anything a first visit
+  doesn't need into a lazy route.
 
 ## Template and test gotchas
 
