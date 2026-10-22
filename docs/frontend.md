@@ -37,6 +37,7 @@ A file's name says what it is:
 | `<name>-page.component.{ts,html,scss}` | a routed page |
 | `<name>.component.*` | a child or shared component |
 | `<feature>.ts` + `<feature>.spec.ts` | pure logic: types, parsing, ranking, formatting (e.g. `mythic-plus.ts`, `raid-scores.ts`, `arena-games.ts`). A big area splits it by job: the Raids keep the file formats in `raid-logs.types.ts`, decoding in `raid-logs.ts`, scores in `raid-scores.ts`, guild progression in `raid-progression.ts` and display helpers in `raid-display.ts`, with their test fixtures in `raid-logs.fixture.ts` |
+| `<feature>-views.ts` | pure functions that turn the logic's results into what a page shows: rows, tiles, labels, insight text (`mythic-plus-views.ts`, `raid-talents-views.ts`) |
 | `<name>.directive.ts` | an attribute directive (`app` prefix: `[appReveal]`) |
 | `<name>.service.ts` | data loading shared by several pages |
 | `<page>.store.ts` | one page's loading and data state: an `@Injectable()` in the page's own `providers` (`LadderPageStore`, `MythicPlusPageStore`). The component re-exposes the signals its template reads (`readonly index = this.store.index;`) |

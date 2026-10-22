@@ -116,7 +116,7 @@ export interface TalentPicks {
   tiers: TalentTier[];
 }
 
-type TalentTiers = ReadonlyArray<ReadonlyArray<RaidTalent | undefined>>;
+export type TalentTiers = ReadonlyArray<ReadonlyArray<RaidTalent | undefined>>;
 
 export function specTiers(table: RaidTalentTable, spec: Pick<RaidSpec, 'id'>): TalentTiers {
   return table.get(spec.id) ?? Array.from({ length: 7 }, () => [undefined, undefined, undefined]);
