@@ -1,4 +1,3 @@
-import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component, DestroyRef, OnInit, computed, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { BackToTopButtonComponent } from './back-to-top-button.component';
@@ -62,7 +61,7 @@ const APPEARANCE_SOURCE_LIMIT_OPTIONS: ReadonlyArray<FilterDropdownOption<number
   templateUrl: './rank-movement-page.component.html',
   styleUrls: ['./rank-movement-page.component.scss'],
   standalone: true,
-  imports: [CommonModule, UpdateBarComponent, BackToTopButtonComponent, FilterDropdownComponent, HistorySummaryComponent, MobileFilterToggleComponent],
+  imports: [UpdateBarComponent, BackToTopButtonComponent, FilterDropdownComponent, HistorySummaryComponent, MobileFilterToggleComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   providers: [FilterDropdownCoordinatorService]
 })
@@ -280,10 +279,6 @@ export class TopGainersPageComponent implements OnInit {
     this.appearanceSourceLimit.set(DEFAULT_APPEARANCE_SOURCE_LIMIT);
     this.currentRealm.set(undefined);
     this.currentClass.set(undefined);
-  }
-
-  trackDropdown(_index: number, dropdown: TopGainersDropdownConfig): TopGainersDropdownKey {
-    return dropdown.key;
   }
 
   private filterMovers(

@@ -170,10 +170,6 @@ export class FilterBarComponent {
     this.reset.emit();
   }
 
-  trackDropdown(_index: number, dropdown: DropdownConfig): DropdownKey {
-    return dropdown.key;
-  }
-
   private get classDropdownOptions(): ReadonlyArray<FilterDropdownOption<number | undefined>> {
     return [
       { value: undefined, label: 'All Classes' },

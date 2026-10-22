@@ -1,4 +1,3 @@
-import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component, DestroyRef, OnInit, computed, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -28,7 +27,7 @@ import { UpdateBarComponent } from './update-bar.component';
   templateUrl: './ladder.component.html',
   styleUrls: ['./ladder.component.scss'],
   standalone: true,
-  imports: [CommonModule, UpdateBarComponent, FilterBarComponent, LeaderboardTableComponent, BackToTopButtonComponent],
+  imports: [UpdateBarComponent, FilterBarComponent, LeaderboardTableComponent, BackToTopButtonComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   providers: [LadderPageStore]
 })

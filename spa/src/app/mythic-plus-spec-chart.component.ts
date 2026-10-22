@@ -1,4 +1,3 @@
-import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component, computed, input, output, signal } from '@angular/core';
 import { getClassIconPath } from '../utils/classIconHelper';
 import { injectCompactViewport } from './compact-viewport';
@@ -29,7 +28,7 @@ interface ClassGroup extends Omit<ClassShare, 'specs'> {
 @Component({
   selector: 'app-mythic-plus-spec-chart',
   standalone: true,
-  imports: [CommonModule, TapTooltipDirective, GlideDirective, RevealDirective, FlipDirective],
+  imports: [TapTooltipDirective, GlideDirective, RevealDirective, FlipDirective],
   templateUrl: './mythic-plus-spec-chart.component.html',
   styleUrls: ['./mythic-plus-spec-chart.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush
@@ -142,12 +141,4 @@ export class MythicPlusSpecChartComponent {
       'Grouped by popularity'
     ].join(' · ');
   });
-
-  trackGroup(index: number, group: ClassGroup): number {
-    return group.classId;
-  }
-
-  trackSpec(index: number, spec: SpecBar): string {
-    return spec.spec;
-  }
 }

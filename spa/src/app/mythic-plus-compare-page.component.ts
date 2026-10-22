@@ -414,7 +414,6 @@ export class MythicPlusComparePageComponent implements OnInit {
     };
   });
 
-
   // Add a player
   readonly searchQuery = signal('');
   readonly searchResults = computed(() => {
@@ -456,16 +455,6 @@ export class MythicPlusComparePageComponent implements OnInit {
 
   clearSearch(): void {
     this.searchQuery.set('');
-  }
-
-
-  trackKey(index: number, item: { key: string }): string {
-    return item.key;
-  }
-
-  /** Lines and days by position, so Score / Gap moves them instead of drawing new ones. */
-  trackPosition(index: number): number {
-    return index;
   }
 
   loadData(): void {

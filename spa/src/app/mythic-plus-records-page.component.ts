@@ -250,33 +250,9 @@ export class MythicPlusRecordsPageComponent implements OnInit {
     this.expanded.update(current => ({ ...current, [section]: current[section] === runId ? undefined : runId }));
   }
 
-  trackRecord(index: number, record: RecordCard): string {
-    return record.dungeon.id;
-  }
-
-  trackLabel(index: number, tile: SummaryTile): string {
-    return tile.label;
-  }
-
-  trackFirst(index: number, first: FirstRow): number {
-    return first.level;
-  }
-
-  trackBounty(index: number, bounty: BountyView): string {
-    return bounty.key;
-  }
-
-  trackRunner(index: number, runner: RunnerRow): string {
-    return runner.key;
-  }
-
   /** A click anywhere on a Most runs row, as on the leaderboard's players table. */
   openProfile(runner: RunnerRow): void {
     this.router.navigate(runner.member.profileLink);
-  }
-
-  trackMember(index: number, member: MemberView): string {
-    return `${member.name}-${member.realm}`;
   }
 
   loadData(): void {

@@ -151,11 +151,6 @@ export class FilterDropdownComponent {
     return option.value === this.selectedValue;
   }
 
-  trackOption(index: number, option: FilterDropdownOption): string {
-    const valueKey = option.value === undefined ? 'undefined' : String(option.value);
-    return `${valueKey}:${option.label}:${index}`;
-  }
-
   private get selectedOption(): FilterDropdownOption | undefined {
     return this.options.find((option) => this.isOptionSelected(option));
   }

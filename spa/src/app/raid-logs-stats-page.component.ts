@@ -1,4 +1,4 @@
-import { CommonModule, Location } from '@angular/common';
+import { Location } from '@angular/common';
 import { ChangeDetectionStrategy, Component, DestroyRef, OnInit, computed, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -18,7 +18,7 @@ import { UpdateBarComponent } from './update-bar.component';
 @Component({
   selector: 'app-raid-logs-stats-page',
   standalone: true,
-  imports: [CommonModule, UpdateBarComponent, BackToTopButtonComponent, RaidSpecPopularityChartComponent, RaceBySpecComponent],
+  imports: [UpdateBarComponent, BackToTopButtonComponent, RaidSpecPopularityChartComponent, RaceBySpecComponent],
   templateUrl: './raid-logs-stats-page.component.html',
   styleUrl: './raid-logs-stats-page.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush

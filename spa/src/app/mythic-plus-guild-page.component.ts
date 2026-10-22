@@ -505,14 +505,6 @@ export class MythicPlusGuildPageComponent implements OnInit {
     this.limit.set(this.shownCount() + this.pageSize());
   }
 
-  trackDungeon(index: number, dungeon: MythicPlusDungeon): string {
-    return dungeon.id;
-  }
-
-  trackLabel(index: number, tile: SummaryTile): string {
-    return tile.label;
-  }
-
   /** After a filter change: back to the first rows, and the filters into the address bar. */
   private resetRows(): void {
     this.limit.set(this.pageSize());

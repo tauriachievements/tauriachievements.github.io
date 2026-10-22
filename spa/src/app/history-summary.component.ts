@@ -93,10 +93,6 @@ export class HistorySummaryComponent {
     return mover.classId > 0;
   }
 
-  trackMover(_index: number, mover: LadderHistoryMoverView): string {
-    return mover.playerKey;
-  }
-
   formatSignedValue(value: number): string {
     if (value > 0) {
       return `+${value.toLocaleString()}`;

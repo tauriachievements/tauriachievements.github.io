@@ -36,16 +36,12 @@ export class LeaderboardTableComponent {
   readonly getArmoryUrl = getArmoryUrl;
   readonly getGuildArmoryUrl = getGuildArmoryUrl;
 
-  trackPlayer(_index: number, player: LadderPlayerView): string {
+  playerKey(player: LadderPlayerView): string {
     return `${player.realm}::${player.name}`;
   }
 
-  trackHighlightPart(index: number, _part: HighlightPart): number {
-    return index;
-  }
-
   isExpanded(player: LadderPlayerView): boolean {
-    return this.expandedPlayerKey === this.trackPlayer(0, player);
+    return this.expandedPlayerKey === this.playerKey(player);
   }
 
   getDetailsId(player: LadderPlayerView): string {
@@ -54,7 +50,7 @@ export class LeaderboardTableComponent {
 
   /** Opens or closes the details panel under a row. One row is open at a time. */
   togglePlayerDetails(player: LadderPlayerView): void {
-    this.expandedPlayerKey = this.isExpanded(player) ? null : this.trackPlayer(0, player);
+    this.expandedPlayerKey = this.isExpanded(player) ? null : this.playerKey(player);
   }
 
   /** On phones the whole row toggles its details; links in the row keep working as links. */

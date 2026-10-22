@@ -427,10 +427,6 @@ export class Endless6531PageComponent {
     this.applySort();
   }
 
-  trackPlayer(_index: number, player: GuildAnalysisPlayer): string {
-    return player.name;
-  }
-
   private buildClassCounts(): ClassCountEntry[] {
     const counts = new Map<number, number>();
 

@@ -1,4 +1,3 @@
-import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component, input } from '@angular/core';
 import { MythicPlusAffix } from './mythic-plus';
 import { TapTooltipDirective } from './tap-tooltip.directive';
@@ -10,7 +9,7 @@ import { TapTooltipDirective } from './tap-tooltip.directive';
 @Component({
   selector: 'app-mythic-plus-week-affixes',
   standalone: true,
-  imports: [CommonModule, TapTooltipDirective],
+  imports: [TapTooltipDirective],
   templateUrl: './mythic-plus-week-affixes.component.html',
   styleUrl: './mythic-plus-week-affixes.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

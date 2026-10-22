@@ -1,5 +1,4 @@
 import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
-import { CommonModule } from '@angular/common';
 import { UpdateBarComponent } from './update-bar.component';
 import { getArmoryUrl } from '../utils/armory';
 import { DataFileService } from './services/data-file.service';
@@ -16,7 +15,7 @@ interface ApChestLooter {
 @Component({
   selector: 'app-ap-chest-looters-page',
   standalone: true,
-  imports: [CommonModule, UpdateBarComponent],
+  imports: [UpdateBarComponent],
   templateUrl: './ap-chest-looters-page.component.html',
   styleUrls: ['./ap-chest-looters-page.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush

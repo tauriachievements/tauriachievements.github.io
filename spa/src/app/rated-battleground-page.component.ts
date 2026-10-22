@@ -252,22 +252,6 @@ export class RatedBattlegroundPageComponent implements OnInit {
     return team.won ? 'Winning team' : 'Challenging team';
   }
 
-  memberTrackKey(_index: number, member: RatedBattlegroundMember): string {
-    return `${member.realmid}:${member.guid}`;
-  }
-
-  playerTrackKey(_index: number, player: RatedPlayerSummary): string {
-    return player.key;
-  }
-
-  mapTrackKey(_index: number, map: RatedMapSummary): string {
-    return map.name;
-  }
-
-  matchTrackKey(_index: number, match: RatedBattlegroundMatch): number {
-    return match.matchid;
-  }
-
   private loadMatches(): void {
     this.isLoading.set(true);
     this.loadError.set(undefined);

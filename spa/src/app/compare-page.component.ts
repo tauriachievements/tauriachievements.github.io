@@ -121,14 +121,6 @@ export class ComparePageComponent implements OnInit {
     return row.kind === 'metric' && row.outcome === slot;
   }
 
-  trackSuggestion(_index: number, player: Player): string {
-    return `${player.realm}::${player.name}`;
-  }
-
-  trackRow(_index: number, row: ComparisonRow): string {
-    return row.label;
-  }
-
   onImageError(event: Event): void {
     const image = event.target as HTMLImageElement | null;
     console.error('Failed to load image:', image?.src ?? 'unknown image');

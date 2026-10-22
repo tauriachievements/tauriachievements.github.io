@@ -690,23 +690,6 @@ export class MythicPlusProfilePageComponent implements OnInit {
     this.searchQuery.set((event.target as HTMLInputElement).value);
   }
 
-  trackCharacter(index: number, character: CharacterLink | TeammateView): string {
-    return character.key;
-  }
-
-  // Kept elements let a teammate's profile roll the numbers over instead of building the tiles anew.
-  trackLabel(index: number, item: { label: string }): string {
-    return item.label;
-  }
-
-  trackScope(index: number, tile: RankTile): string {
-    return tile.scope;
-  }
-
-  trackBest(index: number, best: DungeonBest): string {
-    return best.dungeon.id;
-  }
-
   loadData(): void {
     this.isLoading.set(true);
     this.loadError.set(undefined);

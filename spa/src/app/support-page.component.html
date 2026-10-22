@@ -52,18 +52,19 @@
       </header>
 
       <ol class="supporters" [appReveal]="1800">
-        <li
-          class="supporter"
-          *ngFor="let donation of donations; let i = index"
-          [style.--i]="i"
-          appDecode
-          [decodeDelay]="500 + i * 80">
-          <span class="supporter-icon" aria-hidden="true">{{ donation.icon }}</span>
-          <span class="supporter-name">
-            <ng-container *ngTemplateOutlet="nameList; context: { $implicit: donation.names }" />
-          </span>
-          <span class="supporter-amount">{{ donation.amountLabel }}</span>
-        </li>
+        @for (donation of donations; track donation; let i = $index) {
+          <li
+            class="supporter"
+            [style.--i]="i"
+            appDecode
+            [decodeDelay]="500 + i * 80">
+            <span class="supporter-icon" aria-hidden="true">{{ donation.icon }}</span>
+            <span class="supporter-name">
+              <ng-container *ngTemplateOutlet="nameList; context: { $implicit: donation.names }" />
+            </span>
+            <span class="supporter-amount">{{ donation.amountLabel }}</span>
+          </li>
+        }
       </ol>
       <a class="supporter-slot" [href]="discordUrl" target="_blank" rel="noopener noreferrer" appDecode [decodeDelay]="700">
         <span class="supporter-slot-plus" aria-hidden="true">+</span>
@@ -80,29 +81,30 @@
       <p class="panel-sub" appDecode [decodeDelay]="400">What players have said about the site.</p>
 
       <div class="quotes" [appReveal]="2400">
-        <figure
-          class="quote"
-          appSpotlight
-          *ngFor="let testimonial of testimonials; let i = index"
-          [style.--span]="testimonial.span"
-          [style.--i]="i"
-          appDecode
-          [decodeDelay]="450 + i * 70">
-          <figcaption>
-            <cite>
-              <ng-container *ngTemplateOutlet="nameList; context: { $implicit: testimonial.names }" />
-            </cite>
-            <span
-              class="quote-from"
-              [class.is-discord]="testimonial.from === 'discord'"
-              [class.is-stoat]="testimonial.from === 'stoat'">
-              {{ testimonial.fromLabel }}
-            </span>
-          </figcaption>
-          <blockquote>
-            <p>{{ testimonial.quote }}</p>
-          </blockquote>
-        </figure>
+        @for (testimonial of testimonials; track testimonial; let i = $index) {
+          <figure
+            class="quote"
+            appSpotlight
+            [style.--span]="testimonial.span"
+            [style.--i]="i"
+            appDecode
+            [decodeDelay]="450 + i * 70">
+            <figcaption>
+              <cite>
+                <ng-container *ngTemplateOutlet="nameList; context: { $implicit: testimonial.names }" />
+              </cite>
+              <span
+                class="quote-from"
+                [class.is-discord]="testimonial.from === 'discord'"
+                [class.is-stoat]="testimonial.from === 'stoat'">
+                {{ testimonial.fromLabel }}
+              </span>
+            </figcaption>
+            <blockquote>
+              <p>{{ testimonial.quote }}</p>
+            </blockquote>
+          </figure>
+        }
       </div>
     </section>
   </div>
@@ -110,22 +112,28 @@
 
 <!-- One person's names, split by slashes: class-coloured, linking their profile or armory page. -->
 <ng-template #nameList let-names>
-  <ng-container *ngFor="let shown of names; let last = last">
-    <a
-      *ngIf="shown.profileLink"
-      class="name-link"
-      [routerLink]="shown.profileLink"
-      [style.color]="shown.color">{{ shown.name }}</a>
-    <a
-      *ngIf="!shown.profileLink && shown.armoryUrl"
-      class="name-link"
-      [href]="shown.armoryUrl"
-      [style.color]="shown.color"
-      target="_blank"
-      rel="noopener noreferrer">{{ shown.name }}</a>
-    <span *ngIf="!shown.profileLink && !shown.armoryUrl" [style.color]="shown.color">{{ shown.name }}</span>
-    <span *ngIf="!last" class="name-sep" aria-hidden="true">/</span>
-  </ng-container>
+  @for (shown of names; track shown; let last = $last) {
+    @if (shown.profileLink) {
+      <a
+        class="name-link"
+        [routerLink]="shown.profileLink"
+        [style.color]="shown.color">{{ shown.name }}</a>
+    }
+    @if (!shown.profileLink && shown.armoryUrl) {
+      <a
+        class="name-link"
+        [href]="shown.armoryUrl"
+        [style.color]="shown.color"
+        target="_blank"
+        rel="noopener noreferrer">{{ shown.name }}</a>
+    }
+    @if (!shown.profileLink && !shown.armoryUrl) {
+      <span [style.color]="shown.color">{{ shown.name }}</span>
+    }
+    @if (!last) {
+      <span class="name-sep" aria-hidden="true">/</span>
+    }
+  }
 </ng-template>
 
 <app-back-to-top-button />

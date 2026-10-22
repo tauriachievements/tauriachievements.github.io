@@ -331,14 +331,6 @@ export class RareAchievementsPageComponent implements OnInit {
     this.loadRareAchievements();
   }
 
-  trackAchievementDropdown(_index: number, dropdown: AchievementDropdownView): AchievementDropdownKey {
-    return dropdown.key;
-  }
-
-  trackCharacter(_index: number, character: RareAchievementMatchView): string {
-    return `${character.realm}::${character.name}`;
-  }
-
   getCharacterLinkTitle(character: RareAchievementMatchView): string {
     return character.rareAchievementSummaryLabel
       ? character.rareAchievementSummaryLabel

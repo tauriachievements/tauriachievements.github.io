@@ -616,38 +616,6 @@ export class RaidLogsTalentsPageComponent {
     return `rgba(247, 181, 0, ${(.04 + share * .5).toFixed(3)})`;
   }
 
-  trackKey(index: number, entry: { key: string }): string {
-    return entry.key;
-  }
-
-  trackTier(index: number, tier: TierView): number {
-    return tier.tier;
-  }
-
-  trackColumn(index: number, choice: TalentChoice): number {
-    return choice.column;
-  }
-
-  trackBuild(index: number, build: BuildRow): string {
-    return build.talents;
-  }
-
-  trackSpec(index: number, card: SpecCard): number {
-    return card.spec.id;
-  }
-
-  trackBoss(index: number, entry: { boss: RaidBoss }): string {
-    return entry.boss.slug;
-  }
-
-  trackId(index: number, entry: { id: string }): string {
-    return entry.id;
-  }
-
-  trackLabel(index: number, entry: { label: string }): string {
-    return entry.label;
-  }
-
   private loadKills(index: RaidLogsIndex, difficulty: RaidDifficulty): void {
     this.killsSubscription?.unsubscribe();
     this.kills.set([]);

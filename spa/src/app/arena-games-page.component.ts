@@ -209,10 +209,6 @@ export class ArenaGamesPageComponent implements OnInit {
     return player.wins >= REWARD_MIN_WINS;
   }
 
-  trackPlayer(_index: number, player: ArenaPlayerRow): string {
-    return `${player.realm}::${player.guid}`;
-  }
-
   getPlayerClassColor(player: ArenaPlayerRow): string {
     return getClassColor(player.class) ?? '#e0e0e0';
   }

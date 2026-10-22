@@ -55,6 +55,8 @@ const HISTORY_PREVIEW = 25;
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class RaidLogsGuildPageComponent {
+  readonly logKey = logKey;
+
   private readonly data = inject(RaidLogsDataService);
   private readonly destroyRef = inject(DestroyRef);
   private readonly route = inject(ActivatedRoute);
@@ -198,17 +200,5 @@ export class RaidLogsGuildPageComponent {
     this.showAllKills.set(false);
     const url = this.router.createUrlTree([], { relativeTo: this.route, queryParams: { difficulty: slug } });
     this.location.replaceState(this.router.serializeUrl(url));
-  }
-
-  trackBoss(index: number, row: BossRow): string {
-    return row.boss.slug;
-  }
-
-  trackKill(index: number, kill: RaidKill): string {
-    return logKey(kill);
-  }
-
-  trackLabel(index: number, tile: SummaryTile): string {
-    return tile.label;
   }
 }

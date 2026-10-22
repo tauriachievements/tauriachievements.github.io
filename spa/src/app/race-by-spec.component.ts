@@ -110,16 +110,4 @@ export class RaceBySpecComponent {
     const total = this.result().total;
     return `${this.context()} · ${total.toLocaleString('en-US')} ${total === 1 ? 'character' : 'characters'}, each counted once per spec`;
   });
-
-  trackRow(index: number, row: SpecRow): string {
-    return row.key;
-  }
-
-  trackSegment(index: number, segment: Segment): string {
-    return segment.key;
-  }
-
-  trackRace(index: number, race: RaceView): number {
-    return race.race;
-  }
 }

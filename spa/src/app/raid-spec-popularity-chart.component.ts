@@ -238,16 +238,4 @@ export class RaidSpecPopularityChartComponent {
   difficultyLabel(difficulty: RaidDifficulty): string {
     return difficulty.slug === 'heroic' ? 'HC' : difficulty.name;
   }
-
-  trackDifficulty(index: number, difficulty: RaidDifficulty): string {
-    return difficulty.slug;
-  }
-
-  trackGroup(index: number, group: ClassGroup): number {
-    return group.classId;
-  }
-
-  trackSpec(index: number, spec: SpecBar): string {
-    return spec.spec;
-  }
 }

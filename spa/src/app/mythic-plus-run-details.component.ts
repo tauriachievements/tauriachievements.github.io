@@ -18,8 +18,4 @@ export class MythicPlusRunDetailsComponent {
 
   readonly roleLabels = ROLE_LABELS;
   readonly cutoffMarks = UPGRADE_CUTOFFS.filter(cutoff => cutoff.percent < 100);
-
-  trackMember(index: number, member: MemberView): string {
-    return `${member.name}-${member.realm}`;
-  }
 }

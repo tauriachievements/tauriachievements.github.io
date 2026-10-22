@@ -27,8 +27,8 @@ touching motion or layering.
   | `appDecode` | scrambles text into place over an `aria-hidden` overlay; the real text stays for layout and screen readers |
   | `appScrollRise` | marks only the elements that start below the fold for a scroll-driven rise |
 
-- **Expand and collapse** use Angular's built-in `animate.leave`, on the element that carries
-  the `*ngIf`.
+- **Expand and collapse** use Angular's built-in `animate.leave`, on the element inside the
+  `@if`.
 - **Reduced motion:** wrap animation in the `motion-safe` mixin
   (`@media (prefers-reduced-motion: no-preference)`). The directives check
   `prefersReducedMotion()` and do nothing when it's on. View transitions are switched off

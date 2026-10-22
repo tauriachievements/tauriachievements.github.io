@@ -90,6 +90,8 @@ const RECENT_KILLS = 20;
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class RaidLogsCharacterPageComponent {
+  readonly logKey = logKey;
+
   private readonly data = inject(RaidLogsDataService);
   private readonly destroyRef = inject(DestroyRef);
   private readonly route = inject(ActivatedRoute);
@@ -300,18 +302,6 @@ export class RaidLogsCharacterPageComponent {
 
   percent(relative: number): string {
     return `${Math.floor(relative * 100)}%`;
-  }
-
-  trackBoss(index: number, row: BossRow): string {
-    return row.boss.slug;
-  }
-
-  trackAppearance(index: number, appearance: Appearance): string {
-    return logKey(appearance.kill);
-  }
-
-  trackLabel(index: number, tile: SummaryTile): string {
-    return tile.label;
   }
 
   private loadDifficulty(index: RaidLogsIndex, order: RaidDifficulty[]): void {

@@ -57,8 +57,7 @@ this file, so Claude Code reads it at the start of every session.
 - `docs/` holds the topic docs below.
 - `.claude/skills/angular-developer/` is Angular's agent skill, copied unchanged from
   [angular/skills](https://github.com/angular/skills). To update it, copy that folder again.
-  Where it disagrees with this file or `docs/`, these win: `npm run build`, not `ng build`;
-  `*ngIf` / `*ngFor`, not `@if` / `@for`.
+  Where it disagrees with this file or `docs/`, these win: `npm run build`, not `ng build`.
 
 There is no root package manager; each half has its own toolchain.
 
@@ -119,8 +118,9 @@ There is no root package manager; each half has its own toolchain.
 
 - Standalone components with `ChangeDetectionStrategy.OnPush`, signals for state, and
   `inject()` for dependencies (constructors only set up effects and listeners).
-- Templates use `*ngIf` / `*ngFor` with `CommonModule`; no template uses `@if` / `@for` yet.
-  Switching is an architectural decision (ask).
+- Templates use the built-in control flow: `@if`, `@for`, `@switch`. A `@for` tracks a key of
+  the item (`track row.id`), not a method. A block inside running text stays on one line
+  (`side by side@if (season) { · {{ season }}}.`): a line break inside it renders as a space.
 - Pure logic lives in `<feature>.ts` with `<feature>.spec.ts` beside it, for example
   `arena-games.ts` next to `arena-games-page.component.ts`. Components stay thin. Most tests
   cover the pure functions.

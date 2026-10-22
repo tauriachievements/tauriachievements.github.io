@@ -10,7 +10,7 @@
 
   <header class="page-header">
     <div class="page-heading">
-      <h1>Mythic+ stats<ng-container *ngIf="index()?.season?.name as season"> · {{ season }}</ng-container></h1>
+      <h1>Mythic+ stats@if (index()?.season?.name; as season) { · {{ season }}}</h1>
       <p>How much Mythic+ is being played: runs per day, per dungeon and per key level, each affix week side by side, and which race each spec plays.</p>
     </div>
     <a class="records-link" routerLink="/mythic-plus/records">
@@ -21,17 +21,21 @@
     </a>
   </header>
 
-  <section class="feedback" *ngIf="isLoading()">
-    <span class="spinner" aria-hidden="true"></span>
-    <p>Counting the keystones...</p>
-  </section>
+  @if (isLoading()) {
+    <section class="feedback">
+      <span class="spinner" aria-hidden="true"></span>
+      <p>Counting the keystones...</p>
+    </section>
+  }
 
-  <section class="feedback error" *ngIf="!isLoading() && loadError()">
-    <p>{{ loadError() }}</p>
-    <button type="button" (click)="loadData()">Try again</button>
-  </section>
+  @if (!isLoading() && loadError()) {
+    <section class="feedback error">
+      <p>{{ loadError() }}</p>
+      <button type="button" (click)="loadData()">Try again</button>
+    </section>
+  }
 
-  <ng-container *ngIf="!isLoading() && !loadError()">
+  @if (!isLoading() && !loadError()) {
     <div class="period-bar">
       <div class="segmented" role="group" aria-label="Show the whole season or this week" appGlide>
         <button
@@ -46,15 +50,19 @@
           [disabled]="!currentWeek()"
           (click)="setPeriod('week')">This week</button>
       </div>
-      <app-mythic-plus-week-affixes *ngIf="weekAffixes().length" [affixes]="weekAffixes()" [compact]="true" />
+      @if (weekAffixes().length) {
+        <app-mythic-plus-week-affixes [affixes]="weekAffixes()" [compact]="true" />
+      }
     </div>
 
     <!-- The numbers count up, one tile after another; switching period rolls them to the new ones. -->
     <dl class="summary">
-      <div *ngFor="let item of summary(); let index = index; trackBy: trackLabel">
-        <dt>{{ item.label }}</dt>
-        <dd [appCountUp]="item.value" [countUpDelay]="index * 60"></dd>
-      </div>
+      @for (item of summary(); track item.label; let index = $index) {
+        <div>
+          <dt>{{ item.label }}</dt>
+          <dd [appCountUp]="item.value" [countUpDelay]="index * 60"></dd>
+        </div>
+      }
     </dl>
 
     <!-- Runs per day -->
@@ -73,70 +81,90 @@
       </header>
 
       <ul class="legend" aria-label="Legend">
-        <ng-container *ngIf="daySplit() === 'level'; else resultLegend">
-          <li *ngFor="let band of levelBands"><i [class]="'swatch ' + band.band"></i>{{ band.label }}</li>
-        </ng-container>
-        <ng-template #resultLegend>
-          <li *ngFor="let segment of resultSegments"><i [class]="'swatch ' + segment.key"></i>{{ segment.label }}</li>
-        </ng-template>
+        @if (daySplit() === 'level') {
+          @for (band of levelBands; track band) {
+            <li><i [class]="'swatch ' + band.band"></i>{{ band.label }}</li>
+          }
+        } @else {
+          @for (segment of resultSegments; track segment) {
+            <li><i [class]="'swatch ' + segment.key"></i>{{ segment.label }}</li>
+          }
+        }
       </ul>
 
       <!-- Wider than a phone: opens on the newest days, at the right end. -->
-      <div class="chart-scroll" *ngIf="dayBars().length; else noRuns" [appScrollToEnd]="period() + dayBars().length">
-        <div class="column-chart days" [style.--columns]="dayBars().length" appReveal>
-          <div class="y-axis" aria-hidden="true">
-            <span *ngFor="let line of dayGridlines()" [style.bottom.%]="line.position">{{ line.value }}</span>
-          </div>
-          <div class="plot">
-            <div class="gridlines" aria-hidden="true">
-              <span *ngFor="let line of dayGridlines()" [style.bottom.%]="line.position"></span>
+      @if (dayBars().length) {
+        <div class="chart-scroll" [appScrollToEnd]="period() + dayBars().length">
+          <div class="column-chart days" [style.--columns]="dayBars().length" appReveal>
+            <div class="y-axis" aria-hidden="true">
+              @for (line of dayGridlines(); track line) {
+                <span [style.bottom.%]="line.position">{{ line.value }}</span>
+              }
             </div>
-            <div class="week-bands" aria-hidden="true">
-              <span
-                *ngFor="let band of weekBands()"
-                [class.shade]="band.shade"
-                [style.grid-column]="band.start + ' / span ' + band.span">
-                <em>
-                  <span class="band-affix" *ngFor="let affix of band.affixes">
-                    <img [src]="affix.icon" alt="" loading="lazy" />{{ affix.name }}
-                  </span>
-                </em>
-              </span>
-            </div>
-            <div class="columns">
-              <div
-                class="column"
-                appTapTooltip
-                *ngFor="let bar of dayBars(); let index = index; trackBy: trackDay"
-                [style.--i]="index"
-                [class.flip]="bar.flip"
-                [class.middle]="bar.middle"
-                [class.wide]="bar.wide"
-                [class.partial]="bar.partial"
-                role="img"
-                tabindex="0"
-                [attr.aria-label]="bar.longLabel + ': ' + bar.day.total + ' runs' + (bar.partial ? ' so far' : '')">
-                <span class="stack" [style.height.%]="bar.heightPercent">
-                  <span
-                    *ngFor="let segment of bar.segments; trackBy: trackPosition"
-                    [class]="'segment ' + segment.key"
-                    [style.height.%]="segment.percent"></span>
-                </span>
-                <span class="tooltip" aria-hidden="true">
-                  <strong>{{ bar.day.total | number }} {{ bar.day.total === 1 ? 'run' : 'runs' }}<ng-container *ngIf="bar.partial"> so far</ng-container></strong>
-                  <span>{{ bar.longLabel }}</span>
-                  <span class="tooltip-row" *ngFor="let segment of bar.segments.slice().reverse()">
-                    <i [class]="'swatch ' + segment.key"></i>{{ segment.label }}<b>{{ segment.count | number }}</b>
-                  </span>
-                </span>
+            <div class="plot">
+              <div class="gridlines" aria-hidden="true">
+                @for (line of dayGridlines(); track line) {
+                  <span [style.bottom.%]="line.position"></span>
+                }
               </div>
-            </div>
-            <div class="x-labels" aria-hidden="true">
-              <span *ngFor="let bar of dayBars()">{{ bar.showLabel ? bar.label : '' }}</span>
+              <div class="week-bands" aria-hidden="true">
+                @for (band of weekBands(); track band) {
+                  <span
+                    [class.shade]="band.shade"
+                    [style.grid-column]="band.start + ' / span ' + band.span">
+                    <em>
+                      @for (affix of band.affixes; track affix) {
+                        <span class="band-affix">
+                          <img [src]="affix.icon" alt="" loading="lazy" />{{ affix.name }}
+                        </span>
+                      }
+                    </em>
+                  </span>
+                }
+              </div>
+              <div class="columns">
+                @for (bar of dayBars(); track bar.day.day; let index = $index) {
+                  <div
+                    class="column"
+                    appTapTooltip
+                    [style.--i]="index"
+                    [class.flip]="bar.flip"
+                    [class.middle]="bar.middle"
+                    [class.wide]="bar.wide"
+                    [class.partial]="bar.partial"
+                    role="img"
+                    tabindex="0"
+                    [attr.aria-label]="bar.longLabel + ': ' + bar.day.total + ' runs' + (bar.partial ? ' so far' : '')">
+                    <span class="stack" [style.height.%]="bar.heightPercent">
+                      @for (segment of bar.segments; track $index) {
+                        <span
+                          [class]="'segment ' + segment.key"
+                          [style.height.%]="segment.percent"></span>
+                      }
+                    </span>
+                    <span class="tooltip" aria-hidden="true">
+                      <strong>{{ bar.day.total | number }} {{ bar.day.total === 1 ? 'run' : 'runs' }}@if (bar.partial) { so far}</strong>
+                      <span>{{ bar.longLabel }}</span>
+                      @for (segment of bar.segments.slice().reverse(); track segment) {
+                        <span class="tooltip-row">
+                          <i [class]="'swatch ' + segment.key"></i>{{ segment.label }}<b>{{ segment.count | number }}</b>
+                        </span>
+                      }
+                    </span>
+                  </div>
+                }
+              </div>
+              <div class="x-labels" aria-hidden="true">
+                @for (bar of dayBars(); track bar) {
+                  <span>{{ bar.showLabel ? bar.label : '' }}</span>
+                }
+              </div>
             </div>
           </div>
         </div>
-      </div>
+      } @else {
+        <p class="chart-empty">No runs in this period yet.</p>
+      }
     </section>
 
     <div class="pair">
@@ -155,35 +183,47 @@
           </div>
         </header>
         <ul class="legend" aria-label="Legend">
-          <li *ngFor="let segment of dungeonLegend()">
-            <i [class]="'swatch ' + segment.key"></i>{{ segment.label }}
-          </li>
+          @for (segment of dungeonLegend(); track segment) {
+            <li>
+              <i [class]="'swatch ' + segment.key"></i>{{ segment.label }}
+            </li>
+          }
         </ul>
         <ol class="dungeon-rows" appReveal>
-          <li *ngFor="let row of dungeons(); let index = index; trackBy: trackDungeonRow" [style.--i]="index">
-            <span class="dungeon-name" [title]="row.dungeon.name">
-              <img [src]="row.dungeon.icon" alt="" loading="lazy" />{{ row.dungeon.shortName }}
-            </span>
-            <span
-              class="track"
-              appTapTooltip
-              role="img"
-              tabindex="0"
-              [attr.aria-label]="row.dungeon.name + ': ' + row.runs + ' runs, ' + row.segments[0].count + ' ' + row.segments[0].label.toLowerCase() + ', ' + row.segments[1].count + ' ' + row.segments[1].label.toLowerCase()">
-              <span *ngFor="let segment of row.segments; trackBy: trackPosition" [class]="'segment ' + segment.key" [style.width.%]="segment.width"></span>
-              <span class="tooltip" aria-hidden="true">
-                <strong>{{ row.dungeon.name }}</strong>
-                <span class="tooltip-row" *ngFor="let segment of row.segments">
-                  <i [class]="'swatch ' + segment.key"></i>{{ segment.label }}<b>{{ segment.count | number }}</b>
+          @for (row of dungeons(); track row.dungeon.id; let index = $index) {
+            <li [style.--i]="index">
+              <span class="dungeon-name" [title]="row.dungeon.name">
+                <img [src]="row.dungeon.icon" alt="" loading="lazy" />{{ row.dungeon.shortName }}
+              </span>
+              <span
+                class="track"
+                appTapTooltip
+                role="img"
+                tabindex="0"
+                [attr.aria-label]="row.dungeon.name + ': ' + row.runs + ' runs, ' + row.segments[0].count + ' ' + row.segments[0].label.toLowerCase() + ', ' + row.segments[1].count + ' ' + row.segments[1].label.toLowerCase()">
+                @for (segment of row.segments; track $index) {
+                  <span [class]="'segment ' + segment.key" [style.width.%]="segment.width"></span>
+                }
+                <span class="tooltip" aria-hidden="true">
+                  <strong>{{ row.dungeon.name }}</strong>
+                  @for (segment of row.segments; track segment) {
+                    <span class="tooltip-row">
+                      <i [class]="'swatch ' + segment.key"></i>{{ segment.label }}<b>{{ segment.count | number }}</b>
+                    </span>
+                  }
                 </span>
               </span>
-            </span>
-            <span class="dungeon-value">
-              <b>{{ row.runs | number }}</b>
-              <span *ngIf="dungeonSplit() === 'result'">{{ row.timedRate }} timed · best +{{ row.highestTimed || '-' }}</span>
-              <span *ngIf="dungeonSplit() === 'week'">best Fort +{{ row.highestFortified || '-' }} · Tyr +{{ row.highestTyrannical || '-' }}</span>
-            </span>
-          </li>
+              <span class="dungeon-value">
+                <b>{{ row.runs | number }}</b>
+                @if (dungeonSplit() === 'result') {
+                  <span>{{ row.timedRate }} timed · best +{{ row.highestTimed || '-' }}</span>
+                }
+                @if (dungeonSplit() === 'week') {
+                  <span>best Fort +{{ row.highestFortified || '-' }} · Tyr +{{ row.highestTyrannical || '-' }}</span>
+                }
+              </span>
+            </li>
+          }
         </ol>
       </section>
 
@@ -219,47 +259,64 @@
           </div>
         </div>
         <ul class="legend" aria-label="Legend">
-          <li *ngFor="let segment of levelLegend()"><i [class]="'swatch ' + segment.key"></i>{{ segment.label }}</li>
+          @for (segment of levelLegend(); track segment) {
+            <li><i [class]="'swatch ' + segment.key"></i>{{ segment.label }}</li>
+          }
         </ul>
-        <div class="chart-scroll" *ngIf="levelBars().length; else noRuns">
-          <div class="column-chart levels" [style.--columns]="levelBars().length" appReveal>
-            <div class="y-axis" aria-hidden="true">
-              <span *ngFor="let line of levelGridlines()" [style.bottom.%]="line.position">{{ line.value }}</span>
-            </div>
-            <div class="plot">
-              <div class="gridlines" aria-hidden="true">
-                <span *ngFor="let line of levelGridlines()" [style.bottom.%]="line.position"></span>
+        @if (levelBars().length) {
+          <div class="chart-scroll">
+            <div class="column-chart levels" [style.--columns]="levelBars().length" appReveal>
+              <div class="y-axis" aria-hidden="true">
+                @for (line of levelGridlines(); track line) {
+                  <span [style.bottom.%]="line.position">{{ line.value }}</span>
+                }
               </div>
-              <div class="columns">
-                <div
-                  class="column"
-                  appTapTooltip
-                  *ngFor="let bar of levelBars(); let index = index; trackBy: trackLevel"
-                  [style.--i]="index"
-                  [class.flip]="bar.flip"
-                  [class.middle]="bar.middle"
-                  [class.wide]="bar.wide"
-                  role="img"
-                  tabindex="0"
-                  [attr.aria-label]="'+' + bar.level + ': ' + bar.runs + ' runs, ' + bar.timedRate + ' timed'">
-                  <span class="stack" [style.height.%]="bar.heightPercent">
-                    <span *ngFor="let segment of bar.segments; trackBy: trackPosition" [class]="'segment ' + segment.key" [style.height.%]="segment.percent"></span>
-                  </span>
-                  <span class="tooltip" aria-hidden="true">
-                    <strong>+{{ bar.level }} · {{ bar.runs | number }} {{ bar.runs === 1 ? 'run' : 'runs' }}</strong>
-                    <span class="tooltip-row" *ngFor="let segment of bar.segments.slice().reverse()">
-                      <i [class]="'swatch ' + segment.key"></i>{{ segment.label }}<b>{{ segment.count | number }}</b>
-                    </span>
-                    <span class="tooltip-meta">{{ bar.timedRate }} in time</span>
-                  </span>
+              <div class="plot">
+                <div class="gridlines" aria-hidden="true">
+                  @for (line of levelGridlines(); track line) {
+                    <span [style.bottom.%]="line.position"></span>
+                  }
                 </div>
-              </div>
-              <div class="x-labels" aria-hidden="true">
-                <span *ngFor="let bar of levelBars()">{{ bar.showLabel ? '+' + bar.level : '' }}</span>
+                <div class="columns">
+                  @for (bar of levelBars(); track bar.level; let index = $index) {
+                    <div
+                      class="column"
+                      appTapTooltip
+                      [style.--i]="index"
+                      [class.flip]="bar.flip"
+                      [class.middle]="bar.middle"
+                      [class.wide]="bar.wide"
+                      role="img"
+                      tabindex="0"
+                      [attr.aria-label]="'+' + bar.level + ': ' + bar.runs + ' runs, ' + bar.timedRate + ' timed'">
+                      <span class="stack" [style.height.%]="bar.heightPercent">
+                        @for (segment of bar.segments; track $index) {
+                          <span [class]="'segment ' + segment.key" [style.height.%]="segment.percent"></span>
+                        }
+                      </span>
+                      <span class="tooltip" aria-hidden="true">
+                        <strong>+{{ bar.level }} · {{ bar.runs | number }} {{ bar.runs === 1 ? 'run' : 'runs' }}</strong>
+                        @for (segment of bar.segments.slice().reverse(); track segment) {
+                          <span class="tooltip-row">
+                            <i [class]="'swatch ' + segment.key"></i>{{ segment.label }}<b>{{ segment.count | number }}</b>
+                          </span>
+                        }
+                        <span class="tooltip-meta">{{ bar.timedRate }} in time</span>
+                      </span>
+                    </div>
+                  }
+                </div>
+                <div class="x-labels" aria-hidden="true">
+                  @for (bar of levelBars(); track bar) {
+                    <span>{{ bar.showLabel ? '+' + bar.level : '' }}</span>
+                  }
+                </div>
               </div>
             </div>
           </div>
-        </div>
+        } @else {
+          <p class="chart-empty">No runs in this period yet.</p>
+        }
       </section>
     </div>
 
@@ -271,23 +328,27 @@
           <p class="chart-subtitle">Whole season, newest first</p>
         </div>
       </header>
-      <ol class="week-cards" *ngIf="cards(); else weeksTable">
-        <li class="week-card" *ngFor="let row of weekRows()" [class.current]="row.current">
-          <div class="week-card-head">
-            <app-mythic-plus-week-affixes [affixes]="row.affixes" [label]="'Affixes, ' + row.dates" />
-            <span class="current-tag" *ngIf="row.current">This week</span>
-          </div>
-          <p class="week-card-dates">{{ row.dates }}</p>
-          <dl class="week-card-stats">
-            <div><dt>Runs</dt><dd>{{ row.runs | number }}</dd></div>
-            <div><dt>Timed</dt><dd>{{ row.timedRate }}</dd></div>
-            <div><dt>Highest timed</dt><dd>{{ row.highestTimed ? '+' + row.highestTimed : '-' }}</dd></div>
-            <div><dt>Players</dt><dd>{{ row.players | number }}</dd></div>
-          </dl>
-        </li>
-      </ol>
-
-      <ng-template #weeksTable>
+      @if (cards()) {
+        <ol class="week-cards">
+          @for (row of weekRows(); track row) {
+            <li class="week-card" [class.current]="row.current">
+              <div class="week-card-head">
+                <app-mythic-plus-week-affixes [affixes]="row.affixes" [label]="'Affixes, ' + row.dates" />
+                @if (row.current) {
+                  <span class="current-tag">This week</span>
+                }
+              </div>
+              <p class="week-card-dates">{{ row.dates }}</p>
+              <dl class="week-card-stats">
+                <div><dt>Runs</dt><dd>{{ row.runs | number }}</dd></div>
+                <div><dt>Timed</dt><dd>{{ row.timedRate }}</dd></div>
+                <div><dt>Highest timed</dt><dd>{{ row.highestTimed ? '+' + row.highestTimed : '-' }}</dd></div>
+                <div><dt>Players</dt><dd>{{ row.players | number }}</dd></div>
+              </dl>
+            </li>
+          }
+        </ol>
+      } @else {
         <div class="table-scroll" (scroll)="hideAffixTooltip()">
           <table class="weeks">
             <thead>
@@ -301,45 +362,48 @@
               </tr>
             </thead>
             <tbody>
-              <tr *ngFor="let row of weekRows()" [class.current]="row.current">
-                <td>
-                  <span
-                    class="week-affix"
-                    *ngFor="let affix of row.affixes"
-                    (pointerenter)="showAffixTooltip($event, affix)"
-                    (pointerleave)="hideAffixTooltip()">
-                    <span class="affix-icon"><img [src]="affix.icon" alt="" loading="lazy" /></span>{{ affix.name }}
-                  </span>
-                  <span class="current-tag" *ngIf="row.current">This week</span>
-                </td>
-                <td class="dates center">{{ row.dates }}</td>
-                <td class="num">{{ row.runs | number }}</td>
-                <td class="num">{{ row.timedRate }}</td>
-                <td class="num">{{ row.highestTimed ? '+' + row.highestTimed : '-' }}</td>
-                <td class="num">{{ row.players | number }}</td>
-              </tr>
+              @for (row of weekRows(); track row) {
+                <tr [class.current]="row.current">
+                  <td>
+                    @for (affix of row.affixes; track affix) {
+                      <span
+                        class="week-affix"
+                        (pointerenter)="showAffixTooltip($event, affix)"
+                        (pointerleave)="hideAffixTooltip()">
+                        <span class="affix-icon"><img [src]="affix.icon" alt="" loading="lazy" /></span>{{ affix.name }}
+                      </span>
+                    }
+                    @if (row.current) {
+                      <span class="current-tag">This week</span>
+                    }
+                  </td>
+                  <td class="dates center">{{ row.dates }}</td>
+                  <td class="num">{{ row.runs | number }}</td>
+                  <td class="num">{{ row.timedRate }}</td>
+                  <td class="num">{{ row.highestTimed ? '+' + row.highestTimed : '-' }}</td>
+                  <td class="num">{{ row.players | number }}</td>
+                </tr>
+              }
             </tbody>
           </table>
         </div>
-      </ng-template>
-      <span
-        class="week-affix-tooltip floating"
-        *ngIf="affixTooltip() as tooltip"
-        [style.left.px]="tooltip.left"
-        [style.top.px]="tooltip.top"
-        [style.bottom.px]="tooltip.bottom">{{ tooltip.text }}</span>
+      }
+      @if (affixTooltip(); as tooltip) {
+        <span
+          class="week-affix-tooltip floating"
+          [style.left.px]="tooltip.left"
+          [style.top.px]="tooltip.top"
+          [style.bottom.px]="tooltip.bottom">{{ tooltip.text }}</span>
+      }
     </section>
 
-    <app-race-by-spec
-      *ngFor="let role of raceRoles"
-      [role]="role"
-      [samples]="rosterSlots()"
-      [context]="period() === 'week' ? 'This week' : 'Season'" />
-
-    <ng-template #noRuns>
-      <p class="chart-empty">No runs in this period yet.</p>
-    </ng-template>
-  </ng-container>
+    @for (role of raceRoles; track role) {
+      <app-race-by-spec
+        [role]="role"
+        [samples]="rosterSlots()"
+        [context]="period() === 'week' ? 'This week' : 'Season'" />
+    }
+  }
 </main>
 
 <app-back-to-top-button />

@@ -77,6 +77,8 @@ interface SummaryTile {
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class RaidLogPageComponent {
+  readonly characterKey = characterKey;
+
   private readonly data = inject(RaidLogsDataService);
   private readonly destroyRef = inject(DestroyRef);
   private readonly route = inject(ActivatedRoute);
@@ -185,18 +187,6 @@ export class RaidLogPageComponent {
 
   classColor(classId: number): string {
     return getClassColor(classId) ?? '#e0e0e0';
-  }
-
-  trackRow(index: number, row: MemberRow): string {
-    return characterKey(row.member.character);
-  }
-
-  trackLoot(index: number, loot: LootView): string {
-    return `${loot.id}-${index}`;
-  }
-
-  trackLabel(index: number, tile: SummaryTile): string {
-    return tile.label;
   }
 
   private load(realm: string, logId: number): void {

@@ -18,9 +18,11 @@
       <strong>Guild Statistics</strong>
     </header>
 
-    <p class="load-error" *ngIf="loadFailed" role="alert">
-      The guild statistics could not be loaded. Please refresh the page to try again.
-    </p>
+    @if (loadFailed) {
+      <p class="load-error" role="alert">
+        The guild statistics could not be loaded. Please refresh the page to try again.
+      </p>
+    }
 
     <section
       id="guild-filters"
@@ -81,14 +83,16 @@
 
       <section id="guild-class-breakdown" class="summary-card collapsible-filter">
         <div class="class-list">
-          <div class="class-row" *ngFor="let entry of classCounts">
-            <img [src]="getClassIconPath(entry.id)" [alt]="entry.name" />
-            <span class="class-name">{{ entry.name }}</span>
-            <span class="class-count">{{ entry.count }}</span>
-            <span class="class-bar" aria-hidden="true">
-              <span [style.width.%]="entry.percentage"></span>
-            </span>
-          </div>
+          @for (entry of classCounts; track entry) {
+            <div class="class-row">
+              <img [src]="getClassIconPath(entry.id)" [alt]="entry.name" />
+              <span class="class-name">{{ entry.name }}</span>
+              <span class="class-count">{{ entry.count }}</span>
+              <span class="class-bar" aria-hidden="true">
+                <span [style.width.%]="entry.percentage"></span>
+              </span>
+            </div>
+          }
         </div>
       </section>
     </aside>
@@ -120,129 +124,147 @@
     </section>
 
     <div #tableScroll class="table-scroll" [class.table-scroll--overflowing]="isTableOverflowing()">
-    <table>
-      <thead>
-        <tr>
-          <th class="row-number-heading" scope="col">#</th>
-          <th [attr.aria-sort]="ariaSort('name')">
-            <button type="button" (click)="sortBy('name')" [class.active-sort]="sortColumn() === 'name'">
-              <span class="header-label">Name</span>
+      <table>
+        <thead>
+          <tr>
+            <th class="row-number-heading" scope="col">#</th>
+            <th [attr.aria-sort]="ariaSort('name')">
+              <button type="button" (click)="sortBy('name')" [class.active-sort]="sortColumn() === 'name'">
+                <span class="header-label">Name</span>
+              </button>
+            </th>
+            <th class="plain-heading race-class-heading" scope="col">Race / Class</th>
+            <th [attr.aria-sort]="ariaSort('guildRankName')">
+              <button type="button" (click)="sortBy('guildRankName')" [class.active-sort]="sortColumn() === 'guildRankName'">
+                <span class="header-label">Rank</span>
+              </button>
+            </th>
+            <th class="plain-heading" scope="col">Spec</th>
+            <th [attr.aria-sort]="ariaSort('artifactTraits')">
+              <button type="button" (click)="sortBy('artifactTraits')" [class.active-sort]="sortColumn() === 'artifactTraits'" title="Artifact traits per spec, sorted by the best artifact">
+                <span class="header-label">Traits</span>
+              </button>
+            </th>
+            <th [attr.aria-sort]="ariaSort('artifactKnowledge')">
+              <button type="button" (click)="sortBy('artifactKnowledge')" [class.active-sort]="sortColumn() === 'artifactKnowledge'" title="Artifact Knowledge">
+                <span class="header-label">AK</span>
+              </button>
+            </th>
+            <th [attr.aria-sort]="ariaSort('itemLevel')">
+              <button type="button" (click)="sortBy('itemLevel')" [class.active-sort]="sortColumn() === 'itemLevel'">
+                <span class="header-label">ilvl</span>
+              </button>
+            </th>
+            <th class="plain-heading" scope="col">Legendaries</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (player of renderedPlayers(); track player.name; let rowIndex = $index) {
+            <tr
+              >
+              <td class="row-number" data-label="Rank">{{ rowIndex + 1 }}</td>
+              <td class="player-cell" data-label="Name">
+                <a
+                  class="player-name"
+                  [style.--player-class-color]="classColor(player.class)"
+                  [href]="armoryUrl(player)"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  [title]="'Open ' + player.name + ' on Tauri Armory'">
+                  {{ player.name }}
+                </a>
+              </td>
+              <td class="icons" data-label="Race / Class">
+                <img [src]="raceIcon(player)" [alt]="'Race ' + player.race" />
+                <img [src]="getClassIconPath(player.class)" [alt]="'Class ' + player.class" />
+              </td>
+              <td data-label="Rank">{{ player.guildRankName || '—' }}</td>
+              <td data-label="Spec">{{ player.specialization || '—' }}</td>
+              <td class="traits-cell" data-label="Traits">
+                @if (specTraits(player).length) {
+                  <ul class="spec-traits">
+                    @for (entry of specTraits(player); track entry) {
+                      @if (entry.traits !== null) {
+                        <li class="spec-trait">
+                          @if (entry.icon) {
+                            <span class="spec-trait-icon">
+                              <img [src]="entry.icon" [alt]="entry.spec" loading="lazy" />
+                            </span>
+                          }
+                          <span class="spec-trait-count">{{ entry.traits }}</span>
+                        </li>
+                      } @else {
+                        <li class="spec-trait spec-trait--locked" appTapTooltip>
+                          @if (entry.icon) {
+                            <span class="spec-trait-icon">
+                              <img [src]="entry.icon" [alt]="entry.spec + ' (not unlocked)'" loading="lazy" />
+                            </span>
+                          }
+                          <span class="spec-trait-tooltip" aria-hidden="true">{{ entry.spec }} artifact not unlocked</span>
+                        </li>
+                      }
+                      <!-- Only a locked spec gets a tooltip, and it opens at once (a title waits). -->
+                    }
+                  </ul>
+                } @else {—}
+              </td>
+              <td data-label="AK" title="Artifact Knowledge">{{ player.artifactKnowledge ?? '—' }}</td>
+              <td data-label="ilvl">{{ player.itemLevel | number:'1.2-2' }}</td>
+              <td class="legendary-cell" data-label="Legendaries">
+                @if (player.legendaries?.length) {
+                  @for (item of player.legendaries; track item) {
+                    <a
+                      class="legendary-item"
+                      [href]="legendaryUrl(item)"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      (mouseenter)="showLegendaryTooltip($event, tooltip)"
+                      (mouseleave)="hideLegendaryTooltip(tooltip)"
+                      (focus)="showLegendaryTooltip($event, tooltip)"
+                      (blur)="hideLegendaryTooltip(tooltip)"
+                      [attr.aria-label]="item.name + ' (opens on TauriShoot)'">
+                      <img [src]="item.icon" [alt]="item.name" loading="lazy" />
+                      <span #tooltip class="legendary-tooltip" role="tooltip">
+                        @if (!item.tooltipHtml) {
+                          <span class="legendary-tooltip-name">{{ item.name }}</span>
+                        }
+                        @if (item.tooltipHtml) {
+                          <span class="legendary-tooltip-content" [innerHTML]="legendaryTooltipHtml(item.tooltipHtml)"></span>
+                        }
+                        <span class="legendary-tooltip-source">View on TauriShoot</span>
+                      </span>
+                    </a>
+                  }
+                } @else {
+                  <span class="no-legendary">&mdash;</span>
+                }
+              </td>
+            </tr>
+          }
+          @if (players().length === 0 && (selectedClassId() !== null || selectedGuildRank() || selectedCombatRole())) {
+            <tr
+              class="empty-roster"
+              >
+              <td colspan="9">
+                No members match these filters.
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+      @if (hiddenPlayerCount() > 0) {
+        <div class="show-more">
+          <p class="show-more-status">Showing {{ renderedPlayers().length }} of {{ players().length }} members</p>
+          <div class="show-more-actions">
+            <button type="button" class="show-more-button" (click)="showMorePlayers()">
+              Show {{ nextRosterPageSize() }} more
             </button>
-          </th>
-          <th class="plain-heading race-class-heading" scope="col">Race / Class</th>
-          <th [attr.aria-sort]="ariaSort('guildRankName')">
-            <button type="button" (click)="sortBy('guildRankName')" [class.active-sort]="sortColumn() === 'guildRankName'">
-              <span class="header-label">Rank</span>
+            <button type="button" class="show-more-button show-more-button--all" (click)="showAllPlayers()">
+              Show all
             </button>
-          </th>
-          <th class="plain-heading" scope="col">Spec</th>
-          <th [attr.aria-sort]="ariaSort('artifactTraits')">
-            <button type="button" (click)="sortBy('artifactTraits')" [class.active-sort]="sortColumn() === 'artifactTraits'" title="Artifact traits per spec, sorted by the best artifact">
-              <span class="header-label">Traits</span>
-            </button>
-          </th>
-          <th [attr.aria-sort]="ariaSort('artifactKnowledge')">
-            <button type="button" (click)="sortBy('artifactKnowledge')" [class.active-sort]="sortColumn() === 'artifactKnowledge'" title="Artifact Knowledge">
-              <span class="header-label">AK</span>
-            </button>
-          </th>
-          <th [attr.aria-sort]="ariaSort('itemLevel')">
-            <button type="button" (click)="sortBy('itemLevel')" [class.active-sort]="sortColumn() === 'itemLevel'">
-              <span class="header-label">ilvl</span>
-            </button>
-          </th>
-          <th class="plain-heading" scope="col">Legendaries</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr
-          *ngFor="let player of renderedPlayers(); let rowIndex = index; trackBy: trackPlayer">
-          <td class="row-number" data-label="Rank">{{ rowIndex + 1 }}</td>
-          <td class="player-cell" data-label="Name">
-            <a
-              class="player-name"
-              [style.--player-class-color]="classColor(player.class)"
-              [href]="armoryUrl(player)"
-              target="_blank"
-              rel="noopener noreferrer"
-              [title]="'Open ' + player.name + ' on Tauri Armory'">
-              {{ player.name }}
-            </a>
-          </td>
-          <td class="icons" data-label="Race / Class">
-            <img [src]="raceIcon(player)" [alt]="'Race ' + player.race" />
-            <img [src]="getClassIconPath(player.class)" [alt]="'Class ' + player.class" />
-          </td>
-          <td data-label="Rank">{{ player.guildRankName || '—' }}</td>
-          <td data-label="Spec">{{ player.specialization || '—' }}</td>
-          <td class="traits-cell" data-label="Traits">
-            <ul class="spec-traits" *ngIf="specTraits(player).length; else noTraits">
-              <ng-container *ngFor="let entry of specTraits(player)">
-                <li class="spec-trait" *ngIf="entry.traits !== null; else lockedSpec">
-                  <span class="spec-trait-icon" *ngIf="entry.icon">
-                    <img [src]="entry.icon" [alt]="entry.spec" loading="lazy" />
-                  </span>
-                  <span class="spec-trait-count">{{ entry.traits }}</span>
-                </li>
-                <!-- Only a locked spec gets a tooltip, and it opens at once (a title waits). -->
-                <ng-template #lockedSpec>
-                  <li class="spec-trait spec-trait--locked" appTapTooltip>
-                    <span class="spec-trait-icon" *ngIf="entry.icon">
-                      <img [src]="entry.icon" [alt]="entry.spec + ' (not unlocked)'" loading="lazy" />
-                    </span>
-                    <span class="spec-trait-tooltip" aria-hidden="true">{{ entry.spec }} artifact not unlocked</span>
-                  </li>
-                </ng-template>
-              </ng-container>
-            </ul>
-            <ng-template #noTraits>—</ng-template>
-          </td>
-          <td data-label="AK" title="Artifact Knowledge">{{ player.artifactKnowledge ?? '—' }}</td>
-          <td data-label="ilvl">{{ player.itemLevel | number:'1.2-2' }}</td>
-          <td class="legendary-cell" data-label="Legendaries">
-            <ng-container *ngIf="player.legendaries?.length; else noLegendaries">
-              <a
-                *ngFor="let item of player.legendaries"
-                class="legendary-item"
-                [href]="legendaryUrl(item)"
-                target="_blank"
-                rel="noopener noreferrer"
-                (mouseenter)="showLegendaryTooltip($event, tooltip)"
-                (mouseleave)="hideLegendaryTooltip(tooltip)"
-                (focus)="showLegendaryTooltip($event, tooltip)"
-                (blur)="hideLegendaryTooltip(tooltip)"
-                [attr.aria-label]="item.name + ' (opens on TauriShoot)'">
-                <img [src]="item.icon" [alt]="item.name" loading="lazy" />
-                <span #tooltip class="legendary-tooltip" role="tooltip">
-                  <span *ngIf="!item.tooltipHtml" class="legendary-tooltip-name">{{ item.name }}</span>
-                  <span *ngIf="item.tooltipHtml" class="legendary-tooltip-content" [innerHTML]="legendaryTooltipHtml(item.tooltipHtml)"></span>
-                  <span class="legendary-tooltip-source">View on TauriShoot</span>
-                </span>
-              </a>
-            </ng-container>
-            <ng-template #noLegendaries><span class="no-legendary">&mdash;</span></ng-template>
-          </td>
-        </tr>
-        <tr
-          class="empty-roster"
-          *ngIf="players().length === 0 && (selectedClassId() !== null || selectedGuildRank() || selectedCombatRole())">
-          <td colspan="9">
-            No members match these filters.
-          </td>
-        </tr>
-      </tbody>
-    </table>
-    <div class="show-more" *ngIf="hiddenPlayerCount() > 0">
-      <p class="show-more-status">Showing {{ renderedPlayers().length }} of {{ players().length }} members</p>
-      <div class="show-more-actions">
-        <button type="button" class="show-more-button" (click)="showMorePlayers()">
-          Show {{ nextRosterPageSize() }} more
-        </button>
-        <button type="button" class="show-more-button show-more-button--all" (click)="showAllPlayers()">
-          Show all
-        </button>
-      </div>
-    </div>
+          </div>
+        </div>
+      }
     </div>
   </div>
 </main>

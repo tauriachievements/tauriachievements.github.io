@@ -85,10 +85,6 @@ export class GuildPresencePageComponent implements OnInit {
     this.guildPresencePageStore.setSourceLimit(DEFAULT_GUILD_SOURCE_LIMIT);
   }
 
-  trackGuild(_index: number, guild: GuildPresenceRankingEntry): string {
-    return guild.key;
-  }
-
   private getSelectedLabel(
     options: ReadonlyArray<LadderSelectOption<number>>,
     selectedValue: number,

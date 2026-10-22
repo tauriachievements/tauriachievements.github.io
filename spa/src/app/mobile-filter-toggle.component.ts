@@ -1,4 +1,3 @@
-import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component, EventEmitter, Input, Output } from '@angular/core';
 
 /**
@@ -13,7 +12,7 @@ import { ChangeDetectionStrategy, Component, EventEmitter, Input, Output } from 
   templateUrl: './mobile-filter-toggle.component.html',
   styleUrls: ['./mobile-filter-toggle.component.scss'],
   standalone: true,
-  imports: [CommonModule],
+  imports: [],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class MobileFilterToggleComponent {

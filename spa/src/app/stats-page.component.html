@@ -18,7 +18,9 @@
           aria-label="Filter statistics by realm"
           [value]="selectedRealm()"
           (change)="selectRealm($event)">
-          <option *ngFor="let realm of realmOptions" [value]="realm">{{ realm }}</option>
+          @for (realm of realmOptions; track realm) {
+            <option [value]="realm">{{ realm }}</option>
+          }
         </select>
       </label>
 
@@ -27,28 +29,33 @@
           aria-label="Filter statistics by level"
           [value]="selectedLevel()"
           (change)="selectLevel($event)">
-          <option *ngFor="let level of levelOptions" [value]="level">
-            {{ level === 'All levels' ? level : 'lvl ' + level }}
-          </option>
+          @for (level of levelOptions; track level) {
+            <option [value]="level">
+              {{ level === 'All levels' ? level : 'lvl ' + level }}
+            </option>
+          }
         </select>
       </label>
     </div>
   </header>
 
-  <div class="stats-feedback loading" *ngIf="showLoading()">
-    <div class="feedback-spinner" aria-hidden="true"></div>
-    <h2>Computing server statistics...</h2>
-    <p>Crunching data for every character on the server</p>
-  </div>
+  @if (showLoading()) {
+    <div class="stats-feedback loading">
+      <div class="feedback-spinner" aria-hidden="true"></div>
+      <h2>Computing server statistics...</h2>
+      <p>Crunching data for every character on the server</p>
+    </div>
+  }
 
-  <div class="stats-feedback error" *ngIf="showError()">
-    <h2>Could not load statistics</h2>
-    <p>{{ loadError() }}</p>
-    <button type="button" class="feedback-action" (click)="syncData()">Try again</button>
-  </div>
+  @if (showError()) {
+    <div class="stats-feedback error">
+      <h2>Could not load statistics</h2>
+      <p>{{ loadError() }}</p>
+      <button type="button" class="feedback-action" (click)="syncData()">Try again</button>
+    </div>
+  }
 
-  <ng-container *ngIf="showContent()">
-
+  @if (showContent()) {
     <div class="charts-grid">
       <article class="chart-panel">
         <h2 class="chart-title">Class Distribution</h2>
@@ -89,14 +96,17 @@
       </article>
     </div>
 
-    <div class="realm-pills" *ngIf="stats().realmLabels.length > 0">
-      <span class="realm-pill-label">By Realm:</span>
-      <span class="realm-pill" *ngFor="let realm of stats().realmLabels; let i = index">
-        {{ realm }}: <strong>{{ stats().realmCounts[i] | number }}</strong>
-      </span>
-    </div>
-
-  </ng-container>
+    @if (stats().realmLabels.length > 0) {
+      <div class="realm-pills">
+        <span class="realm-pill-label">By Realm:</span>
+        @for (realm of stats().realmLabels; track realm; let i = $index) {
+          <span class="realm-pill">
+            {{ realm }}: <strong>{{ stats().realmCounts[i] | number }}</strong>
+          </span>
+        }
+      </div>
+    }
+  }
 </div>
 
 <app-back-to-top-button />

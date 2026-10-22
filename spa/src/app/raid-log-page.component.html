@@ -4,26 +4,31 @@
   [lastEditedTimeZoneLabel]="lastEditedTimeZoneLabel()" />
 
 <main class="raid-page">
-  <a class="back-link" *ngIf="kill() as current; else backToRaid"
-    [routerLink]="bossLink(current.boss)"
-    [queryParams]="{ difficulty: current.difficulty.slug, tab: 'fastest' }">
-    <span aria-hidden="true">‹</span> All {{ current.boss.shortName }} {{ current.difficulty.name }} kills
-  </a>
-  <ng-template #backToRaid>
+  @if (kill(); as current) {
+    <a class="back-link"
+      [routerLink]="bossLink(current.boss)"
+      [queryParams]="{ difficulty: current.difficulty.slug, tab: 'fastest' }">
+      <span aria-hidden="true">‹</span> All {{ current.boss.shortName }} {{ current.difficulty.name }} kills
+    </a>
+  } @else {
     <a class="back-link" routerLink="/raid-logs"><span aria-hidden="true">‹</span> Back to Raid Logs</a>
-  </ng-template>
+  }
 
-  <section class="feedback" *ngIf="isLoading()">
-    <span class="spinner" aria-hidden="true"></span>
-    <p>Reading the log...</p>
-  </section>
+  @if (isLoading()) {
+    <section class="feedback">
+      <span class="spinner" aria-hidden="true"></span>
+      <p>Reading the log...</p>
+    </section>
+  }
 
-  <section class="feedback error" *ngIf="!isLoading() && loadError()">
-    <p>{{ loadError() }}</p>
-    <button type="button" (click)="reload()">Try again</button>
-  </section>
+  @if (!isLoading() && loadError()) {
+    <section class="feedback error">
+      <p>{{ loadError() }}</p>
+      <button type="button" (click)="reload()">Try again</button>
+    </section>
+  }
 
-  <ng-container *ngIf="!isLoading() && !loadError() && kill() as current">
+  @if (!isLoading() && !loadError() && kill(); as current) {
     <header class="log-header">
       <img class="boss-portrait" [src]="current.boss.portrait" alt="" />
       <div class="log-heading">
@@ -33,8 +38,9 @@
         </p>
         <h1>
           <span class="faction" [ngClass]="'faction-' + current.faction" aria-hidden="true"></span>
-          <a *ngIf="current.guild?.name; else pickup" [routerLink]="guildLink(current.guild!)" [queryParams]="{ difficulty: current.difficulty.slug }">{{ current.guild!.name }}</a>
-          <ng-template #pickup>Pickup group</ng-template>
+          @if (current.guild?.name) {
+            <a [routerLink]="guildLink(current.guild!)" [queryParams]="{ difficulty: current.difficulty.slug }">{{ current.guild!.name }}</a>
+          } @else {Pickup group}
         </h1>
         <p class="log-meta">
           <time [attr.datetime]="current.killedAt | date:'yyyy-MM-ddTHH:mm:ss'">{{ current.killedAt | date:'EEEE d MMMM y, HH:mm' }}</time>
@@ -42,28 +48,33 @@
         </p>
       </div>
       <ul class="composition" aria-label="Group">
-        <li *ngFor="let role of composition()"><strong>{{ role.count }}</strong> {{ role.label }}</li>
+        @for (role of composition(); track role) {
+          <li><strong>{{ role.count }}</strong> {{ role.label }}</li>
+        }
       </ul>
     </header>
 
     <dl class="summary">
-      <div *ngFor="let tile of summary(); trackBy: trackLabel">
-        <dt>{{ tile.label }}</dt>
-        <dd>{{ tile.value }}<span class="summary-note">{{ tile.note }}</span></dd>
-      </div>
+      @for (tile of summary(); track tile.label) {
+        <div>
+          <dt>{{ tile.label }}</dt>
+          <dd>{{ tile.value }}<span class="summary-note">{{ tile.note }}</span></dd>
+        </div>
+      }
     </dl>
 
     <section class="section" aria-labelledby="members-title">
       <header class="section-header">
         <h2 id="members-title">Players</h2>
         <div class="view-switch" role="tablist" aria-label="What to compare" appGlide>
-          <button
-            type="button"
-            role="tab"
-            *ngFor="let entry of metrics"
-            [class.active]="metric() === entry.id"
-            [attr.aria-selected]="metric() === entry.id"
-            (click)="setMetric(entry.id)">{{ entry.label }}</button>
+          @for (entry of metrics; track entry) {
+            <button
+              type="button"
+              role="tab"
+              [class.active]="metric() === entry.id"
+              [attr.aria-selected]="metric() === entry.id"
+              (click)="setMetric(entry.id)">{{ entry.label }}</button>
+          }
         </div>
       </header>
 
@@ -81,32 +92,34 @@
             </tr>
           </thead>
           <tbody [appReveal]="900">
-            <tr *ngFor="let row of rows(); let position = index; trackBy: trackRow">
-              <td class="rank">{{ position + 1 }}</td>
-              <td>
-                <span class="character">
-                  <img [src]="row.member.spec?.icon || classIcon(row.member.character.classId)" alt="" loading="lazy" />
-                  <span class="character-text">
-                    <a
-                      class="character-name"
-                      [style.color]="classColor(row.member.character.classId)"
-                      [routerLink]="characterLink(row.member.character)"
-                      [queryParams]="{ difficulty: current.difficulty.slug }">{{ row.member.character.name }}</a>
-                    <span class="character-sub">{{ row.member.spec?.name || 'Unknown spec' }} · {{ row.member.character.realm }}</span>
+            @for (row of rows(); track characterKey(row.member.character); let position = $index) {
+              <tr>
+                <td class="rank">{{ position + 1 }}</td>
+                <td>
+                  <span class="character">
+                    <img [src]="row.member.spec?.icon || classIcon(row.member.character.classId)" alt="" loading="lazy" />
+                    <span class="character-text">
+                      <a
+                        class="character-name"
+                        [style.color]="classColor(row.member.character.classId)"
+                        [routerLink]="characterLink(row.member.character)"
+                        [queryParams]="{ difficulty: current.difficulty.slug }">{{ row.member.character.name }}</a>
+                      <span class="character-sub">{{ row.member.spec?.name || 'Unknown spec' }} · {{ row.member.character.realm }}</span>
+                    </span>
                   </span>
-                </span>
-              </td>
-              <td class="bar-col">
-                <span class="bar-track">
-                  <span class="bar" [style.width.%]="row.bar" [style.background]="classColor(row.member.character.classId)"></span>
-                  <span class="bar-label">{{ formatAmount(row.amount) }} <span class="muted">{{ row.share | number:'1.1-1' }}%</span></span>
-                </span>
-              </td>
-              <td class="num strong">{{ formatPerSecond(row.perSecond) }}</td>
-              <td class="num col-optional">{{ row.member.itemLevel }}</td>
-              <td class="num col-optional">{{ row.member.interrupts }}</td>
-              <td class="num col-optional">{{ row.member.dispels }}</td>
-            </tr>
+                </td>
+                <td class="bar-col">
+                  <span class="bar-track">
+                    <span class="bar" [style.width.%]="row.bar" [style.background]="classColor(row.member.character.classId)"></span>
+                    <span class="bar-label">{{ formatAmount(row.amount) }} <span class="muted">{{ row.share | number:'1.1-1' }}%</span></span>
+                  </span>
+                </td>
+                <td class="num strong">{{ formatPerSecond(row.perSecond) }}</td>
+                <td class="num col-optional">{{ row.member.itemLevel }}</td>
+                <td class="num col-optional">{{ row.member.interrupts }}</td>
+                <td class="num col-optional">{{ row.member.dispels }}</td>
+              </tr>
+            }
           </tbody>
         </table>
       </div>
@@ -115,19 +128,26 @@
     <section class="section" aria-labelledby="loot-title">
       <header class="section-header">
         <h2 id="loot-title">Loot</h2>
-        <p *ngIf="loot().length">Item names link to TauriShoot.</p>
+        @if (loot().length) {
+          <p>Item names link to TauriShoot.</p>
+        }
       </header>
-      <ul class="loot" *ngIf="loot().length; else noLoot">
-        <li *ngFor="let entry of loot(); let position = index; trackBy: trackLoot">
-          <a [href]="itemUrl(entry.id)" target="_blank" rel="noopener">
-            <img [src]="itemIcon(entry.item?.icon ?? '')" alt="" loading="lazy" />
-            <span [style.color]="entry.color">{{ entry.item?.name || 'Item ' + entry.id }}</span>
-          </a>
-        </li>
-      </ul>
-      <ng-template #noLoot><p class="empty-note">No loot was logged for this kill.</p></ng-template>
+      @if (loot().length) {
+        <ul class="loot">
+          @for (entry of loot(); track `${entry.id}-${position}`; let position = $index) {
+            <li>
+              <a [href]="itemUrl(entry.id)" target="_blank" rel="noopener">
+                <img [src]="itemIcon(entry.item?.icon ?? '')" alt="" loading="lazy" />
+                <span [style.color]="entry.color">{{ entry.item?.name || 'Item ' + entry.id }}</span>
+              </a>
+            </li>
+          }
+        </ul>
+      } @else {
+        <p class="empty-note">No loot was logged for this kill.</p>
+      }
     </section>
-  </ng-container>
+  }
 </main>
 
 <app-back-to-top-button />

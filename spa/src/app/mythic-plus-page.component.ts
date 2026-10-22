@@ -739,14 +739,6 @@ export class MythicPlusPageComponent implements OnInit {
     this.expandedRunId.update(current => current === runId ? undefined : runId);
   }
 
-  trackDungeon(index: number, dungeon: MythicPlusDungeon): string {
-    return dungeon.id;
-  }
-
-  trackPick(index: number, pick: { key: string }): string {
-    return pick.key;
-  }
-
   /**
    * Mirrors the filters into the address bar so links and reloads keep them. This writes the
    * URL directly instead of navigating: every router navigation scrolls to the top

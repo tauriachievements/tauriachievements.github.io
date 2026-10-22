@@ -94,14 +94,6 @@ export class MythicPlusPlayersListComponent {
     }
   }
 
-  trackPlayer(index: number, row: PlayerRow): string {
-    return row.key;
-  }
-
-  trackDungeon(index: number, dungeon: MythicPlusDungeon): string {
-    return dungeon.id;
-  }
-
   bestTitle(best: BestRunCell | undefined): string {
     return best
       ? `${best.dungeon.name} +${best.keyLevel}${best.timed ? '' : ' (over time)'} · ${best.score.toFixed(1)}`

@@ -61,12 +61,4 @@ export class MythicPlusRunsListComponent {
   isExpanded(runId: string): boolean {
     return this.expandedRunId() === runId;
   }
-
-  trackRow(index: number, row: RunRow): string {
-    return row.id;
-  }
-
-  trackMember(index: number, member: MemberView): string {
-    return `${member.name}-${member.realm}`;
-  }
 }

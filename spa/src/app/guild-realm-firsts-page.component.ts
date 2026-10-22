@@ -1,4 +1,3 @@
-import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component, DestroyRef, OnInit, computed, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { BackToTopButtonComponent } from './back-to-top-button.component';
@@ -91,7 +90,7 @@ const POGCHAMP_EMOTE_URL = 'assets/pogchamp.png';
   templateUrl: './guild-realm-firsts-page.component.html',
   styleUrls: ['./guild-realm-firsts-page.component.scss'],
   standalone: true,
-  imports: [CommonModule, UpdateBarComponent, BackToTopButtonComponent],
+  imports: [UpdateBarComponent, BackToTopButtonComponent],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class GuildRealmFirstsPageComponent implements OnInit {
@@ -178,14 +177,6 @@ export class GuildRealmFirstsPageComponent implements OnInit {
 
   retryLoad(): void {
     this.loadGuildRealmFirsts();
-  }
-
-  trackRow(_index: number, row: GuildRealmFirstAchievementView): string {
-    return row.name;
-  }
-
-  trackCell(_index: number, cell: GuildRealmFirstCellView): string {
-    return cell.realm;
   }
 
   getVideoTitle(row: GuildRealmFirstAchievementView, cell: GuildRealmFirstCellView): string {

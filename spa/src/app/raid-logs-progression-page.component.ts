@@ -47,6 +47,8 @@ const FACTIONS: ReadonlyArray<{ slug: string; id: number; label: string }> = [
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class RaidLogsProgressionPageComponent implements OnInit {
+  readonly guildKey = guildKey;
+
   private readonly data = inject(RaidLogsDataService);
   private readonly destroyRef = inject(DestroyRef);
   private readonly route = inject(ActivatedRoute);
@@ -151,10 +153,6 @@ export class RaidLogsProgressionPageComponent implements OnInit {
   /** The tooltip of a progress pip: the boss, and when the guild first killed it. */
   pipTitle(boss: RaidBoss, kill: RaidKill | undefined): string {
     return kill ? `${boss.shortName}: first kill ${new Date(kill.killedAt).toLocaleDateString('en-GB')}` : `${boss.shortName}: not killed yet`;
-  }
-
-  trackGuild(index: number, row: GuildProgress): string {
-    return guildKey(row.guild);
   }
 
   /** The switch and the dropdowns keep the scroll position: no navigation, only the address bar changes. */

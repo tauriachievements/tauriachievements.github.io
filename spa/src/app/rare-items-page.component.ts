@@ -86,10 +86,6 @@ export class RareItemsPageComponent implements OnInit {
     this.loadData();
   }
 
-  trackCharacter(_index: number, character: RareItemCharacter): string {
-    return `${character.realm}::${character.name}`;
-  }
-
   getCharacterClassColor(character: RareItemCharacter): string {
     return getClassColor(character.class) ?? '#b7df86';
   }

@@ -350,28 +350,6 @@ export class MythicPlusStatsPageComponent implements OnInit {
     this.affixTooltip.set(undefined);
   }
 
-  // Kept elements are what lets a switch or a filter animate the charts into their new shape.
-  trackLabel(index: number, item: { label: string }): string {
-    return item.label;
-  }
-
-  trackDay(index: number, bar: DayBar): string {
-    return bar.day.day;
-  }
-
-  trackLevel(index: number, bar: { level: number }): number {
-    return bar.level;
-  }
-
-  trackDungeonRow(index: number, row: { dungeon: { id: string } }): string {
-    return row.dungeon.id;
-  }
-
-  /** Segments by position, so switching the split recolours and resizes them rather than replacing them. */
-  trackPosition(index: number): number {
-    return index;
-  }
-
   setLevelDungeon(value: FilterDropdownValue): void {
     this.levelDungeon.set(typeof value === 'string' ? value : undefined);
   }

@@ -1,4 +1,3 @@
-import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component, DestroyRef, OnInit, computed, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { BackToTopButtonComponent } from './back-to-top-button.component';
@@ -78,7 +77,7 @@ const TIMELINE_GUILD_REALMS: Readonly<Record<string, string>> = {
 @Component({
   selector: 'app-emerald-nightmare-page',
   standalone: true,
-  imports: [CommonModule, UpdateBarComponent, BackToTopButtonComponent, TapTooltipDirective],
+  imports: [UpdateBarComponent, BackToTopButtonComponent, TapTooltipDirective],
   templateUrl: './emerald-nightmare-page.component.html',
   styleUrls: ['./emerald-nightmare-page.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush
@@ -242,22 +241,6 @@ export class EmeraldNightmarePageComponent implements OnInit {
   resetPlayback(): void {
     this.stopPlayback();
     this.playbackMinute.set(TIMELINE_DURATION_MINUTES);
-  }
-
-  trackBoss(index: number, boss: BossView): BossKey {
-    return boss.key;
-  }
-
-  trackGuild(index: number): number {
-    return index;
-  }
-
-  trackTimelineGuild(index: number, timeline: GuildTimeline): string {
-    return timeline.guild;
-  }
-
-  trackCheckpoint(index: number, checkpoint: TimelineCheckpoint): BossKey {
-    return checkpoint.boss.key;
   }
 
   guildArmoryUrl(guild: string): string {

@@ -85,6 +85,8 @@ const METRICS: ReadonlyArray<{ id: RaidMetric; label: string }> = [
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class RaidLogsLeaderboardPageComponent {
+  readonly characterKey = characterKey;
+
   private readonly data = inject(RaidLogsDataService);
   private readonly destroyRef = inject(DestroyRef);
   private readonly route = inject(ActivatedRoute);
@@ -359,10 +361,6 @@ export class RaidLogsLeaderboardPageComponent {
   /** The score's colour, against the top score in view: the M+ leaderboard's scoreQuality. */
   scoreTier(entry: RankedScore): RunQuality {
     return scoreQuality(entry.score, this.topScore());
-  }
-
-  trackScore(index: number, entry: RankedScore): string {
-    return characterKey(entry.character);
   }
 
   change(entry: RankedScore): ScoreChange | undefined {

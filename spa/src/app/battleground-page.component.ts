@@ -130,30 +130,6 @@ export class BattlegroundPageComponent implements OnInit {
     this.selectedBattlegroundName.set(undefined);
   }
 
-  trackBattlegroundRow(_index: number, row: BattlegroundDayRow): string {
-    return row.name;
-  }
-
-  trackBattlegroundDayGroup(_index: number, group: BattlegroundDayGroup): string {
-    return group.label;
-  }
-
-  trackDurationRow(_index: number, row: BattlegroundDurationRow): string {
-    return row.name;
-  }
-
-  trackDurationGroup(_index: number, group: BattlegroundDurationGroup): string {
-    return group.label;
-  }
-
-  trackStartGroup(_index: number, group: BattlegroundStartGroup): string {
-    return group.label;
-  }
-
-  trackStartEntry(_index: number, entry: BattlegroundStartEntry): string {
-    return entry.id;
-  }
-
   @HostListener('document:keydown.escape', ['$event'])
   onEscapeKey(event: Event): void {
     if (!this.selectedBattlegroundName()) {

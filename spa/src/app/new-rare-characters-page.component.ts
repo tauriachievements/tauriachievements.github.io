@@ -103,14 +103,6 @@ export class NewRareCharactersPageComponent implements OnInit {
     this.loadData();
   }
 
-  trackCharacter(_index: number, character: NewRareCharacterView): string {
-    return `${character.realm}::${character.name}`;
-  }
-
-  trackRareAchievementName(index: number, _name: string): number {
-    return index;
-  }
-
   getCharacterLinkTitle(character: NewRareCharacterView): string {
     return `New rare character found\n${character.rareAchievementNames.join('\n')}`;
   }

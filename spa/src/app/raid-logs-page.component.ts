@@ -50,6 +50,8 @@ const RECENT_KILLS = 12;
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class RaidLogsPageComponent implements OnInit {
+  readonly logKey = logKey;
+
   private readonly data = inject(RaidLogsDataService);
   private readonly destroyRef = inject(DestroyRef);
   private readonly route = inject(ActivatedRoute);
@@ -137,14 +139,6 @@ export class RaidLogsPageComponent implements OnInit {
 
   ago(kill: RaidKill): string {
     return formatAgo(kill.killedAt, this.now());
-  }
-
-  trackBoss(index: number, card: BossCard): string {
-    return card.boss.slug;
-  }
-
-  trackKill(index: number, kill: RaidKill): string {
-    return logKey(kill);
   }
 
   /** The difficulty switch keeps the scroll position: no navigation, only the address bar changes. */

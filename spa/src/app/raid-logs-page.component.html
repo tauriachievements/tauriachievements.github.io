@@ -6,17 +6,21 @@
 <main class="raid-page">
   <h1 class="visually-hidden">Raid logs, {{ index()?.raid?.name ?? 'The Emerald Nightmare' }}</h1>
 
-  <section class="feedback" *ngIf="isLoading()">
-    <span class="spinner" aria-hidden="true"></span>
-    <p>Reading the logs...</p>
-  </section>
+  @if (isLoading()) {
+    <section class="feedback">
+      <span class="spinner" aria-hidden="true"></span>
+      <p>Reading the logs...</p>
+    </section>
+  }
 
-  <section class="feedback error" *ngIf="!isLoading() && loadError()">
-    <p>{{ loadError() }}</p>
-    <button type="button" (click)="loadData()">Try again</button>
-  </section>
+  @if (!isLoading() && loadError()) {
+    <section class="feedback error">
+      <p>{{ loadError() }}</p>
+      <button type="button" (click)="loadData()">Try again</button>
+    </section>
+  }
 
-  <ng-container *ngIf="!isLoading() && !loadError() && difficulty() as current">
+  @if (!isLoading() && !loadError() && difficulty(); as current) {
     <app-raid-difficulty-switch
       class="page-switch"
       [difficulties]="index()!.difficulties"
@@ -32,44 +36,54 @@
       </header>
 
       <div class="boss-grid" [appReveal]="1400">
-        <a
-          class="boss-card"
-          *ngFor="let card of bossCards(); let index = index; trackBy: trackBoss"
-          [style.--i]="index"
-          [routerLink]="bossLink(card.boss)"
-          [queryParams]="{ difficulty: current.slug }"
-          [class.untouched]="!card.kills">
-          <header class="boss-head">
-            <img class="boss-portrait" [src]="card.boss.portrait" alt="" loading="lazy" />
-            <div class="boss-title">
-              <span class="boss-number">Boss {{ card.boss.index + 1 }}</span>
-              <h3>{{ card.boss.shortName }}</h3>
-            </div>
-            <span class="boss-kills"><strong>{{ card.kills | number }}</strong> kills</span>
-          </header>
+        @for (card of bossCards(); track card.boss.slug; let index = $index) {
+          <a
+            class="boss-card"
+            [style.--i]="index"
+            [routerLink]="bossLink(card.boss)"
+            [queryParams]="{ difficulty: current.slug }"
+            [class.untouched]="!card.kills">
+            <header class="boss-head">
+              <img class="boss-portrait" [src]="card.boss.portrait" alt="" loading="lazy" />
+              <div class="boss-title">
+                <span class="boss-number">Boss {{ card.boss.index + 1 }}</span>
+                <h3>{{ card.boss.shortName }}</h3>
+              </div>
+              <span class="boss-kills"><strong>{{ card.kills | number }}</strong> kills</span>
+            </header>
 
-          <dl class="boss-stats" *ngIf="card.kills; else noKills">
-            <div *ngIf="card.fastest as fastest">
-              <dt>Fastest</dt>
-              <dd><strong>{{ formatFightTime(fastest.fightMs) }}</strong> <span class="stat-sub">{{ fastest.guild?.name || 'Pickup group' }}</span></dd>
-            </div>
-            <div *ngIf="card.dps as dps">
-              <dt>Top DPS</dt>
-              <dd>
-                <strong>{{ formatPerSecond(dps.perSecond) }}</strong>
-                <span class="stat-sub" [style.color]="classColor(dps.classId)">{{ dps.name }}</span>
-              </dd>
-            </div>
-            <div *ngIf="card.hps as hps">
-              <dt>Top HPS</dt>
-              <dd>
-                <strong>{{ formatPerSecond(hps.perSecond) }}</strong>
-                <span class="stat-sub" [style.color]="classColor(hps.classId)">{{ hps.name }}</span>
-              </dd>
-            </div>
-          </dl>
-          <ng-template #noKills><p class="boss-alive">Not killed on {{ current.name }} yet.</p></ng-template>
-        </a>
+            @if (card.kills) {
+              <dl class="boss-stats">
+                @if (card.fastest; as fastest) {
+                  <div>
+                    <dt>Fastest</dt>
+                    <dd><strong>{{ formatFightTime(fastest.fightMs) }}</strong> <span class="stat-sub">{{ fastest.guild?.name || 'Pickup group' }}</span></dd>
+                  </div>
+                }
+                @if (card.dps; as dps) {
+                  <div>
+                    <dt>Top DPS</dt>
+                    <dd>
+                      <strong>{{ formatPerSecond(dps.perSecond) }}</strong>
+                      <span class="stat-sub" [style.color]="classColor(dps.classId)">{{ dps.name }}</span>
+                    </dd>
+                  </div>
+                }
+                @if (card.hps; as hps) {
+                  <div>
+                    <dt>Top HPS</dt>
+                    <dd>
+                      <strong>{{ formatPerSecond(hps.perSecond) }}</strong>
+                      <span class="stat-sub" [style.color]="classColor(hps.classId)">{{ hps.name }}</span>
+                    </dd>
+                  </div>
+                }
+              </dl>
+            } @else {
+              <p class="boss-alive">Not killed on {{ current.name }} yet.</p>
+            }
+          </a>
+        }
       </div>
     </section>
 
@@ -81,23 +95,25 @@
       </header>
 
       <ol class="kill-list">
-        <li *ngFor="let kill of recentKills(); trackBy: trackKill">
-          <a class="kill-row" [routerLink]="logLink(kill)">
-            <img class="kill-portrait" [src]="kill.boss.portrait" alt="" loading="lazy" />
-            <span class="kill-main">
-              <span class="kill-boss">{{ kill.boss.shortName }}</span>
-              <span class="kill-guild">
-                <span class="faction" [ngClass]="'faction-' + kill.faction" aria-hidden="true"></span>
-                {{ kill.guild?.name || 'Pickup group' }}
+        @for (kill of recentKills(); track logKey(kill)) {
+          <li>
+            <a class="kill-row" [routerLink]="logLink(kill)">
+              <img class="kill-portrait" [src]="kill.boss.portrait" alt="" loading="lazy" />
+              <span class="kill-main">
+                <span class="kill-boss">{{ kill.boss.shortName }}</span>
+                <span class="kill-guild">
+                  <span class="faction" [ngClass]="'faction-' + kill.faction" aria-hidden="true"></span>
+                  {{ kill.guild?.name || 'Pickup group' }}
+                </span>
               </span>
-            </span>
-            <span class="kill-time">{{ formatFightTime(kill.fightMs) }}</span>
-            <time class="kill-ago" [attr.datetime]="kill.killedAt | date:'yyyy-MM-ddTHH:mm:ss'" [title]="kill.killedAt | date:'d MMM y, HH:mm'">{{ ago(kill) }}</time>
-          </a>
-        </li>
+              <span class="kill-time">{{ formatFightTime(kill.fightMs) }}</span>
+              <time class="kill-ago" [attr.datetime]="kill.killedAt | date:'yyyy-MM-ddTHH:mm:ss'" [title]="kill.killedAt | date:'d MMM y, HH:mm'">{{ ago(kill) }}</time>
+            </a>
+          </li>
+        }
       </ol>
     </section>
-  </ng-container>
+  }
 </main>
 
 <app-back-to-top-button />

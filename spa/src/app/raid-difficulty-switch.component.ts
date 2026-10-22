@@ -13,16 +13,17 @@ import { RaidDifficulty } from './raid-logs';
   imports: [CommonModule, GlideDirective],
   template: `
     <div class="difficulty-switch" role="group" [attr.aria-label]="label" appGlide>
-      <button
-        type="button"
-        *ngFor="let difficulty of shown; trackBy: trackDifficulty"
-        [class.active]="difficulty.slug === selected"
-        [attr.aria-pressed]="difficulty.slug === selected"
-        [disabled]="!counts(difficulty)"
-        (click)="selectedChange.emit(difficulty.slug)">
-        <span class="difficulty-dot" [ngClass]="difficulty.slug" aria-hidden="true"></span>
-        <span>{{ difficulty.name === 'Looking For Raid' ? 'LFR' : difficulty.name }}</span>
-      </button>
+      @for (difficulty of shown; track difficulty.slug) {
+        <button
+          type="button"
+          [class.active]="difficulty.slug === selected"
+          [attr.aria-pressed]="difficulty.slug === selected"
+          [disabled]="!counts(difficulty)"
+          (click)="selectedChange.emit(difficulty.slug)">
+          <span class="difficulty-dot" [ngClass]="difficulty.slug" aria-hidden="true"></span>
+          <span>{{ difficulty.name === 'Looking For Raid' ? 'LFR' : difficulty.name }}</span>
+        </button>
+      }
     </div>
   `,
   styles: [`
@@ -46,9 +47,5 @@ export class RaidDifficultySwitchComponent {
 
   counts(difficulty: RaidDifficulty): number {
     return this.killCounts ? this.killCounts.get(difficulty.slug) ?? 0 : difficulty.kills;
-  }
-
-  trackDifficulty(index: number, difficulty: RaidDifficulty): string {
-    return difficulty.slug;
   }
 }

@@ -103,6 +103,9 @@ interface SummaryTile {
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class RaidLogsBossPageComponent {
+  readonly characterKey = characterKey;
+  readonly logKey = logKey;
+
   private readonly data = inject(RaidLogsDataService);
   private readonly destroyRef = inject(DestroyRef);
   private readonly route = inject(ActivatedRoute);
@@ -367,22 +370,6 @@ export class RaidLogsBossPageComponent {
 
   ago(kill: RaidKillDetails): string {
     return formatAgo(kill.killedAt, this.now());
-  }
-
-  trackPerformance(index: number, entry: RankedPerformance): string {
-    return characterKey(entry.member.character);
-  }
-
-  trackKillRow(index: number, row: KillRow): string {
-    return logKey(row.kill);
-  }
-
-  trackBoss(index: number, boss: RaidBoss): string {
-    return boss.slug;
-  }
-
-  trackLabel(index: number, tile: SummaryTile): string {
-    return tile.label;
   }
 
   private loadKills(index: RaidLogsIndex, boss: RaidBoss, difficulty: RaidDifficulty): void {
