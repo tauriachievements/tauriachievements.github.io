@@ -24,6 +24,20 @@ explains it together.
   real place, as on the Mythic+ leaderboard. The order has no ties, so no two rows share a place.
 - **Tests:** `scripts/player-ranking.test.js`, `ladder.service.spec.ts`.
 
+## Rare Achievements
+
+- **Code:** `rankMatchingCharacters` in
+  `spa/src/app/features/achievements/rare-achievement-matches.ts`.
+- One achievement: newest first. A group ("All Gladiator Titles", "All Gladiator Mounts", "All
+  Rated Battleground Titles") lists each character once, dated by their latest achievement in
+  the group.
+- "Most Rank 1 Gladiator Titles" and "Most Gladiator Mounts" rank by the count in the rare
+  achievement summary, then newest first. A character without a count isn't listed.
+- An achievement without a date comes after every dated one; ties go to realm, then name.
+- The side comes from the race: Alliance races are Alliance, everything else reads Horde.
+- The search matches the name or the guild, ignoring case (not accents).
+- **Tests:** `rare-achievement-matches.spec.ts`.
+
 ## Guild Rankings
 
 - **Code:** `spa/scripts/generate-guild-rankings.js`. For each limit N, it counts which guilds
