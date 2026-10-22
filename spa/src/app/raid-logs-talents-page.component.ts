@@ -202,6 +202,14 @@ export class RaidLogsTalentsPageComponent {
   });
   readonly specs = computed(() => [...(this.index()?.specs.values() ?? [])]);
   readonly selectedClass = computed(() => this.spec()?.classId ?? this.classFilter());
+  readonly title = computed(() => talentMetaTitle(this.difficulty()?.name ?? '', this.boss()?.shortName));
+  readonly titleOptions = computed(() => {
+    const index = this.index();
+    const bosses = [undefined, ...(index?.bosses ?? []).map(boss => boss.shortName)];
+    return (index?.difficulties ?? [])
+      .filter(difficulty => difficulty.kills > 0)
+      .flatMap(difficulty => bosses.map(boss => talentMetaTitle(difficulty.name, boss)));
+  });
   readonly classFilterName = computed(() => {
     const classId = this.classFilter();
     return classId === undefined ? undefined : CLASS_NAMES[classId];
@@ -675,6 +683,10 @@ export class RaidLogsTalentsPageComponent {
 function parseNumber(value: string | null): number | undefined {
   const number = value === null ? NaN : Number(value);
   return Number.isInteger(number) ? number : undefined;
+}
+
+function talentMetaTitle(difficulty: string, boss: string | undefined): string {
+  return `Talent meta · ${difficulty} · ${boss ?? 'All bosses'}`;
 }
 
 function parseClass(value: string | null): number | undefined {

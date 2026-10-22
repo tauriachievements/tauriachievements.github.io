@@ -42,7 +42,10 @@
     </nav>
 
     <div class="controls">
-      <h2 class="meta-title">Talent meta · {{ difficulty()?.name }} · {{ boss()?.shortName ?? 'All bosses' }}</h2>
+      <h2 class="meta-title">
+        <span>{{ title() }}</span>
+        <span class="title-sizer" aria-hidden="true" *ngFor="let option of titleOptions()">{{ option }}</span>
+      </h2>
       <app-raid-difficulty-switch
         [difficulties]="loaded.difficulties"
         [selected]="difficulty()?.slug"
