@@ -3,8 +3,8 @@
 Guild pages are unlisted statistics pages, one per guild, at `/<key>-<8 hex>` (for example
 `/endless-f8c2a91d`). All of them are `GuildAnalysisPageComponent`, reading
 `spa/src/guild-analysis/<key>.json`, which `api/Guildkukker` writes. `GUILD_PAGES` in
-`spa/src/app/features/guild-analysis/guild-analysis.ts` lists them, and `app.routes.ts` makes
-one route per entry.
+`spa/src/app/features/guild-analysis/guild-analysis.ts` lists them, and
+`guild-analysis.routes.ts` makes one route per entry.
 
 The owner asks for these by guild name and realm. They're routine and don't need an
 architecture discussion.

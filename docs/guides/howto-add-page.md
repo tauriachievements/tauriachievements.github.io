@@ -56,17 +56,19 @@ The template starts with the page's own content, and its loading and error state
 
 ## 3. The route
 
-Add a lazy route in `app.routes.ts`, above the guild pages and the final `'**'` redirect:
+Add a lazy route to the feature's route file, `features/<area>/<area>.routes.ts`:
 
 ```ts
 {
   path: '<path>',
-  loadComponent: () => import('./features/<area>/<name>-page.component')
+  loadComponent: () => import('./<name>-page.component')
     .then(module => module.<Name>PageComponent)
 },
 ```
 
 Deep routes that belong to the page (a profile under its leaderboard) get their own entries.
+A new feature folder gets its own `<area>.routes.ts`, spread into `app.routes.ts` in menu
+order, before the guild pages and the final `'**'` redirect.
 Never put a dot in a path or parameter: `404.html` won't redirect it.
 
 ## 4. The navigation

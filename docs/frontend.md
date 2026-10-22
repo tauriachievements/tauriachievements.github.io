@@ -49,6 +49,9 @@ spec can pin it down without a TestBed.
 
 ## Routing
 
+- Each feature lists its routes in `features/<area>/<area>.routes.ts` (`LADDER_ROUTES`,
+  `RAIDS_ROUTES`, …), and `app.routes.ts` spreads them in menu order, then the guild pages,
+  then the final `'**'` redirect to the ladder.
 - Every page loads lazily through `loadComponent`, except the ladder: it's the home page,
   so it ships in the initial bundle and the first visit needs no extra request. New pages are
   lazy too ([guides/howto-add-page.md](guides/howto-add-page.md)). Importing a page or its
