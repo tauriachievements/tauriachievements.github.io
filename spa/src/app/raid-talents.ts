@@ -1,4 +1,4 @@
-import { RaidBoss, RaidCharacter, RaidKillDetails, RaidMember, RaidSpec, RaidTalent, RaidTalentTable, characterKey, specMetric } from './raid-logs';
+import { RaidBoss, RaidCharacter, RaidKillDetails, RaidMember, RaidSpec, RaidTalent, RaidTalentTable, RoleFilter, characterKey, specMetric } from './raid-logs';
 
 /*
  * /raid-logs/talents: which talents raiders pick, from the talents every member of a kill played
@@ -483,6 +483,10 @@ export function specTalentSummaries(samples: readonly TalentSample[], specs: rea
     const builds = talentBuilds(own).builds;
     return { spec, picks, agreement: talentAgreement(picks), topBuild: builds[0], buildCount: builds.length };
   });
+}
+
+export function specsMatching(specs: readonly RaidSpec[], classId: number | undefined, role: RoleFilter): RaidSpec[] {
+  return specs.filter(spec => (classId === undefined || spec.classId === classId) && (role === 'all' || spec.role === role));
 }
 
 // --- Formatting -------------------------------------------------------------------------

@@ -29,6 +29,7 @@ import {
   killsBefore,
   logKey,
   nameMatches,
+  parseRoleFilter,
   performanceQuality,
   raceFaction,
   rankCharacters,
@@ -505,6 +506,13 @@ describe('defaultDifficulty', () => {
   it('opens on the hardest difficulty with a kill', () => {
     expect(defaultDifficulty(index.difficulties)?.slug).toBe('mythic');
     expect(defaultDifficulty(index.difficulties.map(difficulty => ({ ...difficulty, kills: difficulty.id === 15 ? 1 : 0 })))?.slug).toBe('heroic');
+  });
+});
+
+describe('parseRoleFilter', () => {
+  it('reads ?role=, falling back to every role', () => {
+    expect(['tank', 'healer', 'dps', 'heal', null].map(parseRoleFilter))
+      .toEqual(['tank', 'healer', 'dps', 'all', 'all']);
   });
 });
 

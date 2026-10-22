@@ -18,6 +18,7 @@ export const RAID_GENDERS_PATH = 'assets/data/raid-genders.json';
 
 export type RaidRole = 'tank' | 'healer' | 'dps';
 export type RaidMetric = 'dps' | 'hps';
+export type RoleFilter = RaidRole | 'all';
 
 // --- File format ------------------------------------------------------------------------
 
@@ -1135,6 +1136,10 @@ export function speedRank(kill: Pick<RaidKill, 'realm' | 'logId'>, kills: readon
  */
 export function defaultDifficulty(difficulties: readonly RaidDifficulty[]): RaidDifficulty | undefined {
   return [...difficulties].reverse().find(difficulty => difficulty.kills > 0) ?? difficulties[0];
+}
+
+export function parseRoleFilter(value: string | null | undefined): RoleFilter {
+  return value === 'tank' || value === 'healer' || value === 'dps' ? value : 'all';
 }
 
 // --- Identity and links -----------------------------------------------------------------

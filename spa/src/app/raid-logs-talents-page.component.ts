@@ -9,6 +9,7 @@ import { getClassColor } from './class-colors';
 import { FilterDropdownComponent } from './filter-dropdown.component';
 import { FilterDropdownCoordinatorService } from './filter-dropdown-coordinator.service';
 import { FilterDropdownValue } from './filter-dropdown.types';
+import { GlideDirective } from './glide.directive';
 import { IconTipsComponent } from './icon-tips.component';
 import { CLASS_FILTER_OPTIONS, CLASS_NAMES } from './mythic-plus';
 import { RaidDifficultySwitchComponent } from './raid-difficulty-switch.component';
@@ -20,10 +21,12 @@ import {
   RaidRole,
   RaidTalent,
   RaidTalentTable,
+  RoleFilter,
   defaultDifficulty,
   formatPerSecond,
   iconSrcset,
   itemIconUrl,
+  parseRoleFilter,
   raidCharacterLink,
   raidLogLink,
   specMetric,
@@ -46,6 +49,7 @@ import {
   notablePicks,
   specTalentSummaries,
   specTiers,
+  specsMatching,
   talentAgreement,
   talentBuilds,
   talentLevels,
@@ -69,10 +73,10 @@ const MIN_SWAP_CHARACTERS = 5;
 /** A top-player share this far from everyone's is called out beside it. */
 const EDGE_POINTS = .05;
 
-const ROLE_GROUPS: ReadonlyArray<{ role: RaidRole; title: string }> = [
-  { role: 'dps', title: 'Damage' },
-  { role: 'tank', title: 'Tanks' },
-  { role: 'healer', title: 'Healers' }
+const ROLE_GROUPS: ReadonlyArray<{ role: RaidRole; title: string; noun: string }> = [
+  { role: 'dps', title: 'Damage', noun: 'damage' },
+  { role: 'tank', title: 'Tanks', noun: 'tank' },
+  { role: 'healer', title: 'Healers', noun: 'healer' }
 ];
 
 interface StatTile {
@@ -150,10 +154,11 @@ interface SpecCard extends SpecTalentSummary {
     BackToTopButtonComponent,
     FilterDropdownComponent,
     RaidDifficultySwitchComponent,
-    IconTipsComponent
+    IconTipsComponent,
+    GlideDirective
   ],
   templateUrl: './raid-logs-talents-page.component.html',
-  styleUrl: './raid-logs-talents-page.component.scss',
+  styleUrls: ['./raid-logs-talents-page.component.scss', './raid-logs-talents-page.motion.scss'],
   providers: [FilterDropdownCoordinatorService],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
@@ -179,6 +184,7 @@ export class RaidLogsTalentsPageComponent {
   readonly specId = signal<number | undefined>(undefined);
   private readonly bossSlug = signal<string | undefined>(undefined);
   private readonly classFilter = signal<number | undefined>(undefined);
+  private readonly roleFilter = signal<RoleFilter>('all');
 
   readonly difficulty = computed(() => {
     const difficulties = this.index()?.difficulties ?? [];
@@ -196,7 +202,11 @@ export class RaidLogsTalentsPageComponent {
     const classId = this.classFilter();
     return classId === undefined ? undefined : CLASS_NAMES[classId];
   });
-  readonly hasFilters = computed(() => this.classFilter() !== undefined || this.spec() !== undefined || this.boss() !== undefined);
+  readonly selectedRole = computed<RoleFilter>(() => this.spec()?.role ?? this.roleFilter());
+  readonly roleNoun = computed(() => ROLE_GROUPS.find(group => group.role === this.roleFilter())?.noun);
+  readonly backLabel = computed(() => ['All', this.classFilterName(), this.roleNoun(), 'specs'].filter(Boolean).join(' '));
+  readonly hasFilters = computed(() =>
+    this.classFilter() !== undefined || this.roleFilter() !== 'all' || this.spec() !== undefined || this.boss() !== undefined);
 
   /** Every character's talents on every boss of the difficulty, for every spec. */
   private readonly samples = computed(() => talentSamples(this.kills()));
@@ -205,9 +215,8 @@ export class RaidLogsTalentsPageComponent {
 
   readonly specGroups = computed(() => {
     const boss = this.boss();
-    const classId = this.classFilter();
     const samples = boss ? this.samples().filter(sample => sample.boss === boss) : this.samples();
-    const specs = classId === undefined ? this.specs() : this.specs().filter(spec => spec.classId === classId);
+    const specs = specsMatching(this.specs(), this.classFilter(), this.roleFilter());
     const cards = specTalentSummaries(samples, specs, this.talentTable()).map((summary): SpecCard => {
       const className = CLASS_NAMES[summary.spec.classId] ?? 'Unknown';
       return {
@@ -447,6 +456,10 @@ export class RaidLogsTalentsPageComponent {
   });
 
   readonly classOptions = CLASS_FILTER_OPTIONS;
+  readonly roleOptions: ReadonlyArray<{ value: RoleFilter; label: string }> = [
+    { value: 'all', label: 'All' },
+    ...ROLE_GROUPS.map(group => ({ value: group.role, label: group.title }))
+  ];
   readonly notableDifference = Math.round(NOTABLE_DIFFERENCE * 100);
   readonly icon = itemIconUrl;
   readonly iconSrcset = iconSrcset;
@@ -471,6 +484,7 @@ export class RaidLogsTalentsPageComponent {
         this.specId.set(parseNumber(params.get('spec')));
         this.bossSlug.set(params.get('boss') ?? undefined);
         this.classFilter.set(parseClass(params.get('class')));
+        this.roleFilter.set(parseRoleFilter(params.get('role')));
         const difficulty = params.get('difficulty');
         if (difficulty) {
           this.requestedDifficulty.set(difficulty);
@@ -532,16 +546,24 @@ export class RaidLogsTalentsPageComponent {
     this.applyFilters();
   }
 
+  setRole(role: RoleFilter): void {
+    this.roleFilter.set(role);
+    this.applyFilters();
+  }
+
   resetFilters(): void {
     this.classFilter.set(undefined);
+    this.roleFilter.set('all');
     this.bossSlug.set(undefined);
     this.applyFilters();
   }
 
   queryParams(specId: number | undefined): Record<string, string | number | null> {
+    const role = this.roleFilter();
     return {
       difficulty: this.difficulty()?.slug ?? null,
       boss: this.boss()?.slug ?? null,
+      role: role === 'all' ? null : role,
       class: this.classFilter() ?? null,
       spec: specId ?? null
     };

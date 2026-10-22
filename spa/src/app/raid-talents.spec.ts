@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { RaidBoss, RaidCharacter, RaidDifficulty, RaidKillDetails, RaidMember, RaidSpec, RaidTalentTable } from './raid-logs';
+import { RaidBoss, RaidCharacter, RaidDifficulty, RaidKillDetails, RaidMember, RaidSpec, RaidTalentTable, RoleFilter } from './raid-logs';
 import {
   TalentSample,
   agreementLabel,
@@ -12,6 +12,7 @@ import {
   notablePicks,
   specTalentSummaries,
   specTiers,
+  specsMatching,
   talentAgreement,
   talentBuilds,
   talentLevels,
@@ -246,6 +247,23 @@ describe('specTalentSummaries', () => {
     expect(fireSummary.agreement).toBeCloseTo((6 + .5) / 7);
     expect(holySummary.picks.picks).toBe(0);
     expect(holySummary.topBuild).toBeUndefined();
+  });
+});
+
+describe('specsMatching', () => {
+  const retribution: RaidSpec = { id: 70, classId: 2, name: 'Retribution', role: 'dps' };
+  const specs = [fire, holy, retribution];
+  const names = (classId: number | undefined, role: RoleFilter) => specsMatching(specs, classId, role).map(spec => spec.name);
+
+  it('keeps every spec without a class or a role', () => {
+    expect(names(undefined, 'all')).toEqual(['Fire', 'Holy', 'Retribution']);
+  });
+
+  it('narrows by class, by role, and by both', () => {
+    expect(names(2, 'all')).toEqual(['Holy', 'Retribution']);
+    expect(names(undefined, 'dps')).toEqual(['Fire', 'Retribution']);
+    expect(names(2, 'healer')).toEqual(['Holy']);
+    expect(names(8, 'healer')).toEqual([]);
   });
 });
 

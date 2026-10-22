@@ -27,6 +27,7 @@ $down: #ff6b6b;
 }
 
 .meta-title { margin: 0; color: #fff; font-size: 1.15rem; }
+.role-switch { @include segmented-switch; }
 .filters { display: flex; align-items: center; gap: 8px; margin-left: auto; }
 .class-slot { width: 200px; }
 
@@ -119,10 +120,6 @@ $down: #ff6b6b;
   &:hover { border-color: rgba(247, 181, 0, .35); border-top-color: var(--class-color); background: #1a1a1a; }
   &:focus-visible { outline: 2px solid $gold; outline-offset: 2px; }
   &.nobody { opacity: .55; }
-
-  @include motion-safe {
-    &:hover { translate: 0 -2px; }
-  }
 }
 
 .spec-card-head { display: flex; align-items: center; gap: 10px; }
@@ -465,23 +462,6 @@ td a.icon:hover img { filter: brightness(1.25); }
   td { padding: 6px 4px; color: $raid-muted; font-size: .74rem; font-variant-numeric: tabular-nums; text-align: center; }
   td.selected { color: $gold; }
   th, td { border-top: 1px solid $raid-line; border-bottom: 0; }
-}
-
-// --- Motion -------------------------------------------------------------------------------
-
-@include motion-safe {
-  .share-bar > span, .meter > span {
-    transform-origin: left;
-    animation: mp-grow-x 700ms var(--ease-out) both;
-  }
-
-  .tier {
-    animation: mp-card-rise 420ms var(--ease-out) both;
-
-    @for $i from 1 through 7 {
-      &:nth-child(#{$i}) { animation-delay: #{($i - 1) * 40}ms; }
-    }
-  }
 }
 
 // --- Narrow screens -----------------------------------------------------------------------

@@ -54,9 +54,9 @@ difficulty, the page number. Defaults are left out of it.
 
   `syncQueryParams()` in `mythic-plus-page.component.ts` is the reference.
 - **Real navigation** is only for a change the Back button should undo. For example, on the
-  Talent Analytics page, opening a spec's card navigates, while difficulty, boss and class use
-  `replaceState`. On a spec's page, picking a class or pressing Reset navigates back to the
-  overview.
+  Talent Analytics page, opening a spec's card navigates, while difficulty, boss, role and class
+  use `replaceState`. On a spec's page, picking a role or a class, or pressing Reset, navigates
+  back to the overview.
 - The router never sees parameters written with `replaceState`. When you build a link or
   navigation from the current state, spell out every parameter you want kept.
 
@@ -92,9 +92,9 @@ decision (ask first).
 | `class-colors.ts` | the one class-colour table: `getClassColor()` in code, `var(--class-<id>)` in SCSS |
 | `utils/armory.ts` | `getArmoryUrl()` for every armory link |
 | `utils/time-zone-label.ts` | the "GMT+2"-style label beside local times |
-| `raid-logs.ts` helpers | `nameMatches`, `realmSlug`, `RAID_REALMS` for name search and realm URLs |
+| `raid-logs.ts` helpers | `nameMatches`, `realmSlug`, `RAID_REALMS` for name search and realm URLs; `parseRoleFilter` for `?role=` (`tank`, `healer`, `dps`) |
 | `_mythic-plus-shared.scss` | mixins such as `tooltip-box`, `quality-colors`, `visually-hidden`, `motion-safe`, `glide-pill`, `table-scroll` |
-| `_raid-logs-shared.scss` | forwards the M+ mixins, and adds `raid-table`, `ranking-toolbar`, `filter-reset`, `pager`, `difficulty-switch` |
+| `_raid-logs-shared.scss` | forwards the M+ mixins, and adds `raid-table`, `ranking-toolbar`, `filter-reset`, `pager`, `difficulty-switch`, and `segmented-switch` (the difficulty switch's pill look, for any other switch beside it) |
 | `.tap-area` (global) | an empty span inside a small link that grows its tap target |
 
 `app-filter-bar` and `app-leaderboard-table` belong to the ladder page.
