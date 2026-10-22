@@ -96,7 +96,7 @@ $down: #ff6b6b;
 
 .spec-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(max(280px, calc((100% - 20px) / 3)), 1fr));
   gap: 10px;
   margin: 0;
   padding: 0;
