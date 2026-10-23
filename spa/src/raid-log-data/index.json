@@ -1,4 +1,4 @@
-{"version":3,"generatedAt":"2026-10-23T11:06:44Z","previousGeneratedAt":"2026-10-22T22:03:08Z","raid":{"id":1520,"slug":"emerald-nightmare","name":"The Emerald Nightmare"},"difficulties":[
+{"version":3,"generatedAt":"2026-10-23T11:23:25Z","previousGeneratedAt":"2026-10-22T22:03:08Z","raid":{"id":1520,"slug":"emerald-nightmare","name":"The Emerald Nightmare"},"difficulties":[
 {"id":17,"slug":"lfr","name":"Looking For Raid","shortName":"LFR","kills":0},
 {"id":14,"slug":"normal","name":"Normal","shortName":"N","kills":4389},
 {"id":15,"slug":"heroic","name":"Heroic","shortName":"HC","kills":4088},
@@ -167,7 +167,14 @@
 ["FORGOTTEN SHADOWS","Evermoon",1,5244],
 ["Here We Go Again","Evermoon",0,8980],
 ["Thunder","Evermoon",0,1002],
-["Machines","Evermoon",1,8929]],"logs":[
+["Machines","Evermoon",1,8929]],"formerCharacters":[
+["Chalz","Evermoon",5,[8]],
+["Cheeptricks","Evermoon",4,[12]],
+["Deadsolf","Evermoon",9,[10]],
+["Executor","Evermoon",4,[7]],
+["Fauszt","Evermoon",12,[2]],
+["Janeiro","Evermoon",8,[9]],
+["Qlmx","Evermoon",7,[2]]],"logs":[
 ["Tauri",1329185,0,14,1789544998,160567,0,0,0,3,30],
 ["Tauri",1329247,3,14,1789545825,121164,0,0,0,3,30],
 ["Tauri",1329369,2,14,1789546976,237891,0,0,1,16,30],
