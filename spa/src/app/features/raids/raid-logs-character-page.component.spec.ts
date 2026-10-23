@@ -31,6 +31,7 @@ const indexFile: RaidLogsIndexFile = {
     { id: 70, class: 2, name: 'Retribution', role: 'dps' }
   ],
   guilds: [['Miracle', 'Evermoon', 1, 3676]],
+  formerCharacters: [['Moved', 'Tauri', 2, [8]], ['Shifty', 'Tauri', 2, [8]]],
   logs: [
     ['Tauri', 10, 0, 16, 1_000, 100_000, 0, 1, 0, 0, 20],
     ['Tauri', 11, 0, 16, 2_000, 100_000, 0, 1, 0, 0, 20],
@@ -127,6 +128,14 @@ function comparisonButtons(element: HTMLElement) {
   return [...element.querySelectorAll<HTMLButtonElement>('.comparison-switch button')];
 }
 
+function classButtons(element: HTMLElement) {
+  return [...element.querySelectorAll<HTMLButtonElement>('.class-switch button')];
+}
+
+function kills(page: RaidLogsCharacterPageComponent) {
+  return page.appearances().map(({ kill, member }) => [kill.logId, member.spec?.name]);
+}
+
 function summaryTile(element: HTMLElement, label: string) {
   const tile = [...element.querySelectorAll('.summary > div')].find(div => div.querySelector('dt')?.textContent === label);
   return {
@@ -152,7 +161,7 @@ describe('RaidLogsCharacterPageComponent with a former character of the name', (
     const { page } = await open('/raid-logs/character/tauri/Shifty');
 
     expect(page.character()?.classId).toBe(2);
-    expect(page.appearances().map(({ kill, member }) => [kill.logId, member.spec?.name])).toEqual([[12, 'Holy']]);
+    expect(kills(page)).toEqual([[12, 'Holy']]);
     expect(page.bossRows().map(row => [row.boss.shortName, row.kills])).toEqual([['Nythendra', 0], ["Il'gynoth", 1], ['Elerethe', 0]]);
   });
 
@@ -160,7 +169,58 @@ describe('RaidLogsCharacterPageComponent with a former character of the name', (
     const { page } = await open('/raid-logs/character/tauri/Moved');
 
     expect(page.loaded()?.difficulty.slug).toBe('heroic');
-    expect(page.appearances().map(({ kill, member }) => [kill.logId, member.spec?.name])).toEqual([[20, 'Retribution']]);
+    expect(kills(page)).toEqual([[20, 'Retribution']]);
+  });
+
+  it('switches to the earlier character and back, keeping it in the URL', async () => {
+    const { page, harness, element, location } = await open('/raid-logs/character/tauri/Shifty');
+    expect(classButtons(element).map(button => [button.textContent?.replace(/\s+/g, ' ').trim(), button.getAttribute('aria-pressed')]))
+      .toEqual([['Paladin', 'true'], ['Mage · earlier', 'false']]);
+    expect(element.querySelector('.character-meta a')?.textContent).toContain('Armory');
+
+    classButtons(element)[1].click();
+    harness.detectChanges();
+
+    expect(location.path()).toBe('/raid-logs/character/tauri/Shifty?class=8');
+    expect(page.character()?.classId).toBe(8);
+    expect(kills(page)).toEqual([[13, 'Fire']]);
+    expect(rows(page)[2]).toEqual(['Elerethe', 100 / 500, undefined, 0]);
+    expect(summaryTile(element, 'DPS score')).toEqual({ value: '-', note: 'Earlier character, not ranked' });
+    expect(summaryTile(element, 'Best damage rank')).toEqual({ value: '-', note: 'Earlier character, not ranked' });
+    expect(element.querySelector('.character-meta a')).toBeNull();
+    expect(classButtons(element).map(button => button.getAttribute('aria-pressed'))).toEqual(['false', 'true']);
+
+    classButtons(element)[0].click();
+    harness.detectChanges();
+    expect(location.path()).toBe('/raid-logs/character/tauri/Shifty');
+    expect(kills(page)).toEqual([[12, 'Holy']]);
+  });
+
+  it('opens the earlier character on the first difficulty it has kills on', async () => {
+    const { page, harness, element, location } = await open('/raid-logs/character/tauri/Moved?difficulty=heroic');
+
+    classButtons(element)[1].click();
+    harness.detectChanges();
+
+    expect(page.loaded()?.difficulty.slug).toBe('mythic');
+    expect(location.path()).toBe('/raid-logs/character/tauri/Moved?difficulty=mythic&class=8');
+    expect(kills(page)).toEqual([[13, 'Fire']]);
+  });
+
+  it('opens on ?class=', async () => {
+    const { page } = await open('/raid-logs/character/tauri/Moved?class=8');
+    expect(kills(page)).toEqual([[13, 'Fire']]);
+  });
+
+  it('shows the current character for a ?class= the name never had', async () => {
+    const { page } = await open('/raid-logs/character/tauri/Moved?class=5');
+    expect(page.formerClass()).toBeUndefined();
+    expect(kills(page)).toEqual([[20, 'Retribution']]);
+  });
+
+  it('has no class switch for a name with one character', async () => {
+    const { element } = await open('/raid-logs/character/evermoon/Frosty');
+    expect(classButtons(element)).toEqual([]);
   });
 });
 

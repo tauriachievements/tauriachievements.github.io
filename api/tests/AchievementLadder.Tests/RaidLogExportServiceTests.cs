@@ -853,7 +853,7 @@ public sealed class RaidLogExportServiceTests
                 100_000,
                 null,
                 [],
-                Member("Deadsolf", "", 10, 269, race: 1)
+                Member("Deadsolf", "", 10, 269, race: 1, guild: "Old Guild")
             );
             api.Logs[(Tauri, 101)] = LogJson(
                 101,
@@ -863,7 +863,7 @@ public sealed class RaidLogExportServiceTests
                 100_000,
                 null,
                 [],
-                Member("Deadsolf", "", 10, 269, race: 1)
+                Member("Deadsolf", "", 10, 269, race: 1, guild: "Old Guild")
             );
             await Service(outputDirectory, api, PlayerGuildDirectory.Empty)
                 .ExportAsync(Options(), CancellationToken.None);
@@ -880,8 +880,11 @@ public sealed class RaidLogExportServiceTests
                 )
             )
             {
-                Assert.Equal(["Deadsolf|Evermoon|10|1|0|"], Players(before));
+                Assert.Equal(["Deadsolf|Evermoon|10|1|0|Old Guild"], Players(before));
             }
+            var directory = new PlayerGuildDirectory(
+                new() { [("Evermoon", "Deadsolf")] = "Warlocks" }
+            );
 
             api.Rankings[(Tauri, Nythendra, Heroic)] = [100, 103];
             api.Logs[(Tauri, 103)] = LogJson(
@@ -894,9 +897,9 @@ public sealed class RaidLogExportServiceTests
                 [],
                 Member("Deadsolf", "", 9, 267, race: 5)
             );
-            await Service(outputDirectory, api, PlayerGuildDirectory.Empty)
+            await Service(outputDirectory, api, directory)
                 .ExportAsync(Options(), CancellationToken.None);
-            var rerun = await Service(outputDirectory, api, PlayerGuildDirectory.Empty)
+            var rerun = await Service(outputDirectory, api, directory)
                 .ExportAsync(Options(), CancellationToken.None);
 
             Assert.Equal(0, rerun.ReadLogCount);
@@ -910,7 +913,7 @@ public sealed class RaidLogExportServiceTests
                 File.ReadAllText(Path.Combine(outputDirectory, "nythendra-heroic.json"))
             );
             Assert.Equal(
-                ["Deadsolf|Evermoon|10|1|0||1", "Deadsolf|Evermoon|9|5|0|"],
+                ["Deadsolf|Evermoon|10|1|0|Old Guild|1", "Deadsolf|Evermoon|9|5|0|Warlocks"],
                 Players(boss)
             );
             Assert.Equal(
@@ -922,7 +925,14 @@ public sealed class RaidLogExportServiceTests
             using var otherBoss = JsonDocument.Parse(
                 File.ReadAllText(Path.Combine(outputDirectory, "xavius-mythic.json"))
             );
-            Assert.Equal(["Deadsolf|Evermoon|10|1|0||1"], Players(otherBoss));
+            Assert.Equal(["Deadsolf|Evermoon|10|1|0|Old Guild|1"], Players(otherBoss));
+            using var index = JsonDocument.Parse(
+                File.ReadAllText(Path.Combine(outputDirectory, "index.json"))
+            );
+            Assert.Equal(
+                """[["Deadsolf","Evermoon",9,[10]]]""",
+                index.RootElement.GetProperty("formerCharacters").GetRawText().Replace("\n", "")
+            );
         }
         finally
         {

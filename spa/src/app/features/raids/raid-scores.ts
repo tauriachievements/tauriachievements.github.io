@@ -76,11 +76,11 @@ export function bossStanding(
 ): BossStanding {
   const ranking = rankCharacters(kills, metric, filter);
   const own = ranking.find(entry => characterKey(entry.member.character) === key);
-  const top = bestValue(kills, metric, filter);
+  const top = bossBest(kills, metric, filter);
   return { rank: own?.rank, ranked: ranking.length, relative: own && top > 0 ? own.value / top : 0 };
 }
 
-function bestValue(kills: readonly RaidKillDetails[], metric: RaidMetric, filter: RankingFilter): number {
+export function bossBest(kills: readonly RaidKillDetails[], metric: RaidMetric, filter: RankingFilter = {}): number {
   let best = 0;
   for (const kill of kills) {
     for (const member of kill.members) {

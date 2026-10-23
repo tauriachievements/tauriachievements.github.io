@@ -94,9 +94,10 @@ appearance, so a new kill is a few added lines in git.
   (boss and guild are positions in `bosses` and `guilds`, guild -1 for a pickup group, members a
   count). Once there is an earlier export to compare with, `previousGeneratedAt` and the kills
   added since it as `newLogs` (`[realm, logId]`). `guilds` as `[name, realm, faction, guildId]`
-  (an empty name for a guild that couldn't be named), each boss and difficulty's best DPS and
-  HPS as `[name, realm, class, spec, perSecond, logRealm, logId]`, and the loot's `items` as
-  `[id, name, quality, icon]`.
+  (an empty name for a guild that couldn't be named), each name with a former character (below)
+  as `formerCharacters` (`[name, realm, classNow, [earlierClass, ...]]`, latest first), each boss
+  and difficulty's best DPS and HPS as `[name, realm, class, spec, perSecond, logRealm, logId]`,
+  and the loot's `items` as `[id, name, quality, icon]`.
 - `<boss>-<difficulty>.json`: that boss's kills on that difficulty, oldest first, as
   `[realm, logId, killedAtUnix, fightMs, guild, faction, wipes, deaths, resurrects, members, [itemId, ...]]`,
   each member `[player, spec, ilvl, damage, healing, absorbs, overhealing, damageTaken, interrupts, dispels, talents, [trinket, ...]]`.
@@ -113,15 +114,18 @@ appearance, so a new kill is a few added lines in git.
 A boss file's `players` table holds one row per realm, name and class. A name played by two
 classes over the season (a freed name taken by a new character) gets a row for each, and every
 kill points at the row of the class it was logged as. Race and gender come from that class's
-latest kill; the guild from Players.csv, else the latest kill that named one.
+latest kill. The guild comes from Players.csv, else the latest kill that named one; a former
+character (below) never takes the Players.csv guild, which belongs to whoever has the name now.
 
 A name belongs to the class of its latest kill on any boss and difficulty. A row of any other
 class is a former character with that name and ends with an extra `1`. The site leaves former
-characters out of everything about a character: the character page, the leaderboard, boss
-rankings, spec performance and Talent Analytics. Their kills still count as player slots and
-still set a boss's best ([scoring.md](scoring.md#raid-leaderboard)), and the log page lists them
-without a link. Only the exporter sees every kill, so only it can tell: the site loads one
-difficulty at a time.
+characters out of the leaderboard, boss rankings, spec performance and Talent Analytics. Their
+kills still count as player slots and still set a boss's best
+([scoring.md](scoring.md#raid-leaderboard)). The character page shows the current character;
+a switch under the name (from `formerCharacters`) opens an earlier one at `?class=<classId>`,
+on the first difficulty it has kills on, with its kills but no score or rank. The log page
+links a former character's name to that view. Only the exporter sees every kill, so only it can
+tell: the site loads one difficulty at a time.
 
 RaidLogExporter rebuilds the logs it already has from the boss files, so whatever a file
 doesn't store is lost for those logs until they're read again. Bump

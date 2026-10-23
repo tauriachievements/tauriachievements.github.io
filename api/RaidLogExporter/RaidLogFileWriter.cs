@@ -160,6 +160,29 @@ public static class RaidLogFileWriter
 
         WriteGuilds(writer, line, dataset.Guilds);
 
+        writer.WriteStartArray("formerCharacters");
+        foreach (var character in dataset.FormerCharacters)
+        {
+            line.WriteTo(
+                writer,
+                item =>
+                {
+                    item.WriteStartArray();
+                    item.WriteStringValue(character.Name);
+                    item.WriteStringValue(character.Realm);
+                    item.WriteNumberValue(character.ClassId);
+                    item.WriteStartArray();
+                    foreach (var classId in character.FormerClassIds)
+                    {
+                        item.WriteNumberValue(classId);
+                    }
+                    item.WriteEndArray();
+                    item.WriteEndArray();
+                }
+            );
+        }
+        writer.WriteEndArray();
+
         writer.WriteStartArray("logs");
         foreach (var log in dataset.Logs)
         {

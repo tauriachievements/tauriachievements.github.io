@@ -121,7 +121,7 @@ $difficulty-colors: (
   .character img { width: 20px; height: 20px; flex: none; border-radius: 3px; }
   .character-text { display: flex; min-width: 0; flex-direction: column; line-height: 1.2; }
   .character-name { font-weight: 700; text-decoration: none; }
-  a.character-name:hover { text-decoration: underline; }
+  .character-name:hover { text-decoration: underline; }
   .character-name:focus-visible { outline: 2px solid $gold; outline-offset: 2px; }
   .character-sub { overflow: hidden; color: $raid-muted; font-size: .74rem; text-overflow: ellipsis; }
   .spec-icon { width: 18px; height: 18px; border-radius: 3px; vertical-align: middle; }
