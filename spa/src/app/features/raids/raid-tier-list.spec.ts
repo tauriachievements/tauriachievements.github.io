@@ -82,7 +82,8 @@ describe('roleTierList', () => {
     expect(blood.note).toBe('2,000 DPS score · 100% of the best · 10 characters');
     expect(guardian.note).toBe('1,199 DPS score · 59% of the best · only 1 character');
     expect(guardian.label).toBe('Guardian Druid, F tier: 1,199 DPS score, 59% of the best, only 1 character. Open its rankings.');
-    expect(blood.art).toBe('assets/spec-art/250.webp');
+    expect(blood.art).toBe('assets/spec-art/death-knight-blood.webp');
+    expect(tanks.rows[0].specs[1].art).toBe('assets/spec-art/demon-hunter-vengeance.webp');
   });
 
   it("links each spec to its rankings on the difficulty, by HPS for healers", () => {

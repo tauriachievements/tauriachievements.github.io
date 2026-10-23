@@ -45,9 +45,11 @@ A file's name says what it is:
 | `<page>.motion.scss` | a page's motion, as a second `styleUrls` entry |
 
 Outside `app/`: `src/scss/` (`styles.scss`, `_motion.scss`) and `src/assets/`. In the assets,
-`spec-art/<spec id>.webp` is the art the Spec Tier List shows, one per Legion spec: the images of
+`spec-art/<class>-<spec>.webp` (`hunter-beast-mastery.webp`, `death-knight-blood.webp`: the names
+in lower case, spaces as hyphens, built by `getSpecArtPath`) is the art the Spec Tier List shows,
+one per Legion spec: the images of
 TierMaker's [All Class Specs](https://tiermaker.com/create/all-class-specs---world-of-warcraft-17396518-2)
-template, resized to 160 px (twice the 80 px they show at) and saved as WebP. Outlaw (`260`) is
+template, resized to 160 px (twice the 80 px they show at) and saved as WebP. `rogue-outlaw` is
 the exception, at the owner's request: it's Legion's own Outlaw icon, `inv_sword_30` (the one
 `wow-specs.ts` lists), from Blizzard's 56 px copy
 (`https://render.worldofwarcraft.com/us/icons/56/inv_sword_30.jpg`). To match the others'

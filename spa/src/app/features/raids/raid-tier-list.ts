@@ -107,7 +107,7 @@ export function roleTierList(
       classId: spec.classId,
       name,
       color,
-      art: getSpecArtPath(spec.id),
+      art: getSpecArtPath(className, spec.spec),
       score: spec.score,
       count: spec.count,
       percentOfBest: percent,
