@@ -82,14 +82,46 @@ On top of that:
 
 Keep these guards in any new exporter ([guides/howto-add-exporter.md](guides/howto-add-exporter.md)).
 
-## Raid boss files
+## Raid log files
 
-A boss file's `players` table holds one row per realm, name and class, in order of first
-appearance, so a new kill adds rows instead of renumbering the table. A name played by two
+RaidLogExporter writes `raid-log-data/` for the `/raid-logs` pages, which decode it in
+`raid-logs.ts`. Every entry goes on its own line, and the tables grow in order of first
+appearance, so a new kill is a few added lines in git.
+
+- `index.json`: when the rankings were read (`generatedAt`, UTC ISO 8601), the raid, its
+  difficulties (with kill counts) and bosses, the spec table, and every kill as
+  `[realm, logId, boss, difficultyId, killedAtUnix, fightMs, guild, faction, wipes, deaths, members]`
+  (boss and guild are positions in `bosses` and `guilds`, guild -1 for a pickup group, members a
+  count). Once there is an earlier export to compare with, `previousGeneratedAt` and the kills
+  added since it as `newLogs` (`[realm, logId]`). `guilds` as `[name, realm, faction, guildId]`
+  (an empty name for a guild that couldn't be named), each boss and difficulty's best DPS and
+  HPS as `[name, realm, class, spec, perSecond, logRealm, logId]`, and the loot's `items` as
+  `[id, name, quality, icon]`.
+- `<boss>-<difficulty>.json`: that boss's kills on that difficulty, oldest first, as
+  `[realm, logId, killedAtUnix, fightMs, guild, faction, wipes, deaths, resurrects, members, [itemId, ...]]`,
+  each member `[player, spec, ilvl, damage, healing, absorbs, overhealing, damageTaken, interrupts, dispels, talents, [trinket, ...]]`.
+  `talents` holds a character per tier, top to bottom: the column picked (`0` to `2` from the
+  left) or `.` for an empty tier, and is empty when the log has none. The file has its own
+  `guilds` (as in the index), `players` (`[name, realm, class, race, gender, guild]`, below) and
+  `trinkets` (`[id, itemLevel, name, quality, icon]`) tables. A boss file needs nothing from the
+  index, so a page that loaded the index before a deploy can still read a newer boss file. A
+  difficulty without kills has no file.
+- `talents.json`: each spec's talent choices as `[specId, [[[spellId, name, icon], ...], ...]]`,
+  tiers top to bottom and choices left to right (null where TauriShoot has none).
+- `talent-tooltips.json`: [below](#talent-tooltips).
+
+A boss file's `players` table holds one row per realm, name and class. A name played by two
 classes over the season (a freed name taken by a new character) gets a row for each, and every
 kill points at the row of the class it was logged as. Race and gender come from that class's
-latest kill; the guild from Players.csv, else the latest kill that named one. The site still
-counts realm + name as one character ([scoring.md](scoring.md#raid-leaderboard)).
+latest kill; the guild from Players.csv, else the latest kill that named one.
+
+A name belongs to the class of its latest kill on any boss and difficulty. A row of any other
+class is a former character with that name and ends with an extra `1`. The site leaves former
+characters out of everything about a character: the character page, the leaderboard, boss
+rankings, spec performance and Talent Analytics. Their kills still count as player slots and
+still set a boss's best ([scoring.md](scoring.md#raid-leaderboard)), and the log page lists them
+without a link. Only the exporter sees every kill, so only it can tell: the site loads one
+difficulty at a time.
 
 RaidLogExporter rebuilds the logs it already has from the boss files, so whatever a file
 doesn't store is lost for those logs until they're read again. Bump

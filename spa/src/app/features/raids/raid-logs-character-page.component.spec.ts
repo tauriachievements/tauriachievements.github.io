@@ -42,7 +42,7 @@ const indexFile: RaidLogsIndexFile = {
   items: []
 };
 
-const [FROSTY, KAEL, RET, LIGHT, TANK] = [0, 1, 2, 3, 4];
+const [FROSTY, KAEL, RET, LIGHT, TANK, FORMER_SHIFTY, SHIFTY, FORMER_MOVED, MOVED] = [0, 1, 2, 3, 4, 5, 6, 7, 8];
 
 const member = (player: number, spec: number, dps: number, hps = 0): RaidMemberEntry =>
   [player, spec, 870, dps * 100, hps * 100, 0, 0, 0, 0, 0];
@@ -60,7 +60,11 @@ const bossFile = (boss: string, difficulty: string, logs: RaidBossLogEntry[]): R
     ['Kael', 'Tauri', 8, 1, 0, ''],
     ['Ret', 'Tauri', 2, 1, 0, ''],
     ['Light', 'Evermoon', 2, 10, 1, 'Miracle'],
-    ['Tank', 'Tauri', 2, 1, 0, '']
+    ['Tank', 'Tauri', 2, 1, 0, ''],
+    ['Shifty', 'Tauri', 8, 1, 0, '', 1],
+    ['Shifty', 'Tauri', 2, 1, 0, ''],
+    ['Moved', 'Tauri', 8, 1, 0, '', 1],
+    ['Moved', 'Tauri', 2, 1, 0, '']
   ],
   logs
 });
@@ -70,9 +74,11 @@ const bossFiles: Record<string, RaidBossFile> = Object.fromEntries([
     log(10, 1_000, [member(RET, 70, 1_000), member(FROSTY, 64, 800), member(KAEL, 63, 600), member(LIGHT, 65, 0, 500)]),
     log(11, 2_000, [member(KAEL, 63, 700), member(FROSTY, 64, 750), member(TANK, 66, 300)])
   ]),
-  bossFile('ilgynoth', 'mythic', [log(12, 3_000, [member(KAEL, 63, 900), member(RET, 70, 1_200), member(FROSTY, 64, 450)])]),
-  bossFile('elerethe-renferal', 'mythic', [log(13, 4_000, [member(KAEL, 63, 500)])]),
-  bossFile('nythendra', 'heroic', [log(20, 500, [member(FROSTY, 64, 400), member(KAEL, 63, 500), member(RET, 70, 300)])])
+  bossFile('ilgynoth', 'mythic', [log(12, 3_000, [
+    member(KAEL, 63, 900), member(RET, 70, 1_200), member(FROSTY, 64, 450), member(SHIFTY, 65, 0, 100)
+  ])]),
+  bossFile('elerethe-renferal', 'mythic', [log(13, 4_000, [member(KAEL, 63, 500), member(FORMER_SHIFTY, 63, 100), member(FORMER_MOVED, 63, 100)])]),
+  bossFile('nythendra', 'heroic', [log(20, 500, [member(FROSTY, 64, 400), member(KAEL, 63, 500), member(RET, 70, 300), member(MOVED, 70, 100)])])
 ].map(file => [`raid-log-data/${file.boss}-${file.difficulty}.json`, file]));
 
 class FakeDataFiles {
@@ -129,19 +135,36 @@ function summaryTile(element: HTMLElement, label: string) {
   };
 }
 
-describe('RaidLogsCharacterPageComponent comparison', () => {
-  beforeEach(() => {
-    vi.spyOn(console, 'error').mockImplementation(() => undefined);
-    vi.stubGlobal('matchMedia', (media: string) => ({
-      media,
-      matches: media.includes('prefers-reduced-motion: reduce'),
-      addEventListener: () => undefined,
-      removeEventListener: () => undefined
-    }));
+beforeEach(() => {
+  vi.spyOn(console, 'error').mockImplementation(() => undefined);
+  vi.stubGlobal('matchMedia', (media: string) => ({
+    media,
+    matches: media.includes('prefers-reduced-motion: reduce'),
+    addEventListener: () => undefined,
+    removeEventListener: () => undefined
+  }));
+});
+
+afterEach(() => vi.unstubAllGlobals());
+
+describe('RaidLogsCharacterPageComponent with a former character of the name', () => {
+  it('shows only the kills of the class the name has now', async () => {
+    const { page } = await open('/raid-logs/character/tauri/Shifty');
+
+    expect(page.character()?.classId).toBe(2);
+    expect(page.appearances().map(({ kill, member }) => [kill.logId, member.spec?.name])).toEqual([[12, 'Holy']]);
+    expect(page.bossRows().map(row => [row.boss.shortName, row.kills])).toEqual([['Nythendra', 0], ["Il'gynoth", 1], ['Elerethe', 0]]);
   });
 
-  afterEach(() => vi.unstubAllGlobals());
+  it('moves on to a difficulty where the name has kills as its current class', async () => {
+    const { page } = await open('/raid-logs/character/tauri/Moved');
 
+    expect(page.loaded()?.difficulty.slug).toBe('heroic');
+    expect(page.appearances().map(({ kill, member }) => [kill.logId, member.spec?.name])).toEqual([[20, 'Retribution']]);
+  });
+});
+
+describe('RaidLogsCharacterPageComponent comparison', () => {
   it('compares with all players by default, as the score does', async () => {
     const { page, element } = await open('/raid-logs/character/evermoon/Frosty');
 

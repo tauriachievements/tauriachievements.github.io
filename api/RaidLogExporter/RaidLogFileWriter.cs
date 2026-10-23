@@ -5,39 +5,6 @@ using Tauri.Core.Infrastructure;
 
 namespace RaidLogExporter;
 
-/// <summary>
-/// Writes the files the /raid-logs pages read (contract: spa/src/app/raid-logs.ts).
-/// <para>
-/// <c>index.json</c> holds when the rankings were read (<c>generatedAt</c>, UTC ISO 8601), the raid,
-/// its difficulties (with kill counts) and bosses, the spec table, every kill as
-/// <c>[realm, logId, boss, difficultyId, killedAtUnix, fightMs, guild, faction, wipes, deaths, members]</c>
-/// (boss and guild are positions in <c>bosses</c> and <c>guilds</c>, guild -1 for a pickup group),
-/// once there is an earlier export to compare with, <c>previousGeneratedAt</c> and the kills added
-/// since it as <c>newLogs</c> (<c>[realm, logId]</c>; see <see cref="RaidScanChanges"/>),
-/// <c>guilds</c> as <c>[name, realm, faction, guildId]</c> (an empty name for a guild that could
-/// not be named), each boss and difficulty's best DPS and HPS as
-/// <c>[name, realm, class, spec, perSecond, logRealm, logId]</c>, and the loot's
-/// <c>items</c> as <c>[id, name, quality, icon]</c>.
-/// </para>
-/// <para>
-/// <c>&lt;boss&gt;-&lt;difficulty&gt;.json</c> holds that boss's kills on that difficulty, oldest
-/// first, as <c>[realm, logId, killedAtUnix, fightMs, guild, faction, wipes, deaths, resurrects,
-/// [[player, spec, ilvl, damage, healing, absorbs, overhealing, damageTaken, interrupts, dispels,
-/// talents, [trinket, ...]], ...], [itemId, ...]]</c>, with its own <c>guilds</c> (as in the
-/// index), <c>players</c> (<c>[name, realm, class, race, gender, guild]</c>) and <c>trinkets</c>
-/// (<c>[id, itemLevel, name, quality, icon]</c>) tables. <c>talents</c> is a column per tier (see
-/// <see cref="RaidLogMember.Talents"/>). A boss file needs nothing from the index, so a page that
-/// loaded the index before a deploy can still read a newer boss file. A difficulty without kills
-/// has no file.
-/// </para>
-/// <para>
-/// <c>talents.json</c> holds each spec's talent choices as <c>[specId, [[[spellId, name, icon],
-/// ...], ...]]</c>, tiers top to bottom and choices left to right (null where TauriShoot has
-/// none), so the pages can name the columns a member's <c>talents</c> picked.
-/// </para>
-/// Every entry goes on its own line, and the tables grow in order of first appearance, so a
-/// new kill is a few added lines in git.
-/// </summary>
 public static class RaidLogFileWriter
 {
     public const int FormatVersion = 3;
@@ -321,6 +288,10 @@ public static class RaidLogFileWriter
                     item.WriteNumberValue(player.Race);
                     item.WriteNumberValue(player.Gender);
                     item.WriteStringValue(player.Guild);
+                    if (player.Former)
+                    {
+                        item.WriteNumberValue(1);
+                    }
                     item.WriteEndArray();
                 }
             );

@@ -1,13 +1,13 @@
 namespace RaidLogExporter;
 
-/// <param name="Guild">The ladder's current guild for the character, else the last one a log named.</param>
 public sealed record RaidPlayer(
     string Name,
     string Realm,
     int ClassId,
     int Race,
     int Gender,
-    string Guild
+    string Guild,
+    bool Former = false
 );
 
 /// <param name="Value">Damage or healing per second, rounded.</param>
@@ -59,6 +59,7 @@ public static class RaidLogDatasetBuilder
             .ThenBy(log => log.Key.LogId)
             .ToList();
         var logsByEncounter = ordered.ToLookup(log => (log.EncounterId, log.DifficultyId));
+        var currentClasses = CurrentClasses(ordered);
 
         var encounters = (
             from boss in RaidCatalog.Bosses
@@ -67,7 +68,8 @@ public static class RaidLogDatasetBuilder
                 boss,
                 difficulty,
                 [.. logsByEncounter[(boss.EncounterId, difficulty.Id)]],
-                guildDirectory
+                guildDirectory,
+                currentClasses
             )
         ).ToList();
 
@@ -83,18 +85,32 @@ public static class RaidLogDatasetBuilder
     public static double PerSecond(long amount, long fightMilliseconds) =>
         fightMilliseconds > 0 ? amount * 1000.0 / fightMilliseconds : 0;
 
+    private static Dictionary<(string Realm, string Name), int> CurrentClasses(
+        IEnumerable<RaidLog> oldestFirst
+    )
+    {
+        var classes = new Dictionary<(string Realm, string Name), int>();
+        foreach (var member in oldestFirst.SelectMany(log => log.Members))
+        {
+            classes[(member.Realm, member.Name)] = member.ClassId;
+        }
+
+        return classes;
+    }
+
     private static RaidEncounter BuildEncounter(
         RaidBoss boss,
         RaidDifficulty difficulty,
         IReadOnlyList<RaidLog> logs,
-        PlayerGuildDirectory guildDirectory
+        PlayerGuildDirectory guildDirectory,
+        IReadOnlyDictionary<(string Realm, string Name), int> currentClasses
     ) =>
         new(
             boss,
             difficulty,
             logs,
             GuildTable(logs),
-            PlayerTable(logs, guildDirectory),
+            PlayerTable(logs, guildDirectory, currentClasses),
             TrinketTable(logs),
             TopPerformer(
                 logs,
@@ -127,7 +143,8 @@ public static class RaidLogDatasetBuilder
 
     private static List<RaidPlayer> PlayerTable(
         IReadOnlyList<RaidLog> logs,
-        PlayerGuildDirectory guildDirectory
+        PlayerGuildDirectory guildDirectory,
+        IReadOnlyDictionary<(string Realm, string Name), int> currentClasses
     )
     {
         var players = new List<RaidPlayer>();
@@ -163,12 +180,11 @@ public static class RaidLogDatasetBuilder
         return
         [
             .. players.Select(player =>
-                guildDirectory.Find(player.Realm, player.Name) is { } guild
-                    ? player with
-                    {
-                        Guild = guild,
-                    }
-                    : player
+                player with
+                {
+                    Guild = guildDirectory.Find(player.Realm, player.Name) ?? player.Guild,
+                    Former = currentClasses[(player.Realm, player.Name)] != player.ClassId,
+                }
             ),
         ];
     }

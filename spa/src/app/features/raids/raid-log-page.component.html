@@ -82,11 +82,15 @@
                   <span class="character">
                     <img [src]="row.member.spec?.icon || classIcon(row.member.character.classId)" alt="" loading="lazy" />
                     <span class="character-text">
-                      <a
-                        class="character-name"
-                        [style.color]="classColor(row.member.character.classId)"
-                        [routerLink]="characterLink(row.member.character)"
-                        [queryParams]="{ difficulty: current.difficulty.slug }">{{ row.member.character.name }}</a>
+                      @if (row.member.character.former) {
+                        <span class="character-name" [style.color]="classColor(row.member.character.classId)">{{ row.member.character.name }}</span>
+                      } @else {
+                        <a
+                          class="character-name"
+                          [style.color]="classColor(row.member.character.classId)"
+                          [routerLink]="characterLink(row.member.character)"
+                          [queryParams]="{ difficulty: current.difficulty.slug }">{{ row.member.character.name }}</a>
+                      }
                       <span class="character-sub">{{ row.member.spec?.name || 'Unknown spec' }} · {{ row.member.character.realm }}</span>
                     </span>
                   </span>

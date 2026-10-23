@@ -106,7 +106,8 @@ export class RaidLogsCharacterPageComponent {
     }
 
     return loaded.bossKills.flatMap(kills => kills.flatMap(kill =>
-      kill.members.filter(member => characterKey(member.character) === loaded.key).map(member => ({ kill, member }))));
+      kill.members.filter(member => !member.character.former && characterKey(member.character) === loaded.key)
+        .map(member => ({ kill, member }))));
   });
 
   readonly character = computed(() => latestFirst(this.appearances())[0]?.member.character);
@@ -327,6 +328,9 @@ export class RaidLogsCharacterPageComponent {
     for (const kills of bossKills) {
       for (const kill of kills) {
         for (const member of kill.members) {
+          if (member.character.former) {
+            continue;
+          }
           const key = characterKey(member.character);
           if (key === exact) {
             return key;

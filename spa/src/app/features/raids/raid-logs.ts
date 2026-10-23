@@ -130,8 +130,8 @@ export function decodeBossFile(
   specs: ReadonlyMap<number, RaidSpec>
 ): RaidKillDetails[] {
   const guilds = file.guilds.map(decodeGuild);
-  const characters = file.players.map(([name, realm, classId, race, gender, guild]): RaidCharacter =>
-    ({ name, realm, classId, race, gender, guild }));
+  const characters = file.players.map(([name, realm, classId, race, gender, guild, former]): RaidCharacter =>
+    ({ name, realm, classId, race, gender, guild, former: former === 1 }));
   const trinkets = (file.trinkets ?? []).map(([id, itemLevel, name, quality, icon]): RaidTrinket =>
     ({ id, itemLevel, name, quality, icon }));
 

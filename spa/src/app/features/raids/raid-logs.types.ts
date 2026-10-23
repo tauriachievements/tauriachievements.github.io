@@ -71,7 +71,7 @@ export interface RaidLogsIndexFile {
   items: RaidItemEntry[];
 }
 
-export type RaidPlayerEntry = [name: string, realm: string, classId: number, race: number, gender: number, guild: string];
+export type RaidPlayerEntry = [name: string, realm: string, classId: number, race: number, gender: number, guild: string, former?: 1];
 
 export type RaidMemberEntry = [
   player: number,
@@ -217,6 +217,7 @@ export interface RaidCharacter {
   race: number;
   gender: number;
   guild: string;
+  former?: boolean;
 }
 
 export interface RaidMember {

@@ -62,6 +62,14 @@ describe('decodeBossFile', () => {
     expect(kills[0].members[0].character).toBe(kills[1].members[0].character);
   });
 
+  it('marks the row of a former character with the name', () => {
+    const [kill] = decodeBossFile({
+      ...bossFile,
+      players: [...bossFile.players.slice(0, 2), ['Light', 'Evermoon', 2, 10, 1, 'Miracle', 1]]
+    }, nythendra, mythic, index.specs);
+    expect(kill.members.map(member => member.character.former)).toEqual([false, false, true]);
+  });
+
   it('reads no talents or trinkets from a version 1 file', () => {
     expect(kills[0].members[0]).toMatchObject({ talents: '', trinkets: [] });
   });
