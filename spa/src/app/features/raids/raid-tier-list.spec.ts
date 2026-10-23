@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { specById } from '../../game/wow-specs';
 import { RaidCharacter, RaidSpec } from './raid-logs.types';
 import { SpecCharacterScore } from './raid-scores';
-import { FEW_PLAYERS, SPEC_TIERS, describeTiers, percentOfBest, roleTierList, tierFor } from './raid-tier-list';
+import { FEW_PLAYERS, SPEC_TIERS, TIER_LIST_ROLES, describeTiers, percentOfBest, roleTierList, tierFor } from './raid-tier-list';
 
 function raidSpec(id: number): RaidSpec {
   const spec = specById(id)!;
@@ -51,6 +51,10 @@ describe('tierFor', () => {
 });
 
 describe('roleTierList', () => {
+  it('lists DPS first, then Heal, then Tank', () => {
+    expect(TIER_LIST_ROLES.map(({ role, title }) => [role, title])).toEqual([['dps', 'DPS'], ['healer', 'Heal'], ['tank', 'Tank']]);
+  });
+
   const tanks = roleTierList(tankScores, 'tank', 'Tank', 'mythic');
   const placed = tanks.rows.map(row => [row.tier.label, row.specs.map(spec => spec.name)]);
 
@@ -89,13 +93,13 @@ describe('roleTierList', () => {
   it("links each spec to its rankings on the difficulty, by HPS for healers", () => {
     expect(tanks.rows[0].specs[0].rankingsQuery).toEqual({ difficulty: 'mythic', metric: null, class: 6, spec: BLOOD });
 
-    const healers = roleTierList(new Map([players(MISTWEAVER, 10, 4000)]), 'healer', 'Healer', 'heroic');
+    const healers = roleTierList(new Map([players(MISTWEAVER, 10, 4000)]), 'healer', 'Heal', 'heroic');
     expect(healers.rows[0].specs[0].rankingsQuery).toEqual({ difficulty: 'heroic', metric: 'hps', class: 10, spec: MISTWEAVER });
     expect(healers.rows[0].specs[0].note).toBe('4,000 HPS score · 100% of the best · 10 characters');
   });
 
   it("keeps the game's order between specs with the same score", () => {
-    const healers = roleTierList(new Map([players(RESTORATION_DRUID, 10, 4000), players(MISTWEAVER, 10, 4000)]), 'healer', 'Healer', 'normal');
+    const healers = roleTierList(new Map([players(RESTORATION_DRUID, 10, 4000), players(MISTWEAVER, 10, 4000)]), 'healer', 'Heal', 'normal');
     expect(healers.rows[0].specs.map(spec => spec.name)).toEqual(['Mistweaver Monk', 'Restoration Druid']);
   });
 

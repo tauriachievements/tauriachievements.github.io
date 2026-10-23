@@ -1,7 +1,6 @@
-import { Role } from '../../game/wow';
 import { DIFFICULTY_COLORS } from './raid-display';
 import { SPEC_TOP_SCORES } from './raid-scores';
-import { FEW_PLAYERS, RoleTierList, describeTiers } from './raid-tier-list';
+import { FEW_PLAYERS, RoleTierList, TierSpec, describeTiers } from './raid-tier-list';
 
 export interface TierListImageInfo {
   raidName: string;
@@ -11,23 +10,61 @@ export interface TierListImageInfo {
   date: Date;
 }
 
+export interface TablePlacement {
+  list: RoleTierList;
+  x: number;
+  top: number;
+  width: number;
+  columns: number;
+}
+
+export interface ImageLayout {
+  width: number;
+  tables: TablePlacement[];
+  bottom: number;
+  footer: string[];
+}
+
 const SCALE = 2;
 const PADDING = 36;
 const TILE = 80;
 const LABEL_WIDTH = 100;
 const MIN_COLUMNS = 6;
 const MAX_COLUMNS = 12;
+const HEADER_HEIGHT = 108;
+const HEADING_HEIGHT = 34;
+const SECTION_GAP = 32;
+const TABLE_GAP = 28;
+const FOOTER_GAP = 30;
+const FOOTER_LINE = 19;
 const FONT = 'Arial, Helvetica, sans-serif';
 const GOLD = '#f7b500';
 const TEXT = '#e0e0e0';
 const MUTED = '#9a9a9a';
 const INK = '#1a1a17';
-const FOOTER_LINE = 19;
+const KICKER = 'TAURI LEGION · RAID LOGS';
+const TITLE = 'Spec Tier List';
 const SITE = 'tauriachievements.github.io';
 
 export function imageColumns(list: RoleTierList): number {
   const widest = Math.max(0, ...list.rows.map(row => row.specs.length));
   return Math.min(MAX_COLUMNS, Math.max(MIN_COLUMNS, widest));
+}
+
+function tableWidth(columns: number): number {
+  return 2 + LABEL_WIDTH + columns * TILE;
+}
+
+function columnsIn(width: number): number {
+  return Math.floor((width - 2 - LABEL_WIDTH) / TILE);
+}
+
+function rowHeight(specCount: number, columns: number): number {
+  return TILE * Math.max(1, Math.ceil(specCount / columns));
+}
+
+function tableHeight(list: RoleTierList, columns: number): number {
+  return list.rows.reduce((height, row) => height + rowHeight(row.specs.length, columns) + 1, 1);
 }
 
 export function formatImageDate(date: Date): string {
@@ -38,19 +75,47 @@ function localDay(date: Date): string {
   return [date.getFullYear(), date.getMonth() + 1, date.getDate()].map(part => String(part).padStart(2, '0')).join('-');
 }
 
-export function tierListImageName(info: TierListImageInfo, role: Role): string {
-  return `${info.raidSlug}-${info.difficultySlug}-${role}-tier-list-${localDay(info.date)}.png`;
+export function tierListImageName(info: TierListImageInfo): string {
+  return `${info.raidSlug}-${info.difficultySlug}-tier-list-${localDay(info.date)}.png`;
 }
 
-export function imageFooter(list: RoleTierList): string[] {
-  const metric = list.role === 'healer' ? 'HPS' : 'DPS';
-  const characters = `${list.characterCount.toLocaleString('en-US')} ${list.characterCount === 1 ? 'character' : 'characters'}`;
-  const fewPlayers = list.rows.some(row => row.specs.some(spec => spec.fewPlayers));
+function characters(count: number): string {
+  return `${count.toLocaleString('en-US')} ${count === 1 ? 'character' : 'characters'}`;
+}
+
+export function imageFooter(lists: readonly RoleTierList[]): string[] {
+  const fewPlayers = lists.some(list => list.rows.some(row => row.specs.some(spec => spec.fewPlayers)));
+  const unplayed = lists.flatMap(list => list.unplayed);
   return [
-    `Each spec's top ${SPEC_TOP_SCORES} ${metric} scores, averaged, from ${characters}. Tier by share of the best spec: ${describeTiers()}.`,
+    `Each spec's top ${SPEC_TOP_SCORES} scores, averaged: HPS for healers, DPS for everyone else. Tier by share of the best spec in its role: ${describeTiers()}.`,
     ...(fewPlayers ? [`A number on an icon: fewer than ${FEW_PLAYERS} characters played it.`] : []),
-    ...(list.unplayed.length ? [`Not played: ${list.unplayed.join(', ')}.`] : [])
+    ...(unplayed.length ? [`Not played: ${unplayed.join(', ')}.`] : [])
   ];
+}
+
+export function imageLayout(lists: readonly RoleTierList[]): ImageLayout {
+  const [wide, ...rest] = lists;
+  const gaps = TABLE_GAP * Math.max(0, rest.length - 1);
+  const restWidth = rest.reduce((sum, list) => sum + tableWidth(imageColumns(list)), gaps);
+  const contentWidth = Math.max(tableWidth(imageColumns(wide)), restWidth);
+
+  const wideTop = PADDING + HEADER_HEIGHT + HEADING_HEIGHT;
+  const wideColumns = columnsIn(contentWidth);
+  const wideBottom = wideTop + tableHeight(wide, wideColumns);
+  const tables: TablePlacement[] = [{ list: wide, x: PADDING, top: wideTop, width: contentWidth, columns: wideColumns }];
+
+  let bottom = wideBottom;
+  if (rest.length) {
+    const width = Math.floor((contentWidth - gaps) / rest.length);
+    const top = wideBottom + SECTION_GAP + HEADING_HEIGHT;
+    rest.forEach((list, index) => {
+      const columns = columnsIn(width);
+      tables.push({ list, x: PADDING + index * (width + TABLE_GAP), top, width, columns });
+      bottom = Math.max(bottom, top + tableHeight(list, columns));
+    });
+  }
+
+  return { width: PADDING * 2 + contentWidth, tables, bottom, footer: imageFooter(lists) };
 }
 
 export function wrapText(text: string, maxWidth: number, measure: (text: string) => number): string[] {
@@ -79,9 +144,8 @@ async function loadImage(document: Document, src: string): Promise<HTMLImageElem
   }
 }
 
-function drawHeader(context: CanvasRenderingContext2D, list: RoleTierList, info: TierListImageInfo, width: number): void {
+function drawHeader(context: CanvasRenderingContext2D, width: number, info: TierListImageInfo): void {
   const right = width - PADDING;
-  const difficultyColor = DIFFICULTY_COLORS[info.difficultySlug] ?? TEXT;
 
   context.fillStyle = GOLD;
   context.fillRect(0, 0, width, 4);
@@ -89,18 +153,20 @@ function drawHeader(context: CanvasRenderingContext2D, list: RoleTierList, info:
   context.textBaseline = 'alphabetic';
   context.textAlign = 'left';
   context.font = `700 13px ${FONT}`;
-  context.fillText('TAURI LEGION · SPEC TIER LIST', PADDING, PADDING + 12);
+  context.fillText(KICKER, PADDING, PADDING + 12);
+  context.textAlign = 'right';
+  context.fillText(SITE, right, PADDING + 12);
+  context.textAlign = 'left';
 
   context.fillStyle = '#fff';
   context.font = `700 34px ${FONT}`;
-  context.fillText(`${list.title} Tier List`, PADDING, PADDING + 52);
+  context.fillText(TITLE, PADDING, PADDING + 52);
 
   context.font = `17px ${FONT}`;
   context.fillStyle = TEXT;
-  const raid = `${info.raidName}  ·  `;
-  context.fillText(raid, PADDING, PADDING + 82);
-  const dotX = PADDING + context.measureText(raid).width + 6;
-  context.fillStyle = difficultyColor;
+  context.fillText(info.raidName, PADDING, PADDING + 82);
+  const dotX = PADDING + context.measureText(info.raidName).width + 18;
+  context.fillStyle = DIFFICULTY_COLORS[info.difficultySlug] ?? TEXT;
   context.beginPath();
   context.arc(dotX, PADDING + 76, 5, 0, Math.PI * 2);
   context.fill();
@@ -111,9 +177,19 @@ function drawHeader(context: CanvasRenderingContext2D, list: RoleTierList, info:
   context.fillStyle = TEXT;
   context.font = `15px ${FONT}`;
   context.fillText(formatImageDate(info.date), right, PADDING + 52);
+}
+
+function drawHeading(context: CanvasRenderingContext2D, table: TablePlacement): void {
+  const baseline = table.top - 12;
+  context.textBaseline = 'alphabetic';
+  context.textAlign = 'left';
+  context.fillStyle = '#fff';
+  context.font = `700 20px ${FONT}`;
+  context.fillText(table.list.title, table.x, baseline);
+  context.textAlign = 'right';
   context.fillStyle = MUTED;
   context.font = `13px ${FONT}`;
-  context.fillText(`${list.characterCount.toLocaleString('en-US')} characters`, right, PADDING + 82);
+  context.fillText(characters(table.list.characterCount), table.x + table.width, baseline);
 }
 
 function drawBadge(context: CanvasRenderingContext2D, count: number, tileX: number, tileY: number): void {
@@ -138,15 +214,50 @@ function drawBadge(context: CanvasRenderingContext2D, count: number, tileX: numb
   context.fillText(text, x + width / 2, y + height / 2 + 1);
 }
 
-export async function renderTierListImage(document: Document, list: RoleTierList, info: TierListImageInfo): Promise<Blob> {
-  const specs = list.rows.flatMap(row => row.specs);
-  const images = new Map(await Promise.all(specs.map(async spec => [spec.id, await loadImage(document, spec.art)] as const)));
+function drawTable(context: CanvasRenderingContext2D, table: TablePlacement, images: ReadonlyMap<number, HTMLImageElement | undefined>): void {
+  const { list, x, top, width, columns } = table;
+  context.fillStyle = '#000';
+  context.fillRect(x, top, width, tableHeight(list, columns));
 
-  const columns = imageColumns(list);
-  const width = PADDING * 2 + 2 + LABEL_WIDTH + columns * TILE;
-  const rowHeights = list.rows.map(row => TILE * Math.max(1, Math.ceil(row.specs.length / columns)));
-  const tableTop = PADDING + 108;
-  const tableHeight = rowHeights.reduce((sum, height) => sum + height, 0) + rowHeights.length + 1;
+  const labelX = x + 1;
+  const tilesX = labelX + LABEL_WIDTH;
+  let rowTop = top + 1;
+  for (const row of list.rows) {
+    const height = rowHeight(row.specs.length, columns);
+
+    context.fillStyle = row.tier.color;
+    context.fillRect(labelX, rowTop, LABEL_WIDTH, height);
+    context.fillStyle = INK;
+    context.fillRect(tilesX, rowTop, width - 2 - LABEL_WIDTH, height);
+
+    context.font = `700 30px ${FONT}`;
+    context.textAlign = 'center';
+    context.textBaseline = 'middle';
+    context.fillText(row.tier.label, labelX + LABEL_WIDTH / 2, rowTop + height / 2 + 1);
+
+    row.specs.forEach((spec, index) => {
+      const tileX = tilesX + (index % columns) * TILE;
+      const tileY = rowTop + Math.floor(index / columns) * TILE;
+      const image = images.get(spec.id);
+      if (image) {
+        context.drawImage(image, tileX, tileY, TILE, TILE);
+      } else {
+        context.fillStyle = '#333';
+        context.fillRect(tileX, tileY, TILE, TILE);
+      }
+      if (spec.fewPlayers) {
+        drawBadge(context, spec.count, tileX, tileY);
+      }
+    });
+
+    rowTop += height + 1;
+  }
+}
+
+export async function renderTierListImage(document: Document, lists: readonly RoleTierList[], info: TierListImageInfo): Promise<Blob> {
+  const layout = imageLayout(lists);
+  const specs: TierSpec[] = layout.tables.flatMap(table => table.list.rows.flatMap(row => row.specs));
+  const images = new Map(await Promise.all(specs.map(async spec => [spec.id, await loadImage(document, spec.art)] as const)));
 
   const canvas = document.createElement('canvas');
   const context = canvas.getContext('2d');
@@ -155,13 +266,12 @@ export async function renderTierListImage(document: Document, list: RoleTierList
   }
 
   context.font = `13px ${FONT}`;
-  const footer = imageFooter(list).flatMap(paragraph =>
-    wrapText(paragraph, width - PADDING * 2, text => context.measureText(text).width));
-  const footerTop = tableTop + tableHeight + 30;
-  const siteBaseline = footerTop + footer.length * FOOTER_LINE + 10;
-  const height = siteBaseline + PADDING - 8;
+  const footer = layout.footer.flatMap(paragraph =>
+    wrapText(paragraph, layout.width - PADDING * 2, text => context.measureText(text).width));
+  const footerTop = layout.bottom + FOOTER_GAP;
+  const height = footerTop + (footer.length - 1) * FOOTER_LINE + PADDING;
 
-  canvas.width = width * SCALE;
+  canvas.width = layout.width * SCALE;
   canvas.height = height * SCALE;
   context.scale(SCALE, SCALE);
 
@@ -169,58 +279,19 @@ export async function renderTierListImage(document: Document, list: RoleTierList
   background.addColorStop(0, '#171717');
   background.addColorStop(1, '#070707');
   context.fillStyle = background;
-  context.fillRect(0, 0, width, height);
+  context.fillRect(0, 0, layout.width, height);
 
-  drawHeader(context, list, info, width);
-
-  context.fillStyle = '#000';
-  context.fillRect(PADDING, tableTop, width - PADDING * 2, tableHeight);
-
-  let rowTop = tableTop + 1;
-  list.rows.forEach((row, rowIndex) => {
-    const rowHeight = rowHeights[rowIndex];
-    const labelX = PADDING + 1;
-    const tilesX = labelX + LABEL_WIDTH;
-
-    context.fillStyle = row.tier.color;
-    context.fillRect(labelX, rowTop, LABEL_WIDTH, rowHeight);
-    context.fillStyle = INK;
-    context.fillRect(tilesX, rowTop, columns * TILE, rowHeight);
-
-    context.fillStyle = INK;
-    context.font = `700 30px ${FONT}`;
-    context.textAlign = 'center';
-    context.textBaseline = 'middle';
-    context.fillText(row.tier.label, labelX + LABEL_WIDTH / 2, rowTop + rowHeight / 2 + 1);
-
-    row.specs.forEach((spec, specIndex) => {
-      const x = tilesX + (specIndex % columns) * TILE;
-      const y = rowTop + Math.floor(specIndex / columns) * TILE;
-      const image = images.get(spec.id);
-      if (image) {
-        context.drawImage(image, x, y, TILE, TILE);
-      } else {
-        context.fillStyle = '#333';
-        context.fillRect(x, y, TILE, TILE);
-      }
-      if (spec.fewPlayers) {
-        drawBadge(context, spec.count, x, y);
-      }
-    });
-
-    rowTop += rowHeight + 1;
-  });
+  drawHeader(context, layout.width, info);
+  for (const table of layout.tables) {
+    drawHeading(context, table);
+    drawTable(context, table, images);
+  }
 
   context.textAlign = 'left';
   context.textBaseline = 'alphabetic';
   context.fillStyle = MUTED;
   context.font = `13px ${FONT}`;
   footer.forEach((line, index) => context.fillText(line, PADDING, footerTop + index * FOOTER_LINE));
-
-  context.textAlign = 'right';
-  context.fillStyle = GOLD;
-  context.font = `700 13px ${FONT}`;
-  context.fillText(SITE, width - PADDING, siteBaseline);
 
   return new Promise((resolve, reject) => canvas.toBlob(
     blob => blob ? resolve(blob) : reject(new Error('The image could not be created.')),

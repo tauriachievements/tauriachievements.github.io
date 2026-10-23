@@ -240,7 +240,7 @@ explains it together.
 
 - **Code:** `roleTierList`, `percentOfBest` and `tierFor` in
   `spa/src/app/features/raids/raid-tier-list.ts`; the page is `/raid-logs/tier-list`.
-- Three lists, DPS, Tank and Healer, each from the spec performance above on the picked
+- Three lists, DPS, Heal and Tank, each from the spec performance above on the picked
   difficulty: HPS for healers, DPS for tanks and damage dealers.
 - A spec's share is its performance against the best spec in its role, as a whole percent
   rounded down, so 94.8% shows and counts as 94%. The tier is the highest it reaches

@@ -58,12 +58,15 @@ style it was upscaled 4× with [Real-ESRGAN](https://github.com/xinntao/Real-ESR
 `realesrgan-x4plus-anime` model, given 10% more contrast and 25% more colour, then resized like
 the rest.
 
-Each Spec Tier List has a "Download image" button. The PNG is drawn on a `<canvas>` from the
-list's data (`raid-tier-list-image.ts`), at twice its layout size. It's not a picture of the page,
-so what is only on the page (the button, the character count in the corner) never shows in it,
-and the image has its own header (role, raid, difficulty, date) and footer. Every image it draws
-must be served from the site itself: a picture from another origin (the `legion-static` icons)
-taints the canvas, and the export then fails.
+"Download Tier List Image", at the end of the Spec Tier List's difficulty row, saves the three
+lists as one PNG, laid out like the page: DPS across the top, Heal and Tank side by side below.
+The PNG is drawn on a `<canvas>` from the lists' data (`raid-tier-list-image.ts`: `imageLayout`
+places the tables, `renderTierListImage` draws them), at twice its layout size. It's not a
+picture of the page, so what is only on the page (the button, the character count in each list's
+corner) never shows in it, and the image has its own header (raid, difficulty, date, the site's
+address), a heading and character count over each list, and a footer. Every image it draws must
+be served from the site itself: a picture from another origin (the `legion-static` icons) taints
+the canvas, and the export then fails.
 
 Keep components thin. A ranking, filter, count or empty-state message goes into the pure
 `<feature>.ts`, where a spec can pin it down without a TestBed. When a page's loading has more

@@ -11,7 +11,19 @@
         [selected]="difficulty()?.slug"
         label="Raid difficulty"
         (selectedChange)="setDifficulty($event)" />
+      <button
+        type="button"
+        class="download-button"
+        [disabled]="killsLoading() || !!killsError() || !hasLogs() || saving()"
+        (click)="download()">
+        <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 2v8m-3.5-3.5L8 10l3.5-3.5M2.5 11.5V14h11v-2.5" /></svg>
+        <span>{{ saving() ? 'Saving…' : 'Download Tier List Image' }}</span>
+      </button>
     </div>
+
+    @if (saveFailed()) {
+      <p class="save-error" role="alert">The image could not be made.</p>
+    }
 
     <app-load-state
       [loading]="killsLoading()"
@@ -27,8 +39,8 @@
 
             @if (list.characterCount) {
               <div class="tier-table">
-                @for (row of list.rows; track row.tier.key; let first = $first, last = $last) {
-                  <div class="tier-row" [class.has-corner]="first || last">
+                @for (row of list.rows; track row.tier.key; let last = $last) {
+                  <div class="tier-row" [class.has-corner]="last">
                     <span class="tier-label" [style.background]="row.tier.color" aria-hidden="true">{{ row.tier.label }}</span>
                     <ul class="tier-specs" [attr.aria-label]="row.tier.label + ' tier'">
                       @for (spec of row.specs; track spec.id) {
@@ -49,27 +61,12 @@
                         </li>
                       }
                     </ul>
-                    @if (first) {
-                      <button
-                        type="button"
-                        class="download-button"
-                        [disabled]="savingRole() !== undefined"
-                        [attr.aria-label]="'Download the ' + list.title + ' tier list as a PNG image'"
-                        (click)="download(list)">
-                        <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 2v8m-3.5-3.5L8 10l3.5-3.5M2.5 11.5V14h11v-2.5" /></svg>
-                        <span>{{ savingRole() === list.role ? 'Saving…' : 'Download image' }}</span>
-                      </button>
-                    }
                     @if (last) {
                       <span class="tier-count">{{ list.characterCount | number }} {{ list.characterCount === 1 ? 'character' : 'characters' }}</span>
                     }
                   </div>
                 }
               </div>
-
-              @if (saveFailedRole() === list.role) {
-                <p class="save-error" role="alert">The image could not be made.</p>
-              }
 
               @if (list.unplayed.length) {
                 <p class="unplayed">Not played on {{ difficulty()?.name }}: {{ list.unplayed.join(', ') }}.</p>

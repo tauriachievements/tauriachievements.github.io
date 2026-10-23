@@ -2,12 +2,11 @@ import { DOCUMENT, DecimalPipe } from '@angular/common';
 import { ChangeDetectionStrategy, Component, DestroyRef, OnInit, computed, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, RouterLink } from '@angular/router';
-import { Role } from '../../game/wow';
 import { RaidDifficulty, RaidKillDetails, RaidLogsIndex } from './raid-logs.types';
 import { defaultDifficulty } from './raid-logs';
 import { SPEC_TOP_SCORES, scoresBySpecForKills } from './raid-scores';
-import { FEW_PLAYERS, RoleTierList, TIER_LIST_ROLES, describeTiers, roleTierList } from './raid-tier-list';
-import { renderTierListImage, saveImage, tierListImageName } from './raid-tier-list-image';
+import { FEW_PLAYERS, TIER_LIST_ROLES, describeTiers, roleTierList } from './raid-tier-list';
+import { TierListImageInfo, renderTierListImage, saveImage, tierListImageName } from './raid-tier-list-image';
 import { RaidLogsDataService } from './raid-logs-data.service';
 import { RaidDifficultySwitchComponent } from './raid-difficulty-switch.component';
 import { IconTipsComponent } from '../../shared/icon-tips.component';
@@ -38,8 +37,8 @@ export class RaidLogsTierListPageComponent implements OnInit {
   readonly kills = signal<readonly RaidKillDetails[]>([]);
   readonly killsLoading = signal(false);
   readonly killsError = signal<string | undefined>(undefined);
-  readonly savingRole = signal<Role | undefined>(undefined);
-  readonly saveFailedRole = signal<Role | undefined>(undefined);
+  readonly saving = signal(false);
+  readonly saveFailed = signal(false);
   readonly lastEdited = computed(() => this.index()?.generatedAt);
 
   private readonly requestedDifficulty = signal(this.route.snapshot.queryParamMap.get('difficulty') ?? this.data.lastDifficulty());
@@ -55,6 +54,8 @@ export class RaidLogsTierListPageComponent implements OnInit {
     const difficulty = this.difficulty()?.slug ?? '';
     return TIER_LIST_ROLES.map(({ role, title }) => roleTierList(scores, role, title, difficulty));
   });
+
+  readonly hasLogs = computed(() => this.tierLists().some(list => list.characterCount > 0));
 
   private killsRequest = 0;
 
@@ -97,16 +98,16 @@ export class RaidLogsTierListPageComponent implements OnInit {
     this.retryKills();
   }
 
-  async download(list: RoleTierList): Promise<void> {
+  async download(): Promise<void> {
     const index = this.index();
     const difficulty = this.difficulty();
-    if (!index || !difficulty || this.savingRole()) {
+    if (!index || !difficulty || this.saving()) {
       return;
     }
 
-    this.savingRole.set(list.role);
-    this.saveFailedRole.set(undefined);
-    const info = {
+    this.saving.set(true);
+    this.saveFailed.set(false);
+    const info: TierListImageInfo = {
       raidName: index.raid.name,
       raidSlug: index.raid.slug,
       difficultySlug: difficulty.slug,
@@ -114,12 +115,12 @@ export class RaidLogsTierListPageComponent implements OnInit {
       date: new Date()
     };
     try {
-      saveImage(this.document, await renderTierListImage(this.document, list, info), tierListImageName(info, list.role));
+      saveImage(this.document, await renderTierListImage(this.document, this.tierLists(), info), tierListImageName(info));
     } catch (error) {
       console.error('Failed to save the tier list image:', error);
-      this.saveFailedRole.set(list.role);
+      this.saveFailed.set(true);
     } finally {
-      this.savingRole.set(undefined);
+      this.saving.set(false);
     }
   }
 

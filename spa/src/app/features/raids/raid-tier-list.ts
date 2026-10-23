@@ -23,8 +23,8 @@ export const FEW_PLAYERS = SPEC_TOP_SCORES;
 
 export const TIER_LIST_ROLES: ReadonlyArray<{ role: Role; title: string }> = [
   { role: 'dps', title: 'DPS' },
-  { role: 'tank', title: 'Tank' },
-  { role: 'healer', title: 'Healer' }
+  { role: 'healer', title: 'Heal' },
+  { role: 'tank', title: 'Tank' }
 ];
 
 export type RankingsQuery = Record<string, string | number | null>;
