@@ -1,0 +1,77 @@
+<main class="raid-page">
+  <h1 class="visually-hidden">Spec tier list, {{ index()?.raid?.name ?? 'The Emerald Nightmare' }}</h1>
+
+  <app-load-state [loading]="isLoading()" [error]="loadError()" loadingText="Reading the logs..." (retry)="loadData()" />
+
+  @if (!isLoading() && !loadError() && index(); as loaded) {
+    <div class="controls">
+      <h2 class="meta-title">Spec Tier List · {{ loaded.raid.name }}</h2>
+      <app-raid-difficulty-switch
+        [difficulties]="loaded.difficulties"
+        [selected]="difficulty()?.slug"
+        label="Raid difficulty"
+        (selectedChange)="setDifficulty($event)" />
+    </div>
+
+    <p class="method-note">
+      Each spec's top {{ topScores }} scores, averaged: HPS for healers, DPS for everyone else, as on
+      <a routerLink="/raid-logs/stats" [queryParams]="{ difficulty: difficulty()?.slug, view: 'performance' }">Raid Statistics</a>.
+      A spec's tier is its share of the best spec in its role: {{ tierRule }}.
+      A number on an icon means fewer than {{ fewPlayers }} characters played it.
+    </p>
+
+    <app-load-state
+      [loading]="killsLoading()"
+      [error]="killsError()"
+      [loadingText]="'Reading ' + (difficulty()?.name ?? '') + ' raid rosters...'"
+      (retry)="retryKills()" />
+
+    @if (!killsLoading() && !killsError()) {
+      <app-icon-tips class="tier-lists">
+        @for (list of tierLists(); track list.role) {
+          <section class="tier-section" [class]="list.role" [attr.aria-labelledby]="'tier-list-' + list.role">
+            <header class="tier-section-header">
+              <h3 [id]="'tier-list-' + list.role">{{ list.title }}</h3>
+              <span>{{ list.characterCount | number }} {{ list.characterCount === 1 ? 'character' : 'characters' }}</span>
+            </header>
+
+            @if (list.characterCount) {
+              <div class="tier-table">
+                @for (row of list.rows; track row.tier.key) {
+                  <div class="tier-row">
+                    <span class="tier-label" [class]="row.tier.key" aria-hidden="true">{{ row.tier.label }}</span>
+                    <ul class="tier-specs" [attr.aria-label]="row.tier.label + ' tier'">
+                      @for (spec of row.specs; track spec.id) {
+                        <li>
+                          <a
+                            class="tier-spec"
+                            routerLink="/raid-logs/leaderboard"
+                            [queryParams]="spec.rankingsQuery"
+                            [attr.aria-label]="spec.label"
+                            [attr.data-tip]="spec.name"
+                            [attr.data-tip-color]="spec.color"
+                            [attr.data-tip-note]="spec.note">
+                            <img [src]="spec.art" alt="" width="80" height="80" loading="lazy" />
+                            @if (spec.fewPlayers) {
+                              <span class="few-players" aria-hidden="true">{{ spec.count }}</span>
+                            }
+                          </a>
+                        </li>
+                      }
+                    </ul>
+                  </div>
+                }
+              </div>
+
+              @if (list.unplayed.length) {
+                <p class="unplayed">Not played on {{ difficulty()?.name }}: {{ list.unplayed.join(', ') }}.</p>
+              }
+            } @else {
+              <p class="empty-note">No {{ list.title }} scores were logged on {{ difficulty()?.name }}.</p>
+            }
+          </section>
+        }
+      </app-icon-tips>
+    }
+  }
+</main>

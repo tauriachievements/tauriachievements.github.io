@@ -5,3 +5,7 @@ export const getClassIconPath = (classIcon: string | number): string => {
 export const getClassCrestPath = (classId: number): string => {
   return `assets/class-crests/${classId}.webp`;
 };
+
+export const getSpecArtPath = (specId: number): string => {
+  return `assets/spec-art/${specId}.webp`;
+};
