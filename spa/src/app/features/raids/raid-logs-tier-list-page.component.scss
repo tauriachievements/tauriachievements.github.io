@@ -6,10 +6,9 @@
 
 .raid-page { @include raid-page; }
 
-$tier-colors: (s: #ff7f7f, a: #ffbf7f, b: #ffdf7f, c: #ffff7f, f: #bfff7f);
 $tier-ink: #1a1a17;
-$tile: 80px;
-$tile-phone: 48px;
+$tile: 60px;
+$tile-phone: 40px;
 
 .controls {
   display: flex;
@@ -20,25 +19,63 @@ $tile-phone: 48px;
 
 .meta-title { margin: 0; color: #fff; font-size: 1.15rem; }
 
-.method-note { margin: 0; color: $raid-muted; font-size: .78rem; line-height: 1.5; }
+.method-note { margin: 8px 0 0; color: $raid-muted; font-size: .78rem; line-height: 1.5; }
 .method-note a { color: $gold; }
 
 app-icon-tips.tier-lists {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
-  gap: 28px 24px;
+  gap: 20px 24px;
 }
 
 .tier-section { display: flex; min-width: 0; flex-direction: column; gap: 8px; }
 
-.tier-section-header {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 12px;
+.tier-count {
+  align-self: end;
+  padding: 0 12px 8px;
+  color: $raid-muted;
+  font-size: .76rem;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
 
-  h3 { margin: 0; color: #fff; font-size: 1.05rem; }
-  span { color: $raid-muted; font-size: .8rem; font-variant-numeric: tabular-nums; }
+.save-error { margin: 0; color: #ff6b6b; font-size: .78rem; }
+
+.download-button {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  align-self: center;
+  gap: 6px;
+  height: 30px;
+  margin: 0 12px;
+  padding: 0 10px;
+  border: 1px solid #3a3a3a;
+  border-radius: 7px;
+  background: #111;
+  color: #bdbdbd;
+  font: inherit;
+  font-size: .78rem;
+  font-weight: 700;
+  cursor: pointer;
+
+  svg {
+    width: 14px;
+    height: 14px;
+    fill: none;
+    stroke: currentColor;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    stroke-width: 1.6;
+  }
+
+  &:hover:not(:disabled) { border-color: $gold; color: #fff; }
+  &:focus-visible { outline: 2px solid $gold; outline-offset: 2px; }
+  &:disabled { opacity: .45; cursor: default; }
+}
+
+@media (pointer: coarse) {
+  .download-button::after { position: absolute; inset: -5px 0; content: ''; }
 }
 
 .tier-table {
@@ -49,9 +86,10 @@ app-icon-tips.tier-lists {
 .tier-row {
   display: grid;
   min-height: $tile;
-  grid-template-columns: 100px minmax(0, 1fr);
+  grid-template-columns: 72px minmax(0, 1fr);
 
   & + & { border-top: 1px solid #000; }
+  &.has-corner { grid-template-columns: 72px minmax(0, 1fr) auto; }
 }
 
 .tier-label {
@@ -59,12 +97,8 @@ app-icon-tips.tier-lists {
   align-items: center;
   justify-content: center;
   color: $tier-ink;
-  font-size: 1.25rem;
+  font-size: 1.1rem;
   font-weight: 700;
-
-  @each $key, $color in $tier-colors {
-    &.#{$key} { background: $color; }
-  }
 }
 
 .tier-specs {
@@ -94,15 +128,15 @@ app-icon-tips.tier-lists {
 
 .few-players {
   position: absolute;
-  right: 3px;
-  bottom: 3px;
-  min-width: 18px;
-  padding: 1px 5px;
-  border-radius: 9px;
+  right: 2px;
+  bottom: 2px;
+  min-width: 16px;
+  padding: 0 4px;
+  border-radius: 8px;
   background: rgba(0, 0, 0, .82);
   box-shadow: 0 0 0 1px rgba(255, 255, 255, .3);
   color: #fff;
-  font-size: .7rem;
+  font-size: .64rem;
   font-weight: 700;
   line-height: 1.3;
   text-align: center;
@@ -120,15 +154,18 @@ app-icon-tips.tier-lists {
 @media (max-width: 640px) {
   .raid-page { padding-top: 32px; }
 
-  .tier-row { min-height: $tile-phone; grid-template-columns: 44px minmax(0, 1fr); }
-  .tier-label { font-size: 1rem; }
+  .tier-row { min-height: $tile-phone; grid-template-columns: 36px minmax(0, 1fr); }
+  .tier-row.has-corner { grid-template-columns: 36px minmax(0, 1fr) auto; }
+  .download-button { height: 30px; margin: 0 5px; padding: 0 8px; font-size: .72rem; }
+  .tier-count { padding: 0 6px 4px; font-size: .68rem; }
+  .tier-label { font-size: .95rem; }
   .tier-spec { width: $tile-phone; height: $tile-phone; }
 
   .few-players {
-    right: 2px;
-    bottom: 2px;
-    min-width: 15px;
-    padding: 0 4px;
-    font-size: .62rem;
+    right: 1px;
+    bottom: 1px;
+    min-width: 13px;
+    padding: 0 3px;
+    font-size: .56rem;
   }
 }

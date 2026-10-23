@@ -8,14 +8,15 @@ export interface SpecTier {
   key: string;
   label: string;
   minPercent: number;
+  color: string;
 }
 
 export const SPEC_TIERS: ReadonlyArray<SpecTier> = [
-  { key: 's', label: 'S', minPercent: 95 },
-  { key: 'a', label: 'A', minPercent: 85 },
-  { key: 'b', label: 'B', minPercent: 75 },
-  { key: 'c', label: 'C', minPercent: 60 },
-  { key: 'f', label: 'F', minPercent: 0 }
+  { key: 's', label: 'S', minPercent: 95, color: '#ff7f7f' },
+  { key: 'a', label: 'A', minPercent: 85, color: '#ffbf7f' },
+  { key: 'b', label: 'B', minPercent: 75, color: '#ffdf7f' },
+  { key: 'c', label: 'C', minPercent: 60, color: '#ffff7f' },
+  { key: 'f', label: 'F', minPercent: 0, color: '#bfff7f' }
 ];
 
 export const FEW_PLAYERS = SPEC_TOP_SCORES;

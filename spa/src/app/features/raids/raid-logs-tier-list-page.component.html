@@ -13,13 +13,6 @@
         (selectedChange)="setDifficulty($event)" />
     </div>
 
-    <p class="method-note">
-      Each spec's top {{ topScores }} scores, averaged: HPS for healers, DPS for everyone else, as on
-      <a routerLink="/raid-logs/stats" [queryParams]="{ difficulty: difficulty()?.slug, view: 'performance' }">Raid Statistics</a>.
-      A spec's tier is its share of the best spec in its role: {{ tierRule }}.
-      A number on an icon means fewer than {{ fewPlayers }} characters played it.
-    </p>
-
     <app-load-state
       [loading]="killsLoading()"
       [error]="killsError()"
@@ -30,16 +23,13 @@
       <app-icon-tips class="tier-lists">
         @for (list of tierLists(); track list.role) {
           <section class="tier-section" [class]="list.role" [attr.aria-labelledby]="'tier-list-' + list.role">
-            <header class="tier-section-header">
-              <h3 [id]="'tier-list-' + list.role">{{ list.title }}</h3>
-              <span>{{ list.characterCount | number }} {{ list.characterCount === 1 ? 'character' : 'characters' }}</span>
-            </header>
+            <h3 class="visually-hidden" [id]="'tier-list-' + list.role">{{ list.title }} tier list</h3>
 
             @if (list.characterCount) {
               <div class="tier-table">
-                @for (row of list.rows; track row.tier.key) {
-                  <div class="tier-row">
-                    <span class="tier-label" [class]="row.tier.key" aria-hidden="true">{{ row.tier.label }}</span>
+                @for (row of list.rows; track row.tier.key; let first = $first, last = $last) {
+                  <div class="tier-row" [class.has-corner]="first || last">
+                    <span class="tier-label" [style.background]="row.tier.color" aria-hidden="true">{{ row.tier.label }}</span>
                     <ul class="tier-specs" [attr.aria-label]="row.tier.label + ' tier'">
                       @for (spec of row.specs; track spec.id) {
                         <li>
@@ -51,7 +41,7 @@
                             [attr.data-tip]="spec.name"
                             [attr.data-tip-color]="spec.color"
                             [attr.data-tip-note]="spec.note">
-                            <img [src]="spec.art" alt="" width="80" height="80" loading="lazy" />
+                            <img [src]="spec.art" alt="" width="60" height="60" loading="lazy" />
                             @if (spec.fewPlayers) {
                               <span class="few-players" aria-hidden="true">{{ spec.count }}</span>
                             }
@@ -59,9 +49,27 @@
                         </li>
                       }
                     </ul>
+                    @if (first) {
+                      <button
+                        type="button"
+                        class="download-button"
+                        [disabled]="savingRole() !== undefined"
+                        [attr.aria-label]="'Download the ' + list.title + ' tier list as a PNG image'"
+                        (click)="download(list)">
+                        <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 2v8m-3.5-3.5L8 10l3.5-3.5M2.5 11.5V14h11v-2.5" /></svg>
+                        <span>{{ savingRole() === list.role ? 'Saving…' : 'Download image' }}</span>
+                      </button>
+                    }
+                    @if (last) {
+                      <span class="tier-count">{{ list.characterCount | number }} {{ list.characterCount === 1 ? 'character' : 'characters' }}</span>
+                    }
                   </div>
                 }
               </div>
+
+              @if (saveFailedRole() === list.role) {
+                <p class="save-error" role="alert">The image could not be made.</p>
+              }
 
               @if (list.unplayed.length) {
                 <p class="unplayed">Not played on {{ difficulty()?.name }}: {{ list.unplayed.join(', ') }}.</p>
@@ -73,5 +81,12 @@
         }
       </app-icon-tips>
     }
+
+    <p class="method-note">
+      Each spec's top {{ topScores }} scores, averaged: HPS for healers, DPS for everyone else, as on
+      <a routerLink="/raid-logs/stats" [queryParams]="{ difficulty: difficulty()?.slug, view: 'performance' }">Raid Statistics</a>.
+      A spec's tier is its share of the best spec in its role: {{ tierRule }}.
+      A number on an icon means fewer than {{ fewPlayers }} characters played it.
+    </p>
   }
 </main>

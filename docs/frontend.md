@@ -49,13 +49,21 @@ Outside `app/`: `src/scss/` (`styles.scss`, `_motion.scss`) and `src/assets/`. I
 in lower case, spaces as hyphens, built by `getSpecArtPath`) is the art the Spec Tier List shows,
 one per Legion spec: the images of
 TierMaker's [All Class Specs](https://tiermaker.com/create/all-class-specs---world-of-warcraft-17396518-2)
-template, resized to 160 px (twice the 80 px they show at) and saved as WebP. `rogue-outlaw` is
+template, resized to 160 px (sharp on high-density screens at the 60 px they show at) and
+saved as WebP. `rogue-outlaw` is
 the exception, at the owner's request: it's Legion's own Outlaw icon, `inv_sword_30` (the one
 `wow-specs.ts` lists), from Blizzard's 56 px copy
 (`https://render.worldofwarcraft.com/us/icons/56/inv_sword_30.jpg`). To match the others'
 style it was upscaled 4× with [Real-ESRGAN](https://github.com/xinntao/Real-ESRGAN)'s
 `realesrgan-x4plus-anime` model, given 10% more contrast and 25% more colour, then resized like
 the rest.
+
+Each Spec Tier List has a "Download image" button. The PNG is drawn on a `<canvas>` from the
+list's data (`raid-tier-list-image.ts`), at twice its layout size. It's not a picture of the page,
+so what is only on the page (the button, the character count in the corner) never shows in it,
+and the image has its own header (role, raid, difficulty, date) and footer. Every image it draws
+must be served from the site itself: a picture from another origin (the `legion-static` icons)
+taints the canvas, and the export then fails.
 
 Keep components thin. A ranking, filter, count or empty-state message goes into the pure
 `<feature>.ts`, where a spec can pin it down without a TestBed. When a page's loading has more
@@ -214,7 +222,7 @@ decision (ask first).
 | `mythicPlusProfileLink()` (`core/page-links.ts`) | the router link to a character's Mythic+ profile, from any page |
 | `formatClock()`, `formatDuration()` (`shared/time-format.ts`) | seconds as `29:07` / `1:02:05`, or the fixed-width `00:29:07` |
 | `scoreQuality()` (`shared/score-quality.ts`) | a score's item-quality tier against the best score (`artifact` down to `uncommon`), for the `quality-colors` mixin |
-| Raids helpers | in `raid-display.ts`: `nameMatches` for name search, `parseRoleFilter` for `?role=` (`tank`, `healer`, `dps`), the links, icon URLs and number formats; in `raid-logs.ts`: `bossShortName` (a boss's `shortName`) for tiles, table cells and other tight spots: the name up to its first comma, or a shorter name from `BOSS_SHORT_NAMES` ("Elerethe", "Dragons"). A long boss name in a new raid gets an entry there |
+| Raids helpers | in `raid-display.ts`: `nameMatches` for name search, `parseRoleFilter` for `?role=` (`tank`, `healer`, `dps`), the links, icon URLs and number formats, and `DIFFICULTY_COLORS` for code that draws (the same colours as `$difficulty-colors` in `_raid-logs-shared.scss`, so change both); in `raid-logs.ts`: `bossShortName` (a boss's `shortName`) for tiles, table cells and other tight spots: the name up to its first comma, or a shorter name from `BOSS_SHORT_NAMES` ("Elerethe", "Dragons"). A long boss name in a new raid gets an entry there |
 | `_mythic-plus-shared.scss` | mixins such as `tooltip-box`, `quality-colors`, `visually-hidden`, `motion-safe`, `glide-pill`, `table-scroll`, `details-reveal` ([motion](motion-and-rendering.md)). `crest-glow` needs `isolation: isolate` on the crest's parent, so the glow sits under the crest and above the parent's background. `spotlight-card` takes the card's `::before` and `::after` |
 | `_raid-logs-shared.scss` | forwards the M+ mixins, and adds `raid-table`, `ranking-toolbar`, `filter-reset`, `pager`, `difficulty-switch`, `segmented-switch` (the difficulty switch's pill look, for any other switch beside it), and the since-the-last-scan marks: `change-pill` (a rank or count change, with `.positive` / `.negative`) and `new-tag` (the gold "new") |
 | `.tap-area` (global) | an empty span inside a small link that grows its tap target |
