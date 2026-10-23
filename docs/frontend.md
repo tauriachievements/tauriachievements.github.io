@@ -46,7 +46,7 @@ A file's name says what it is:
 
 Outside `app/`: `src/scss/` (`styles.scss`, `_motion.scss`) and `src/assets/`. In the assets,
 `spec-art/<class>-<spec>.webp` (`hunter-beast-mastery.webp`, `death-knight-blood.webp`: the names
-in lower case, spaces as hyphens, built by `getSpecArtPath`) is the art the Spec Tier List shows,
+in lower case, spaces as hyphens, built by `getSpecArtPath`) is the art the Tier List page shows,
 one per Legion spec: the images of
 TierMaker's [All Class Specs](https://tiermaker.com/create/all-class-specs---world-of-warcraft-17396518-2)
 template, resized to 160 px (sharp on high-density screens at the 60 px they show at) and
@@ -58,7 +58,7 @@ style it was upscaled 4× with [Real-ESRGAN](https://github.com/xinntao/Real-ESR
 `realesrgan-x4plus-anime` model, given 10% more contrast and 25% more colour, then resized like
 the rest.
 
-"Download Tier List Image", at the end of the Spec Tier List's difficulty row, saves the three
+"Download Tier List Image", at the end of the Tier List page's difficulty row, saves the three
 lists as one PNG, laid out like the page: DPS across the top, Heal and Tank side by side below.
 The PNG is drawn on a `<canvas>` from the lists' data (`raid-tier-list-image.ts`: `imageLayout`
 places the tables, `renderTierListImage` draws them), at twice its layout size. It's not a

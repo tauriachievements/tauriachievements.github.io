@@ -230,7 +230,7 @@ explains it together.
 - Each difficulty is scored on its own, over every boss of the raid.
 - Where it shows:
   - Raid Stats → Performance draws it as bars.
-  - The Spec Tier List sorts it into tiers ([below](#raid-spec-tier-list)).
+  - The Tier List page sorts it into tiers ([below](#raid-spec-tier-list)).
   - Talent Analytics lists each role's specs by it, best first. A tie keeps the game's order,
     the order is the same whichever boss is picked, and a picked class shows its specs in the
     game's order instead.

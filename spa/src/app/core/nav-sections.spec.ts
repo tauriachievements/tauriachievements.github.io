@@ -35,7 +35,7 @@ describe('findNavLocation', () => {
     expect(locate('/raid-logs/leaderboard')).toBe('Raids / Character Rankings');
     expect(locate('/raid-logs/guilds?difficulty=heroic')).toBe('Raids / Guild Progression');
     expect(locate('/raid-logs/stats')).toBe('Raids / Raid Statistics');
-    expect(locate('/raid-logs/tier-list?difficulty=normal')).toBe('Raids / Spec Tier List');
+    expect(locate('/raid-logs/tier-list?difficulty=normal')).toBe('Raids / Tier List');
     expect(locate('/mythic-plus/records')).toBe('Mythic+ / Records');
     expect(locate('/legion-key-history-addon')).toBe('Mythic+ / Addon');
     expect(locate('/raid-logs-old')).toBeUndefined();
