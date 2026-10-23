@@ -82,6 +82,20 @@ On top of that:
 
 Keep these guards in any new exporter ([guides/howto-add-exporter.md](guides/howto-add-exporter.md)).
 
+## Raid boss files
+
+A boss file's `players` table holds one row per realm, name and class, in order of first
+appearance, so a new kill adds rows instead of renumbering the table. A name played by two
+classes over the season (a freed name taken by a new character) gets a row for each, and every
+kill points at the row of the class it was logged as. Race and gender come from that class's
+latest kill; the guild from Players.csv, else the latest kill that named one. The site still
+counts realm + name as one character ([scoring.md](scoring.md#raid-leaderboard)).
+
+RaidLogExporter rebuilds the logs it already has from the boss files, so whatever a file
+doesn't store is lost for those logs until they're read again. Bump
+`RaidLogFileWriter.FormatVersion` whenever a boss file's shape or meaning changes: the next run
+then reads every log again from the API.
+
 ## Talent tooltips
 
 `raid-log-data/talent-tooltips.json` holds a tooltip for every spell in `talents.json`, one per

@@ -175,6 +175,9 @@ explains it together.
   screenshot rank for rank. Don't "fix" the formula.
 - Metric: healers are ranked on HPS, every other spec on DPS (`specMetric`), tanks included.
   HPS is healing plus absorbs.
+- A character is its realm and name (`characterKey`). A name played by two classes is scored
+  as one character, shown with the class of its latest kill. Each kill still counts toward the
+  class and spec it was logged as on the spec charts.
 - A spec filter scores characters only on the kills they played as that spec. The best on each
   boss is still the best anyone did there.
 - Filters (class, faction, realm) only hide rows and re-rank the rest. Each score is still

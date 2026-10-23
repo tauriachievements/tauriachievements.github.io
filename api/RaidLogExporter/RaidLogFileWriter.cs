@@ -40,8 +40,7 @@ namespace RaidLogExporter;
 /// </summary>
 public static class RaidLogFileWriter
 {
-    /// <summary>2 added talents and trinkets. A run over older files reads every log again.</summary>
-    public const int FormatVersion = 2;
+    public const int FormatVersion = 3;
     public const string IndexFileName = "index.json";
     public const string TalentsFileName = "talents.json";
     public const string TalentTooltipsFileName = "talent-tooltips.json";
@@ -290,7 +289,10 @@ public static class RaidLogFileWriter
         var guildPositions = Positions(encounter.Guilds);
         var playerPositions = encounter
             .Players.Select((player, index) => (player, index))
-            .ToDictionary(entry => (entry.player.Realm, entry.player.Name), entry => entry.index);
+            .ToDictionary(
+                entry => (entry.player.Realm, entry.player.Name, entry.player.ClassId),
+                entry => entry.index
+            );
         var trinketPositions = encounter
             .Trinkets.Select((trinket, index) => (trinket, index))
             .ToDictionary(
@@ -367,7 +369,9 @@ public static class RaidLogFileWriter
                     foreach (var member in log.Members)
                     {
                         item.WriteStartArray();
-                        item.WriteNumberValue(playerPositions[(member.Realm, member.Name)]);
+                        item.WriteNumberValue(
+                            playerPositions[(member.Realm, member.Name, member.ClassId)]
+                        );
                         item.WriteNumberValue(member.SpecId);
                         item.WriteNumberValue(member.ItemLevel);
                         item.WriteNumberValue(member.DamageDone);

@@ -125,20 +125,16 @@ public static class RaidLogDatasetBuilder
         return guilds;
     }
 
-    /// <summary>
-    /// Characters in order of first appearance, so a new kill appends players rather than
-    /// renumbering the table. Class, race and gender come from the latest log.
-    /// </summary>
     private static List<RaidPlayer> PlayerTable(
         IReadOnlyList<RaidLog> logs,
         PlayerGuildDirectory guildDirectory
     )
     {
         var players = new List<RaidPlayer>();
-        var positions = new Dictionary<(string Realm, string Name), int>();
+        var positions = new Dictionary<(string Realm, string Name, int ClassId), int>();
         foreach (var member in logs.SelectMany(log => log.Members))
         {
-            var key = (member.Realm, member.Name);
+            var key = (member.Realm, member.Name, member.ClassId);
             if (!positions.TryGetValue(key, out var position))
             {
                 positions[key] = players.Count;
@@ -158,7 +154,6 @@ public static class RaidLogDatasetBuilder
             var known = players[position];
             players[position] = known with
             {
-                ClassId = member.ClassId,
                 Race = member.Race,
                 Gender = member.Gender,
                 Guild = member.Guild.Length > 0 ? member.Guild : known.Guild,
