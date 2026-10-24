@@ -1,8 +1,8 @@
-{"version":3,"generatedAt":"2026-10-24T15:38:59Z","previousGeneratedAt":"2026-10-23T22:03:13Z","raid":{"id":1520,"slug":"emerald-nightmare","name":"The Emerald Nightmare"},"difficulties":[
+{"version":3,"generatedAt":"2026-10-24T15:52:28Z","previousGeneratedAt":"2026-10-23T22:03:13Z","raid":{"id":1520,"slug":"emerald-nightmare","name":"The Emerald Nightmare"},"difficulties":[
 {"id":17,"slug":"lfr","name":"Looking For Raid","shortName":"LFR","kills":0},
 {"id":14,"slug":"normal","name":"Normal","shortName":"N","kills":4512},
 {"id":15,"slug":"heroic","name":"Heroic","shortName":"HC","kills":4302},
-{"id":16,"slug":"mythic","name":"Mythic","shortName":"M","kills":533}],"bosses":[
+{"id":16,"slug":"mythic","name":"Mythic","shortName":"M","kills":529}],"bosses":[
 {"id":1853,"slug":"nythendra","name":"Nythendra"},
 {"id":1873,"slug":"ilgynoth","name":"Il'gynoth, The Heart of Corruption"},
 {"id":1876,"slug":"elerethe-renferal","name":"Elerethe Renferal"},
@@ -9660,6 +9660,10 @@
 ["Tauri",1713278],
 ["Tauri",1713339],
 ["Tauri",1713411]],"invalidLogs":[
+["Tauri",1565371,"Invalid log. Reason: Warlock Enslave Demon on Taintheart Tormenter"],
+["Tauri",1684227,"Invalid log. Reason: Warlock Enslave Demon on Taintheart Tormenter"],
+["Tauri",1684463,"Invalid log. Reason: Warlock Enslave Demon on Taintheart Tormenter"],
+["Tauri",1684762,"Invalid log. Reason: Warlock Enslave Demon on Taintheart Tormenter"],
 ["Tauri",1704157,"Invalid log. Reason: Warlock Enslave Demon on Taintheart Tormenter"],
 ["Tauri",1704318,"Invalid log. Reason: Warlock Enslave Demon on Taintheart Tormenter"],
 ["Tauri",1704374,"Invalid log. Reason: Warlock Enslave Demon on Taintheart Tormenter"],
@@ -9676,7 +9680,7 @@
 {"boss":"elerethe-renferal","difficulty":"mythic","dps":["Drelu","Evermoon",4,259,1056999,"Tauri",1684096],"hps":["Ørna","Evermoon",2,65,440098,"Tauri",1494784]},
 {"boss":"ursoc","difficulty":"normal","dps":["Sósa","Evermoon",8,64,761775,"Tauri",1363382],"hps":["Computero","Evermoon",10,270,405476,"Tauri",1374245]},
 {"boss":"ursoc","difficulty":"heroic","dps":["Sósa","Evermoon",8,64,771969,"Tauri",1410382],"hps":["Dabelle","Evermoon",5,256,518482,"Tauri",1544053]},
-{"boss":"ursoc","difficulty":"mythic","dps":["Vilem","Evermoon",9,267,850845,"Tauri",1684227],"hps":["Dabelle","Evermoon",5,256,624468,"Tauri",1637959]},
+{"boss":"ursoc","difficulty":"mythic","dps":["Chekic","Evermoon",7,263,706404,"Tauri",1684870],"hps":["Dabelle","Evermoon",5,256,624468,"Tauri",1637959]},
 {"boss":"dragons-of-nightmare","difficulty":"normal","dps":["Sósa","Evermoon",8,64,926773,"Tauri",1363864],"hps":["Veera","Evermoon",11,105,458761,"Tauri",1363423]},
 {"boss":"dragons-of-nightmare","difficulty":"heroic","dps":["Sósa","Evermoon",8,64,1074302,"Tauri",1410441],"hps":["Ørna","Evermoon",2,65,715177,"Tauri",1514814]},
 {"boss":"dragons-of-nightmare","difficulty":"mythic","dps":["Aurii","Evermoon",3,254,780898,"Tauri",1575201],"hps":["Yodadru","Evermoon",11,105,475736,"Tauri",1544218]},
@@ -9685,7 +9689,7 @@
 {"boss":"cenarius","difficulty":"mythic","dps":["Jûdace","Evermoon",10,269,715677,"Tauri",1505016],"hps":["Dubbles","Evermoon",5,256,827122,"Tauri",1685725]},
 {"boss":"xavius","difficulty":"normal","dps":["Sósa","Evermoon",8,64,653562,"Tauri",1363586],"hps":["Vicapriest","Evermoon",5,256,355910,"Tauri",1334709]},
 {"boss":"xavius","difficulty":"heroic","dps":["Roods","Evermoon",11,103,851887,"Tauri",1628603],"hps":["Sunjaytzu","Evermoon",10,270,571288,"Tauri",1506077]},
-{"boss":"xavius","difficulty":"mythic","dps":["Vilem","Evermoon",9,267,845144,"Tauri",1684762],"hps":["Dabelle","Evermoon",5,256,595422,"Tauri",1639406]}],"items":[
+{"boss":"xavius","difficulty":"mythic","dps":["Aurii","Evermoon",3,254,818804,"Tauri",1628281],"hps":["Dabelle","Evermoon",5,256,595422,"Tauri",1639406]}],"items":[
 [127934,"Recipe: Spirit Cauldron",1,"inv_recipe_70_-scroll2star"],
 [128610,"Formula: Enchant Neck - Mark of the Claw",3,"inv_recipe_70_-scroll3star"],
 [128611,"Formula: Enchant Neck - Mark of the Distant Army",1,"inv_recipe_70_-scroll3star"],
