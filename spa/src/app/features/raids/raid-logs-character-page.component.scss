@@ -104,9 +104,6 @@
 td a.boss-cell:hover { text-decoration: none; }
 td a.boss-cell:hover .strong { text-decoration: underline; }
 .invalid-tag { @include invalid-tag; }
-
-
-
 .spec-cell { display: inline-flex; align-items: center; gap: 6px; }
 .rank-cell { white-space: nowrap; }
 tr.alive td { color: $raid-muted; }

@@ -38,6 +38,7 @@ export const VISUAL_PAGES: readonly VisualPage[] = [
   { name: 'raid-log', path: '/raid-logs/log/tauri/1684762' },
   { name: 'raid-logs-guild', path: '/raid-logs/guild/evermoon/Miracle?difficulty=mythic' },
   { name: 'raid-logs-character', path: '/raid-logs/character/evermoon/Gankuh?difficulty=mythic&metric=dps' },
+  { name: 'raid-logs-invalid', path: '/raid-logs/invalid' },
   { name: 'emerald-nightmare', path: '/emerald-nightmare' },
   { name: 'raid-history', path: '/raid-history' },
   { name: 'mythic-plus', path: '/mythic-plus' },
@@ -88,6 +89,9 @@ export const VISUAL_PAGES: readonly VisualPage[] = [
   { name: 'state-raid-logs-boss-hps-class', path: '/raid-logs/boss/xavius?difficulty=mythic&tab=hps&class=5' },
   { name: 'state-raid-logs-guilds-filtered', path: '/raid-logs/guilds?difficulty=heroic&realm=evermoon&faction=horde' },
   { name: 'state-raid-logs-talents-role', path: '/raid-logs/talents?difficulty=heroic&role=healer' },
+  { name: 'state-raid-logs-boss-latest-invalid', path: '/raid-logs/boss/cenarius?difficulty=mythic&tab=latest' },
+  { name: 'state-raid-logs-character-invalid', path: '/raid-logs/character/evermoon/Misiekwariat?difficulty=mythic&metric=dps' },
+
   { name: 'state-loading-mythic-plus', path: '/mythic-plus', hold: ['mythic-plus-data/index\\.json'] },
   { name: 'state-loading-mythic-plus-runs', path: '/mythic-plus', hold: ['mythic-plus-data/(?!index)'] },
   { name: 'state-error-mythic-plus-stats', path: '/mythic-plus/stats', fail: ['mythic-plus-data/'] },
