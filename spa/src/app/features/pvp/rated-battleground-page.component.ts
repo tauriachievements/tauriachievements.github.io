@@ -8,6 +8,7 @@ import { FilterDropdownComponent } from '../../shared/filter-dropdown.component'
 import { FilterDropdownValue } from '../../shared/filter-dropdown.types';
 import { PagerComponent } from '../../shared/pager.component';
 import { pageCount, pageSlice } from '../../shared/pager';
+import { ScrollToEndDirective } from '../../shared/motion/scroll-to-end.directive';
 import {
   RatedBattlegroundMatch,
   RatedLeaderboardMetric,
@@ -62,6 +63,7 @@ const LEADERBOARD_PAGE_SIZE = 25;
     RatedBattlegroundPlayerHistoryComponent,
     RatedBattlegroundViewSwitcherComponent,
     PagerComponent,
+    ScrollToEndDirective,
     DecimalPipe,
     PercentPipe
   ],

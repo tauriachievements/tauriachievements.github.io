@@ -1,4 +1,4 @@
-import { DatePipe, DecimalPipe } from '@angular/common';
+import { DatePipe, DecimalPipe, NgTemplateOutlet } from '@angular/common';
 import { ChangeDetectionStrategy, Component, DestroyRef, computed, effect, inject, signal, untracked } from '@angular/core';
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, RouterLink } from '@angular/router';
@@ -79,6 +79,7 @@ interface SummaryTile {
     RaidDifficultySwitchComponent,
     GlideDirective,
     IconTipsComponent,
+    NgTemplateOutlet,
     DatePipe,
     DecimalPipe,
     LoadStateComponent,
