@@ -4,12 +4,16 @@
   <app-load-state [loading]="isLoading()" [error]="loadError()" loadingText="Reading the logs..." (retry)="loadData()" />
 
   @if (!isLoading() && !loadError() && difficulty(); as current) {
-    <app-raid-difficulty-switch
-      class="page-switch"
-      [difficulties]="index()!.difficulties"
-      [selected]="current.slug"
-      label="Show the logs of difficulty"
-      (selectedChange)="setDifficulty($event)" />
+    <div class="page-toolbar">
+      <app-raid-difficulty-switch
+        [difficulties]="index()!.difficulties"
+        [selected]="current.slug"
+        label="Show the logs of difficulty"
+        (selectedChange)="setDifficulty($event)" />
+      @if (hasInvalidLogs()) {
+        <a class="invalid-link" routerLink="/raid-logs/invalid">List of invalid logs</a>
+      }
+    </div>
 
     <section class="section" aria-labelledby="bosses-title">
       <header class="section-header">

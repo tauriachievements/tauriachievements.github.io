@@ -9,7 +9,21 @@
 
 .raid-page { @include raid-page; }
 
-.page-switch { align-self: flex-start; }
+.page-toolbar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; }
+
+.invalid-link {
+  padding: 11px 14px;
+  border: 1px solid $raid-line;
+  border-radius: 7px;
+  background: #111;
+  color: #bdbdbd;
+  font-size: .85rem;
+  font-weight: 600;
+  text-decoration: none;
+
+  &:hover { border-color: rgba(255, 154, 154, .34); color: #fff; }
+  &:focus-visible { outline: 2px solid $gold; outline-offset: 2px; }
+}
 
 .boss-grid {
   display: grid;
@@ -99,7 +113,6 @@
 .kill-boss { display: flex; flex-wrap: wrap; align-items: center; gap: 2px 6px; color: #fff; font-weight: 700; }
 .kill-boss-name { overflow: hidden; max-width: 100%; text-overflow: ellipsis; white-space: nowrap; }
 .invalid-tag { @include invalid-tag; }
-
 .kill-guild { display: inline-flex; overflow: hidden; align-items: center; gap: 6px; color: #bdbdbd; font-size: .8rem; white-space: nowrap; }
 .kill-time { color: #fff; font-variant-numeric: tabular-nums; font-weight: 700; }
 .kill-ago { min-width: 4.6em; color: $raid-muted; font-size: .78rem; text-align: right; }

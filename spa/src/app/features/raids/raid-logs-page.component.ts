@@ -72,7 +72,10 @@ export class RaidLogsPageComponent implements OnInit {
     });
   });
 
+  readonly hasInvalidLogs = computed(() => !!this.index()?.invalidKills.length);
+
   readonly recentKills = computed(() => {
+
     const difficulty = this.difficulty();
     const invalid = (this.index()?.invalidKills ?? []).filter(kill => kill.difficulty === difficulty);
     return latestKills([...this.kills(), ...invalid]).slice(0, RECENT_KILLS);

@@ -252,6 +252,11 @@ explains it together.
   the overview's, a boss's Latest tab (without a number), a guild's kill history and a
   character's latest kills. Its log page opens with the reason, and the fight time says "Not
   ranked".
+- `/raid-logs/invalid` lists every invalid log of every difficulty, latest first, with its
+  reason. It has no menu entry: the "List of invalid logs" button on `/raid-logs`, shown only
+  while there are any, links to it.
+
+
 - It still decides which class a name belongs to, like any kill
   ([data-pipeline.md](data-pipeline.md#raid-log-files)): that's who played, not how well.
 - **Tests:** `RaidLogExportServiceTests` (`ExportAsync_ListsInvalidLogs…`, `InvalidRaidLogs_*`),

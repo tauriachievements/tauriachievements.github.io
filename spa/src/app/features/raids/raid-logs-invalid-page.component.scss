@@ -1,0 +1,45 @@
+@use './raid-logs-shared' as *;
+
+:host { display: block; width: 100%; }
+
+@include visually-hidden;
+@include back-link;
+@include sections;
+@include difficulty-colors;
+@include faction-marks;
+
+.raid-page { @include raid-page; }
+
+.invalid-list { display: flex; flex-direction: column; gap: 6px; margin: 0; padding: 0; list-style: none; }
+
+.invalid-row {
+  display: grid;
+  grid-template-columns: 34px minmax(0, 220px) minmax(0, 1fr) auto 4.6em;
+  align-items: center;
+  gap: 12px;
+  padding: 9px 12px;
+  border: 1px solid $raid-line;
+  border-radius: 6px;
+  background: $raid-card;
+  color: inherit;
+  text-decoration: none;
+
+  &:hover { border-color: rgba(255, 154, 154, .34); }
+  &:focus-visible { outline: 2px solid $gold; outline-offset: 2px; }
+}
+
+.portrait { @include boss-portrait(34px); }
+.kill { display: flex; min-width: 0; flex-direction: column; }
+.boss { display: flex; flex-wrap: wrap; align-items: center; gap: 2px 6px; color: #fff; font-weight: 700; }
+.boss-name { overflow: hidden; max-width: 100%; text-overflow: ellipsis; white-space: nowrap; }
+.difficulty { font-size: .74rem; font-weight: 600; }
+.guild { display: inline-flex; overflow: hidden; align-items: center; gap: 6px; color: #bdbdbd; font-size: .8rem; white-space: nowrap; }
+.reason { color: #ff9a9a; font-size: .82rem; line-height: 1.35; }
+.fight-time { color: #fff; font-variant-numeric: tabular-nums; font-weight: 700; }
+.date { color: $raid-muted; font-size: .78rem; text-align: right; }
+
+@media (max-width: 640px) {
+  .raid-page { padding-top: 32px; }
+  .invalid-row { grid-template-columns: 34px minmax(0, 1fr) auto 4.6em; row-gap: 4px; }
+  .reason { grid-column: 2 / -1; grid-row: 2; }
+}
