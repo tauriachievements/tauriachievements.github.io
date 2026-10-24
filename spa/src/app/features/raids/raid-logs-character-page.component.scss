@@ -101,6 +101,8 @@
 
 .boss-cell { display: inline-flex; align-items: center; gap: 10px; }
 .boss-cell img { @include boss-portrait(30px); }
+td a.boss-cell:hover { text-decoration: none; }
+td a.boss-cell:hover .strong { text-decoration: underline; }
 .invalid-tag { @include invalid-tag; }
 
 
