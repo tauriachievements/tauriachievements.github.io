@@ -72,7 +72,12 @@ export class RaidLogsPageComponent implements OnInit {
     });
   });
 
-  readonly recentKills = computed(() => latestKills(this.kills()).slice(0, RECENT_KILLS));
+  readonly recentKills = computed(() => {
+    const difficulty = this.difficulty();
+    const invalid = (this.index()?.invalidKills ?? []).filter(kill => kill.difficulty === difficulty);
+    return latestKills([...this.kills(), ...invalid]).slice(0, RECENT_KILLS);
+  });
+
 
   readonly bossLink = raidBossLink;
   readonly logLink = raidLogLink;

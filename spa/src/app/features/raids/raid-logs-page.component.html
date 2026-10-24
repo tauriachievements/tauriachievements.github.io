@@ -81,7 +81,13 @@
             <a class="kill-row" [routerLink]="logLink(kill)">
               <img class="kill-portrait" [src]="kill.boss.portrait" alt="" loading="lazy" />
               <span class="kill-main">
-                <span class="kill-boss">{{ kill.boss.shortName }}</span>
+                <span class="kill-boss">
+                  <span class="kill-boss-name">{{ kill.boss.shortName }}</span>
+                  @if (kill.invalid !== undefined) {
+                    <span class="invalid-tag" [title]="kill.invalid">Invalid</span>
+                  }
+                </span>
+
                 <span class="kill-guild">
                   <span class="faction" [class]="'faction-' + kill.faction" aria-hidden="true"></span>
                   {{ kill.guild?.name || 'Pickup group' }}

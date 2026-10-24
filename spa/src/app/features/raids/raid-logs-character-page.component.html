@@ -186,7 +186,12 @@
                     <a class="boss-cell" [routerLink]="logLink(entry.kill)">
                       <img [src]="entry.kill.boss.portrait" alt="" loading="lazy" />
                       <span class="strong">{{ entry.kill.boss.shortName }}</span>
+                      @if (entry.kill.invalid !== undefined) {
+                        <span class="invalid-tag" [title]="entry.kill.invalid">Invalid</span>
+                      }
                     </a>
+
+
                   </td>
                   <td class="phone-hidden">
                     @if (entry.kill.guild?.name) {

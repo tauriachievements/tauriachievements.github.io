@@ -78,15 +78,17 @@ export function decodeIndex(file: RaidLogsIndexFile): RaidLogsIndex {
   }));
   const specs = decodeSpecs(file.specs);
   const guilds = file.guilds.map(decodeGuild);
+  const invalidLogs = new Map((file.invalidLogs ?? []).map(([realm, logId, reason]) => [logKey({ realm, logId }), reason]));
 
   const kills: RaidKill[] = [];
+  const invalidKills: RaidKill[] = [];
   for (const [realm, logId, boss, difficultyId, killedAt, fightMs, guild, faction, wipes, deaths, members] of file.logs) {
     const difficulty = difficultiesById.get(difficultyId);
     if (!bosses[boss] || !difficulty) {
       continue;
     }
 
-    kills.push({
+    const kill: RaidKill = {
       realm,
       logId,
       boss: bosses[boss],
@@ -98,7 +100,13 @@ export function decodeIndex(file: RaidLogsIndexFile): RaidLogsIndex {
       wipes,
       deaths,
       memberCount: members
-    });
+    };
+    const invalid = invalidLogs.get(logKey(kill));
+    if (invalid === undefined) {
+      kills.push(kill);
+    } else {
+      invalidKills.push({ ...kill, invalid });
+    }
   }
 
   const top = new Map<string, { dps?: RaidPerformer; hps?: RaidPerformer }>();
@@ -119,6 +127,8 @@ export function decodeIndex(file: RaidLogsIndexFile): RaidLogsIndex {
     bosses,
     specs,
     kills,
+    invalidKills,
+    invalidLogs,
     items: new Map(file.items.map(([id, name, quality, icon]) => [id, { id, name, quality, icon }])),
     top,
     formerCharacters: new Map((file.formerCharacters ?? []).map(([name, realm, classId, formerClassIds]) =>
@@ -141,7 +151,8 @@ export function decodeBossFile(
   file: RaidBossFile,
   boss: RaidBoss,
   difficulty: RaidDifficulty,
-  specs: ReadonlyMap<number, RaidSpec>
+  specs: ReadonlyMap<number, RaidSpec>,
+  invalidLogs: ReadonlyMap<string, string>
 ): RaidKillDetails[] {
   const guilds = file.guilds.map(decodeGuild);
   const characters = file.players.map(([name, realm, classId, race, gender, guild, former]): RaidCharacter =>
@@ -151,9 +162,12 @@ export function decodeBossFile(
 
   return file.logs.map(([realm, logId, killedAt, fightMs, guild, faction, wipes, deaths, resurrects, members, items]) => {
     const seconds = fightMs > 0 ? fightMs / 1000 : 0;
+    const invalid = invalidLogs.get(logKey({ realm, logId }));
     return {
+      ...(invalid === undefined ? {} : { invalid }),
       realm,
       logId,
+
       boss,
       difficulty,
       killedAt: killedAt * 1000,

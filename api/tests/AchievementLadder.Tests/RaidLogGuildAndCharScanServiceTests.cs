@@ -157,8 +157,10 @@ public sealed class RaidLogGuildAndCharScanServiceTests
         var dataset = RaidLogDatasetBuilder.Build(
             logs,
             new Dictionary<int, RaidItem>(),
-            PlayerGuildDirectory.Empty
+            PlayerGuildDirectory.Empty,
+            InvalidRaidLogs.Empty
         );
+
         await RaidLogFileWriter.WriteAsync(
             directory,
             dataset,

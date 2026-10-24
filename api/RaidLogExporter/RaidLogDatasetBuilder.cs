@@ -46,7 +46,8 @@ public sealed record RaidDataset(
     IReadOnlyList<RaidLog> Logs,
     IReadOnlyList<RaidGuild> Guilds,
     IReadOnlyList<RaidItem> Items,
-    IReadOnlyList<RaidFormerCharacters> FormerCharacters
+    IReadOnlyList<RaidFormerCharacters> FormerCharacters,
+    IReadOnlyList<InvalidRaidLog> InvalidLogs
 );
 
 public static class RaidLogDatasetBuilder
@@ -54,7 +55,8 @@ public static class RaidLogDatasetBuilder
     public static RaidDataset Build(
         IEnumerable<RaidLog> logs,
         IReadOnlyDictionary<int, RaidItem> items,
-        PlayerGuildDirectory guildDirectory
+        PlayerGuildDirectory guildDirectory,
+        InvalidRaidLogs invalidLogs
     )
     {
         var ordered = logs.GroupBy(log => log.Key)
@@ -74,7 +76,8 @@ public static class RaidLogDatasetBuilder
                 difficulty,
                 [.. logsByEncounter[(boss.EncounterId, difficulty.Id)]],
                 guildDirectory,
-                currentClasses
+                currentClasses,
+                invalidLogs
             )
         ).ToList();
 
@@ -84,7 +87,12 @@ public static class RaidLogDatasetBuilder
             ordered,
             GuildTable(ordered),
             [.. items.Values.Where(item => usedItems.Contains(item.Id)).OrderBy(item => item.Id)],
-            FormerCharacters(ordered, currentClasses)
+            FormerCharacters(ordered, currentClasses),
+            [
+                .. ordered
+                    .Where(log => invalidLogs.Contains(log.Key))
+                    .Select(log => new InvalidRaidLog(log.Key, invalidLogs.Reason(log.Key)!)),
+            ]
         );
     }
 
@@ -128,7 +136,8 @@ public static class RaidLogDatasetBuilder
         RaidDifficulty difficulty,
         IReadOnlyList<RaidLog> logs,
         PlayerGuildDirectory guildDirectory,
-        IReadOnlyDictionary<(string Realm, string Name), int> currentClasses
+        IReadOnlyDictionary<(string Realm, string Name), int> currentClasses,
+        InvalidRaidLogs invalidLogs
     ) =>
         new(
             boss,
@@ -138,13 +147,13 @@ public static class RaidLogDatasetBuilder
             PlayerTable(logs, guildDirectory, currentClasses),
             TrinketTable(logs),
             TopPerformer(
-                logs,
+                logs.Where(log => !invalidLogs.Contains(log.Key)),
                 member =>
                     RaidCatalog.SpecRole(member.SpecId) is RaidCatalog.Dps or RaidCatalog.Tank,
                 member => member.DamageDone
             ),
             TopPerformer(
-                logs,
+                logs.Where(log => !invalidLogs.Contains(log.Key)),
                 member => RaidCatalog.SpecRole(member.SpecId) == RaidCatalog.Healer,
                 member => member.HealingDone + member.AbsorbDone
             )
@@ -239,9 +248,8 @@ public static class RaidLogDatasetBuilder
         return trinkets;
     }
 
-    /// <summary>The best per-second amount of any member who counts; the earliest kill wins a tie.</summary>
     private static RaidTopPerformer? TopPerformer(
-        IReadOnlyList<RaidLog> logs,
+        IEnumerable<RaidLog> logs,
         Func<RaidLogMember, bool> counts,
         Func<RaidLogMember, long> amount
     )

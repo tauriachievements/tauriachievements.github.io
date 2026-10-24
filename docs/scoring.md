@@ -192,6 +192,7 @@ explains it together.
   the boss's best that every score is measured against, and still counts on the spec popularity
   and race charts. A former character's own view on the character page shows each boss's share
   of that best, but no score or rank.
+- An invalid log counts nowhere, not even for a boss's best ([below](#invalid-raid-logs)).
 - A spec filter scores characters only on the kills they played as that spec. The best on each
   boss is still the best anyone did there.
 - Filters (class, faction, realm) only hide rows and re-rank the rest. Each score is still
@@ -237,7 +238,28 @@ explains it together.
   its place among the boss's kills on that difficulty.
 - **Tests:** `raid-progression.spec.ts`.
 
+## Invalid raid logs
+
+- **Code:** the hand-kept list `api/AchievementLadder/Data/invalid-raid-logs.txt`, read by
+  `InvalidRaidLogs` in RaidLogExporter ([data-pipeline.md](data-pipeline.md#invalid-raid-logs));
+  `decodeIndex` (`raid-logs.ts`) and `RaidLogsDataService` on the site.
+- A listed log counts nowhere, for any of its players: not in the leaderboard scores or the best
+  on a boss they're measured against, the boss rankings, the fastest kills and speed ranks, the
+  overview's best DPS and HPS, guild progression, the kill counts, spec performance, the tier
+  list, Talent Analytics, or the spec and race charts. The whole kill is out, not only the
+  players who abused something.
+- It's still listed, tagged "Invalid" with the reason on hover, in the lists of latest kills:
+  the overview's, a boss's Latest tab (without a number), a guild's kill history and a
+  character's latest kills. Its log page opens with the reason, and the fight time says "Not
+  ranked".
+- It still decides which class a name belongs to, like any kill
+  ([data-pipeline.md](data-pipeline.md#raid-log-files)): that's who played, not how well.
+- **Tests:** `RaidLogExportServiceTests` (`ExportAsync_ListsInvalidLogs…`, `InvalidRaidLogs_*`),
+  `raid-logs.spec.ts`, `raid-logs-data.service.spec.ts`,
+  `raid-logs-character-page.component.spec.ts`.
+
 ## Raid spec performance
+
 
 - **Code:** `scoresBySpec` (`scoresBySpecForKills` takes one difficulty's kills), `topAverage`
   and `specPerformance` in `spa/src/app/features/raids/raid-scores.ts`; `sortByPerformance` in

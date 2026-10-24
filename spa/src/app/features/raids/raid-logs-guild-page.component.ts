@@ -106,10 +106,21 @@ export class RaidLogsGuildPageComponent {
     return { boss, first: kills[0], fastest: fastestKills(kills)[0], kills: kills.length };
   }));
 
+  private readonly invalidKills = computed(() => {
+    const guild = this.guild();
+    const difficulty = this.difficulty();
+    const key = guild && guildKey(guild);
+    return (this.index()?.invalidKills ?? [])
+      .filter(kill => kill.difficulty === difficulty && kill.guild && guildKey(kill.guild) === key);
+  });
+
+  readonly listedKills = computed(() => latestKills([...this.kills(), ...this.invalidKills()]));
+
   readonly history = computed(() => {
-    const kills = latestKills(this.kills());
+    const kills = this.listedKills();
     return this.showAllKills() ? kills : kills.slice(0, HISTORY_PREVIEW);
   });
+
 
   readonly summary = computed<SummaryTile[]>(() => {
     const progress = this.progress();

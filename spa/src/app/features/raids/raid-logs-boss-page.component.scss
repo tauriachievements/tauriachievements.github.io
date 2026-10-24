@@ -71,7 +71,9 @@
 td a.icon:hover img { filter: brightness(1.25); }
 
 .kill-link { display: inline-flex; align-items: baseline; gap: 8px; }
-.guild-cell { display: inline-flex; align-items: center; gap: 8px; }
+.guild-cell { display: inline-flex; flex-wrap: wrap; align-items: center; gap: 2px 8px; }
+.invalid-tag { @include invalid-tag; }
+
 .realm { font-size: .78rem; }
 td a.log-link { color: $gold; font-size: .8rem; font-weight: 600; }
 

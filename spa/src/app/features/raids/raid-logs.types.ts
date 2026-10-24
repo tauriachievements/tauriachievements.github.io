@@ -68,6 +68,7 @@ export interface RaidLogsIndexFile {
   formerCharacters?: RaidFormerCharactersEntry[];
   logs: RaidIndexLogEntry[];
   newLogs?: Array<[realm: string, logId: number]>;
+  invalidLogs?: Array<[realm: string, logId: number, reason: string]>;
   top: RaidTopEntry[];
   items: RaidItemEntry[];
 }
@@ -211,6 +212,7 @@ export interface RaidKill {
   wipes: number;
   deaths: number;
   memberCount: number;
+  invalid?: string;
 }
 
 export interface RaidCharacter {
@@ -255,7 +257,10 @@ export interface RaidLogsIndex {
   bosses: RaidBoss[];
   specs: ReadonlyMap<number, RaidSpec>;
   kills: RaidKill[];
+  invalidKills: RaidKill[];
+  invalidLogs: ReadonlyMap<string, string>;
   items: ReadonlyMap<number, RaidItem>;
+
   top: ReadonlyMap<string, { dps?: RaidPerformer; hps?: RaidPerformer }>;
   formerCharacters: ReadonlyMap<string, RaidCharacterClasses>;
 }

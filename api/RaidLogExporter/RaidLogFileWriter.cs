@@ -88,6 +88,7 @@ public static class RaidLogFileWriter
             .Bosses.Select((boss, index) => (boss.EncounterId, index))
             .ToDictionary(entry => entry.EncounterId, entry => entry.index);
         var guildPositions = Positions(dataset.Guilds);
+        var invalidLogs = dataset.InvalidLogs.Select(log => log.Key).ToHashSet();
 
         writer.WriteStartObject();
         writer.WriteNumber("version", FormatVersion);
@@ -106,7 +107,9 @@ public static class RaidLogFileWriter
         writer.WriteStartArray("difficulties");
         foreach (var difficulty in RaidCatalog.Difficulties)
         {
-            var kills = dataset.Logs.Count(log => log.DifficultyId == difficulty.Id);
+            var kills = dataset.Logs.Count(log =>
+                log.DifficultyId == difficulty.Id && !invalidLogs.Contains(log.Key)
+            );
             line.WriteTo(
                 writer,
                 item =>
@@ -228,7 +231,25 @@ public static class RaidLogFileWriter
             writer.WriteEndArray();
         }
 
+        writer.WriteStartArray("invalidLogs");
+        foreach (var log in dataset.InvalidLogs)
+        {
+            line.WriteTo(
+                writer,
+                item =>
+                {
+                    item.WriteStartArray();
+                    item.WriteStringValue(log.Key.Realm);
+                    item.WriteNumberValue(log.Key.LogId);
+                    item.WriteStringValue(log.Reason);
+                    item.WriteEndArray();
+                }
+            );
+        }
+        writer.WriteEndArray();
+
         writer.WriteStartArray("top");
+
         foreach (var encounter in dataset.Encounters.Where(encounter => encounter.Logs.Count > 0))
         {
             line.WriteTo(

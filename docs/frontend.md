@@ -178,7 +178,9 @@ finds Sósa), while a picked character matches name and realm exactly.
   `hasScanChanges()` (`mythic-plus.ts`) says whether an index carries the previous scan's
   standings for every player, which the movement arrows on the leaderboard, guild and profile
   pages need.
-- `RaidLogsDataService` loads the raid files and keeps `lastDifficulty`, so the Raids tabs
+- `RaidLogsDataService` loads the raid files. `bossKills()` and `difficultyKills()` leave the
+  invalid logs out ([data-pipeline.md](data-pipeline.md#invalid-raid-logs)); a list of kills
+  that shows them also asks for `invalidBossKills()`. It keeps `lastDifficulty`, so the Raids tabs
   remember the difficulty within a session. A tab opened without `?difficulty=` starts on it,
   else on `defaultDifficulty`, the hardest one with a kill. The header's Raid Statistics, Tier
   List and Talent Analytics links carry `?difficulty=mythic`, so those three always open on
@@ -244,7 +246,7 @@ decision (ask first).
 | Raids helpers | in `raid-display.ts`: `nameMatches` for name search, `parseRoleFilter` for `?role=` (`tank`, `healer`, `dps`), the links, icon URLs and number formats, and `DIFFICULTY_COLORS` for code that draws (the same colours as `$difficulty-colors` in `_raid-logs-shared.scss`, so change both); in `raid-logs.ts`: `bossShortName` (a boss's `shortName`) for tiles, table cells and other tight spots: the name up to its first comma, or a shorter name from `BOSS_SHORT_NAMES` ("Elerethe", "Dragons"). A long boss name in a new raid gets an entry there |
 | `_tables.scss` (forwarded by `_mythic-plus-shared.scss`) | the phone rules every table shares: `table-scroll`, `phone-columns` (`phone-hidden`, `narrow-phone-hidden`, `phone-only`), `phone-detail-rows`, `fluid-cell`, `fluid-identity`, `truncate`, and `$phone-breakpoint` / `$narrow-phone-breakpoint` ([Tables on phones](#tables-on-phones)) |
 | `_mythic-plus-shared.scss` | mixins such as `tooltip-box`, `quality-colors`, `visually-hidden` (and `hidden-visually`, its declarations alone), `motion-safe`, `glide-pill`, `week-bands` (a chart's affix-week bands), `details-reveal` ([motion](motion-and-rendering.md)). `crest-glow` needs `isolation: isolate` on the crest's parent, so the glow sits under the crest and above the parent's background. `spotlight-card` takes the card's `::before` and `::after` |
-| `_raid-logs-shared.scss` | forwards the M+ mixins, and adds `raid-table` (with the phone column rules and `phone-fluid` cells), `boss-picker($count)`, `ranking-toolbar`, `filter-reset`, `difficulty-switch`, `segmented-switch` (the difficulty switch's pill look, for any other switch beside it), and the since-the-last-scan marks: `change-pill` (a rank or count change, with `.positive` / `.negative`) and `new-tag` (the gold "new") |
+| `_raid-logs-shared.scss` | forwards the M+ mixins, and adds `raid-table` (with the phone column rules and `phone-fluid` cells), `boss-picker($count)`, `ranking-toolbar`, `filter-reset`, `difficulty-switch`, `segmented-switch` (the difficulty switch's pill look, for any other switch beside it), and the since-the-last-scan marks: `change-pill` (a rank or count change, with `.positive` / `.negative`) and `new-tag` (the gold "new"); `invalid-tag`, the red "Invalid" on a kill that doesn't count |
 | `.tap-area` (global) | an empty span inside a small link that grows its tap target |
 
 `app-filter-bar` and `app-leaderboard-table` belong to the ladder page.

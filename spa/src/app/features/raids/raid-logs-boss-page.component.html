@@ -253,7 +253,11 @@
                         <span class="muted">Pickup group</span>
                       }
                       <span class="muted realm phone-hidden">{{ row.kill.guild?.realm || row.kill.realm }}</span>
+                      @if (row.kill.invalid !== undefined) {
+                        <span class="invalid-tag" [title]="row.kill.invalid">Invalid</span>
+                      }
                     </span>
+
                   </td>
                   <td class="num strong"><a [routerLink]="logLink(row.kill)">{{ formatFightTime(row.kill.fightMs) }}</a></td>
                   <td class="num phone-hidden">{{ row.kill.members.length }}</td>
