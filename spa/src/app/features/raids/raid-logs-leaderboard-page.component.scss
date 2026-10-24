@@ -120,7 +120,7 @@
 table { table-layout: fixed; }
 td { overflow: hidden; text-overflow: ellipsis; }
 th.rank { width: 56px; }
-.with-changes th.rank { width: 90px; padding-right: 48px; }
+.with-changes th.rank { width: 94px; padding-right: 52px; }
 th.col-character { width: 240px; }
 th.col-score { width: 160px; }
 th.col-bosses { width: 110px; }
@@ -136,9 +136,9 @@ td.score { font-size: .95rem; }
 
 .with-changes .rank-cell {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 34px;
-  align-items: baseline;
-  column-gap: 4px;
+  grid-template-columns: minmax(0, 1fr) 36px;
+  align-items: center;
+  column-gap: 6px;
 }
 
 .rank-move,
@@ -149,19 +149,19 @@ td.score { font-size: .95rem; }
   &.up { color: #8ce89b; }
 }
 
-.rank-move { font-size: .7rem; text-align: left; }
+.rank-move { font-size: .72rem; font-weight: 800; text-align: left; }
 .move-arrow { display: inline-block; margin-right: 2px; font-size: .78em; transform: translateY(-1px); }
 .rank-new { @include new-tag; text-align: left; }
 
 .score-cell {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
-  align-items: baseline;
+  align-items: center;
   column-gap: 8px;
 }
 
 .score-value { grid-column: 2; }
-.score-change { justify-self: start; font-size: .72rem; font-weight: 600; }
+.score-change { justify-self: start; font-size: .76rem; font-weight: 800; }
 
 td.guild { font-weight: 600; }
 .faction-text-0 { color: #6fa2f0; }
@@ -203,7 +203,7 @@ td.guild { font-weight: 600; }
   th.col-score { width: 84px; }
   th.col-bosses { width: 64px; }
   .with-changes .rank-cell { display: flex; flex-direction: column; align-items: flex-end; gap: 2px; }
-  .rank-move { font-size: .62rem; line-height: 1; }
+  .rank-move { font-size: .72rem; line-height: 1; }
   .rank-new { font-size: .6rem; line-height: 1; }
   .score-change { font-size: .69rem; }
   .filter-slot { flex: 1 1 28%; }
