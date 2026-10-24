@@ -2,7 +2,7 @@
   @if (kill(); as current) {
     <a class="back-link"
       [routerLink]="bossLink(current.boss)"
-      [queryParams]="{ difficulty: current.difficulty.slug, tab: 'fastest' }">
+      [queryParams]="{ difficulty: current.difficulty.slug, tab: current.invalid === undefined ? 'fastest' : 'latest' }">
       <span aria-hidden="true">‹</span> All {{ current.boss.shortName }} {{ current.difficulty.name }} kills
     </a>
   } @else {
@@ -12,6 +12,10 @@
   <app-load-state [loading]="isLoading()" [error]="loadError()" loadingText="Reading the log..." (retry)="reload()" />
 
   @if (!isLoading() && !loadError() && kill(); as current) {
+    @if (current.invalid !== undefined) {
+      <p class="invalid-note" role="note"><strong>{{ current.invalid }}</strong> This kill doesn't count toward any ranking, record or statistic.</p>
+    }
+
     <header class="log-header">
       <img class="boss-portrait" [src]="current.boss.portrait" alt="" />
       <div class="log-heading">

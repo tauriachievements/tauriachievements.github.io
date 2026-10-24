@@ -67,7 +67,8 @@ export const NAV_SECTIONS: readonly NavSection[] = [
         tab: 'Logs',
         icon: '📖',
         path: '/raid-logs',
-        includes: ['/raid-logs/boss', '/raid-logs/log']
+        includes: ['/raid-logs/boss', '/raid-logs/log', '/raid-logs/invalid']
+
       },
       {
         label: 'Guild Progression',

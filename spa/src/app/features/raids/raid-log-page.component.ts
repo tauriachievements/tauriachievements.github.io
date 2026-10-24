@@ -127,7 +127,8 @@ export class RaidLogPageComponent {
       {
         label: 'Fight time',
         value: formatFightTime(kill.fightMs),
-        note: rank ? `#${rank} fastest of ${this.siblings().length.toLocaleString('en-US')}` : ''
+        note: rank ? `#${rank} fastest of ${this.siblings().length.toLocaleString('en-US')}` : kill.invalid === undefined ? '' : 'Not ranked'
+
       },
       { label: 'Raid DPS', value: formatPerSecond(seconds ? damage / seconds : 0), note: `${formatAmount(damage)} damage` },
       { label: 'Raid HPS', value: formatPerSecond(seconds ? healing / seconds : 0), note: `${formatAmount(healing)} healing` },

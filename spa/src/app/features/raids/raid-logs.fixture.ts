@@ -66,4 +66,4 @@ export const bossFile: RaidBossFile = {
   ]
 };
 
-export const kills = decodeBossFile(bossFile, nythendra, mythic, index.specs);
+export const kills = decodeBossFile(bossFile, nythendra, mythic, index.specs, index.invalidLogs);

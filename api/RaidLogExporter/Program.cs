@@ -53,13 +53,17 @@ internal static class Program
             var guildDirectory = PlayerGuildDirectory.Load(
                 Path.Combine(frontendSrc, "Players.csv")
             );
+            var invalidLogs = InvalidRaidLogs.Load(
+                Path.Combine(solutionRoot, "AchievementLadder", "Data", InvalidRaidLogs.FileName)
+            );
             var exporter = new RaidLogExportService(
                 outputDirectory,
                 apiClient,
                 itemSource,
                 talentSource,
                 tooltipSource,
-                guildDirectory
+                guildDirectory,
+                invalidLogs
             );
 
             Console.WriteLine(
@@ -92,6 +96,18 @@ internal static class Program
             );
             Console.WriteLine($"Logs read from the API: {result.ReadLogCount}");
             Console.WriteLine($"Guilds: {dataset.Guilds.Count}, items: {dataset.Items.Count}");
+            Console.WriteLine($"Invalid logs: {dataset.InvalidLogs.Count}");
+            foreach (
+                var missing in invalidLogs.Keys.Where(key =>
+                    !dataset.InvalidLogs.Any(log => log.Key == key)
+                )
+            )
+            {
+                Console.Error.WriteLine(
+                    $"{InvalidRaidLogs.FileName} lists log {missing.LogId} ({missing.Realm}), which is not among the kills."
+                );
+            }
+
             Console.WriteLine(
                 result.TalentSpecCount > 0
                     ? $"Talents: {result.TalentSpecCount} specs"

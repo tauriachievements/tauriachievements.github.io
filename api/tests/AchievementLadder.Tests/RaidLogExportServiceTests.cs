@@ -437,6 +437,7 @@ public sealed class RaidLogExportServiceTests
                 new FakeTalentSource(),
                 new FakeTooltipSource(),
                 directory,
+                InvalidRaidLogs.Empty,
                 new FixedTimeProvider(
                     new DateTimeOffset(2026, 10, 12, 18, 0, 0, TimeSpan.FromHours(2))
                 )
@@ -667,6 +668,7 @@ public sealed class RaidLogExportServiceTests
                     new FakeTalentSource(),
                     new FakeTooltipSource(),
                     directory,
+                    InvalidRaidLogs.Empty,
                     new FixedTimeProvider(
                         new DateTimeOffset(2026, 10, 12, hour, 0, 0, TimeSpan.Zero)
                     )
@@ -1148,6 +1150,131 @@ public sealed class RaidLogExportServiceTests
     }
 
     [Fact]
+    public async Task ExportAsync_ListsInvalidLogsAndLeavesThemOutOfTheBestAndTheKillCounts()
+    {
+        var outputDirectory = CreateTempDirectory();
+        try
+        {
+            var api = new FakeRaidApiClient();
+            api.Rankings[(Tauri, Xavius, Mythic)] = [1, 2];
+            api.Logs[(Tauri, 1)] = LogJson(
+                1,
+                Xavius,
+                Mythic,
+                1_790_000_000,
+                100_000,
+                null,
+                [],
+                Member("Honest", "", 8, 63, damage: 50_000_000, heal: 1_000, absorb: 0),
+                Member("Healer", "", 5, 256, heal: 20_000_000, absorb: 0)
+            );
+            api.Logs[(Tauri, 2)] = LogJson(
+                2,
+                Xavius,
+                Mythic,
+                1_790_100_000,
+                100_000,
+                null,
+                [],
+                Member("Abuser", "", 9, 267, damage: 90_000_000, heal: 1_000, absorb: 0),
+                Member("Healer", "", 5, 256, heal: 60_000_000, absorb: 0)
+            );
+            var invalidLogs = InvalidRaidLogs.Parse([
+                "Tauri 2 Invalid log, bug abusing",
+                "Tauri 999 Never killed",
+            ]);
+
+            var result = await Service(
+                    outputDirectory,
+                    api,
+                    PlayerGuildDirectory.Empty,
+                    invalidLogs: invalidLogs
+                )
+                .ExportAsync(Options(), CancellationToken.None);
+
+            Assert.Equal(
+                [new InvalidRaidLog(new RaidLogKey("Tauri", 2), "Invalid log, bug abusing")],
+                result.Dataset.InvalidLogs
+            );
+            var index = Parse(File.ReadAllText(Path.Combine(outputDirectory, "index.json")));
+            Assert.Equal(
+                ["Tauri 2 Invalid log, bug abusing"],
+                index
+                    .GetProperty("invalidLogs")
+                    .EnumerateArray()
+                    .Select(log => $"{log[0].GetString()} {log[1].GetInt32()} {log[2].GetString()}")
+            );
+            Assert.Equal(
+                [1, 2],
+                index.GetProperty("logs").EnumerateArray().Select(log => log[1].GetInt32())
+            );
+            Assert.Equal(
+                1,
+                index
+                    .GetProperty("difficulties")
+                    .EnumerateArray()
+                    .Single(difficulty => difficulty.GetProperty("slug").GetString() == "mythic")
+                    .GetProperty("kills")
+                    .GetInt32()
+            );
+            var top = index.GetProperty("top").EnumerateArray().Single();
+            Assert.Equal(
+                ("Honest", 1),
+                (top.GetProperty("dps")[0].GetString(), top.GetProperty("dps")[6].GetInt32())
+            );
+            Assert.Equal(200_000, top.GetProperty("hps")[4].GetInt64());
+            var boss = Parse(File.ReadAllText(Path.Combine(outputDirectory, "xavius-mythic.json")));
+            Assert.Equal(
+                [1, 2],
+                boss.GetProperty("logs").EnumerateArray().Select(log => log[1].GetInt32())
+            );
+        }
+        finally
+        {
+            Directory.Delete(outputDirectory, recursive: true);
+        }
+    }
+
+    [Fact]
+    public void InvalidRaidLogs_ReadsTheRealmLogIdAndReasonOfEachLine()
+    {
+        var invalidLogs = InvalidRaidLogs.Parse([
+            "Tauri 1704157 Invalid log, bug abusing",
+            "",
+            "  evermoon   12   Wrong boss  ",
+            "WoD 5 x",
+        ]);
+
+        Assert.Equal(3, invalidLogs.Count);
+        Assert.Equal(
+            "Invalid log, bug abusing",
+            invalidLogs.Reason(new RaidLogKey("Tauri", 1704157))
+        );
+        Assert.Equal("Wrong boss", invalidLogs.Reason(new RaidLogKey("Evermoon", 12)));
+        Assert.True(invalidLogs.Contains(new RaidLogKey("WoD", 5)));
+        Assert.False(invalidLogs.Contains(new RaidLogKey("Tauri", 5)));
+    }
+
+    [Theory]
+    [InlineData("Tauri 1704157")]
+    [InlineData("Narnia 1704157 Bug abusing")]
+    [InlineData("Tauri log Bug abusing")]
+    [InlineData("Tauri 0 Bug abusing")]
+    public void InvalidRaidLogs_RejectsALineWithoutRealmLogIdAndReason(string line)
+    {
+        Assert.Throws<FormatException>(() => InvalidRaidLogs.Parse(["Tauri 1 Fine", line]));
+    }
+
+    [Fact]
+    public void InvalidRaidLogs_IsEmptyWithoutAFile()
+    {
+        Assert.Equal(
+            0,
+            InvalidRaidLogs.Load(Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid():N}.txt")).Count
+        );
+    }
+
+    [Fact]
     public async Task ExportAsync_RefusesToPublishFarFewerKillsUnlessAllowed()
     {
         var outputDirectory = CreateTempDirectory();
@@ -1226,7 +1353,8 @@ public sealed class RaidLogExportServiceTests
         FakeRaidApiClient api,
         PlayerGuildDirectory directory,
         IRaidTalentSource? talents = null,
-        IRaidSpellTooltipSource? tooltips = null
+        IRaidSpellTooltipSource? tooltips = null,
+        InvalidRaidLogs? invalidLogs = null
     ) =>
         new(
             outputDirectory,
@@ -1234,7 +1362,8 @@ public sealed class RaidLogExportServiceTests
             new FakeItemSource(),
             talents ?? new FakeTalentSource(),
             tooltips ?? new FakeTooltipSource(),
-            directory
+            directory,
+            invalidLogs ?? InvalidRaidLogs.Empty
         );
 
     private static string LogJson(

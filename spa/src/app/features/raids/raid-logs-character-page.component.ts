@@ -67,6 +67,7 @@ interface BossRow {
 interface Loaded {
   difficulty: RaidDifficulty;
   bossKills: RaidKillDetails[][];
+  invalidKills: RaidKillDetails[];
   key: string;
 }
 
@@ -149,13 +150,12 @@ export class RaidLogsCharacterPageComponent {
 
   readonly appearances = computed<Appearance[]>(() => {
     const loaded = this.loaded();
-    if (!loaded) {
-      return [];
-    }
+    return loaded ? this.appearancesIn(loaded.bossKills.flat(), loaded.key) : [];
+  });
 
-    return loaded.bossKills.flatMap(kills => kills.flatMap(kill =>
-      kill.members.filter(member => this.isViewed(member.character) && characterKey(member.character) === loaded.key)
-        .map(member => ({ kill, member }))));
+  private readonly invalidAppearances = computed<Appearance[]>(() => {
+    const loaded = this.loaded();
+    return loaded ? this.appearancesIn(loaded.invalidKills, loaded.key) : [];
   });
 
   readonly character = computed(() => latestFirst(this.appearances())[0]?.member.character);
@@ -261,13 +261,13 @@ export class RaidLogsCharacterPageComponent {
     });
   });
 
-  readonly recent = computed(() => latestFirst(this.appearances()).slice(0, RECENT_KILLS));
+  readonly recent = computed(() => latestFirst([...this.appearances(), ...this.invalidAppearances()]).slice(0, RECENT_KILLS));
 
   readonly summary = computed<SummaryTile[]>(() => {
     const rows = this.bossRows();
     const killed = rows.filter(row => row.kills > 0);
     const bestRank = rows.filter(row => row.rank).sort((a, b) => a.rank! / a.ranked - b.rank! / b.ranked)[0];
-    const latest = this.recent()[0];
+    const latest = latestFirst(this.appearances())[0];
     const spec = this.mainSpec();
     const score = this.score();
     const byClass = this.comparison() === 'class';
@@ -389,10 +389,14 @@ export class RaidLogsCharacterPageComponent {
     }
 
     const files = index.bosses.map(boss => this.data.bossKills(index, boss, difficulty));
-    this.subscription = (files.length ? forkJoin(files) : of([]))
+    const invalidFiles = index.bosses.map(boss => this.data.invalidBossKills(index, boss, difficulty));
+    this.subscription = forkJoin({
+      bossKills: files.length ? forkJoin(files) : of([]),
+      invalidKills: invalidFiles.length ? forkJoin(invalidFiles) : of([])
+    })
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
-        next: bossKills => {
+        next: ({ bossKills, invalidKills }) => {
           const key = this.findCharacterKey(bossKills);
           if (!key && rest.length) {
             this.loadDifficulty(index, rest);
@@ -410,7 +414,7 @@ export class RaidLogsCharacterPageComponent {
             this.requestedDifficulty.set(difficulty.slug);
             this.writeUrl();
           }
-          this.loaded.set({ difficulty, bossKills, key });
+          this.loaded.set({ difficulty, bossKills, invalidKills: invalidKills.flat(), key });
           this.isLoading.set(false);
         },
         error: error => this.fail(error)
@@ -444,7 +448,14 @@ export class RaidLogsCharacterPageComponent {
     return caseless;
   }
 
+  private appearancesIn(kills: readonly RaidKillDetails[], key: string): Appearance[] {
+    return kills.flatMap(kill => kill.members
+      .filter(member => this.isViewed(member.character) && characterKey(member.character) === key)
+      .map(member => ({ kill, member })));
+  }
+
   private isViewed(character: RaidCharacter): boolean {
+
     const formerClass = this.formerClass();
     return formerClass === undefined ? !character.former : !!character.former && character.classId === formerClass;
   }

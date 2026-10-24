@@ -1,0 +1,43 @@
+<main class="raid-page">
+  <h1 class="visually-hidden">Invalid raid logs, {{ index()?.raid?.name ?? 'The Emerald Nightmare' }}</h1>
+
+  <a class="back-link" routerLink="/raid-logs"><span aria-hidden="true">‹</span> Back to Raid Logs</a>
+
+  <app-load-state [loading]="isLoading()" [error]="loadError()" loadingText="Reading the logs..." (retry)="loadData()" />
+
+  @if (!isLoading() && !loadError()) {
+    <section class="section" aria-labelledby="invalid-title">
+      <header class="section-header">
+        <h2 id="invalid-title">Invalid logs</h2>
+        <p>These kills count toward no ranking, record or statistic. Latest first.</p>
+      </header>
+
+      @if (kills().length) {
+        <ol class="invalid-list">
+          @for (kill of kills(); track logKey(kill)) {
+            <li>
+              <a class="invalid-row" [routerLink]="logLink(kill)">
+                <img class="portrait" [src]="kill.boss.portrait" alt="" loading="lazy" />
+                <span class="kill">
+                  <span class="boss">
+                    <span class="boss-name">{{ kill.boss.shortName }}</span>
+                    <span class="difficulty difficulty-text" [class]="kill.difficulty.slug">{{ kill.difficulty.name }}</span>
+                  </span>
+                  <span class="guild">
+                    <span class="faction" [class]="'faction-' + kill.faction" aria-hidden="true"></span>
+                    {{ kill.guild?.name || 'Pickup group' }}
+                  </span>
+                </span>
+                <span class="reason">{{ kill.invalid }}</span>
+                <span class="fight-time">{{ formatFightTime(kill.fightMs) }}</span>
+                <time class="date" [attr.datetime]="kill.killedAt | date:'yyyy-MM-ddTHH:mm:ss'" [title]="kill.killedAt | date:'d MMM y, HH:mm'">{{ kill.killedAt | date:'d MMM' }}</time>
+              </a>
+            </li>
+          }
+        </ol>
+      } @else {
+        <p class="empty-note">No log is marked invalid.</p>
+      }
+    </section>
+  }
+</main>

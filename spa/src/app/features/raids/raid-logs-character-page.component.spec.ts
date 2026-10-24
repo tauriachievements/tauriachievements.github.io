@@ -83,9 +83,11 @@ const bossFiles: Record<string, RaidBossFile> = Object.fromEntries([
 ].map(file => [`raid-log-data/${file.boss}-${file.difficulty}.json`, file]));
 
 class FakeDataFiles {
+  constructor(private readonly index: RaidLogsIndexFile) {}
+
   fetchJson<T>(path: string): Observable<T> {
     if (path === 'raid-log-data/index.json') {
-      return of(indexFile as T);
+      return of(this.index as T);
     }
     const file = bossFiles[path];
     return file ? of(file as T) : throwError(() => new Error(`No ${path}`));
@@ -97,7 +99,7 @@ class FakeDataFiles {
 @Component({ template: '' })
 class ElsewhereComponent {}
 
-async function open(url: string) {
+async function open(url: string, index = indexFile) {
   TestBed.configureTestingModule({
     providers: [
       provideRouter([
@@ -105,7 +107,7 @@ async function open(url: string) {
         { path: 'raid-logs/leaderboard', component: ElsewhereComponent }
       ]),
       provideLocationMocks(),
-      { provide: DataFileService, useValue: new FakeDataFiles() }
+      { provide: DataFileService, useValue: new FakeDataFiles(index) }
     ]
   });
   const harness = await RouterTestingHarness.create();
@@ -177,7 +179,33 @@ beforeEach(() => {
 
 afterEach(() => vi.unstubAllGlobals());
 
+describe('RaidLogsCharacterPageComponent with an invalid log', () => {
+  const flagged: RaidLogsIndexFile = { ...indexFile, invalidLogs: [['Tauri', 11, 'Invalid log, bug abusing']] };
+
+
+  it('leaves the invalid kill out of the scores and ranks', async () => {
+    const { page } = await open('/raid-logs/character/tauri/Kael', flagged);
+
+    expect(kills(page)).toEqual([[10, 'Fire'], [12, 'Fire'], [13, 'Fire']]);
+    expect(page.bossRows().map(row => [row.boss.shortName, row.kills, row.value])).toEqual([
+      ['Nythendra', 1, 600], ["Il'gynoth", 1, 900], ['Elerethe', 1, 500]
+    ]);
+  });
+
+  it('lists the invalid kill among the latest kills, tagged with its reason', async () => {
+    const { page, element } = await open('/raid-logs/character/tauri/Kael', flagged);
+
+    expect(page.recent().map(({ kill }) => [kill.logId, kill.invalid])).toEqual([
+      [13, undefined], [12, undefined], [11, 'Invalid log, bug abusing'], [10, undefined]
+    ]);
+    const tags = [...element.querySelectorAll('section[aria-labelledby="character-recent-title"] tbody tr')]
+      .map(row => row.querySelector('.invalid-tag')?.getAttribute('title'));
+    expect(tags).toEqual([undefined, undefined, 'Invalid log, bug abusing', undefined]);
+  });
+});
+
 describe('RaidLogsCharacterPageComponent with a former character of the name', () => {
+
   it('shows only the kills of the class the name has now', async () => {
     const { page } = await open('/raid-logs/character/tauri/Shifty');
 

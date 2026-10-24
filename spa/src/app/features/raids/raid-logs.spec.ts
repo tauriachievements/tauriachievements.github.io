@@ -44,6 +44,17 @@ describe('decodeIndex', () => {
     expect(first.newLogs.size).toBe(0);
   });
 
+  it('keeps invalid logs out of the kills and lists them apart, with their reason', () => {
+    const flagged = decodeIndex({ ...indexFile, invalidLogs: [['Tauri', 11, 'Invalid log, bug abusing']] });
+
+    expect(flagged.kills.map(kill => kill.logId)).toEqual([10, 12, 13, 10]);
+    expect(flagged.invalidKills).toHaveLength(1);
+    expect(flagged.invalidKills[0]).toMatchObject({ realm: 'Tauri', logId: 11, invalid: 'Invalid log, bug abusing' });
+    expect(flagged.invalidLogs.get('tauri/11')).toBe('Invalid log, bug abusing');
+    expect(index.invalidKills).toEqual([]);
+    expect(index.kills.every(kill => kill.invalid === undefined)).toBe(true);
+  });
+
   it('gives specs the Legion spec icons', () => {
     expect(index.specs.get(64)?.icon).toContain('legion-static.tauri.hu');
   });
@@ -75,11 +86,19 @@ describe('decodeBossFile', () => {
     const [kill] = decodeBossFile({
       ...bossFile,
       players: [...bossFile.players.slice(0, 2), ['Light', 'Evermoon', 2, 10, 1, 'Miracle', 1]]
-    }, nythendra, mythic, index.specs);
+    }, nythendra, mythic, index.specs, index.invalidLogs);
     expect(kill.members.map(member => member.character.former)).toEqual([false, false, true]);
   });
 
+  it('marks an invalid log with its reason and leaves the others unmarked', () => {
+    const marked = decodeBossFile(bossFile, nythendra, mythic, index.specs, new Map([['tauri/11', 'Invalid log, bug abusing']]));
+
+    expect(marked.map(kill => kill.invalid)).toEqual([undefined, 'Invalid log, bug abusing']);
+    expect('invalid' in marked[0]).toBe(false);
+  });
+
   it('reads no talents or trinkets from a version 1 file', () => {
+
     expect(kills[0].members[0]).toMatchObject({ talents: '', trinkets: [] });
   });
 
@@ -95,7 +114,7 @@ describe('decodeBossFile', () => {
         [0, 64, 870, 150_000_000, 0, 0, 0, 1, 0, 0, '1022.20', [0, 1]],
         [1, 63, 871, 120_000_000, 0, 0, 0, 1, 0, 0, '', [1]]
       ], []]]
-    }, nythendra, mythic, index.specs);
+    }, nythendra, mythic, index.specs, index.invalidLogs);
 
     const [frost, fire] = kill.members;
     expect(frost.talents).toBe('1022.20');

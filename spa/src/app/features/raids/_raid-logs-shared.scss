@@ -264,6 +264,23 @@ $difficulty-colors: (
 
 @mixin new-tag { color: $gold; font-size: .66rem; font-weight: 800; letter-spacing: .04em; text-transform: uppercase; }
 
+@mixin invalid-tag {
+  display: inline-block;
+  flex: none;
+
+  padding: 1px 6px;
+  border: 1px solid rgba(255, 154, 154, .34);
+  border-radius: 999px;
+  background: rgba(255, 154, 154, .12);
+  color: #ff9a9a;
+  font-size: .62rem;
+  font-weight: 800;
+  letter-spacing: .04em;
+  line-height: 1.4;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
 @mixin ranking-toolbar {
   .toolbar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px 16px; }
 

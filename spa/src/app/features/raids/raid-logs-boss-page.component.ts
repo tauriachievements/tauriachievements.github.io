@@ -2,7 +2,7 @@ import { DatePipe, DecimalPipe, NgTemplateOutlet } from '@angular/common';
 import { ChangeDetectionStrategy, Component, DestroyRef, computed, effect, inject, signal, untracked } from '@angular/core';
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, RouterLink } from '@angular/router';
-import { Subscription } from 'rxjs';
+import { Subscription, forkJoin } from 'rxjs';
 import { getClassIconPath } from '../../game/classIconHelper';
 import { getClassColor } from '../../game/class-colors';
 import { FilterDropdownComponent } from '../../shared/filter-dropdown.component';
@@ -57,7 +57,7 @@ const TABS: ReadonlyArray<{ id: BossTab; label: string }> = [
 ];
 
 interface KillRow {
-  rank: number;
+  rank?: number;
   kill: RaidKillDetails;
 }
 
@@ -105,6 +105,7 @@ export class RaidLogsBossPageComponent {
   readonly tabs = TABS;
   readonly index = signal<RaidLogsIndex | undefined>(undefined);
   readonly kills = signal<RaidKillDetails[]>([]);
+  private readonly invalidKills = signal<RaidKillDetails[]>([]);
   private readonly talentTable = signal<RaidTalentTable>(new Map());
   readonly talentTooltips = signal<RaidTalentTooltips>(new Map());
   readonly isLoading = signal(true);
@@ -163,10 +164,11 @@ export class RaidLogsBossPageComponent {
       return [];
     }
 
-    const ordered = this.tab() === 'fastest' ? fastestKills(this.kills()) : latestKills(this.kills());
+    const ordered = this.tab() === 'fastest' ? fastestKills(this.kills()) : latestKills([...this.kills(), ...this.invalidKills()]);
     const query = this.search();
+    let counted = 0;
     return ordered
-      .map((kill, position) => ({ rank: position + 1, kill }))
+      .map(kill => ({ rank: kill.invalid === undefined ? ++counted : undefined, kill }))
       .filter(row => !query || nameMatches(row.kill.guild?.name || 'Pickup group', query));
   });
 
@@ -350,11 +352,16 @@ export class RaidLogsBossPageComponent {
     this.killsSubscription?.unsubscribe();
     this.isLoading.set(true);
     this.loadError.set(undefined);
-    this.killsSubscription = this.data.bossKills(index, boss, difficulty)
+    this.killsSubscription = forkJoin({
+      kills: this.data.bossKills(index, boss, difficulty),
+      invalid: this.data.invalidBossKills(index, boss, difficulty)
+    })
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
-        next: kills => {
+        next: ({ kills, invalid }) => {
           this.kills.set(kills);
+          this.invalidKills.set(invalid);
+
           this.now.set(Date.now());
           this.isLoading.set(false);
           this.loadTalentTooltips();

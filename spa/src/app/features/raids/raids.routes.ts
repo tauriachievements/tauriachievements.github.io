@@ -32,7 +32,13 @@ export const RAIDS_ROUTES: Routes = [
       .then(module => module.RaidLogsLeaderboardPageComponent)
   },
   {
+    path: 'raid-logs/invalid',
+    loadComponent: () => import('./raid-logs-invalid-page.component')
+      .then(module => module.RaidLogsInvalidPageComponent)
+  },
+  {
     path: 'raid-logs/boss/:boss',
+
     loadComponent: () => import('./raid-logs-boss-page.component')
       .then(module => module.RaidLogsBossPageComponent)
   },

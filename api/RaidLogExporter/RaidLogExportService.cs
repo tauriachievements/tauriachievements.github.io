@@ -22,6 +22,7 @@ public sealed class RaidLogExportService(
     IRaidTalentSource talentSource,
     IRaidSpellTooltipSource tooltipSource,
     PlayerGuildDirectory guildDirectory,
+    InvalidRaidLogs invalidLogs,
     TimeProvider? timeProvider = null
 )
 {
@@ -107,7 +108,8 @@ public sealed class RaidLogExportService(
         }
 
         var items = await LoadItemsAsync(logs, previous.Items, cancellationToken);
-        var dataset = RaidLogDatasetBuilder.Build(logs, items, guildDirectory);
+        var dataset = RaidLogDatasetBuilder.Build(logs, items, guildDirectory, invalidLogs);
+
         var talents = await talentSource.LoadAsync(cancellationToken);
         (IReadOnlyList<RaidSpellTooltip> Tooltips, RaidTooltipLookup Lookup)? tooltips = talents
             is null

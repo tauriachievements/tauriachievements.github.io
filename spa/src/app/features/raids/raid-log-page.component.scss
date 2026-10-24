@@ -12,6 +12,18 @@
 
 .raid-page { @include raid-page; }
 
+.invalid-note {
+  margin: 0;
+  padding: 12px 16px;
+  border: 1px solid rgba(255, 154, 154, .34);
+  border-left-width: 4px;
+  border-radius: 8px;
+  background: rgba(255, 154, 154, .08);
+  font-size: .9rem;
+
+  strong { display: block; color: #ff9a9a; font-size: 1rem; }
+}
+
 .log-header {
   display: flex;
   flex-wrap: wrap;

@@ -49,14 +49,15 @@ export class RaidLogsDataService {
   }
 
   bossKills(index: RaidLogsIndex, boss: RaidBoss, difficulty: RaidDifficulty): Observable<RaidKillDetails[]> {
-    const hasKills = index.kills.some(kill => kill.boss === boss && kill.difficulty === difficulty);
-    if (!hasKills) {
-      return of([]);
-    }
+    return index.kills.some(kill => kill.boss === boss && kill.difficulty === difficulty)
+      ? this.encounterKills(index, boss, difficulty).pipe(map(kills => kills.filter(kill => kill.invalid === undefined)))
+      : of([]);
+  }
 
-    const path = bossFilePath(boss, difficulty);
-    return this.cache.get(path, () =>
-      this.dataFiles.fetchJson<RaidBossFile>(path).pipe(map(file => decodeBossFile(file, boss, difficulty, index.specs))));
+  invalidBossKills(index: RaidLogsIndex, boss: RaidBoss, difficulty: RaidDifficulty): Observable<RaidKillDetails[]> {
+    return index.invalidKills.some(kill => kill.boss === boss && kill.difficulty === difficulty)
+      ? this.encounterKills(index, boss, difficulty).pipe(map(kills => kills.filter(kill => kill.invalid !== undefined)))
+      : of([]);
   }
 
   difficultyKills(index: RaidLogsIndex, difficulty: RaidDifficulty): Observable<RaidKillDetails[]> {
@@ -110,7 +111,7 @@ export class RaidLogsDataService {
         return this.findIn(realm, logId);
       }),
       switchMap(found => found.kill
-        ? this.bossKills(found.index, found.kill.boss, found.kill.difficulty).pipe(
+        ? this.encounterKills(found.index, found.kill.boss, found.kill.difficulty).pipe(
           map(kills => ({ ...found, details: kills.find(kill => kill.logId === logId && kill.realm === found.kill!.realm) })))
         : of(found))
     );
@@ -121,11 +122,19 @@ export class RaidLogsDataService {
     this.cache.clear();
   }
 
+  private encounterKills(index: RaidLogsIndex, boss: RaidBoss, difficulty: RaidDifficulty): Observable<RaidKillDetails[]> {
+    const path = bossFilePath(boss, difficulty);
+    return this.cache.get(path, () => this.dataFiles.fetchJson<RaidBossFile>(path).pipe(
+      map(file => decodeBossFile(file, boss, difficulty, index.specs, index.invalidLogs))));
+  }
+
   private findIn(realm: string, logId: number): Observable<FoundKill> {
     const slug = realmSlug(realm);
+    const isLog = (kill: RaidKill) => kill.logId === logId && realmSlug(kill.realm) === slug;
     return this.index().pipe(map(index => ({
       index,
-      kill: index.kills.find(kill => kill.logId === logId && realmSlug(kill.realm) === slug)
+      kill: index.kills.find(isLog) ?? index.invalidKills.find(isLog)
     })));
   }
+
 }

@@ -94,7 +94,9 @@ tr.alive td { color: $raid-muted; }
   time { text-align: right; }
 }
 
-.history-boss { overflow: hidden; color: #fff; font-weight: 700; text-overflow: ellipsis; white-space: nowrap; }
+.history-boss { display: flex; min-width: 0; flex-wrap: wrap; align-items: center; gap: 2px 6px; color: #fff; font-weight: 700; }
+.history-boss-name { overflow: hidden; max-width: 100%; text-overflow: ellipsis; white-space: nowrap; }
+.invalid-tag { @include invalid-tag; }
 .history-time { color: #fff; font-variant-numeric: tabular-nums; font-weight: 700; text-align: right; }
 .history-players { text-align: right; }
 .muted { color: $raid-muted; }

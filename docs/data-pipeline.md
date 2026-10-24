@@ -29,7 +29,8 @@ Tauri API ──► api/ console apps ──► spa/src/ data files ──► co
 The scan inputs live under `api/AchievementLadder/Data/`. `BattlegroundCollector` and the two
 `*GuildAndCharScan` jobs append new guilds and guildless characters to the realm lists;
 `GuildCharacterExporter` removes guilds that no longer exist; `RealmFirstAchievements` rewrites
-`valid-realm-first-characters.txt`. `sync data` commits these lists too.
+`valid-realm-first-characters.txt`. `sync data` commits these lists too. One file there is kept by
+hand: `invalid-raid-logs.txt`, the raid kills that don't count ([below](#invalid-raid-logs)).
 
 ## The daily update
 
@@ -89,15 +90,17 @@ RaidLogExporter writes `raid-log-data/` for the `/raid-logs` pages, which decode
 appearance, so a new kill is a few added lines in git.
 
 - `index.json`: when the rankings were read (`generatedAt`, UTC ISO 8601), the raid, its
-  difficulties (with kill counts) and bosses, the spec table, and every kill as
+  difficulties (with kill counts, invalid logs left out) and bosses, the spec table, and every kill as
   `[realm, logId, boss, difficultyId, killedAtUnix, fightMs, guild, faction, wipes, deaths, members]`
   (boss and guild are positions in `bosses` and `guilds`, guild -1 for a pickup group, members a
   count). Once there is an earlier export to compare with, `previousGeneratedAt` and the kills
-  added since it as `newLogs` (`[realm, logId]`). `guilds` as `[name, realm, faction, guildId]`
+  added since it as `newLogs` (`[realm, logId]`). The invalid logs
+  ([below](#invalid-raid-logs)) as `invalidLogs` (`[realm, logId, reason]`). `guilds` as `[name, realm, faction, guildId]`
   (an empty name for a guild that couldn't be named), each name with a former character (below)
   as `formerCharacters` (`[name, realm, classNow, [earlierClass, ...]]`, latest first), each boss
-  and difficulty's best DPS and HPS as `[name, realm, class, spec, perSecond, logRealm, logId]`,
-  and the loot's `items` as `[id, name, quality, icon]`.
+  and difficulty's best DPS and HPS as `[name, realm, class, spec, perSecond, logRealm, logId]`
+  (the earlier kill on a tie, invalid logs left out), and the loot's `items` as
+  `[id, name, quality, icon]`.
 - `<boss>-<difficulty>.json`: that boss's kills on that difficulty, oldest first, as
   `[realm, logId, killedAtUnix, fightMs, guild, faction, wipes, deaths, resurrects, members, [itemId, ...]]`,
   each member `[player, spec, ilvl, damage, healing, absorbs, overhealing, damageTaken, interrupts, dispels, talents, [trinket, ...]]`.
@@ -131,6 +134,27 @@ RaidLogExporter rebuilds the logs it already has from the boss files, so whateve
 doesn't store is lost for those logs until they're read again. Bump
 `RaidLogFileWriter.FormatVersion` whenever a boss file's shape or meaning changes: the next run
 then reads every log again from the API.
+
+## Invalid raid logs
+
+`api/AchievementLadder/Data/invalid-raid-logs.txt` lists the raid kills that don't count, such
+as a kill won by abusing a bug. It's kept by hand, one log per line: the realm (`Tauri`,
+`Evermoon` or `WoD`), the log id from the log page's URL, then the reason the site shows, for
+example `Tauri 1704810 Invalid log, bug abusing`.
+
+- RaidLogExporter reads the list on every run (`InvalidRaidLogs`) and writes the listed logs it
+  has into `index.json` as `invalidLogs`. It leaves them out of the difficulties' kill counts and
+  the best DPS and HPS. The logs themselves stay in the index and the boss files, so a change to
+  the list needs no format bump and no API reads. It shows on the site after the next export:
+  the daily update, or `Run-RaidLogs.cmd`.
+- A line that isn't `<realm> <log id> <reason>` stops the export before anything is read. A
+  listed log the export doesn't have is reported and skipped.
+- On the site, `decodeIndex` keeps invalid kills out of `kills` and puts them in
+  `invalidKills`, and `RaidLogsDataService.bossKills()` leaves them out of a boss file's kills,
+  so every ranking and statistic skips them without asking. A list that shows them asks for
+  `invalidBossKills()` as well. What counts where is in
+  [scoring.md](scoring.md#invalid-raid-logs).
+
 
 ## Talent tooltips
 
