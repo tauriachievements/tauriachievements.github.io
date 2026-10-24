@@ -227,15 +227,15 @@
                   <td class="center phone-hidden guild" [class]="'faction-text-' + entry.faction" [title]="entry.character.guild ? entry.character.guild + ' · ' + factionName(entry.faction) : ''">{{ entry.character.guild }}</td>
                   <td class="center phone-hidden muted col-realm">{{ entry.character.realm }}</td>
                   <td class="num center strong score" [class]="'q-' + scoreTier(entry)">
-                    @if (change(entry)?.score; as scoreChange) {
-                      <span class="score-cell">
-                        <span class="score-value">{{ entry.score }}</span>
+                    <span class="score-cell">
+                      <span class="score-value">{{ entry.score }}</span>
+                      @if (change(entry)?.score; as scoreChange) {
                         <span
                           class="score-change"
                           [class.up]="scoreChange > 0"
                           [title]="scoreChangeLabel(scoreChange)"><span aria-hidden="true">{{ signed(scoreChange) }}</span><span class="visually-hidden">, {{ scoreChangeLabel(scoreChange) }}</span></span>
-                      </span>
-                    } @else {{{ entry.score }}}
+                      }
+                    </span>
                   </td>
                   <td class="num center">{{ entry.killed }}/{{ entry.bosses.length }}</td>
                   <td class="num center col-optional col-ilvl">{{ entry.itemLevel }}</td>

@@ -153,15 +153,16 @@ td.score { font-size: .95rem; }
 .move-arrow { display: inline-block; margin-right: 2px; font-size: .78em; transform: translateY(-1px); }
 .rank-new { @include new-tag; text-align: left; }
 
-.score-cell {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+.with-changes .score-cell {
+  display: inline-grid;
+  grid-template-columns: 4ch 36px;
   align-items: center;
   column-gap: 8px;
 }
 
-.score-value { grid-column: 2; }
+.score-value { justify-self: end; }
 .score-change { justify-self: start; font-size: .76rem; font-weight: 800; }
+.score-change:not(.up) { opacity: .5; }
 
 td.guild { font-weight: 600; }
 .faction-text-0 { color: #6fa2f0; }
@@ -182,7 +183,7 @@ td.guild { font-weight: 600; }
   th.col-score { width: 100px; }
   th.col-bosses { width: 80px; }
   .col-realm { display: none; }
-  .score-cell { display: flex; flex-direction: column; align-items: center; gap: 2px; }
+  .with-changes .score-cell { display: flex; flex-direction: column; align-items: center; gap: 2px; }
   .score-change { line-height: 1; }
 }
 
