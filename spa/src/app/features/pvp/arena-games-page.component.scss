@@ -259,6 +259,15 @@
   td.rating { color: #f7c948; font-weight: 700; }
   .label-short,
   .realm-inline { display: none; }
+  .character-line { display: inline-flex; align-items: center; gap: 7px; vertical-align: middle; }
+
+  .spec-icon {
+    flex: none;
+    width: 18px;
+    height: 18px;
+    border-radius: 4px;
+    box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.6);
+  }
 
   @media (hover: hover) {
     tbody tr:not(.title-group):hover { background: rgba(247, 181, 0, 0.045); }
@@ -348,6 +357,9 @@
     .realm-inline { display: block; margin-top: 2px; color: #8f8a7d; font-size: 0.76rem; }
     td.character { @include fluid-cell; }
     td.character > * { display: block; @include truncate; }
+    td.character > .character-line { display: flex; gap: 6px; }
+    .character-line a { min-width: 0; @include truncate; }
+    .spec-icon { width: 16px; height: 16px; }
     tbody tr.title-group td { padding: 9px 10px 8px; }
     .label-short { display: inline; }
   }

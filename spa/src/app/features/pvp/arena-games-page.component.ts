@@ -8,14 +8,14 @@ import {
   ARENA_BRACKETS,
   ARENA_TITLES,
   ArenaBracket,
-  ArenaPlayer,
+  ArenaLadderFile,
   ArenaPlayerRow,
   ArenaSortKey,
   REWARD_MIN_WINS,
   SortDirection,
   TitleCutoff,
   formatTitleShare,
-  getArenaGamesFile,
+  getArenaLadderFile,
   getTitle,
   getTitleCutoffs,
   parseArenaBracket,
@@ -43,14 +43,6 @@ const SORT_COLUMNS: readonly SortColumn[] = [
   { key: 'rating', label: 'Rating', shortLabel: 'Rating' }
 ];
 
-interface RatedArenaGames {
-  seasonStart: string;
-  lastMatchId: number;
-  lastMatchStart: string | null;
-  matchCount: number;
-  players: ReadonlyArray<ArenaPlayer>;
-}
-
 @Component({
   selector: 'app-arena-games-page',
   templateUrl: './arena-games-page.component.html',
@@ -70,7 +62,7 @@ export class ArenaGamesPageComponent implements OnInit {
   readonly sortColumns = SORT_COLUMNS;
   readonly brackets = ARENA_BRACKETS;
   readonly bracket = signal<ArenaBracket | undefined>(undefined);
-  readonly dataset = signal<RatedArenaGames | undefined>(undefined);
+  readonly dataset = signal<ArenaLadderFile | undefined>(undefined);
   readonly isLoading = signal(true);
   readonly loadError = signal<string | undefined>(undefined);
   readonly sortKey = signal<ArenaSortKey>('rating');
@@ -115,15 +107,15 @@ export class ArenaGamesPageComponent implements OnInit {
     return groups;
   });
   readonly lastEdited = computed(() => {
-    const latest = this.dataset()?.lastMatchStart;
-    return latest ? new Date(latest) : undefined;
+    const generatedAt = this.dataset()?.generatedAt;
+    return generatedAt ? new Date(generatedAt) : undefined;
   });
 
   readonly getArmoryUrl = getArmoryUrl;
   readonly formatTitleShare = formatTitleShare;
 
   constructor() {
-    setPageHeader(() => ({ lastEdited: this.lastEdited(), label: 'Latest game:' }));
+    setPageHeader(() => ({ lastEdited: this.lastEdited() }));
   }
 
   ngOnInit(): void {
@@ -201,7 +193,7 @@ export class ArenaGamesPageComponent implements OnInit {
     this.dataset.set(undefined);
 
     this.loading?.unsubscribe();
-    this.loading = this.dataFiles.getJson<RatedArenaGames>(getArenaGamesFile(bracket))
+    this.loading = this.dataFiles.getJson<ArenaLadderFile>(getArenaLadderFile(bracket))
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: dataset => {
@@ -209,7 +201,7 @@ export class ArenaGamesPageComponent implements OnInit {
           this.isLoading.set(false);
         },
         error: error => {
-          console.error(`Failed to load rated ${bracket} arena games:`, error);
+          console.error(`Failed to load the rated ${bracket} arena ladder:`, error);
           this.loadError.set('The arena data could not be loaded. Please try again.');
           this.isLoading.set(false);
         }

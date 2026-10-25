@@ -44,7 +44,8 @@ workflow and its output contract.
 | `GuildCharacterExporter` | Expands configured guilds into character sources. |
 | `MissingPlayerFinder` | Backfills characters absent from an existing export. |
 | `RealmFirstAchievements` | Rebuilds and validates realm-first character sources. |
-| `BattlegroundCollector` | Collects sequential PvP matches with resumable state, appends complete ranked responses to the frontend archive, and counts each character's rated 2v2 and 3v3 arena games this season. |
+| `BattlegroundCollector` | Collects sequential PvP matches with resumable state and appends complete ranked responses to the frontend archive. |
+| `ArenaLadderExporter` | Exports the rated 2v2 and 3v3 arena ladders (season games and wins, current and best rating, latest spec) for the `/arena` page. |
 | `MythicPlusExporter` | Merges every realm's Mythic+ leaderboards into scored, ranked per-dungeon files for the `/mythic-plus` page. |
 | `MythicPlusGuildAndCharScan` | Adds the guilds and guildless characters seen on the Mythic+ leaderboards to the scan inputs. |
 | `RaidLogExporter` | Exports every Emerald Nightmare boss kill with per-player damage, healing, talents, trinkets and loot for the `/raid-logs` pages, reading only kills the last export lacks, plus every spec's talent tiers and each talent's tooltip from TauriShoot. |
@@ -107,6 +108,7 @@ concurrency, timeouts, and retry behavior; see
 | Backfill missing players (up to 3 rounds) | `dotnet run --project MissingPlayerFinder` |
 | Validate realm-first characters | `dotnet run --project RealmFirstAchievements` |
 | Collect battlegrounds | `dotnet run --project BattlegroundCollector -- 95874` |
+| Export the arena ladders | `dotnet run --project ArenaLadderExporter` |
 | Export the Mythic+ leaderboards | `dotnet run --project MythicPlusExporter` |
 | Collect guilds and guildless characters from Mythic+ runs | `dotnet run --project MythicPlusGuildAndCharScan` |
 | Collect guilds and guildless characters from Emerald Nightmare raiders | `dotnet run --project RaidLogGuildAndCharScan` |
@@ -116,17 +118,11 @@ concurrency, timeouts, and retry behavior; see
 Commands with additional options expose usage through `--help` or document their arguments
 at startup.
 
-`BattlegroundCollector/Data/arena-character-identities.json` maps obsolete arena member GUIDs
-to their current character identity after transfers or restorations. Arena members whose API
-character data is still blank are retained in each bracket's `unresolvedPlayers` collection;
-adding an identity mapping merges those saved totals on the next collector run without rescanning
-the season.
-
 ## Daily update
 
 `Run-DailyUpdate.cmd` (or `Run-DailyUpdate.ps1`) runs the whole refresh end to end:
 MythicPlusExporter, RaidLogExporter, MythicPlusGuildAndCharScan, RaidLogGuildAndCharScan,
-RealmFirstAchievements, BattlegroundCollector, GuildCharacterExporter, AchievementLadder and
+RealmFirstAchievements, BattlegroundCollector, ArenaLadderExporter, GuildCharacterExporter, AchievementLadder and
 MissingPlayerFinder, then commits every data file as one `sync data` commit and pushes it.
 That commit message triggers the Discord notification, so keep it.
 
@@ -142,7 +138,7 @@ from the guild lists; BattlegroundCollector adds them back if they reappear.
 
 ## Tests and CI
 
-The solution contains 56 focused tests covering:
+The solution's focused tests cover:
 
 - Rare-achievement parsing across valid, missing, and malformed payloads
 - Item-appearance counting and character mapping, including the Level 10 date
@@ -152,6 +148,7 @@ The solution contains 56 focused tests covering:
 - Successful and failed character scans through a fake `ITauriApiClient`
 - Guild export retry rounds, retry-only merges, and dead-guild pruning with its safety cap
 - Mythic+ scoring, leaderboard parsing, cross-realm merging, and the no-partial-publish and shrink guards
+- Arena ladder parsing, and the no-partial-publish and shrink guards
 
 Run the same Release validation used by CI:
 

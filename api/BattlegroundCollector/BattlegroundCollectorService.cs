@@ -31,13 +31,6 @@ public sealed class BattlegroundCollectorService(
         "Ashamane's Fall",
     };
 
-    // Each rated arena bracket's game counts, for the /arena page.
-    private static readonly (string Label, int BracketType, string FileName)[] RatedArenaBrackets =
-    [
-        ("2v2", RatedArenaGameCounter.Rated2v2, "rated-2v2-arena-games.json"),
-        ("3v3", RatedArenaGameCounter.Rated3v3, "rated-3v3-arena-games.json"),
-    ];
-
     private readonly string _projectRoot = Path.GetFullPath(projectRoot);
     private readonly string _guildsDirectory = GuildListFiles.GetGuildsDirectory(solutionRoot);
     private readonly string _guildlessCharactersPath = GuildListFiles.GetGuildlessCharactersPath(
@@ -54,27 +47,6 @@ public sealed class BattlegroundCollectorService(
         var outputPath = ResolveOutputPath(options.OutputPath);
         var statePath = ResolveStatePath(options.StatePath);
         var ratedOutputPath = Path.Combine(_frontendSrcDirectory, "rated-battlegrounds.json");
-        var arenaIdentityMap = await ArenaCharacterIdentityMap.LoadAsync(
-            Path.Combine(_projectRoot, "Data", ArenaCharacterIdentityMap.FileName),
-            cancellationToken
-        );
-        var arenaBrackets = new List<(string Label, string Path, RatedArenaGameCounter Counter)>();
-        foreach (var (label, bracketType, fileName) in RatedArenaBrackets)
-        {
-            var path = Path.Combine(_frontendSrcDirectory, fileName);
-            arenaBrackets.Add(
-                (
-                    label,
-                    path,
-                    await RatedArenaGameCounter.LoadAsync(
-                        path,
-                        bracketType,
-                        arenaIdentityMap,
-                        cancellationToken
-                    )
-                )
-            );
-        }
         var existingRecords = await LoadExistingRecordsAsync(outputPath, cancellationToken);
         var existingRatedMatches = await LoadExistingRatedMatchesAsync(
             ratedOutputPath,
@@ -123,17 +95,7 @@ public sealed class BattlegroundCollectorService(
                 break;
             }
 
-            // Member collection applies to both battleground and arena matches. Arena maps are
-            // excluded only from battlegrounds.json below.
             scannedMembers.AddRange(fetchResult.Members);
-
-            if (fetchResult.Response is { } response)
-            {
-                foreach (var bracket in arenaBrackets)
-                {
-                    bracket.Counter.Add(fetchResult.Record.Id, response);
-                }
-            }
 
             if (IsExcludedBattlegroundName(fetchResult.Record.Name))
             {
@@ -187,10 +149,6 @@ public sealed class BattlegroundCollectorService(
         {
             await WriteJsonAsync(ratedOutputPath, mergedRatedMatches, cancellationToken);
         }
-        foreach (var bracket in arenaBrackets)
-        {
-            await bracket.Counter.WriteAsync(bracket.Path, cancellationToken);
-        }
         var newGuildCount = GuildListFiles.AddNewGuilds(
             _guildsDirectory,
             ToSeenCharacters(newMembers)
@@ -222,14 +180,6 @@ public sealed class BattlegroundCollectorService(
             newGuildCount,
             outputPath,
             ratedOutputPath,
-            arenaBrackets
-                .Select(bracket => new RatedArenaBracketResult(
-                    bracket.Label,
-                    bracket.Counter.NewMatchCount,
-                    bracket.Counter.MatchCount,
-                    bracket.Path
-                ))
-                .ToList(),
             statePath,
             stopReason
         );
@@ -514,7 +464,7 @@ public sealed class BattlegroundCollectorService(
         CancellationToken cancellationToken
     ) => AtomicFile.WriteJsonAsync(outputPath, value, JsonOptions, cancellationToken);
 
-    internal static int ReadInt(JsonElement parent, string propertyName)
+    private static int ReadInt(JsonElement parent, string propertyName)
     {
         if (!parent.TryGetProperty(propertyName, out var property))
         {
@@ -544,7 +494,7 @@ public sealed class BattlegroundCollectorService(
         return value == 0 ? fallback : value;
     }
 
-    internal static long ReadLong(JsonElement parent, string propertyName)
+    private static long ReadLong(JsonElement parent, string propertyName)
     {
         if (!parent.TryGetProperty(propertyName, out var property))
         {
@@ -574,7 +524,7 @@ public sealed class BattlegroundCollectorService(
         return value == 0 ? fallback : value;
     }
 
-    internal static string ReadString(JsonElement parent, string propertyName, string fallback = "")
+    private static string ReadString(JsonElement parent, string propertyName, string fallback = "")
     {
         if (
             !parent.TryGetProperty(propertyName, out var property)
@@ -588,7 +538,7 @@ public sealed class BattlegroundCollectorService(
         return string.IsNullOrWhiteSpace(value) ? fallback : value.Trim();
     }
 
-    internal static bool ReadBoolean(JsonElement parent, string propertyName)
+    private static bool ReadBoolean(JsonElement parent, string propertyName)
     {
         if (!parent.TryGetProperty(propertyName, out var property))
         {
@@ -753,16 +703,8 @@ public sealed record BattlegroundCollectionResult(
     int NewGuildCount,
     string OutputPath,
     string RatedOutputPath,
-    IReadOnlyList<RatedArenaBracketResult> RatedArenaBrackets,
     string StatePath,
     string StopReason
-);
-
-public sealed record RatedArenaBracketResult(
-    string Bracket,
-    int NewGameCount,
-    int TotalGameCount,
-    string Path
 );
 
 internal sealed record BattlegroundFetchResult(
