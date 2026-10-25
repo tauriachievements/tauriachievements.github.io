@@ -9,7 +9,8 @@
       MythicPlusNames  MythicPlusGuildAndCharScan -> new guilds, guildless characters from M+ runs
       RaidLogNames     RaidLogGuildAndCharScan  -> new guilds, guildless characters from raid kills
       RealmFirst       RealmFirstAchievements   -> valid-realm-first-characters.txt
-      Battlegrounds    BattlegroundCollector    -> battlegrounds, rated 2v2 and 3v3 arena games, new guilds, guildless characters
+      Battlegrounds    BattlegroundCollector    -> battlegrounds, rated battlegrounds, new guilds, guildless characters
+      ArenaLadder      ArenaLadderExporter      -> the rated 2v2 and 3v3 arena ladders (the /arena page)
       GuildCharacters  GuildCharacterExporter   -> GuildCharacters.txt (retries and prunes dead guilds)
       Ladder           AchievementLadder        -> Players.csv and the rare exports
       MissingPlayers   MissingPlayerFinder      -> backfills skipped characters in rounds
@@ -27,7 +28,7 @@
     .\Run-DailyUpdate.ps1 -NoPush             # commit locally, push yourself
 #>
 param(
-    [ValidateSet('MythicPlus', 'RaidLogs', 'MythicPlusNames', 'RaidLogNames', 'RealmFirst', 'Battlegrounds', 'GuildCharacters', 'Ladder', 'MissingPlayers', 'Publish')]
+    [ValidateSet('MythicPlus', 'RaidLogs', 'MythicPlusNames', 'RaidLogNames', 'RealmFirst', 'Battlegrounds', 'ArenaLadder', 'GuildCharacters', 'Ladder', 'MissingPlayers', 'Publish')]
     [string]$From = 'MythicPlus',
 
     [switch]$NoPush,
@@ -53,6 +54,7 @@ $steps = @(
     @{ Name = 'RaidLogNames'; Project = 'RaidLogGuildAndCharScan' },
     @{ Name = 'RealmFirst'; Project = 'RealmFirstAchievements' },
     @{ Name = 'Battlegrounds'; Project = 'BattlegroundCollector' },
+    @{ Name = 'ArenaLadder'; Project = 'ArenaLadderExporter' },
     @{ Name = 'GuildCharacters'; Project = 'GuildCharacterExporter' },
     @{ Name = 'Ladder'; Project = 'AchievementLadder' },
     @{ Name = 'MissingPlayers'; Project = 'MissingPlayerFinder' }
@@ -68,8 +70,8 @@ $publishPaths = @(
     'spa/src/battleground-collector-state.json',
     'spa/src/battlegrounds.json',
     'spa/src/rated-battlegrounds.json',
-    'spa/src/rated-2v2-arena-games.json',
-    'spa/src/rated-3v3-arena-games.json',
+    'spa/src/arena-ladder-2v2.json',
+    'spa/src/arena-ladder-3v3.json',
     'spa/src/mythic-plus-data',
     'spa/src/raid-log-data',
     'api/AchievementLadder/Data/Guilds/tauri-guilds.txt',

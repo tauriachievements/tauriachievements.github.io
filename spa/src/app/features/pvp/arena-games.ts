@@ -1,3 +1,5 @@
+import { specById } from '../../game/wow-specs';
+
 export type ArenaBracket = '2v2' | '3v3';
 export const ARENA_BRACKETS: readonly ArenaBracket[] = ['2v2', '3v3'];
 
@@ -5,8 +7,8 @@ export function parseArenaBracket(value: string | null): ArenaBracket {
   return ARENA_BRACKETS.find(bracket => bracket === value) ?? '2v2';
 }
 
-export function getArenaGamesFile(bracket: ArenaBracket): string {
-  return `rated-${bracket}-arena-games.json`;
+export function getArenaLadderFile(bracket: ArenaBracket): string {
+  return `arena-ladder-${bracket}.json`;
 }
 
 export interface ArenaPlayer {
@@ -14,14 +16,42 @@ export interface ArenaPlayer {
   realm: string;
   name: string;
   class: number;
+  race: number;
+  gender: number;
+  faction: number;
+  guild: string;
+  spec: number;
   games: number;
   wins: number;
-  losses: number;
+  weekGames: number;
+  weekWins: number;
   rating: number;
+  peakRating: number;
+  weekPeakRating: number;
+}
+
+export interface ArenaLadderFile {
+  version: number;
+  bracket: ArenaBracket;
+  seasonStart: string;
+  generatedAt: string;
+  players: ReadonlyArray<ArenaPlayer>;
+}
+
+export interface ArenaSpec {
+  readonly name: string;
+  readonly icon: string;
 }
 
 export interface ArenaPlayerRow extends ArenaPlayer {
+  readonly losses: number;
   readonly winRate: number;
+  readonly lastSpec: ArenaSpec | undefined;
+}
+
+export function getArenaSpec(player: Pick<ArenaPlayer, 'class' | 'spec'>): ArenaSpec | undefined {
+  const spec = specById(player.spec);
+  return spec?.classId === player.class && spec.icon ? { name: spec.spec, icon: spec.icon } : undefined;
 }
 
 export type ArenaSortKey = 'games' | 'wins' | 'losses' | 'winRate' | 'rating';
@@ -91,7 +121,12 @@ export function getTitle(rating: number, cutoffs: readonly TitleCutoff[]): Title
 export function toArenaRows(players: readonly ArenaPlayer[], minGames: number): ArenaPlayerRow[] {
   return players
     .filter(player => player.games >= minGames)
-    .map(player => ({ ...player, winRate: player.wins / player.games }));
+    .map(player => ({
+      ...player,
+      losses: player.games - player.wins,
+      winRate: player.wins / player.games,
+      lastSpec: getArenaSpec(player)
+    }));
 }
 
 export function sortArenaRows(

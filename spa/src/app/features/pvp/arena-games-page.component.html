@@ -18,8 +18,8 @@
       @if (dataset(); as data) {
         <p class="intro">
           The season's active players: {{ minGames }}+ rated {{ bracket() }} games since
-          {{ data.seasonStart | date: 'd MMM y' : '+0200' }} on Tauri, Evermoon and WoD. Rating is the
-          personal rating after a player's latest game.
+          {{ data.seasonStart | date: 'd MMM y' : '+0200' }} on Tauri, Evermoon and WoD, read from the
+          server's arena ladder. Rating is each player's current personal rating.
         </p>
       }
 
@@ -34,8 +34,8 @@
             <dd>{{ eligibleCount() | number }}</dd>
           </div>
           <div>
-            <dt>Games counted</dt>
-            <dd>{{ data.matchCount | number }}</dd>
+            <dt>On the ladder</dt>
+            <dd>{{ data.players.length | number }}</dd>
           </div>
         </dl>
       }
@@ -170,13 +170,25 @@
               <tr>
                 <td class="rank">{{ index + 1 }}</td>
                 <td class="character">
-                  <a
-                    [href]="getArmoryUrl(player.name, player.realm)"
-                    [style.color]="getPlayerClassColor(player)"
-                    target="_blank"
-                    rel="noopener noreferrer">
-                    {{ player.name }}
-                  </a>
+                  <span class="character-line">
+                    @if (player.lastSpec; as spec) {
+                      <img
+                        class="spec-icon"
+                        [src]="spec.icon"
+                        [alt]="spec.name"
+                        [attr.title]="spec.name"
+                        width="18"
+                        height="18"
+                        loading="lazy" />
+                    }
+                    <a
+                      [href]="getArmoryUrl(player.name, player.realm)"
+                      [style.color]="getPlayerClassColor(player)"
+                      target="_blank"
+                      rel="noopener noreferrer">
+                      {{ player.name }}
+                    </a>
+                  </span>
                   <span class="realm-inline">{{ player.realm }}</span>
                 </td>
                 <td class="realm">{{ player.realm }}</td>

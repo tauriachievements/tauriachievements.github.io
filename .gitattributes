@@ -2,3 +2,5 @@
 spa/src/mythic-plus-data/** text eol=lf
 # RaidLogExporter writes LF as well.
 spa/src/raid-log-data/** text eol=lf
+# ArenaLadderExporter writes LF as well.
+spa/src/arena-ladder-*.json text eol=lf

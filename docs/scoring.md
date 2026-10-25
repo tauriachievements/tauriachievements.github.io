@@ -331,6 +331,9 @@ explains it together.
   go beyond the better titles' gets no place of its own.
 - **A place is a rating, not a player**: everyone on the same rating shares one place.
 - 2v2 has no Season Gladiator, but its table keeps the row so both brackets' tables match.
-- The season start is `RatedArenaGameCounter.SeasonStart` (2026-09-16). Changing it discards
-  the saved counts.
+- Games, wins and rating are the server's own, from the arena ladder
+  ([tauri-api.md](tauri-api.md#arena-ladder-arena-ladder)); losses are games minus wins.
+- The season start is `ArenaSeason.Start` in `api/ArenaLadderExporter` (2026-09-16). Edit it
+  for a new season, so the first export doesn't compare its games with the old season's file
+  ([data-pipeline.md](data-pipeline.md#publishing-safety)).
 - **Tests:** `arena-games.spec.ts`.

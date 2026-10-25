@@ -20,7 +20,7 @@ response first.
 - Methods in use: `character-sheet`, `character-achievements`, `character-itemappearances`,
   `character-artifact`, `character-reputation`, `character-minimal-data`, `guild-info`,
   `achievement-firsts`, `challenge-index`, `challenge-leaderboard`, `raid-rank-encounter`,
-  `raid-log`, `pvp-match`.
+  `raid-log`, `pvp-match`, `arena-ladder`.
 
 ## Errors
 
@@ -117,9 +117,33 @@ Tooltip quirks, observed 2026-10-22 over the 603 talent spells. The exporter cle
   its recharge. Disengage, Ranger's Net and Hungering Rune Weapon show "1 sec cooldown".
 - A self-cast spell shows "Unlimited range", and a passive talent "Instant".
 
+## Arena ladder (`arena-ladder`)
+
+Code: `ArenaLadderExporter` (`ArenaLadderParser`).
+
+- `params`: a realm `r` and the team size `ts`, 2 or 3. Without `ts` the API answers
+  errorcode 1, "invalid request". Observed 2026-10-25: `ts` 5 returns an empty ladder.
+- **One ladder for all three realms.** Asking Evermoon, Tauri or WoD returns the same list,
+  holding every realm's players (`realmName`, `RealmId` 9, 11 or 12). The exporter asks
+  Evermoon. Observed 2026-10-25.
+- One response holds the whole ladder, sorted by `personal_rating`: there is no paging
+  (`resultcountperpage` is 0). On 2026-10-25 that was 773 players in 2v2 and 162 in 3v3.
+- Each entry has `Guid`, `realmName`, `character-minimal-data` (name, class, race, gender,
+  guild, faction), `played_season` and `wons_season`, `played_week` and `wons_week`,
+  `personal_rating`, `rating_best_season`, `rating_best_weekly`, `lastspecid` (0 for a few) and
+  `Slot` (0 = 2v2, 1 = 3v3, as the response's `laddertype` says too).
+- `prev_personal_rating` is always 0, so the ladder alone can't show rating movement.
+  Observed 2026-10-25.
+- The ladder keeps a character's season through a transfer or restore that gives it a new
+  GUID: the new GUID carries the whole record. Observed 2026-10-25 for four characters whose
+  matches were split across GUIDs.
+- Only characters with a rating are listed. Observed 2026-10-25: of the 1,204 characters the
+  2v2 match data had seen, the 436 on 0 rating were missing (all under 50 games), and so were
+  two with a rating, probably deleted (not checked).
+
 ## PvP matches (`pvp-match`)
 
-Code: `BattlegroundCollector`, `RatedArenaGameCounter`.
+Code: `BattlegroundCollector`. The Arena page reads the ladder above, not these matches.
 
 - Match ids are shared by all three realms: the same id returns the same match whatever `r`
   is.
@@ -131,4 +155,4 @@ Code: `BattlegroundCollector`, `RatedArenaGameCounter`.
   rating is the latest game's rating plus its `personal_rating_change`. Ids are assigned when
   a match ends, so `starttime` isn't in id order.
 - Observed 2026-10-17: the armory's `character-sheet` arena data (`characterArenaTeamInfo`)
-  is all zeros. Match data is the only rating source.
+  is all zeros. Arena ratings come from `arena-ladder`.

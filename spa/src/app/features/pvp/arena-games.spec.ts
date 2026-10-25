@@ -3,7 +3,8 @@ import {
   ARENA_TITLES,
   ArenaPlayer,
   formatTitleShare,
-  getArenaGamesFile,
+  getArenaLadderFile,
+  getArenaSpec,
   getTitle,
   getTitleCutoffs,
   parseArenaBracket,
@@ -12,7 +13,24 @@ import {
 } from './arena-games';
 
 function player(name: string, wins: number, losses: number, rating: number): ArenaPlayer {
-  return { guid: 1, realm: 'Evermoon', name, class: 1, games: wins + losses, wins, losses, rating };
+  return {
+    guid: 1,
+    realm: 'Evermoon',
+    name,
+    class: 1,
+    race: 1,
+    gender: 0,
+    faction: 0,
+    guild: '',
+    spec: 71,
+    games: wins + losses,
+    wins,
+    weekGames: 0,
+    weekWins: 0,
+    rating,
+    peakRating: rating,
+    weekPeakRating: 0
+  };
 }
 
 describe('parseArenaBracket', () => {
@@ -24,19 +42,34 @@ describe('parseArenaBracket', () => {
   });
 
   it('names the data file of each bracket', () => {
-    expect(getArenaGamesFile('2v2')).toBe('rated-2v2-arena-games.json');
-    expect(getArenaGamesFile('3v3')).toBe('rated-3v3-arena-games.json');
+    expect(getArenaLadderFile('2v2')).toBe('arena-ladder-2v2.json');
+    expect(getArenaLadderFile('3v3')).toBe('arena-ladder-3v3.json');
+  });
+});
+
+describe('getArenaSpec', () => {
+  it('names the spec of the latest game with its icon', () => {
+    const spec = getArenaSpec({ class: 11, spec: 105 });
+
+    expect(spec?.name).toBe('Restoration');
+    expect(spec?.icon).toContain('spell_nature_healingtouch');
+  });
+
+  it('gives no spec when there is none or it belongs to another class', () => {
+    expect(getArenaSpec({ class: 11, spec: 0 })).toBeUndefined();
+    expect(getArenaSpec({ class: 4, spec: 105 })).toBeUndefined();
   });
 });
 
 describe('toArenaRows', () => {
-  it('keeps characters with at least the threshold of games and adds their win rate', () => {
+  it('keeps characters with at least the threshold of games and adds their losses and win rate', () => {
     const rows = toArenaRows(
       [player('FortyNine', 25, 24, 1500), player('Fifty', 25, 25, 1500), player('Sixty', 45, 15, 1800)],
       50
     );
 
-    expect(rows.map(row => [row.name, row.winRate])).toEqual([['Fifty', 0.5], ['Sixty', 0.75]]);
+    expect(rows.map(row => [row.name, row.losses, row.winRate])).toEqual([['Fifty', 25, 0.5], ['Sixty', 15, 0.75]]);
+    expect(rows[0].lastSpec?.name).toBe('Arms');
   });
 });
 

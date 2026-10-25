@@ -20,14 +20,16 @@ Tauri API ──► api/ console apps ──► spa/src/ data files ──► co
 |---|---|---|---|
 | `Players.csv`, `lastUpdated.txt`, `RareAchievements.json` | `AchievementLadder`, `MissingPlayerFinder` | `sync data` | `prepare-app.js`, the ladder pages |
 | `RareItems.json` | `AchievementLadder` | `sync data` | Rare Items page |
-| `battlegrounds.json`, `battleground-collector-state.json`, `rated-battlegrounds.json`, `rated-2v2-arena-games.json`, `rated-3v3-arena-games.json` | `BattlegroundCollector` | `sync data` | Battleground, Rated Battleground and Arena pages |
+| `battlegrounds.json`, `battleground-collector-state.json`, `rated-battlegrounds.json` | `BattlegroundCollector` | `sync data` | Battleground and Rated Battleground pages |
+| `arena-ladder-2v2.json`, `arena-ladder-3v3.json` | `ArenaLadderExporter` | `sync data` | Arena page |
 | `mythic-plus-data/` | `MythicPlusExporter` | `sync data`, or `sync mythic plus data` from `Run-MythicPlus.cmd` | `/mythic-plus/*` |
 | `raid-log-data/` | `RaidLogExporter` | `sync data`, or `sync raid logs data` from `Run-RaidLogs.cmd` | `/raid-logs/*` |
 | `guild-analysis/<key>.json` | `Guildkukker` through `api/guild-analysis.cmd` | `sync guilds statistics` | the hidden guild pages |
 | `EmeraldNightmare.json`, `RealmFirstAchievements.json`, `ap-chest-looters.json` | edited by hand | `chore:` / `feat:` | Race to Emerald Nightmare, Realm First History, Hall of Fame |
 
-The scan inputs live under `api/AchievementLadder/Data/`. `BattlegroundCollector` and the two
-`*GuildAndCharScan` jobs append new guilds and guildless characters to the realm lists;
+The scan inputs live under `api/AchievementLadder/Data/`. `BattlegroundCollector` (from the
+members of every match it reads, arenas included) and the two `*GuildAndCharScan` jobs append
+new guilds and guildless characters to the realm lists;
 `GuildCharacterExporter` removes guilds that no longer exist; `RealmFirstAchievements` rewrites
 `valid-realm-first-characters.txt`. `sync data` commits these lists too. One file there is kept by
 hand: `invalid-raid-logs.txt`, the raid kills that don't count ([below](#invalid-raid-logs)).
@@ -43,10 +45,11 @@ steps in order. The step names are the values `-From` accepts.
 4. `RaidLogNames`: RaidLogGuildAndCharScan
 5. `RealmFirst`: RealmFirstAchievements
 6. `Battlegrounds`: BattlegroundCollector
-7. `GuildCharacters`: GuildCharacterExporter
-8. `Ladder`: AchievementLadder
-9. `MissingPlayers`: MissingPlayerFinder
-10. `Publish`: one `sync data` commit of the paths in `$publishPaths`, then a push
+7. `ArenaLadder`: ArenaLadderExporter
+8. `GuildCharacters`: GuildCharacterExporter
+9. `Ladder`: AchievementLadder
+10. `MissingPlayers`: MissingPlayerFinder
+11. `Publish`: one `sync data` commit of the paths in `$publishPaths`, then a push
 
 If every step succeeded and `-NoPush` wasn't given, the `.cmd` then calls
 `api/guild-analysis.cmd`, which scans every guild page and makes its own
@@ -70,6 +73,11 @@ On top of that:
 - MythicPlusExporter and RaidLogExporter refuse to write when the run or kill count shrinks by
   more than 2%. Pass `--allow-shrink` when the drop is real, such as a new season.
 - MythicPlusExporter writes nothing unless it read every leaderboard.
+- ArenaLadderExporter writes nothing unless it read both brackets' ladders. It refuses to
+  write when a bracket's games played (the season games of everyone listed, summed) fall by
+  more than 2% against the file of the same season (`seasonStart`). A deleted character takes
+  their games off the ladder, so a big one can trip it; pass `--allow-shrink` when the drop is
+  real.
 - GuildCharacterExporter removes guilds the API reports as not found (error code 13), but no
   more than 5% of all guilds per run.
 - RaidLogExporter is incremental: it re-reads its own boss files and fetches only new logs.
@@ -179,6 +187,26 @@ with the new rules. The site decodes the file with `decodeTalentTooltips` (`raid
 loads it through `RaidLogsDataService.talentTooltips()` once a page's kills are in, so it never
 holds up the page.
 
+## Arena ladder files
+
+ArenaLadderExporter writes `arena-ladder-2v2.json` and `arena-ladder-3v3.json` for `/arena`,
+which reads them through `arena-games.ts`. Each file is
+`{ version, bracket, seasonStart, generatedAt, players }`, one player per line, best rating
+first (then most games, name, realm and guid). A player is
+`{ guid, realm, name, class, race, gender, faction, guild, spec, games, wins, weekGames, weekWins, rating, peakRating, weekPeakRating }`,
+taken straight from the ladder ([tauri-api.md](tauri-api.md#arena-ladder-arena-ladder)):
+
+- `spec` is the spec of the player's latest game, 0 when the ladder has none.
+- `rating` is the current personal rating and `peakRating` the season's best. The `week`
+  fields are this week's games, wins and best rating as the server counts them; the page
+  doesn't show them yet.
+- Losses and the win rate are worked out on the page.
+- `generatedAt` (UTC) is when the ladder was read, and the page header shows it.
+- `seasonStart` is `ArenaSeason.Start`.
+
+A ladder entry without a name, class, known realm or games is left out, and so is a second
+entry for the same realm and guid.
+
 ## What `prepare-app.js` builds
 
 `npm start` and `npm run build` run `spa/scripts/prepare-app.js` first (`prestart` /
@@ -257,6 +285,6 @@ tables, so they don't. The page code has its own guard for a code deploy
 - **Never hand-edit or hand-merge a generated data file.** After a format change, a merge
   conflicts with the daily data commits on `main`. Take `main`'s side and rerun the job.
 - Exporters write one entry per line (`JsonLineWriter`), so the daily git diffs stay small.
-- MythicPlusExporter and RaidLogExporter write LF. The root `.gitattributes` keeps their
-  folders LF on checkout, so `core.autocrlf` doesn't warn on every commit. A new exporter that
-  writes LF needs a line there too.
+- MythicPlusExporter, RaidLogExporter and ArenaLadderExporter write LF. The root
+  `.gitattributes` keeps their files LF on checkout, so `core.autocrlf` doesn't warn on every
+  commit. A new exporter that writes LF needs a line there too.

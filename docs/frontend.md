@@ -282,7 +282,7 @@ decision (ask first).
 
   ```ts
   constructor() {
-    setPageHeader(() => ({ lastEdited: this.lastEdited(), label: 'Latest game:' }));
+    setPageHeader(() => ({ lastEdited: this.lastEdited(), label: 'Latest match:' }));
   }
   ```
 

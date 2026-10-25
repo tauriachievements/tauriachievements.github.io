@@ -101,7 +101,7 @@ export const VISUAL_PAGES: readonly VisualPage[] = [
   { name: 'state-error-raid-logs-character', path: '/raid-logs/character/evermoon/Gankuh?difficulty=mythic', fail: ['-mythic\\.json'] },
   { name: 'state-loading-raid-logs-talents-rosters', path: '/raid-logs/talents', hold: ['-mythic\\.json'] },
   { name: 'state-error-raid-log', path: '/raid-logs/log/tauri/1684762', fail: ['raid-log-data/'] },
-  { name: 'state-error-arena', path: '/arena', fail: ['arena-games\\.json'] },
+  { name: 'state-error-arena', path: '/arena', fail: ['arena-ladder-2v2\\.json'] },
   { name: 'state-error-ladder', path: '/', fail: ['players\\.(head\\.)?snapshot\\.json'] }
 ];
 
