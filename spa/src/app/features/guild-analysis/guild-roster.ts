@@ -1,4 +1,5 @@
 import { CLASS_NAMES } from '../../game/wow';
+import { specFor } from '../../game/wow-specs';
 import { GuildAnalysisLegendary, GuildAnalysisPlayer, GuildAnalysisRank } from './guild-analysis';
 
 export type CombatRole = 'Tank' | 'Heal' | 'Ranged' | 'Melee';
@@ -157,44 +158,14 @@ export function rosterRows(
 }
 
 export function combatRole(player: GuildAnalysisPlayer): CombatRole | undefined {
-  const specialization = player.specialization?.trim();
-  if (!specialization) {
-    return undefined;
-  }
-
-  switch (player.class) {
-    case 1:
-      return specialization === 'Protection' ? 'Tank' : 'Melee';
-    case 2:
-      return specialization === 'Protection' ? 'Tank'
-        : specialization === 'Holy' ? 'Heal'
-        : 'Melee';
-    case 3:
-      return specialization === 'Survival' ? 'Melee' : 'Ranged';
-    case 4:
-      return 'Melee';
-    case 5:
-      return specialization === 'Shadow' ? 'Ranged' : 'Heal';
-    case 6:
-      return specialization === 'Blood' ? 'Tank' : 'Melee';
-    case 7:
-      return specialization === 'Restoration' ? 'Heal'
-        : specialization === 'Elemental' ? 'Ranged'
-        : 'Melee';
-    case 8:
-    case 9:
-      return 'Ranged';
-    case 10:
-      return specialization === 'Brewmaster' ? 'Tank'
-        : specialization === 'Mistweaver' ? 'Heal'
-        : 'Melee';
-    case 11:
-      return specialization === 'Guardian' ? 'Tank'
-        : specialization === 'Restoration' ? 'Heal'
-        : specialization === 'Balance' ? 'Ranged'
-        : 'Melee';
-    case 12:
-      return specialization === 'Vengeance' ? 'Tank' : 'Melee';
+  const spec = specFor(player.class, player.specialization?.trim() ?? '');
+  switch (spec?.role) {
+    case 'tank':
+      return 'Tank';
+    case 'healer':
+      return 'Heal';
+    case 'dps':
+      return spec.range === 'ranged' ? 'Ranged' : 'Melee';
     default:
       return undefined;
   }

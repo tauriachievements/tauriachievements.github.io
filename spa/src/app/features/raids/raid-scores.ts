@@ -1,6 +1,7 @@
 import { getClassColor } from '../../game/class-colors';
 import { compareSpecLists } from '../../shared/spec-charts/spec-popularity';
-import { CLASS_NAMES, raceFaction, realmSlug, Role } from '../../game/wow';
+import { CLASS_FILTER_OPTIONS, CLASS_NAMES, DamageRange, raceFaction, realmSlug, Role } from '../../game/wow';
+import { FilterDropdownOption } from '../../shared/filter-dropdown.types';
 import { LEGION_SPECS, LegionSpec } from '../../game/wow-specs';
 import { RaidBoss, RaidSpec, RaidCharacter, RaidMember, RaidKillDetails } from './raid-logs.types';
 import { characterKey, logKey } from './raid-logs';
@@ -12,6 +13,12 @@ export interface RankingFilter {
   specId?: number;
   realm?: string;
   role?: Role;
+  range?: DamageRange;
+}
+
+export interface ClassAndSpec {
+  classId?: number;
+  specId?: number;
 }
 
 export interface RankedPerformance {
@@ -29,8 +36,41 @@ export function countsFor(metric: RaidMetric, spec: RaidSpec | undefined): boole
   return metric === 'hps' ? spec.role === 'healer' : spec.role !== 'healer';
 }
 
-export function rankedSpecs(specs: ReadonlyMap<number, RaidSpec>, classId: number | undefined, metric: RaidMetric): RaidSpec[] {
-  return [...specs.values()].filter(spec => spec.classId === classId && countsFor(metric, spec));
+function ranks(spec: RaidSpec, metric: RaidMetric, range: DamageRange | undefined): boolean {
+  return countsFor(metric, spec) && (range === undefined || spec.range === range);
+}
+
+export function rankedSpecs(
+  specs: ReadonlyMap<number, RaidSpec>,
+  classId: number | undefined,
+  metric: RaidMetric,
+  range?: DamageRange
+): RaidSpec[] {
+  return [...specs.values()].filter(spec => spec.classId === classId && ranks(spec, metric, range));
+}
+
+export function rankedClassOptions(
+  specs: ReadonlyMap<number, RaidSpec>,
+  metric: RaidMetric,
+  range?: DamageRange
+): FilterDropdownOption[] {
+  const ranked = new Set([...specs.values()].filter(spec => ranks(spec, metric, range)).map(spec => spec.classId));
+  return CLASS_FILTER_OPTIONS.filter(option => typeof option.value !== 'number' || ranked.has(option.value));
+}
+
+export function fitClassAndSpec(
+  specs: ReadonlyMap<number, RaidSpec>,
+  picked: ClassAndSpec,
+  metric: RaidMetric,
+  range?: DamageRange
+): ClassAndSpec {
+  const ranked = [...specs.values()].filter(spec => ranks(spec, metric, range));
+  const classId = ranked.some(spec => spec.classId === picked.classId) ? picked.classId : undefined;
+  const classSpecs = ranked.filter(spec => spec.classId === classId);
+  const specId = classSpecs.some(spec => spec.id === picked.specId)
+    ? picked.specId
+    : classSpecs.length === 1 ? classSpecs[0].id : undefined;
+  return { classId, specId };
 }
 
 export function rankCharacters(
@@ -63,6 +103,7 @@ function matchesFilter(member: RaidMember, filter: RankingFilter): boolean {
   return (filter.classId === undefined || member.character.classId === filter.classId)
     && (filter.specId === undefined || member.spec?.id === filter.specId)
     && (filter.role === undefined || member.spec?.role === filter.role)
+    && (filter.range === undefined || member.spec?.range === filter.range)
     && (filter.realm === undefined || realmSlug(member.character.realm) === filter.realm);
 }
 

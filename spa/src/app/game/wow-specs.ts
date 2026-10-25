@@ -1,9 +1,10 @@
-import { Role } from './wow';
+import { DamageRange, Role } from './wow';
 
 export interface SpecDefinition {
   classId: number;
   spec: string;
   role: Role;
+  range?: DamageRange;
   icon?: string;
 }
 
@@ -14,41 +15,41 @@ export interface LegionSpec extends SpecDefinition {
 const specIcon = (name: string): string => `https://legion-static.tauri.hu/images/icons/large/${name}.png`;
 
 export const LEGION_SPECS: ReadonlyArray<LegionSpec> = [
-  { id: 71, classId: 1, spec: 'Arms', role: 'dps', icon: specIcon('ability_warrior_savageblow') },
-  { id: 72, classId: 1, spec: 'Fury', role: 'dps', icon: specIcon('ability_warrior_innerrage') },
+  { id: 71, classId: 1, spec: 'Arms', role: 'dps', range: 'melee', icon: specIcon('ability_warrior_savageblow') },
+  { id: 72, classId: 1, spec: 'Fury', role: 'dps', range: 'melee', icon: specIcon('ability_warrior_innerrage') },
   { id: 73, classId: 1, spec: 'Protection', role: 'tank', icon: specIcon('ability_warrior_defensivestance') },
   { id: 65, classId: 2, spec: 'Holy', role: 'healer', icon: specIcon('spell_holy_holybolt') },
   { id: 66, classId: 2, spec: 'Protection', role: 'tank', icon: specIcon('ability_paladin_shieldofthetemplar') },
-  { id: 70, classId: 2, spec: 'Retribution', role: 'dps', icon: specIcon('spell_holy_auraoflight') },
-  { id: 253, classId: 3, spec: 'Beast Mastery', role: 'dps', icon: specIcon('ability_hunter_bestialdiscipline') },
-  { id: 254, classId: 3, spec: 'Marksmanship', role: 'dps', icon: specIcon('ability_hunter_focusedaim') },
-  { id: 255, classId: 3, spec: 'Survival', role: 'dps', icon: specIcon('ability_hunter_camouflage') },
-  { id: 259, classId: 4, spec: 'Assassination', role: 'dps', icon: specIcon('ability_rogue_deadlybrew') },
-  { id: 260, classId: 4, spec: 'Outlaw', role: 'dps', icon: specIcon('inv_sword_30') },
-  { id: 261, classId: 4, spec: 'Subtlety', role: 'dps', icon: specIcon('ability_stealth') },
+  { id: 70, classId: 2, spec: 'Retribution', role: 'dps', range: 'melee', icon: specIcon('spell_holy_auraoflight') },
+  { id: 253, classId: 3, spec: 'Beast Mastery', role: 'dps', range: 'ranged', icon: specIcon('ability_hunter_bestialdiscipline') },
+  { id: 254, classId: 3, spec: 'Marksmanship', role: 'dps', range: 'ranged', icon: specIcon('ability_hunter_focusedaim') },
+  { id: 255, classId: 3, spec: 'Survival', role: 'dps', range: 'melee', icon: specIcon('ability_hunter_camouflage') },
+  { id: 259, classId: 4, spec: 'Assassination', role: 'dps', range: 'melee', icon: specIcon('ability_rogue_deadlybrew') },
+  { id: 260, classId: 4, spec: 'Outlaw', role: 'dps', range: 'melee', icon: specIcon('inv_sword_30') },
+  { id: 261, classId: 4, spec: 'Subtlety', role: 'dps', range: 'melee', icon: specIcon('ability_stealth') },
   { id: 256, classId: 5, spec: 'Discipline', role: 'healer', icon: specIcon('spell_holy_powerwordshield') },
   { id: 257, classId: 5, spec: 'Holy', role: 'healer', icon: specIcon('spell_holy_guardianspirit') },
-  { id: 258, classId: 5, spec: 'Shadow', role: 'dps', icon: specIcon('spell_shadow_shadowwordpain') },
+  { id: 258, classId: 5, spec: 'Shadow', role: 'dps', range: 'ranged', icon: specIcon('spell_shadow_shadowwordpain') },
   { id: 250, classId: 6, spec: 'Blood', role: 'tank', icon: specIcon('spell_deathknight_bloodpresence') },
-  { id: 251, classId: 6, spec: 'Frost', role: 'dps', icon: specIcon('spell_deathknight_frostpresence') },
-  { id: 252, classId: 6, spec: 'Unholy', role: 'dps', icon: specIcon('spell_deathknight_unholypresence') },
-  { id: 262, classId: 7, spec: 'Elemental', role: 'dps', icon: specIcon('spell_nature_lightning') },
-  { id: 263, classId: 7, spec: 'Enhancement', role: 'dps', icon: specIcon('spell_shaman_improvedstormstrike') },
+  { id: 251, classId: 6, spec: 'Frost', role: 'dps', range: 'melee', icon: specIcon('spell_deathknight_frostpresence') },
+  { id: 252, classId: 6, spec: 'Unholy', role: 'dps', range: 'melee', icon: specIcon('spell_deathknight_unholypresence') },
+  { id: 262, classId: 7, spec: 'Elemental', role: 'dps', range: 'ranged', icon: specIcon('spell_nature_lightning') },
+  { id: 263, classId: 7, spec: 'Enhancement', role: 'dps', range: 'melee', icon: specIcon('spell_shaman_improvedstormstrike') },
   { id: 264, classId: 7, spec: 'Restoration', role: 'healer', icon: specIcon('spell_nature_magicimmunity') },
-  { id: 62, classId: 8, spec: 'Arcane', role: 'dps', icon: specIcon('spell_holy_magicalsentry') },
-  { id: 63, classId: 8, spec: 'Fire', role: 'dps', icon: specIcon('spell_fire_firebolt02') },
-  { id: 64, classId: 8, spec: 'Frost', role: 'dps', icon: specIcon('spell_frost_frostbolt02') },
-  { id: 265, classId: 9, spec: 'Affliction', role: 'dps', icon: specIcon('spell_shadow_deathcoil') },
-  { id: 266, classId: 9, spec: 'Demonology', role: 'dps', icon: specIcon('spell_shadow_metamorphosis') },
-  { id: 267, classId: 9, spec: 'Destruction', role: 'dps', icon: specIcon('spell_shadow_rainoffire') },
+  { id: 62, classId: 8, spec: 'Arcane', role: 'dps', range: 'ranged', icon: specIcon('spell_holy_magicalsentry') },
+  { id: 63, classId: 8, spec: 'Fire', role: 'dps', range: 'ranged', icon: specIcon('spell_fire_firebolt02') },
+  { id: 64, classId: 8, spec: 'Frost', role: 'dps', range: 'ranged', icon: specIcon('spell_frost_frostbolt02') },
+  { id: 265, classId: 9, spec: 'Affliction', role: 'dps', range: 'ranged', icon: specIcon('spell_shadow_deathcoil') },
+  { id: 266, classId: 9, spec: 'Demonology', role: 'dps', range: 'ranged', icon: specIcon('spell_shadow_metamorphosis') },
+  { id: 267, classId: 9, spec: 'Destruction', role: 'dps', range: 'ranged', icon: specIcon('spell_shadow_rainoffire') },
   { id: 268, classId: 10, spec: 'Brewmaster', role: 'tank', icon: specIcon('spell_monk_brewmaster_spec') },
   { id: 270, classId: 10, spec: 'Mistweaver', role: 'healer', icon: specIcon('spell_monk_mistweaver_spec') },
-  { id: 269, classId: 10, spec: 'Windwalker', role: 'dps', icon: specIcon('spell_monk_windwalker_spec') },
-  { id: 102, classId: 11, spec: 'Balance', role: 'dps', icon: specIcon('spell_nature_starfall') },
-  { id: 103, classId: 11, spec: 'Feral', role: 'dps', icon: specIcon('ability_druid_catform') },
+  { id: 269, classId: 10, spec: 'Windwalker', role: 'dps', range: 'melee', icon: specIcon('spell_monk_windwalker_spec') },
+  { id: 102, classId: 11, spec: 'Balance', role: 'dps', range: 'ranged', icon: specIcon('spell_nature_starfall') },
+  { id: 103, classId: 11, spec: 'Feral', role: 'dps', range: 'melee', icon: specIcon('ability_druid_catform') },
   { id: 104, classId: 11, spec: 'Guardian', role: 'tank', icon: specIcon('ability_racial_bearform') },
   { id: 105, classId: 11, spec: 'Restoration', role: 'healer', icon: specIcon('spell_nature_healingtouch') },
-  { id: 577, classId: 12, spec: 'Havoc', role: 'dps', icon: specIcon('ability_demonhunter_specdps') },
+  { id: 577, classId: 12, spec: 'Havoc', role: 'dps', range: 'melee', icon: specIcon('ability_demonhunter_specdps') },
   { id: 581, classId: 12, spec: 'Vengeance', role: 'tank', icon: specIcon('ability_demonhunter_spectank') }
 ];
 

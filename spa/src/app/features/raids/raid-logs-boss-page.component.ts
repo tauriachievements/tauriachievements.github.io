@@ -32,26 +32,37 @@ import {
   RaidDifficulty,
   RaidKillDetails,
   RaidLogsIndex,
+  RaidSpec,
   RaidTalent,
   RaidTalentTable,
   RaidTalentTooltips
 } from './raid-logs.types';
-import { RaidMetric, RankedPerformance, rankCharacters, rankedSpecs } from './raid-scores';
+import { RaidMetric, RankedPerformance, fitClassAndSpec, rankCharacters, rankedClassOptions, rankedSpecs } from './raid-scores';
 import { characterKey, defaultDifficulty, logKey, memberTalents } from './raid-logs';
 import { fastestKills, latestKills } from './raid-progression';
 import { RaidLogsDataService } from './raid-logs-data.service';
-import { CLASS_FILTER_OPTIONS, REALMS, realmSlug } from '../../game/wow';
+import { DamageRange, REALMS, realmSlug } from '../../game/wow';
 import { injectReplaceUrl, parseInteger, parsePage } from '../../core/url-state';
 import { LoadStateComponent } from '../../shared/load-state.component';
 import { PagerComponent } from '../../shared/pager.component';
 import { pageCount, pageSlice } from '../../shared/pager';
 import { setPageHeader } from '../../core/page-header';
 
-type BossTab = 'dps' | 'hps' | 'fastest' | 'latest';
+type BossTab = 'dps' | 'ranged' | 'melee' | 'hps' | 'fastest' | 'latest';
 
-const TABS: ReadonlyArray<{ id: BossTab; label: string }> = [
-  { id: 'dps', label: 'Damage' },
-  { id: 'hps', label: 'Healing' },
+interface TabEntry {
+  id: BossTab;
+  label: string;
+  metric?: RaidMetric;
+  range?: DamageRange;
+  note?: string;
+}
+
+const TABS: ReadonlyArray<TabEntry> = [
+  { id: 'dps', label: 'Damage', metric: 'dps', note: 'Damage done over the length of the fight; healers are ranked under Healing.' },
+  { id: 'ranged', label: 'Ranged', metric: 'dps', range: 'ranged', note: 'Damage done over the length of the fight, by ranged damage specs only.' },
+  { id: 'melee', label: 'Melee', metric: 'dps', range: 'melee', note: 'Damage done over the length of the fight, by melee damage specs only; tanks are ranked under Damage.' },
+  { id: 'hps', label: 'Healing', metric: 'hps', note: 'Healing counts absorbs; only healers are ranked.' },
   { id: 'fastest', label: 'Fastest kills' },
   { id: 'latest', label: 'Latest kills' }
 ];
@@ -142,8 +153,10 @@ export class RaidLogsBossPageComponent {
       ?? difficulties.find(difficulty => difficulty.slug === slug);
   });
 
-  readonly metric = computed<RaidMetric>(() => this.tab() === 'hps' ? 'hps' : 'dps');
-  readonly isRanking = computed(() => this.tab() === 'dps' || this.tab() === 'hps');
+  readonly tabEntry = computed(() => TABS.find(entry => entry.id === this.tab()) ?? TABS[0]);
+  readonly metric = computed<RaidMetric>(() => this.tabEntry().metric ?? 'dps');
+  readonly range = computed(() => this.tabEntry().range);
+  readonly isRanking = computed(() => this.tabEntry().metric !== undefined);
 
   readonly rankings = computed<RankedPerformance[]>(() => {
     if (!this.isRanking()) {
@@ -153,7 +166,8 @@ export class RaidLogsBossPageComponent {
     const ranked = rankCharacters(this.kills(), this.metric(), {
       classId: this.classFilter(),
       specId: this.specFilter(),
-      realm: this.realmFilter()
+      realm: this.realmFilter(),
+      range: this.range()
     });
     const query = this.search();
     return query ? ranked.filter(entry => nameMatches(entry.member.character.name, query)) : ranked;
@@ -201,11 +215,12 @@ export class RaidLogsBossPageComponent {
     ];
   });
 
-  readonly classOptions = CLASS_FILTER_OPTIONS;
+  private readonly specs = computed<ReadonlyMap<number, RaidSpec>>(() => this.index()?.specs ?? new Map());
+
+  readonly classOptions = computed(() => rankedClassOptions(this.specs(), this.metric(), this.range()));
 
   readonly specOptions = computed<FilterDropdownOption[]>(() => {
-    const index = this.index();
-    const specs = index ? rankedSpecs(index.specs, this.classFilter(), this.metric()) : [];
+    const specs = rankedSpecs(this.specs(), this.classFilter(), this.metric(), this.range());
     return [{ value: undefined, label: 'All specs' }, ...specs.map(spec => ({ value: spec.id, label: spec.name, icon: spec.icon }))];
   });
 
@@ -275,6 +290,9 @@ export class RaidLogsBossPageComponent {
       .subscribe({
         next: index => {
           this.index.set(index);
+          if (this.isRanking()) {
+            this.fitFiltersToTab();
+          }
           if (!this.boss()) {
             this.loadError.set('There is no such boss in the raid.');
             this.isLoading.set(false);
@@ -299,16 +317,23 @@ export class RaidLogsBossPageComponent {
       return;
     }
     this.tab.set(tab);
-    if (this.specFilter() !== undefined && !this.specOptions().some(option => option.value === this.specFilter())) {
-      this.specFilter.set(undefined);
+    if (this.isRanking()) {
+      this.fitFiltersToTab();
     }
     this.page.set(1);
     this.writeUrl();
   }
 
+  private fitFiltersToTab(): void {
+    const fitted = fitClassAndSpec(this.specs(), { classId: this.classFilter(), specId: this.specFilter() }, this.metric(), this.range());
+    this.classFilter.set(fitted.classId);
+    this.specFilter.set(fitted.specId);
+  }
+
   setClassFilter(value: FilterDropdownValue): void {
     this.classFilter.set(typeof value === 'number' ? value : undefined);
     this.specFilter.set(undefined);
+    this.fitFiltersToTab();
     this.page.set(1);
     this.writeUrl();
   }

@@ -151,7 +151,7 @@ The query parameters each page reads:
 | `/mythic-plus/compare` | `players`: `Name-Realm,…`, at most four |
 | `/mythic-plus/character/:realm/:name` | `spec` |
 | `/mythic-plus/guild/:realm/:guild` | `period`, `dungeon`, `class`, `spec`, `role`, `character` |
-| every `/raid-logs` page | `difficulty`, plus: Guilds `faction`, `realm`; Statistics `view`, `role`; Talents `boss`, `role`, `class`, `spec`; Rankings `metric`, `class`, `spec`, `realm`, `q`, `page`; a boss `tab`, `class`, `spec`, `realm`, `q`, `page`; a character `metric`, `compare=class`, `spec` (with `compare=class`: a spec of the character's class the metric ranks), `class` (an earlier character with the name, by class id; [data-pipeline.md](data-pipeline.md#raid-log-files)) |
+| every `/raid-logs` page | `difficulty`, plus: Guilds `faction`, `realm`; Statistics `view`, `role`; Talents `boss`, `role`, `class`, `spec`; Rankings `metric`, `class`, `spec`, `realm`, `q`, `page`; a boss `tab` (`ranged`, `melee`, `hps`, `fastest`, `latest`; Damage is the default), `class`, `spec`, `realm`, `q`, `page`; a character `metric`, `compare=class`, `spec` (with `compare=class`: a spec of the character's class the metric ranks), `class` (an earlier character with the name, by class id; [data-pipeline.md](data-pipeline.md#raid-log-files)) |
 
 On the Mythic+ leaderboard and guild ladder, a `spec` counts only when it belongs to the
 `class` in the same URL. A `Name-Realm` value splits on its last hyphen: character names can't
@@ -225,7 +225,7 @@ decision (ask first).
 | `app-filter-dropdown` + `filter-dropdown.types.ts` | every dropdown filter. The page must list `FilterDropdownCoordinatorService` in its own `providers`, or it fails with NG0201. Pass `widthLabels` (every label it can ever show) to keep the trigger as wide as the longest one, so picking never cuts a name short or moves the toolbar; its container must then size to its content |
 | `wow.ts` | the game's tables: `CLASS_NAMES`, `CLASSES_BY_NAME` (A–Z), `RACE_NAMES` (the three Pandaren ids all read "Pandaren"), `raceFaction` (0 Alliance, 1 Horde, none for the neutral Pandaren), `REALMS`, `realmSlug` (a realm as it appears in URLs) and the `Realm` and `Role` types. Never copy one of them into a page |
 | `CLASS_FILTER_OPTIONS` (`wow.ts`) | a class dropdown's options: "All classes", then every class A–Z with its icon and colour. Filter it when a page offers fewer classes (the raid leaderboard on HPS) |
-| `wow-specs.ts` | every Legion spec in the game's order with its id, class, role and icon (`LEGION_SPECS`), and `specFor`, `specById`, `specIconFor`, `specRoleFor`. It's apart from `wow.ts` so the ladder, which loads up front, doesn't carry it |
+| `wow-specs.ts` | every Legion spec in the game's order with its id, class, role, icon and, for a damage spec, `range` (`melee` or `ranged`) (`LEGION_SPECS`), and `specFor`, `specById`, `specIconFor`, `specRoleFor`. It's apart from `wow.ts` so the ladder, which loads up front, doesn't carry it |
 | `app-mobile-filter-toggle` | folds a page's filters behind one button on phones |
 | `injectCompactViewport()` (`compact-viewport.ts`) | a signal that's true on phone-sized screens (`(max-width: 640px)`, or a wider query you pass) |
 | `appTapTooltip` | makes a hover tooltip open on tap on touch screens |

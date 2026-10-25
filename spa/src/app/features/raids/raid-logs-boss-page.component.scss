@@ -76,6 +76,12 @@ td a.icon:hover img { filter: brightness(1.25); }
 .realm { font-size: .78rem; }
 td a.log-link { color: $gold; font-size: .8rem; font-weight: 600; }
 
+@media (min-width: 641px) {
+  .filter-slot { width: 168px; }
+  .realm-slot { width: 116px; }
+  .search input { width: 160px; }
+}
+
 @media (max-width: 1100px) {
   .tablet-hidden { display: none; }
 }
@@ -90,6 +96,9 @@ td a.log-link { color: $gold; font-size: .8rem; font-weight: 600; }
   .boss-header app-raid-difficulty-switch { margin-left: 0; }
   .boss-portrait { width: 52px; height: 52px; }
   .boss-heading h1 { font-size: 1.25rem; }
+  .view-switch { display: grid; width: 100%; grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .view-switch button { padding-inline: 4px; }
+  .view-switch .kill-tab { grid-column: span 2; }
   .character-guild { @include truncate; color: #fff; font-size: .74rem; font-weight: 700; }
   .loadout { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 12px; padding-left: 28px; }
   .loadout > :last-child { margin-left: auto; }
