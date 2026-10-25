@@ -199,7 +199,9 @@ explains it together.
   measured against everyone.
 - A class or spec the tab doesn't rank (a Warrior on HPS) is cleared rather than leaving an
   empty list. A class with one spec the tab ranks gets that spec picked: on HPS that's every
-  healing class but the Priest. No class has a single DPS spec.
+  healing class but the Priest. No class has a single DPS spec. The class dropdown lists only
+  the classes the tab ranks. `fitClassAndSpec` and `rankedClassOptions` do this, here and on a
+  boss's ranking tabs.
 - **Changes since the last scan:** the same ranking (metric, spec, class, realm) worked out
   again without the kills that scan didn't have (`newLogs`), compared with today's. A new best
   on a boss lowers everyone else's share of it, so a score can drop. That's why the table
@@ -217,6 +219,25 @@ explains it together.
   the other metric doesn't rank is dropped on switching. The score tile always compares with
   all players.
 - **Tests:** `raid-scores.spec.ts`, `raid-logs-character-page.component.spec.ts`.
+
+## Raid boss rankings
+
+- **Code:** `rankCharacters`, `rankedSpecs`, `rankedClassOptions` and `fitClassAndSpec` in
+  `spa/src/app/features/raids/raid-scores.ts`; each damage spec's `range` in
+  `spa/src/app/game/wow-specs.ts`.
+- A boss's ranking tabs list each character's best counted kill of the boss on the difficulty;
+  the earlier kill wins a tie. Damage ranks every spec but the healers, tanks included, on DPS.
+  Healing ranks the healers on HPS.
+- **Ranged and Melee** rank damage specs only, on DPS, split by the spec's `range`. Ranged:
+  Beast Mastery and Marksmanship Hunters, Shadow Priests, Elemental Shamans, Mages, Warlocks
+  and Balance Druids. Every other damage spec is melee, Survival Hunters included. Tanks are in
+  neither, only under Damage. A character who played a ranged and a melee spec shows on both
+  tabs, each time with their best kill as that kind of spec.
+- Filters (class, spec, realm) re-rank the rest; the search hides rows without renumbering
+  them. Class and spec fit the tab as on the leaderboard (above): Ranged lists no Rogue, and a
+  Shaman on Ranged gets Elemental picked.
+- The guild pages' Melee and Ranged roles (`combatRole`) read the same `range`.
+- **Tests:** `raid-scores.spec.ts`, `wow-specs.spec.ts`, `guild-roster.spec.ts`.
 
 ## Raid guild progression and kill speed
 

@@ -1,4 +1,4 @@
-import { Role } from '../../game/wow';
+import { DamageRange, Role } from '../../game/wow';
 
 export interface RaidDifficultyEntry {
   id: number;
@@ -154,6 +154,7 @@ export interface RaidSpec {
   classId: number;
   name: string;
   role: Role;
+  range?: DamageRange;
   icon?: string;
 }
 

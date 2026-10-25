@@ -23,17 +23,18 @@ import {
   RaidMetric,
   RankedScore,
   ScoreChange,
-  countsFor,
+  fitClassAndSpec,
   killsBefore,
   rankScores,
+  rankedClassOptions,
   rankedSpecs,
   scoreChanges,
   scoreCharacters
 } from './raid-scores';
-import { RaidBoss, RaidCharacter, RaidDifficulty, RaidKillDetails, RaidLogsIndex } from './raid-logs.types';
+import { RaidBoss, RaidCharacter, RaidDifficulty, RaidKillDetails, RaidLogsIndex, RaidSpec } from './raid-logs.types';
 import { bossesInKillOrder, characterKey, defaultDifficulty } from './raid-logs';
 import { RaidLogsDataService } from './raid-logs-data.service';
-import { CLASS_FILTER_OPTIONS, CLASS_NAMES, REALMS, realmSlug } from '../../game/wow';
+import { CLASS_NAMES, REALMS, realmSlug } from '../../game/wow';
 import { injectReplaceUrl, parseInteger, parsePage } from '../../core/url-state';
 import { LoadStateComponent } from '../../shared/load-state.component';
 import { PagerComponent } from '../../shared/pager.component';
@@ -179,13 +180,9 @@ export class RaidLogsLeaderboardPageComponent {
   readonly currentPage = computed(() => Math.min(this.page(), this.pages()));
   readonly shownRankings = computed(() => pageSlice(this.rankings(), this.currentPage(), RAID_PAGE_SIZE));
 
-  readonly classOptions = computed<FilterDropdownOption[]>(() => {
-    const metric = this.metric();
-    const ranked = new Set([...(this.index()?.specs.values() ?? [])]
-      .filter(spec => countsFor(metric, spec))
-      .map(spec => spec.classId));
-    return CLASS_FILTER_OPTIONS.filter(option => typeof option.value !== 'number' || ranked.has(option.value));
-  });
+  private readonly specs = computed<ReadonlyMap<number, RaidSpec>>(() => this.index()?.specs ?? new Map());
+
+  readonly classOptions = computed(() => rankedClassOptions(this.specs(), this.metric()));
 
   readonly specOptions = computed<FilterDropdownOption[]>(() => {
     const index = this.index();
@@ -254,24 +251,15 @@ export class RaidLogsLeaderboardPageComponent {
   }
 
   private fitFiltersToTab(): void {
-    if (this.classFilter() !== undefined && !this.classOptions().some(option => option.value === this.classFilter())) {
-      this.classFilter.set(undefined);
-      this.specFilter.set(undefined);
-    }
-    if (this.specFilter() !== undefined && !this.specOptions().some(option => option.value === this.specFilter())) {
-      this.specFilter.set(undefined);
-    }
-    this.specFilter.update(spec => spec ?? this.onlyRankedSpec());
-  }
-
-  private onlyRankedSpec(): number | undefined {
-    const specs = this.specOptions().filter(option => option.value !== undefined);
-    return specs.length === 1 ? specs[0].value as number : undefined;
+    const fitted = fitClassAndSpec(this.specs(), { classId: this.classFilter(), specId: this.specFilter() }, this.metric());
+    this.classFilter.set(fitted.classId);
+    this.specFilter.set(fitted.specId);
   }
 
   setClassFilter(value: FilterDropdownValue): void {
     this.classFilter.set(typeof value === 'number' ? value : undefined);
-    this.specFilter.set(this.onlyRankedSpec());
+    this.specFilter.set(undefined);
+    this.fitFiltersToTab();
     this.page.set(1);
     this.writeUrl();
   }

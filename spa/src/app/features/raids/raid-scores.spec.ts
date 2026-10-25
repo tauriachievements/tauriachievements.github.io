@@ -2,11 +2,13 @@ import { describe, expect, it } from 'vitest';
 import {
   MAX_SCORE,
   bossStanding,
+  fitClassAndSpec,
   formatScoreTick,
   killsBefore,
   performanceQuality,
   rankCharacters,
   rankScores,
+  rankedClassOptions,
   rankedSpecs,
   scoreChanges,
   scoreCharacters,
@@ -20,6 +22,7 @@ import {
 import { RaidBoss, RaidCharacter, RaidKillDetails, RaidSpec } from './raid-logs.types';
 import { characterKey, logKey } from './raid-logs';
 import { index, mythic, kills } from './raid-logs.fixture';
+import { LEGION_SPECS } from '../../game/wow-specs';
 
 describe('rankCharacters', () => {
   it("ranks each character's best kill, healers only by healing", () => {
@@ -41,6 +44,14 @@ describe('rankCharacters', () => {
     expect(rankCharacters(kills, 'dps', { realm: 'tauri' }).map(entry => entry.member.character.name)).toEqual(['Kael']);
     expect(rankCharacters(kills, 'dps', { classId: 2 }).map(entry => entry.member.character.name)).toEqual(['Light']);
   });
+
+  it('ranks only ranged or melee damage specs by range, so a tank is in neither', () => {
+    expect(rankCharacters(kills, 'dps', { range: 'ranged' }).map(entry => [entry.rank, entry.member.character.name])).toEqual([
+      [1, 'Kael'],
+      [2, 'Sósa']
+    ]);
+    expect(rankCharacters(kills, 'dps', { range: 'melee' })).toEqual([]);
+  });
 });
 
 describe('rankedSpecs', () => {
@@ -50,6 +61,57 @@ describe('rankedSpecs', () => {
     expect(rankedSpecs(index.specs, 2, 'hps').map(spec => spec.name)).toEqual(['Holy']);
     expect(rankedSpecs(index.specs, 8, 'hps')).toEqual([]);
     expect(rankedSpecs(index.specs, undefined, 'dps')).toEqual([]);
+  });
+
+  it('keeps only the specs of the range when one is given', () => {
+    expect(rankedSpecs(index.specs, 8, 'dps', 'ranged').map(spec => spec.name)).toEqual(['Fire', 'Frost']);
+    expect(rankedSpecs(index.specs, 8, 'dps', 'melee')).toEqual([]);
+    expect(rankedSpecs(index.specs, 2, 'dps', 'melee')).toEqual([]);
+  });
+});
+
+const allSpecs: ReadonlyMap<number, RaidSpec> = new Map(LEGION_SPECS.map(spec => [spec.id, {
+  id: spec.id,
+  classId: spec.classId,
+  name: spec.spec,
+  role: spec.role,
+  range: spec.range
+}]));
+
+describe('rankedClassOptions', () => {
+  const labels = (options: ReturnType<typeof rankedClassOptions>) => options.map(option => option.label);
+
+  it('lists the classes with a spec the metric and range rank, after "All classes"', () => {
+    expect(labels(rankedClassOptions(index.specs, 'dps'))).toEqual(['All classes', 'Mage', 'Paladin']);
+    expect(labels(rankedClassOptions(index.specs, 'hps'))).toEqual(['All classes', 'Paladin']);
+    expect(labels(rankedClassOptions(allSpecs, 'dps', 'ranged'))).toEqual([
+      'All classes', 'Druid', 'Hunter', 'Mage', 'Priest', 'Shaman', 'Warlock'
+    ]);
+    expect(labels(rankedClassOptions(allSpecs, 'dps', 'melee'))).toEqual([
+      'All classes', 'Death Knight', 'Demon Hunter', 'Druid', 'Hunter', 'Monk', 'Paladin', 'Rogue', 'Shaman', 'Warrior'
+    ]);
+  });
+});
+
+describe('fitClassAndSpec', () => {
+  it('keeps a class and spec the view ranks', () => {
+    expect(fitClassAndSpec(allSpecs, { classId: 3, specId: 253 }, 'dps', 'ranged')).toEqual({ classId: 3, specId: 253 });
+    expect(fitClassAndSpec(allSpecs, { classId: 5 }, 'hps')).toEqual({ classId: 5, specId: undefined });
+  });
+
+  it('clears a class the view does not rank, and its spec', () => {
+    expect(fitClassAndSpec(allSpecs, { classId: 4, specId: 259 }, 'dps', 'ranged')).toEqual({ classId: undefined, specId: undefined });
+    expect(fitClassAndSpec(allSpecs, { classId: 1 }, 'hps')).toEqual({ classId: undefined, specId: undefined });
+  });
+
+  it("swaps a spec the view does not rank for the class's only ranked spec", () => {
+    expect(fitClassAndSpec(allSpecs, { classId: 3, specId: 253 }, 'dps', 'melee')).toEqual({ classId: 3, specId: 255 });
+    expect(fitClassAndSpec(allSpecs, { classId: 5, specId: 257 }, 'dps')).toEqual({ classId: 5, specId: 258 });
+    expect(fitClassAndSpec(allSpecs, { classId: 7 }, 'dps', 'ranged')).toEqual({ classId: 7, specId: 262 });
+  });
+
+  it('drops a spec without a class', () => {
+    expect(fitClassAndSpec(allSpecs, { specId: 253 }, 'dps')).toEqual({ classId: undefined, specId: undefined });
   });
 });
 

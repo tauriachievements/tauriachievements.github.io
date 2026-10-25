@@ -4,6 +4,8 @@ import { FilterDropdownOption } from '../shared/filter-dropdown.types';
 
 export type Role = 'tank' | 'healer' | 'dps';
 
+export type DamageRange = 'melee' | 'ranged';
+
 export type Realm = 'Evermoon' | 'Tauri' | 'WoD';
 
 export const REALMS: readonly Realm[] = ['Evermoon', 'Tauri', 'WoD'];

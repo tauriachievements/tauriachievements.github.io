@@ -53,11 +53,12 @@
     <section class="section" aria-label="Rankings and kills" #listSection>
       <div class="toolbar">
         <div class="view-switch" role="tablist" aria-label="What to list" appGlide>
-          @for (entry of tabs; track entry) {
+          @for (entry of tabs; track entry.id) {
             <button
               type="button"
               role="tab"
               [class.active]="tab() === entry.id"
+              [class.kill-tab]="!entry.metric"
               [attr.aria-selected]="tab() === entry.id"
               (click)="setTab(entry.id)">{{ entry.label }}</button>
           }
@@ -65,7 +66,7 @@
 
         <div class="filters">
           @if (isRanking()) {
-            <div class="filter-slot">
+            <div class="filter-slot realm-slot">
               <app-filter-dropdown
                 dropdownId="raidBossRealm"
                 triggerId="raidBossRealmTrigger"
@@ -81,7 +82,7 @@
                 dropdownId="raidBossClass"
                 triggerId="raidBossClassTrigger"
                 ariaLabel="Filter by class"
-                [options]="classOptions"
+                [options]="classOptions()"
                 [selectedValue]="classFilter()"
                 [showIcons]="true"
                 [compact]="true"
@@ -115,7 +116,7 @@
 
       @if (isRanking()) {
         <p class="list-note">
-          Each character's best kill. {{ tab() === 'hps' ? 'Healing counts absorbs; only healers are ranked.' : 'Damage done over the length of the fight; healers are ranked under Healing.' }}
+          Each character's best kill. {{ tabEntry().note }}
           <a class="talents-link" routerLink="/raid-logs/talents" [queryParams]="talentsQueryParams()">Which talents do they pick? <span aria-hidden="true">›</span></a>
         </p>
       }
@@ -127,7 +128,7 @@
               <tr>
                 <th class="rank" scope="col">#</th>
                 <th scope="col">Character</th>
-                <th scope="col" class="num">{{ tab() === 'hps' ? 'HPS' : 'DPS' }}</th>
+                <th scope="col" class="num">{{ metric() === 'hps' ? 'HPS' : 'DPS' }}</th>
                 <th scope="col" class="num narrow-hidden">Item level</th>
                 <th scope="col">Kill</th>
                 <th scope="col" class="tablet-hidden">Date</th>

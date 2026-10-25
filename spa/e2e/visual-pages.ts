@@ -87,6 +87,8 @@ export const VISUAL_PAGES: readonly VisualPage[] = [
   { name: 'state-raid-logs-character-class', path: '/raid-logs/character/evermoon/Gankuh?difficulty=mythic&metric=dps&compare=class' },
   { name: 'state-raid-logs-stats-performance', path: '/raid-logs/stats?view=performance&role=healer' },
   { name: 'state-raid-logs-boss-hps-class', path: '/raid-logs/boss/xavius?difficulty=mythic&tab=hps&class=5' },
+  { name: 'state-raid-logs-boss-ranged', path: '/raid-logs/boss/xavius?difficulty=mythic&tab=ranged' },
+  { name: 'state-raid-logs-boss-melee-class', path: '/raid-logs/boss/nythendra?difficulty=heroic&tab=melee&class=7' },
   { name: 'state-raid-logs-guilds-filtered', path: '/raid-logs/guilds?difficulty=heroic&realm=evermoon&faction=horde' },
   { name: 'state-raid-logs-talents-role', path: '/raid-logs/talents?difficulty=heroic&role=healer' },
   { name: 'state-raid-logs-boss-latest-invalid', path: '/raid-logs/boss/cenarius?difficulty=mythic&tab=latest' },

@@ -1,5 +1,5 @@
 import { realmSlug } from '../../game/wow';
-import { LEGION_SPECS } from '../../game/wow-specs';
+import { specFor } from '../../game/wow-specs';
 import {
   RaidSpecEntry,
   RaidGuildEntry,
@@ -242,14 +242,17 @@ export function decodeGenders(file: RaidGendersFile): Map<string, number> {
 }
 
 function decodeSpecs(entries: readonly RaidSpecEntry[]): Map<number, RaidSpec> {
-  const icons = new Map(LEGION_SPECS.map(spec => [`${spec.classId}|${spec.spec}`, spec.icon]));
-  return new Map(entries.map(entry => [entry.id, {
-    id: entry.id,
-    classId: entry.class,
-    name: entry.name,
-    role: entry.role,
-    icon: icons.get(`${entry.class}|${entry.name}`)
-  }]));
+  return new Map(entries.map(entry => {
+    const definition = specFor(entry.class, entry.name);
+    return [entry.id, {
+      id: entry.id,
+      classId: entry.class,
+      name: entry.name,
+      role: entry.role,
+      range: definition?.range,
+      icon: definition?.icon
+    }];
+  }));
 }
 
 function decodeGuild([name, realm, faction, id]: RaidGuildEntry): RaidGuild {

@@ -10,6 +10,15 @@ describe('LEGION_SPECS', () => {
     expect(new Set(LEGION_SPECS.map(spec => spec.classId))).toEqual(new Set(Object.keys(CLASS_NAMES).map(Number)));
   });
 
+  it('marks every damage spec melee or ranged, and no tank or healer', () => {
+    expect(LEGION_SPECS.filter(spec => spec.role === 'dps' && !spec.range)).toEqual([]);
+    expect(LEGION_SPECS.filter(spec => spec.role !== 'dps' && spec.range)).toEqual([]);
+    expect(LEGION_SPECS.filter(spec => spec.range === 'ranged').map(spec => `${spec.classId} ${spec.spec}`)).toEqual([
+      '3 Beast Mastery', '3 Marksmanship', '5 Shadow', '7 Elemental', '8 Arcane', '8 Fire', '8 Frost',
+      '9 Affliction', '9 Demonology', '9 Destruction', '11 Balance'
+    ]);
+  });
+
   it('finds a spec by its game id', () => {
     expect(specById(105)).toMatchObject({ classId: 11, spec: 'Restoration', role: 'healer' });
     expect(specById(1)).toBeUndefined();
