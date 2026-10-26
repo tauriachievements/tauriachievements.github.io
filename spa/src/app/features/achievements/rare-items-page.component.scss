@@ -15,8 +15,7 @@
 
 .rare-items-header,
 .results,
-.feedback,
-.selection-prompt {
+.feedback {
   border: 1px solid rgba(255, 255, 255, 0.09);
   border-radius: 14px;
   background: linear-gradient(145deg, rgba(31, 33, 28, 0.96), rgba(13, 14, 12, 0.98));
@@ -24,6 +23,8 @@
 }
 
 .rare-items-header {
+  position: relative;
+  z-index: 2;
   padding: 28px;
 }
 
@@ -42,49 +43,30 @@ h2 { font-size: 1.35rem; }
 
 .intro { margin: 8px 0 24px; color: #b7bdb0; }
 
-.filter-row {
+.filter-grid {
   display: grid;
-  grid-template-columns: minmax(260px, 520px) minmax(150px, 210px);
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 14px;
-  align-items: end;
 }
 
-.item-picker,
-.realm-picker {
+.filter-field {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: 7px;
-
-  span { color: #dbe2d3; font-size: 0.84rem; font-weight: 700; }
-
-  select {
-    width: 100%;
-    padding: 12px 38px 12px 13px;
-    border: 1px solid rgba(159, 201, 108, 0.38);
-    border-radius: 9px;
-    outline: none;
-    background: #11140e;
-    color: #f0f3eb;
-    font: inherit;
-    cursor: pointer;
-
-    &:focus { border-color: #9fc96c; box-shadow: 0 0 0 3px rgba(159, 201, 108, 0.13); }
-    &:disabled { opacity: 0.55; cursor: wait; }
-  }
+  min-width: 0;
 }
 
-.feedback,
-.selection-prompt {
-  margin-top: 16px;
-  padding: 34px;
-  color: #aeb5a6;
-  text-align: center;
-}
+.filter-label { color: #dbe2d3; font-size: 0.84rem; font-weight: 700; }
 
 .feedback {
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 12px;
+  margin-top: 16px;
+  padding: 34px;
+  color: #aeb5a6;
+  text-align: center;
 
   button {
     padding: 8px 12px;
@@ -96,7 +78,13 @@ h2 { font-size: 1.35rem; }
   }
 }
 
-.results { margin-top: 16px; overflow: hidden; }
+app-skeleton { margin-top: 16px; }
+
+.results {
+  margin-top: 16px;
+  overflow: hidden;
+  scroll-margin-top: 16px;
+}
 
 .results-heading {
   display: flex;
@@ -116,24 +104,61 @@ h2 { font-size: 1.35rem; }
   }
 }
 
-.table-scroll { overflow-x: auto; }
+.empty { margin: 0; padding: 34px; color: #aeb5a6; text-align: center; }
 
-table { width: 100%; border-collapse: collapse; }
+table { width: 100%; border-collapse: collapse; table-layout: fixed; }
 th, td { padding: 12px 18px; border-bottom: 1px solid rgba(255, 255, 255, 0.055); text-align: left; }
 th { background: rgba(0, 0, 0, 0.22); color: #939c8b; font-size: 0.74rem; letter-spacing: 0.08em; text-transform: uppercase; }
 td { color: #c8cec1; }
-th:first-child, td:first-child { width: 62px; color: #7d8477; text-align: right; }
+.rank { width: 62px; color: #7d8477; text-align: right; }
+.pieces { width: 92px; text-align: right; font-variant-numeric: tabular-nums; }
+td.pieces { color: #bfe58e; font-weight: 700; }
+.realm { width: 130px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 @media (hover: hover) {
   tbody tr:hover { background: rgba(159, 201, 108, 0.045); }
 }
 tbody tr:last-child td { border-bottom: 0; }
-a { color: #b7df86; font-weight: 700; text-decoration: none; }
-a:hover { color: #d7ff9f; text-decoration: underline; }
+
+.character {
+  overflow: hidden;
+
+  a {
+    display: block;
+    overflow: hidden;
+    color: #b7df86;
+    font-weight: 700;
+    text-decoration: none;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+
+    &:hover { color: #d7ff9f; text-decoration: underline; }
+  }
+}
+
+.detail {
+  display: block;
+  margin-top: 3px;
+  color: #8d9585;
+  font-size: 0.78rem;
+  overflow-wrap: anywhere;
+}
+
+app-pager {
+  padding: 14px 18px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+@media (max-width: 860px) {
+  .filter-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
 
 @media (max-width: 600px) {
   .rare-items-page { width: min(100% - 20px, 980px); padding-top: 24px; }
   .rare-items-header { padding: 21px 18px; }
+  .filter-grid { grid-template-columns: minmax(0, 1fr); gap: 12px; }
   .results-heading { align-items: flex-start; flex-direction: column; }
-  th, td { padding: 11px 12px; }
-  .filter-row { grid-template-columns: 1fr; }
+  th, td { padding: 11px 8px; }
+  .rank { width: 40px; }
+  .pieces { width: 58px; }
+  .realm { width: 82px; font-size: 0.82rem; }
 }

@@ -41,7 +41,7 @@ import { RaidMetric, RankedPerformance, fitClassAndSpec, rankCharacters, rankedC
 import { characterKey, defaultDifficulty, logKey, memberTalents } from './raid-logs';
 import { fastestKills, latestKills } from './raid-progression';
 import { RaidLogsDataService } from './raid-logs-data.service';
-import { DamageRange, REALMS, realmSlug } from '../../game/wow';
+import { DamageRange, REALM_FILTER_OPTIONS } from '../../game/wow';
 import { injectReplaceUrl, parseInteger, parsePage } from '../../core/url-state';
 import { LoadStateComponent } from '../../shared/load-state.component';
 import { PagerComponent } from '../../shared/pager.component';
@@ -229,10 +229,7 @@ export class RaidLogsBossPageComponent {
     return [{ value: undefined, label: 'All specs' }, ...specs.map(spec => ({ value: spec.id, label: spec.name, icon: spec.icon }))];
   });
 
-  readonly realmOptions: ReadonlyArray<FilterDropdownOption> = [
-    { value: undefined, label: 'All realms' },
-    ...REALMS.map(realm => ({ value: realmSlug(realm), label: realm }))
-  ];
+  readonly realmOptions = REALM_FILTER_OPTIONS;
 
   readonly logLink = raidLogLink;
   readonly guildLink = raidGuildLink;

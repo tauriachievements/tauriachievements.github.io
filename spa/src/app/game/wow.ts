@@ -14,6 +14,16 @@ export function realmSlug(realm: string): string {
   return realm.toLowerCase();
 }
 
+export const REALM_FILTER_OPTIONS: ReadonlyArray<FilterDropdownOption> = [
+  { value: undefined, label: 'All realms' },
+  ...REALMS.map(realm => ({ value: realmSlug(realm), label: realm }))
+];
+
+export function parseRealmSlug(value: string | null): string | undefined {
+  const slug = value?.toLowerCase();
+  return REALMS.some(realm => realmSlug(realm) === slug) ? slug : undefined;
+}
+
 export const CLASS_NAMES: Readonly<Record<number, string>> = {
   1: 'Warrior', 2: 'Paladin', 3: 'Hunter', 4: 'Rogue',
   5: 'Priest', 6: 'Death Knight', 7: 'Shaman', 8: 'Mage',

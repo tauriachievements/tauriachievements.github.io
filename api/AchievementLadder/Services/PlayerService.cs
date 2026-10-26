@@ -27,7 +27,15 @@ public class PlayerService(
             ProjectPaths.GetWorkDirectory(solutionRoot),
             "MissingPlayersToScan.txt"
         );
-        var rareItems = RareItemCatalog.Load(Path.Combine(projectRoot, "Data", "rare-items.txt"));
+        var rareItems = RareItemCatalog.Combine(
+            RareItemCatalog.Load(Path.Combine(projectRoot, "Data", "rare-items.txt")),
+            RareItemCatalog.LoadElitePvpItems(
+                Path.Combine(
+                    ProjectPaths.GetFrontendSrcDirectory(solutionRoot),
+                    "elite-pvp-items.json"
+                )
+            )
+        );
         var rareItemsById = rareItems.ToDictionary(item => item.Id);
         var allCharacters = new List<(string Name, string ApiRealm, string DisplayRealm)>();
         LoadCharacterSources(allCharacters);

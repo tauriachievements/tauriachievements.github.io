@@ -2,34 +2,61 @@
   <section class="rare-items-header">
     <p class="eyebrow">Collector's archive</p>
     <h1>Rare Item Holders</h1>
-    <p class="intro">Choose a rare item to see every known character who owns it.</p>
+    <p class="intro">Pick a class and a PvP season to see who owns its elite set pieces, or pick another rare item.</p>
 
-    <div class="filter-row">
-      <label class="item-picker">
-        <span>Rare item</span>
-        <select
+    <div class="filter-grid">
+      <div class="filter-field">
+        <span class="filter-label">Class</span>
+        <app-filter-dropdown
+          dropdownId="rareItemsClass"
+          triggerId="rareItemsClassTrigger"
+          ariaLabel="Class"
+          [options]="classOptions"
+          [selectedValue]="query().classId"
+          [showIcons]="true"
+          [highlightWhenSelected]="true"
           [disabled]="isLoading() || !!loadError()"
-          [value]="selectedItemId() ?? ''"
-          (change)="selectItem($event)">
-          <option value="">Select an item...</option>
-          @for (item of dataset()?.items; track item) {
-            <option [value]="item.id">{{ item.name }}</option>
-          }
-        </select>
-      </label>
+          (selectionChange)="selectClass($event)" />
+      </div>
 
-      <label class="realm-picker">
-        <span>Realm</span>
-        <select
+      <div class="filter-field">
+        <span class="filter-label">PvP season</span>
+        <app-filter-dropdown
+          dropdownId="rareItemsSeason"
+          triggerId="rareItemsSeasonTrigger"
+          ariaLabel="PvP season"
+          [options]="seasonOptions()"
+          [selectedValue]="query().season"
+          [highlightWhenSelected]="true"
           [disabled]="isLoading() || !!loadError()"
-          [value]="selectedRealm()"
-          (change)="selectRealm($event)">
-          <option value="all">All realms</option>
-          <option value="Evermoon">Evermoon</option>
-          <option value="Tauri">Tauri</option>
-          <option value="WoD">WoD</option>
-        </select>
-      </label>
+          (selectionChange)="selectSeason($event)" />
+      </div>
+
+      <div class="filter-field">
+        <span class="filter-label">Other items</span>
+        <app-filter-dropdown
+          dropdownId="rareItemsOther"
+          triggerId="rareItemsOtherTrigger"
+          ariaLabel="Other items"
+          [options]="otherOptions()"
+          [selectedValue]="otherValue()"
+          [highlightWhenSelected]="true"
+          [disabled]="isLoading() || !!loadError()"
+          (selectionChange)="selectOther($event)" />
+      </div>
+
+      <div class="filter-field">
+        <span class="filter-label">Realm</span>
+        <app-filter-dropdown
+          dropdownId="rareItemsRealm"
+          triggerId="rareItemsRealmTrigger"
+          ariaLabel="Realm"
+          [options]="realmOptions"
+          [selectedValue]="query().realm"
+          [highlightWhenSelected]="true"
+          [disabled]="isLoading() || !!loadError()"
+          (selectionChange)="selectRealm($event)" />
+      </div>
     </div>
   </section>
 
@@ -44,50 +71,62 @@
     </section>
   }
 
-  @if (!isLoading() && !loadError() && !selectedItem()) {
-    <section class="selection-prompt">
-      Select an item above to view its owners.
-    </section>
-  }
-
-  @if (selectedItem(); as item) {
-    <section class="results">
+  @if (heading(); as heading) {
+    <section class="results" #resultsSection>
       <div class="results-heading">
         <div>
-          <p class="eyebrow">Selected item</p>
-          <h2>{{ item.name }}</h2>
+          <p class="eyebrow">{{ heading.eyebrow }}</p>
+          <h2>{{ heading.title }}</h2>
         </div>
-        <strong>{{ matchingCharacters().length | number }} characters</strong>
+        <strong>{{ ownerCount() }}</strong>
       </div>
 
-      <div class="table-scroll">
+      @if (owners().length) {
         <table>
           <thead>
             <tr>
-              <th>#</th>
+              <th class="rank">#</th>
               <th>Character</th>
-              <th>Realm</th>
+              @if (showPieces()) {
+                <th class="pieces">Pieces</th>
+              }
+              <th class="realm">Realm</th>
             </tr>
           </thead>
           <tbody>
-            @for (character of matchingCharacters(); track `${character.realm}::${character.name}`; let index = $index) {
+            @for (row of pageRows(); track row.key; let index = $index) {
               <tr>
-                <td>{{ index + 1 }}</td>
-                <td>
+                <td class="rank">{{ firstRank() + index }}</td>
+                <td class="character">
                   <a
-                    [href]="getArmoryUrl(character.name, character.realm)"
-                    [style.color]="getCharacterClassColor(character)"
+                    [href]="armoryUrl(row)"
+                    [style.color]="classColor(row)"
                     target="_blank"
-                    rel="noopener noreferrer">
-                    {{ character.name }}
-                  </a>
+                    rel="noopener noreferrer">{{ row.character.name }}</a>
+                  @if (row.detail) {
+                    <span class="detail">{{ row.detail }}</span>
+                  }
                 </td>
-                <td>{{ character.realm }}</td>
+                @if (showPieces()) {
+                  <td class="pieces">{{ row.pieces }}</td>
+                }
+                <td class="realm">{{ row.character.realm }}</td>
               </tr>
             }
           </tbody>
         </table>
-      </div>
+
+        @if (pages() > 1) {
+          <app-pager
+            [page]="page()"
+            [pages]="pages()"
+            [count]="ownerCount()"
+            [scrollTarget]="resultsSection"
+            (pageChange)="goToPage($event)" />
+        }
+      } @else {
+        <p class="empty">{{ emptyMessage() }}</p>
+      }
     </section>
   }
 </main>

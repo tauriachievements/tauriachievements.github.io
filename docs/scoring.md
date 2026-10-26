@@ -94,6 +94,29 @@ explains it together.
 - The search matches the name or the guild, ignoring case (not accents).
 - **Tests:** `rare-achievement-matches.spec.ts`.
 
+## Rare Items
+
+- **Code:** `findOwners`, `eliteSeasonOptions` and `otherItemOptions` in
+  `spa/src/app/features/achievements/rare-items.ts`; the items come from `elite-pvp-items.json`
+  and `rare-items.txt` ([data-pipeline.md](data-pipeline.md#elite-pvp-items)).
+- An elite piece in an armour slot (head, shoulders, chest, hands, legs, waist, feet, wrists,
+  back) is a set piece; every other elite piece (weapons, shields, off-hands) is a season's
+  elite weapons, whatever classes it names.
+- The class and realm filters pick characters by their own class and realm, for every list.
+  Owners of a class's elite pieces have always been that class (observed, [tauri-api.md](tauri-api.md#characters-and-guilds)).
+- The set pieces list everyone with at least one piece of the picked season (any season by
+  default). The season list offers only the seasons with a set piece for the picked class:
+  Season 9 to Legion Season 7, Legion only for Demon Hunters.
+- "Other items" lists the rare items of `RareItems.json` that aren't elite pieces, in the
+  file's order, then each season's elite weapons (Seasons 6 to Warlords Season 3). Picking one
+  replaces the season.
+- A piece counts once, however many of its item ids a character has (Legion's two per piece).
+  Two different pieces in one slot (Cata and MoP boots of two stat kinds) count as two.
+- Order: most pieces first, then name, then realm. The detail line under a name gives the
+  seasons and their counts when no season is picked, the slots in a season, the weapons for
+  elite weapons, and nothing for a single rare item, whose list has no Pieces column.
+- **Tests:** `rare-items.spec.ts`.
+
 ## Guild Rankings
 
 - **Code:** `spa/scripts/generate-guild-rankings.js`. For each limit N, it counts which guilds

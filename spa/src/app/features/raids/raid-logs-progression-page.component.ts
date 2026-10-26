@@ -11,7 +11,7 @@ import { RaidBoss, RaidKill, RaidLogsIndex } from './raid-logs.types';
 import { bossesInKillOrder, defaultDifficulty, guildKey, logKey } from './raid-logs';
 import { raidGuildLink } from './raid-display';
 import { RaidLogsDataService } from './raid-logs-data.service';
-import { REALMS, realmSlug } from '../../game/wow';
+import { REALM_FILTER_OPTIONS, parseRealmSlug } from '../../game/wow';
 import { injectReplaceUrl } from '../../core/url-state';
 import { LoadStateComponent } from '../../shared/load-state.component';
 import { setPageHeader } from '../../core/page-header';
@@ -46,17 +46,14 @@ export class RaidLogsProgressionPageComponent implements OnInit {
   private readonly query = this.route.snapshot.queryParamMap;
   private readonly requestedDifficulty = signal(this.query.get('difficulty') ?? this.data.lastDifficulty());
   readonly factionFilter = signal(FACTIONS.find(faction => faction.slug === this.query.get('faction'))?.slug);
-  readonly realmFilter = signal(REALMS.map(realmSlug).find(realm => realm === this.query.get('realm')));
+  readonly realmFilter = signal(parseRealmSlug(this.query.get('realm')));
   readonly hasFilters = computed(() => this.factionFilter() !== undefined || this.realmFilter() !== undefined);
 
   readonly factionOptions: ReadonlyArray<FilterDropdownOption> = [
     { value: undefined, label: 'All factions' },
     ...FACTIONS.map(faction => ({ value: faction.slug, label: faction.label }))
   ];
-  readonly realmOptions: ReadonlyArray<FilterDropdownOption> = [
-    { value: undefined, label: 'All realms' },
-    ...REALMS.map(realm => ({ value: realmSlug(realm), label: realm }))
-  ];
+  readonly realmOptions = REALM_FILTER_OPTIONS;
   readonly factionWidthLabels = this.factionOptions.map(option => option.label);
   readonly realmWidthLabels = this.realmOptions.map(option => option.label);
 
