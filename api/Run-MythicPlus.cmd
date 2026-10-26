@@ -1,19 +1,33 @@
 @echo off
 setlocal
 
-rem Refreshes the /mythic-plus leaderboards, commits them as "sync mythic plus data" and pushes.
-rem Arguments go to the exporter (for example: Run-MythicPlus.cmd --allow-shrink at a season reset).
 set "REPO_ROOT=%~dp0.."
 set "DATA_DIR=spa/src/mythic-plus-data"
 
-rem Pre-flight: make sure the push at the end will be accepted before spending time on the export.
 for /f "delims=" %%b in ('git -C "%REPO_ROOT%" rev-parse --abbrev-ref HEAD') do set "BRANCH=%%b"
-if /i not "%BRANCH%"=="main" (
-    echo Current branch is "%BRANCH%". Switch to main first.
+if /i "%BRANCH%"=="main" goto :OnMain
+
+echo Current branch is "%BRANCH%".
+for /f %%s in ('git -C "%REPO_ROOT%" status --porcelain') do (
+    echo It has uncommitted changes, so it can't switch to main. Commit or stash them first.
     pause
     exit /b 1
 )
+set "CHOICE="
+set /p "CHOICE=Type 1 and press Enter to switch to main and continue, or just press Enter to stop: "
+if not "%CHOICE%"=="1" exit /b 1
+(
+    git -C "%REPO_ROOT%" checkout --quiet main
+    if errorlevel 1 (
+        echo.
+        echo git checkout main failed.
+        pause
+        exit /b 1
+    )
+    "%~f0" %*
+)
 
+:OnMain
 git -C "%REPO_ROOT%" fetch --quiet origin main
 if errorlevel 1 (
     echo.
@@ -23,12 +37,24 @@ if errorlevel 1 (
 )
 
 for /f %%n in ('git -C "%REPO_ROOT%" rev-list --count HEAD..origin/main') do set "BEHIND=%%n"
-if not "%BEHIND%"=="0" (
-    echo main is %BEHIND% commit^(s^) behind origin/main; the push would be rejected. Run "git pull" first.
-    pause
-    exit /b 1
+if "%BEHIND%"=="0" goto :Export
+
+echo main is %BEHIND% commit(s) behind origin/main, so the push would be rejected.
+set "CHOICE="
+set /p "CHOICE=Type 1 and press Enter to pull and continue, or just press Enter to stop: "
+if not "%CHOICE%"=="1" exit /b 1
+(
+    git -C "%REPO_ROOT%" pull --quiet --ff-only origin main
+    if errorlevel 1 (
+        echo.
+        echo git pull failed.
+        pause
+        exit /b 1
+    )
+    "%~f0" %*
 )
 
+:Export
 dotnet run --project "%~dp0MythicPlusExporter" -c Release -- %*
 if errorlevel 1 (
     echo.
@@ -46,7 +72,6 @@ if not errorlevel 1 (
     exit /b 0
 )
 
-rem --only commits just the M+ data, so unrelated staged work never rides along.
 git -C "%REPO_ROOT%" commit --quiet --only -m "sync mythic plus data" -- "%DATA_DIR%"
 if errorlevel 1 (
     echo.

@@ -60,8 +60,16 @@ If every step succeeded and `-NoPush` wasn't given, the `.cmd` then calls
 - The commit message must stay exactly `sync data`: `discord-on-push.yml` matches on it.
 - Retry queues (`MissingGuildsToScan.txt`, `MissingPlayersToScan.txt`) and run logs live in the
   git-ignored `api/.work/`.
-- `Run-MythicPlus.cmd` and `Run-RaidLogs.cmd` refresh one dataset on its own. Each refuses to
-  start unless you're on `main` and level with `origin/main`.
+- `Run-MythicPlus.cmd` and `Run-RaidLogs.cmd` refresh one dataset on its own. Their arguments
+  go to the exporter (`Run-MythicPlus.cmd --allow-shrink` at a season reset). Before the
+  export, each checks that the push at the end will be accepted: you're on `main` and level
+  with `origin/main`. `Run-RaidLogs.cmd` stops when you aren't. `Run-MythicPlus.cmd` asks you
+  to type `1` to fix it, by switching to `main` (only when nothing is uncommitted) or by
+  pulling with `--ff-only`, and then goes on. After the switch or pull it starts itself again
+  from the top, because cmd.exe reads a running script from disk by byte offset: a checkout
+  or pull that changes the script would otherwise leave it running from the middle of a
+  different file. Both commit with `git commit --only` on their data folder, so unrelated
+  staged work never rides along.
 
 ## Publishing safety
 
