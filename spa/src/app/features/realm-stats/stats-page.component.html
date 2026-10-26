@@ -1,8 +1,5 @@
 <main class="stats-page">
-  <header class="page-header">
-    <h1>Realm stats</h1>
-    <p>Who plays what across every character the ladder scans: classes, races and the pairs of the two, faction and gender balance, gear, time played and guilds.</p>
-  </header>
+  <h1 class="visually-hidden">Realm stats</h1>
 
   <div class="filters" role="group" aria-label="Statistics filters">
     <div class="filter">
@@ -28,10 +25,28 @@
     <button type="button" class="filter-reset" [disabled]="!filtersActive()" (click)="resetFilters()">Reset</button>
   </div>
 
-  <app-load-state [loading]="isLoading()" [error]="loadError()" [skeleton]="['tiles:6', 'chart', 'cards:2']" loadingText="Counting every character..." (retry)="loadData()" />
+  <app-load-state [loading]="isLoading()" [error]="loadError()" [skeleton]="['cards:2', 'tiles:6', 'chart']" loadingText="Counting every character..." (retry)="loadData()" />
 
   @if (!isLoading() && !loadError()) {
     @if (view(); as view) {
+      <div class="pair">
+        <section class="chart-card" aria-labelledby="classes-title">
+          <div class="chart-heading">
+            <h2 id="classes-title">Classes</h2>
+            <p class="chart-subtitle">Characters per class</p>
+          </div>
+          <app-stats-bar-list [rows]="view.classes" label="Characters per class" />
+        </section>
+
+        <section class="chart-card" aria-labelledby="races-title">
+          <div class="chart-heading">
+            <h2 id="races-title">Races</h2>
+            <p class="chart-subtitle">Characters per race, in their faction's colour</p>
+          </div>
+          <app-stats-bar-list [rows]="view.races" label="Characters per race" />
+        </section>
+      </div>
+
       <dl class="summary">
         @for (tile of view.tiles; track tile.label; let index = $index) {
           <div>
@@ -93,24 +108,6 @@
           } @else {
             <p class="chart-empty">Every pairing is already in the top ten.</p>
           }
-        </section>
-      </div>
-
-      <div class="pair">
-        <section class="chart-card" aria-labelledby="classes-title">
-          <div class="chart-heading">
-            <h2 id="classes-title">Classes</h2>
-            <p class="chart-subtitle">Characters per class</p>
-          </div>
-          <app-stats-bar-list [rows]="view.classes" label="Characters per class" />
-        </section>
-
-        <section class="chart-card" aria-labelledby="races-title">
-          <div class="chart-heading">
-            <h2 id="races-title">Races</h2>
-            <p class="chart-subtitle">Characters per race, in their faction's colour</p>
-          </div>
-          <app-stats-bar-list [rows]="view.races" label="Characters per race" />
         </section>
       </div>
 

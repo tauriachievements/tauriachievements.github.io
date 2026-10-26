@@ -14,10 +14,7 @@ $gold: #f7b500;
   color: #e0e0e0;
 }
 
-.page-header {
-  h1 { margin-bottom: 6px; color: #fff; font-size: 1.6rem; line-height: 1.25; }
-  p { max-width: 760px; color: #bdbdbd; line-height: 1.55; }
-}
+@include shared.visually-hidden;
 
 .filters {
   display: flex;
@@ -163,7 +160,6 @@ $gold: #f7b500;
 
 @media (max-width: shared.$phone-breakpoint) {
   .stats-page { padding: 42px 12px 48px; }
-  .page-header h1 { font-size: 1.35rem; }
 
   .filter { flex: 1 1 calc(50% - 4px); min-width: 0; }
   .filter-reset { flex: 1 1 100%; min-height: 40px; }
