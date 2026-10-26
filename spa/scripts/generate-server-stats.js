@@ -27,7 +27,7 @@ function buildServerStatsSnapshot(players) {
     }
   }
 
-  return { version: 2, filters };
+  return { version: 3, filters };
 }
 
 function generateServerStatsSnapshot(players) {

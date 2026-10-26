@@ -235,9 +235,18 @@ git-ignored and regenerated on every build:
 - `players.history.snapshot.json`, `new-players.snapshot.json`, `stats.snapshot.json`,
   `guilds.snapshot.json`: small precomputed files for Top Gainers, New Rare Characters, Stats
   and Guild Rankings.
-- `stats.snapshot.json` carries every bucket's bounds with its label, since a label means
-  nothing apart from the bounds that produced it. Class names and colours stay in the page, so
-  restyling a chart or renaming a class needs no new data.
+- `stats.snapshot.json` (version 3) holds one snapshot per realm and level filter, keyed
+  `realm|level` with `*` for all (`*|110`, `Tauri|*`). A snapshot has the totals (characters,
+  guilds, female characters, average and median item level, total and median played hours),
+  `factions`, `classes` (with each class's female, Horde and Alliance counts and its average
+  item level, played hours and achievement points), `races` (with female counts), `combos` (one
+  `{ race, class, count, female }` per race and class pair anyone plays), the ten biggest
+  `guilds`, `realms`, and `distributions`: `itemLevel`, `achievementPoints`, `honorableKills`,
+  `playedDays`, `level10Year` and `guildSize`, each `{ labels, counts }`. Every bucket's label
+  says its bounds, since a label means nothing apart from the bounds that produced it, and the
+  item level buckets differ per filter. Class and race names and colours stay in the page, so
+  restyling a chart or renaming a class needs no new data. The counting rules are in
+  [scoring.md](scoring.md#realm-stats).
 - `battlegrounds-<era>.json`: one file per era, so the default Legion view never downloads the
   much larger prepatch history. `legion` holds the battlegrounds started from 2026-07-15 09:00
   (`LEGION_START`), `wod-prepatch` everything before. A file is `{ version, era, names, days }`:

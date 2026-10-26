@@ -1,0 +1,26 @@
+<div class="split" [style.--left-color]="leftColor()" [style.--right-color]="rightColor()">
+  <ul class="legend" aria-hidden="true">
+    <li><i class="swatch left"></i>{{ leftName() }}</li>
+    <li><i class="swatch right"></i>{{ rightName() }}</li>
+  </ul>
+
+  <ul class="split-list" appReveal>
+    @for (row of rows(); track row.key; let index = $index; let first = $first) {
+      <li [class.total]="first" [style.--i]="index">
+        <span class="name">
+          @for (icon of row.icons; track icon) {
+            <img [src]="icon" alt="" width="18" height="18" loading="lazy" />
+          }
+          <span class="label" [style.color]="row.color">{{ row.label }}</span>
+        </span>
+        <span class="shares" aria-hidden="true"><b class="left">{{ row.leftText }}</b><b class="right">{{ row.rightText }}</b></span>
+        <span
+          class="track"
+          role="img"
+          [attr.aria-label]="row.label + ': ' + row.leftText + ' ' + leftName() + ', ' + row.rightText + ' ' + rightName()">
+          <span class="fill" [style.width.%]="row.left * 100"></span>
+        </span>
+      </li>
+    }
+  </ul>
+</div>

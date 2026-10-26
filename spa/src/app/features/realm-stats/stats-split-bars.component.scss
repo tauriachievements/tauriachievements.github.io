@@ -1,0 +1,121 @@
+@use '../../shared/mythic-plus-shared' as shared;
+
+:host { display: block; }
+
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 16px;
+  margin: 0 0 12px;
+  padding: 0;
+  list-style: none;
+  color: #bdbdbd;
+  font-size: .75rem;
+
+  li { display: inline-flex; align-items: center; gap: 6px; }
+}
+
+.swatch {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+
+  &.left { background: var(--left-color); }
+  &.right { background: var(--right-color); }
+}
+
+.split-list {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+li {
+  display: grid;
+  grid-template-areas: 'name shares' 'track track';
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 4px 10px;
+}
+
+li.total {
+  margin-bottom: 6px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #2a2a2a;
+
+  .label { color: #fff; font-size: .88rem; }
+  .shares { font-size: .88rem; }
+  .track { height: 12px; border-radius: 6px; }
+}
+
+.name {
+  display: flex;
+  grid-area: name;
+  min-width: 0;
+  align-items: center;
+  gap: 6px;
+
+  img { width: 18px; height: 18px; flex: none; border-radius: 3px; }
+}
+
+.label {
+  min-width: 0;
+  overflow: hidden;
+  color: #e0e0e0;
+  font-size: .82rem;
+  font-weight: 700;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.shares {
+  display: flex;
+  grid-area: shares;
+  gap: 10px;
+  font-size: .8rem;
+  font-variant-numeric: tabular-nums;
+
+  .left { color: var(--left-color); }
+  .right { color: var(--right-color); }
+}
+
+.track {
+  position: relative;
+  display: flex;
+  grid-area: track;
+  height: 8px;
+  overflow: hidden;
+  border-radius: 4px;
+  background: color-mix(in srgb, var(--right-color) 70%, #1b1b1b);
+
+  &::after {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: calc(50% - 1px);
+    width: 2px;
+    background: #0d0d0d;
+    content: '';
+  }
+}
+
+.fill {
+  height: 100%;
+  background: var(--left-color);
+  transform-origin: left;
+}
+
+@include shared.motion-safe {
+  .fill { transition: width var(--dur-slow) var(--ease-out); }
+
+  .split-list[data-reveal='pending'] .fill { transform: scaleX(0); }
+
+  .split-list[data-reveal='in'] .fill {
+    animation: mp-grow-x 700ms var(--ease-out) both;
+    animation-delay: calc(var(--i, 0) * 35ms);
+  }
+}

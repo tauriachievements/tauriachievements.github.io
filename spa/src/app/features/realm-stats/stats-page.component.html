@@ -1,102 +1,229 @@
-<div class="stats-container">
-  <header class="stats-header">
-    <div class="stats-filters" aria-label="Statistics filters">
-      <button
-        type="button"
-        class="stats-filter-reset"
-        [disabled]="!filtersActive()"
-        (click)="resetFilters()">
-        Reset
-      </button>
+<main class="stats-page">
+  <h1 class="visually-hidden">Realm stats</h1>
 
-      <label class="stats-filter">
-        <select
-          aria-label="Filter statistics by realm"
-          [value]="selectedRealm()"
-          (change)="selectRealm($event)">
-          @for (realm of realmOptions; track realm) {
-            <option [value]="realm">{{ realm }}</option>
-          }
-        </select>
-      </label>
-
-      <label class="stats-filter">
-        <select
-          aria-label="Filter statistics by level"
-          [value]="selectedLevel()"
-          (change)="selectLevel($event)">
-          @for (level of levelOptions; track level) {
-            <option [value]="level">
-              {{ level === 'All levels' ? level : 'lvl ' + level }}
-            </option>
-          }
-        </select>
-      </label>
+  <div class="filters" role="group" aria-label="Statistics filters">
+    <div class="filter">
+      <app-filter-dropdown
+        dropdownId="statsRealm"
+        triggerId="statsRealmTrigger"
+        ariaLabel="Filter statistics by realm"
+        [options]="realmOptions"
+        [selectedValue]="realm()"
+        [widthLabels]="realmWidthLabels"
+        (selectionChange)="setRealm($event)" />
     </div>
-  </header>
-
-  @if (showLoading()) {
-    <app-skeleton [blocks]="['tiles:3', 'cards:4']" label="Computing server statistics..." />
-  }
-
-  @if (showError()) {
-    <div class="stats-feedback error">
-      <h2>Could not load statistics</h2>
-      <p>{{ loadError() }}</p>
-      <button type="button" class="feedback-action" (click)="syncData()">Try again</button>
+    <div class="filter">
+      <app-filter-dropdown
+        dropdownId="statsLevel"
+        triggerId="statsLevelTrigger"
+        ariaLabel="Filter statistics by level"
+        [options]="levelOptions"
+        [selectedValue]="level()"
+        [widthLabels]="levelWidthLabels"
+        (selectionChange)="setLevel($event)" />
     </div>
-  }
+    <button type="button" class="filter-reset" [disabled]="!filtersActive()" (click)="resetFilters()">Reset</button>
+  </div>
 
-  @if (showContent()) {
-    <div class="charts-grid">
-      <article class="chart-panel">
-        <h2 class="chart-title">Class Distribution</h2>
-        <div class="chart-canvas-wrap chart-canvas-wrap--hbar">
-          <canvas #classCanvas></canvas>
-        </div>
-      </article>
+  <app-load-state [loading]="isLoading()" [error]="loadError()" [skeleton]="['cards:2', 'tiles:6', 'chart']" loadingText="Counting every character..." (retry)="loadData()" />
 
-      <article class="chart-panel">
-        <h2 class="chart-title">Race Popularity</h2>
-        <div class="chart-canvas-wrap chart-canvas-wrap--hbar">
-          <canvas #raceCanvas></canvas>
-        </div>
-      </article>
-    </div>
+  @if (!isLoading() && !loadError()) {
+    @if (view(); as view) {
+      <div class="pair">
+        <section class="chart-card" aria-labelledby="classes-title">
+          <div class="chart-heading">
+            <h2 id="classes-title">Classes</h2>
+            <p class="chart-subtitle">Characters per class</p>
+          </div>
+          <app-stats-bar-list [rows]="view.classes" label="Characters per class" />
+        </section>
 
-    <div class="stats-top">
-      <div class="stats-summary">
-        <div class="stat-card">
-          <div class="stat-value">{{ stats().totalPlayers | number }}</div>
-          <div class="stat-label">Total Characters</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-value">{{ stats().uniqueGuilds | number }}</div>
-          <div class="stat-label">Guilds Scanned</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-value">{{ stats().guildedPlayers | number }}</div>
-          <div class="stat-label">Guilded Players</div>
-        </div>
+        <section class="chart-card" aria-labelledby="races-title">
+          <div class="chart-heading">
+            <h2 id="races-title">Races</h2>
+            <p class="chart-subtitle">Characters per race, in their faction's colour</p>
+          </div>
+          <app-stats-bar-list [rows]="view.races" label="Characters per race" />
+        </section>
       </div>
 
-      <article class="chart-panel faction-chart-panel" aria-label="Faction balance">
-        <h2 class="chart-title">Faction Balance</h2>
-        <div class="faction-canvas-wrap">
-          <canvas #factionCanvas></canvas>
-        </div>
-      </article>
-    </div>
+      <dl class="summary">
+        @for (tile of view.tiles; track tile.label; let index = $index) {
+          <div>
+            <dt>{{ tile.label }}</dt>
+            <dd [appCountUp]="tile.value" [countUpDelay]="index * 60"></dd>
+          </div>
+        }
+      </dl>
 
-    @if (stats().realmLabels.length > 0) {
-      <div class="realm-pills">
-        <span class="realm-pill-label">By Realm:</span>
-        @for (realm of stats().realmLabels; track realm; let i = $index) {
-          <span class="realm-pill">
-            {{ realm }}: <strong>{{ stats().realmCounts[i] | number }}</strong>
-          </span>
+      @if (view.realms.length > 1) {
+        <div class="realm-strip">
+          <div class="realm-track" aria-hidden="true">
+            @for (realm of view.realms; track realm.name; let index = $index) {
+              <span [class]="'realm-segment realm-' + index" [style.flex-grow]="realm.share"></span>
+            }
+          </div>
+          <ul class="realm-legend" aria-label="Characters per realm">
+            @for (realm of view.realms; track realm.name; let index = $index) {
+              <li><i [class]="'realm-segment realm-' + index"></i>{{ realm.name }} <b>{{ realm.count }}</b> <span>{{ realm.label }}</span></li>
+            }
+          </ul>
+        </div>
+      }
+
+      <section class="chart-card" aria-labelledby="matrix-title">
+        <header class="chart-header">
+          <div class="chart-heading">
+            <h2 id="matrix-title">Race and class</h2>
+            <p class="chart-subtitle">Every pairing in one grid. Point at or tap a square for its numbers.</p>
+          </div>
+          <div class="segmented" role="group" aria-label="Shade the grid by" appGlide>
+            <button type="button" [class.active]="matrixMode() === 'count'" [attr.aria-pressed]="matrixMode() === 'count'"
+              (click)="matrixMode.set('count')">Count</button>
+            <button type="button" [class.active]="matrixMode() === 'class'" [attr.aria-pressed]="matrixMode() === 'class'"
+              (click)="matrixMode.set('class')">% of class</button>
+            <button type="button" [class.active]="matrixMode() === 'race'" [attr.aria-pressed]="matrixMode() === 'race'"
+              (click)="matrixMode.set('race')">% of race</button>
+          </div>
+        </header>
+        <app-class-race-matrix [matrix]="view.matrix" [mode]="matrixMode()" />
+      </section>
+
+      <div class="pair">
+        <section class="chart-card" aria-labelledby="popular-title">
+          <div class="chart-heading">
+            <h2 id="popular-title">Most played pairings</h2>
+            <p class="chart-subtitle">The race and class pairs with the most characters</p>
+          </div>
+          <app-stats-bar-list [rows]="view.popularCombos" label="Most played pairings" />
+        </section>
+
+        <section class="chart-card" aria-labelledby="rare-title">
+          <div class="chart-heading">
+            <h2 id="rare-title">Rarest pairings</h2>
+            <p class="chart-subtitle">The pairs with the fewest characters, counting only pairs someone plays</p>
+          </div>
+          @if (view.rareCombos.length) {
+            <app-stats-bar-list [rows]="view.rareCombos" label="Rarest pairings" />
+          } @else {
+            <p class="chart-empty">Every pairing is already in the top ten.</p>
+          }
+        </section>
+      </div>
+
+      <div class="pair">
+        <section class="chart-card" aria-labelledby="faction-title">
+          <div class="chart-heading">
+            <h2 id="faction-title">Faction balance</h2>
+            <p class="chart-subtitle">Horde against Alliance in each class, most Horde first. The notch marks 50%.</p>
+          </div>
+          <app-stats-split-bars [split]="view.faction" leftName="Horde" rightName="Alliance" [leftColor]="hordeColor" [rightColor]="allianceColor" />
+        </section>
+
+        @if (gender(); as gender) {
+          <section class="chart-card" aria-labelledby="gender-title">
+            <header class="chart-header">
+              <div class="chart-heading">
+                <h2 id="gender-title">Female characters</h2>
+                <p class="chart-subtitle">Share of female characters, highest first</p>
+              </div>
+              <div class="segmented" role="group" aria-label="Split female characters by" appGlide>
+                <button type="button" [class.active]="genderView() === 'race'" [attr.aria-pressed]="genderView() === 'race'"
+                  (click)="genderView.set('race')">By race</button>
+                <button type="button" [class.active]="genderView() === 'class'" [attr.aria-pressed]="genderView() === 'class'"
+                  (click)="genderView.set('class')">By class</button>
+              </div>
+            </header>
+            <app-stats-split-bars [split]="gender" leftName="Female" rightName="Male" [leftColor]="femaleColor" [rightColor]="maleColor" />
+          </section>
         }
       </div>
+
+      <div class="pair">
+        <section class="chart-card" aria-labelledby="item-level-title">
+          <div class="chart-heading">
+            <h2 id="item-level-title">Item level</h2>
+            <p class="chart-subtitle">Characters by equipped item level · median {{ view.medianItemLevel }}, the gold bar</p>
+          </div>
+          <app-stats-column-chart [columns]="view.columns.itemLevel" caption="Item level" />
+        </section>
+
+        <section class="chart-card" aria-labelledby="played-title">
+          <div class="chart-heading">
+            <h2 id="played-title">Time played</h2>
+            <p class="chart-subtitle">Characters by days of /played · median {{ view.medianPlayed }}, the gold bar</p>
+          </div>
+          <app-stats-column-chart [columns]="view.columns.playedDays" caption="Days played" />
+        </section>
+      </div>
+
+      <div class="pair">
+        @if (classAverage(); as classAverage) {
+          <section class="chart-card" aria-labelledby="class-average-title">
+            <header class="chart-header">
+              <div class="chart-heading">
+                <h2 id="class-average-title">Class averages</h2>
+                <p class="chart-subtitle">Each class's average, highest first@if (classAverage.baseline) { · bars start at {{ classAverage.baseline }}}</p>
+              </div>
+              <div class="segmented" role="group" aria-label="Average per class of" appGlide>
+                <button type="button" [class.active]="classMetric() === 'itemLevel'" [attr.aria-pressed]="classMetric() === 'itemLevel'"
+                  (click)="classMetric.set('itemLevel')">Item level</button>
+                <button type="button" [class.active]="classMetric() === 'played'" [attr.aria-pressed]="classMetric() === 'played'"
+                  (click)="classMetric.set('played')">Played</button>
+                <button type="button" [class.active]="classMetric() === 'points'" [attr.aria-pressed]="classMetric() === 'points'"
+                  (click)="classMetric.set('points')">Points</button>
+              </div>
+            </header>
+            <app-stats-bar-list [rows]="classAverage.rows" label="Average per class" />
+          </section>
+        }
+
+        <section class="chart-card" aria-labelledby="guilds-title">
+          <div class="chart-heading">
+            <h2 id="guilds-title">Biggest guilds</h2>
+            <p class="chart-subtitle">The guilds with the most of these characters</p>
+          </div>
+          <app-stats-bar-list [rows]="view.guilds" label="Biggest guilds" />
+        </section>
+      </div>
+
+      <div class="pair">
+        <section class="chart-card" aria-labelledby="level10-title">
+          <div class="chart-heading">
+            <h2 id="level10-title">Character age</h2>
+            <p class="chart-subtitle">The year each character earned the Level 10 achievement · the gold bar holds the median</p>
+          </div>
+          <app-stats-column-chart [columns]="view.columns.level10Year" caption="Level 10 in" />
+        </section>
+
+        <section class="chart-card" aria-labelledby="guild-size-title">
+          <div class="chart-heading">
+            <h2 id="guild-size-title">Guild sizes</h2>
+            <p class="chart-subtitle">{{ view.guildCount }} guilds by how many of these characters each holds</p>
+          </div>
+          <app-stats-column-chart [columns]="view.columns.guildSize" caption="Members" unit="guilds" />
+        </section>
+      </div>
+
+      <div class="pair">
+        <section class="chart-card" aria-labelledby="points-title">
+          <div class="chart-heading">
+            <h2 id="points-title">Achievement points</h2>
+            <p class="chart-subtitle">Characters by achievement points · average {{ view.avgAchievementPoints }}</p>
+          </div>
+          <app-stats-column-chart [columns]="view.columns.achievementPoints" caption="Achievement points" />
+        </section>
+
+        <section class="chart-card" aria-labelledby="kills-title">
+          <div class="chart-heading">
+            <h2 id="kills-title">Honorable kills</h2>
+            <p class="chart-subtitle">Characters by honorable kills · average {{ view.avgHonorableKills }}</p>
+          </div>
+          <app-stats-column-chart [columns]="view.columns.honorableKills" caption="Honorable kills" />
+        </section>
+      </div>
+    } @else {
+      <p class="stats-empty">No characters match these filters.</p>
     }
   }
-</div>
+</main>

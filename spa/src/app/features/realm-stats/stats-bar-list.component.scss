@@ -1,0 +1,102 @@
+@use '../../shared/mythic-plus-shared' as shared;
+
+:host { display: block; }
+
+.bar-list {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+li {
+  display: grid;
+  grid-template-areas: 'name value' 'track track';
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 4px 10px;
+}
+
+.ranked li {
+  grid-template-areas: 'rank name value' 'rank track track';
+  grid-template-columns: 1.4em minmax(0, 1fr) auto;
+}
+
+.rank {
+  grid-area: rank;
+  align-self: start;
+  color: #8a8a8a;
+  font-size: .75rem;
+  font-variant-numeric: tabular-nums;
+  line-height: 18px;
+  text-align: right;
+}
+
+.name {
+  display: flex;
+  grid-area: name;
+  min-width: 0;
+  align-items: center;
+  gap: 6px;
+
+  img { width: 18px; height: 18px; flex: none; border-radius: 3px; }
+}
+
+.label {
+  min-width: 0;
+  overflow: hidden;
+  color: #e0e0e0;
+  font-size: .82rem;
+  font-weight: 700;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.note {
+  flex: none;
+  padding: 1px 6px;
+  border: 1px solid #333;
+  border-radius: 999px;
+  color: #9a9a9a;
+  font-size: .68rem;
+}
+
+.value {
+  grid-area: value;
+  color: #fff;
+  font-size: .8rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+
+  small { margin-left: 6px; color: #8a8a8a; font-size: .72rem; font-weight: 400; }
+}
+
+.track {
+  grid-area: track;
+  height: 6px;
+  overflow: hidden;
+  border-radius: 3px;
+  background: #262626;
+}
+
+.bar {
+  display: block;
+  height: 100%;
+  min-width: 2px;
+  border-radius: 3px;
+  transform-origin: left;
+}
+
+@include shared.motion-safe {
+  .bar { transition: width var(--dur-slow) var(--ease-out), background-color var(--dur-slow) ease; }
+
+  .bar-list[data-reveal='pending'] .bar { transform: scaleX(0); }
+
+  .bar-list[data-reveal='in'] .bar {
+    animation: mp-grow-x 700ms var(--ease-out) both;
+    animation-delay: calc(var(--i, 0) * 35ms);
+  }
+}

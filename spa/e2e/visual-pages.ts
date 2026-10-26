@@ -93,6 +93,7 @@ export const VISUAL_PAGES: readonly VisualPage[] = [
   { name: 'state-raid-logs-talents-role', path: '/raid-logs/talents?difficulty=heroic&role=healer' },
   { name: 'state-raid-logs-boss-latest-invalid', path: '/raid-logs/boss/cenarius?difficulty=mythic&tab=latest' },
   { name: 'state-raid-logs-character-invalid', path: '/raid-logs/character/evermoon/Misiekwariat?difficulty=mythic&metric=dps' },
+  { name: 'state-stats-realm-level', path: '/stats?realm=tauri&level=all' },
 
   { name: 'state-loading-mythic-plus', path: '/mythic-plus', hold: ['mythic-plus-data/index\\.json'] },
   { name: 'state-loading-mythic-plus-runs', path: '/mythic-plus', hold: ['mythic-plus-data/(?!index)'] },
@@ -110,6 +111,8 @@ export const VISUAL_PAGES: readonly VisualPage[] = [
   { name: 'state-loading-raid-logs-stats', path: '/raid-logs/stats', hold: ['raid-log-data/'] },
   { name: 'state-error-raid-log', path: '/raid-logs/log/tauri/1684762', fail: ['raid-log-data/'] },
   { name: 'state-error-arena', path: '/arena', fail: ['arena-ladder-2v2\\.json'] },
+  { name: 'state-loading-stats', path: '/stats', hold: ['stats\\.snapshot\\.json'] },
+  { name: 'state-error-stats', path: '/stats', fail: ['stats\\.snapshot\\.json'] },
   { name: 'state-error-ladder', path: '/', fail: ['players\\.(head\\.)?snapshot\\.json'] }
 ];
 
