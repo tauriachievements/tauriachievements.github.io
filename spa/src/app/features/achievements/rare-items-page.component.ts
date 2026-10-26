@@ -94,7 +94,6 @@ export class RareItemsPageComponent implements OnInit {
   readonly pages = computed(() => pageCount(this.owners().length, PAGE_SIZE));
   readonly page = computed(() => Math.min(this.requestedPage(), this.pages()));
   readonly pageRows = computed(() => pageSlice(this.owners(), this.page(), PAGE_SIZE));
-  readonly firstRank = computed(() => (this.page() - 1) * PAGE_SIZE + 1);
   readonly canReset = computed(() => hasOwnerFilters(this.query()) || this.page() > 1);
 
   ngOnInit(): void {

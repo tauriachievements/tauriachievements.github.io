@@ -80,7 +80,6 @@
         <table>
           <thead>
             <tr>
-              <th class="rank">#</th>
               <th>Character</th>
               @if (showPieces()) {
                 <th class="pieces">Pieces</th>
@@ -89,18 +88,23 @@
             </tr>
           </thead>
           <tbody>
-            @for (row of pageRows(); track row.key; let index = $index) {
+            @for (row of pageRows(); track row.key) {
               <tr>
-                <td class="rank">{{ firstRank() + index }}</td>
                 <td class="character">
-                  <a
-                    [href]="armoryUrl(row)"
-                    [style.color]="classColor(row)"
-                    target="_blank"
-                    rel="noopener noreferrer">{{ row.character.name }}</a>
-                  @if (row.detail) {
-                    <span class="detail">{{ row.detail }}</span>
-                  }
+                  <div class="identity">
+                    <img class="icon" [src]="row.raceIcon" [alt]="row.raceName" [title]="row.raceName" width="20" height="20" loading="lazy" />
+                    <img class="icon" [src]="row.classIcon" [alt]="row.className" [title]="row.className" width="20" height="20" loading="lazy" />
+                    <div class="name">
+                      <a
+                        [href]="armoryUrl(row)"
+                        [style.color]="classColor(row)"
+                        target="_blank"
+                        rel="noopener noreferrer">{{ row.character.name }}</a>
+                      @if (row.detail) {
+                        <span class="detail">{{ row.detail }}</span>
+                      }
+                    </div>
+                  </div>
                 </td>
                 @if (showPieces()) {
                   <td class="pieces">{{ row.pieces }}</td>

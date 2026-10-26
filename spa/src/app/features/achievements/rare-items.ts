@@ -1,4 +1,6 @@
-import { CLASS_NAMES, parseClassId, parseRealmSlug, realmSlug } from '../../game/wow';
+import { getClassIconPath } from '../../game/classIconHelper';
+import { getRaceIconPath } from '../../game/raceIconHelper';
+import { CLASS_NAMES, RACE_NAMES, parseClassId, parseRealmSlug, realmSlug } from '../../game/wow';
 import { parseInteger } from '../../core/url-state';
 import { FilterDropdownOption, FilterDropdownValue } from '../../shared/filter-dropdown.types';
 
@@ -65,6 +67,10 @@ export interface OwnerQuery {
 export interface OwnerRow {
   readonly key: string;
   readonly character: RareItemCharacter;
+  readonly raceIcon: string;
+  readonly raceName: string;
+  readonly classIcon: string;
+  readonly className: string;
   readonly pieces: number;
   readonly detail: string;
 }
@@ -207,10 +213,9 @@ export function findOwners(dataset: RareItemsDataset, catalog: EliteCatalog, que
 }
 
 function ownerRow(character: RareItemCharacter, catalog: EliteCatalog, query: OwnerQuery): OwnerRow | undefined {
-  const key = `${character.realm}::${character.name}`;
   const other = query.other;
   if (other?.kind === 'item') {
-    return character.items.some(item => item.id === other.id) ? { key, character, pieces: 1, detail: '' } : undefined;
+    return character.items.some(item => item.id === other.id) ? row(character, 1, '') : undefined;
   }
 
   const wanted = (item: EliteItem) => other
@@ -223,7 +228,20 @@ function ownerRow(character: RareItemCharacter, catalog: EliteCatalog, query: Ow
     return undefined;
   }
 
-  return { key, character, pieces: pieces.length, detail: pieceDetail(pieces, catalog, query) };
+  return row(character, pieces.length, pieceDetail(pieces, catalog, query));
+}
+
+function row(character: RareItemCharacter, pieces: number, detail: string): OwnerRow {
+  return {
+    key: `${character.realm}::${character.name}`,
+    character,
+    raceIcon: getRaceIconPath(character.race, character.gender),
+    raceName: RACE_NAMES[character.race] ?? 'Unknown race',
+    classIcon: getClassIconPath(character.class),
+    className: CLASS_NAMES[character.class] ?? 'Unknown class',
+    pieces,
+    detail
+  };
 }
 
 function distinctPieces(items: ReadonlyArray<EliteItem>): EliteItem[] {

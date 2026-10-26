@@ -112,6 +112,12 @@ describe('findOwners', () => {
     expect(rows[0].detail).toBe('Cataclysmic 1 · Malevolent 4 · Vindictive 1');
   });
 
+  it('gives each row its race and class icons and names', () => {
+    const [zed] = findOwners(dataset, catalog, { classId: 6 });
+    expect([zed.raceIcon, zed.raceName, zed.classIcon, zed.className])
+      .toEqual(['assets/race-icons/1-0.gif', 'Human', 'assets/class-icons/6.gif', 'Death Knight']);
+  });
+
   it('counts the two Legion ids of one piece once', () => {
     const rows = findOwners(dataset, catalog, { season: 'vindictive' });
     expect(rows.map(row => [row.character.name, row.pieces, row.detail])).toEqual([['Kai', 1, 'Back'], ['Zed', 1, 'Head']]);
