@@ -1,3 +1,7 @@
+@use '../../shared/mythic-plus-shared' as *;
+
+@include visually-hidden;
+
 :host {
   display: block;
   width: 100%;
@@ -25,7 +29,7 @@
 .rare-items-header {
   position: relative;
   z-index: 2;
-  padding: 28px;
+  padding: 24px;
 }
 
 .eyebrow {
@@ -37,11 +41,7 @@
   text-transform: uppercase;
 }
 
-h1, h2 { margin: 0; color: #f4f7ee; }
-h1 { font-size: clamp(1.7rem, 4vw, 2.5rem); }
-h2 { font-size: 1.35rem; }
-
-.intro { margin: 8px 0 24px; color: #b7bdb0; }
+h2 { margin: 0; color: #f4f7ee; font-size: 1.35rem; }
 
 .filter-grid {
   display: grid;
@@ -154,11 +154,12 @@ app-pager {
 
 @media (max-width: 600px) {
   .rare-items-page { width: min(100% - 20px, 980px); padding-top: 24px; }
-  .rare-items-header { padding: 21px 18px; }
+  .rare-items-header { padding: 18px; }
   .filter-grid { grid-template-columns: minmax(0, 1fr); gap: 12px; }
   .results-heading { align-items: flex-start; flex-direction: column; }
   th, td { padding: 11px 8px; }
   .rank { width: 40px; }
   .pieces { width: 58px; }
-  .realm { width: 82px; font-size: 0.82rem; }
+  .realm { width: 82px; }
+  td.realm { font-size: 0.82rem; }
 }
