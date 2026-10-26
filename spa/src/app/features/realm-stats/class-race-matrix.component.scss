@@ -1,0 +1,160 @@
+@use '../../shared/mythic-plus-shared' as shared;
+
+$gold: #f7b500;
+
+:host { display: block; }
+
+@include shared.visually-hidden;
+
+.matrix {
+  width: 100%;
+  table-layout: fixed;
+  border-collapse: separate;
+  border-spacing: 3px;
+  font-variant-numeric: tabular-nums;
+
+  th, td { position: relative; }
+}
+
+.corner { width: 132px; background: none; }
+
+thead th {
+  padding: 0 0 6px;
+  font-weight: 400;
+  text-align: center;
+  vertical-align: bottom;
+
+  img { display: block; width: 20px; height: 20px; margin: 0 auto 3px; border-radius: 3px; }
+  &.active img { box-shadow: 0 0 0 2px $gold; }
+}
+
+.class-name {
+  display: block;
+  font-size: .64rem;
+  font-weight: 700;
+  line-height: 1.15;
+}
+
+.group-row th {
+  padding: 8px 2px 2px;
+  font-size: .7rem;
+  font-weight: 700;
+  letter-spacing: .04em;
+  text-align: left;
+  text-transform: uppercase;
+}
+
+th[scope='row'] {
+  overflow: hidden;
+  padding: 0 6px 0 0;
+  color: #bdbdbd;
+  font-size: .78rem;
+  font-weight: 700;
+  text-align: left;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+
+  img { width: 18px; height: 18px; margin-right: 6px; border-radius: 3px; vertical-align: middle; }
+}
+
+tr.active th[scope='row'] { color: #fff; }
+
+td {
+  height: 28px;
+  padding: 0;
+  border-radius: 3px;
+  background: rgb(247 181 0 / calc(10% + var(--heat, 0) * 40%));
+  color: #f0f0f0;
+  font-size: .72rem;
+  text-align: center;
+
+  &.empty { background: none; box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .07); }
+  &.active { box-shadow: inset 0 0 0 2px #fff; }
+}
+
+.matrix-footer {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 10px 16px;
+  margin-top: 10px;
+}
+
+.readout {
+  display: flex;
+  min-width: 0;
+  flex: 1 1 320px;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 14px;
+  padding: 10px 12px;
+  border: 1px solid #2a2a2a;
+  border-radius: 6px;
+  background: #141414;
+}
+
+.readout-title {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: #fff;
+  font-size: .9rem;
+  font-weight: 700;
+
+  img { width: 22px; height: 22px; border-radius: 3px; }
+}
+
+.readout-count { color: $gold; font-size: .9rem; font-variant-numeric: tabular-nums; }
+
+.readout-facts {
+  display: flex;
+  flex-basis: 100%;
+  flex-wrap: wrap;
+  gap: 2px 16px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  color: #bdbdbd;
+  font-size: .78rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.heat-legend {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: #8a8a8a;
+  font-size: .7rem;
+
+  i {
+    width: 72px;
+    height: 8px;
+    border-radius: 2px;
+    background: linear-gradient(90deg, rgba(247, 181, 0, .1), rgba(247, 181, 0, .5));
+  }
+}
+
+@include shared.motion-safe {
+  td { transition: background-color var(--dur-slow) ease; }
+}
+
+@media (max-width: 900px) {
+  .class-name { @include shared.hidden-visually; }
+}
+
+@media (max-width: shared.$phone-breakpoint) {
+  .matrix { border-spacing: 2px; }
+  .corner { width: 20px; }
+
+  th[scope='row'] {
+    padding: 0;
+    text-align: center;
+
+    img { margin: 0; }
+  }
+
+  thead th img { width: 16px; height: 16px; margin-bottom: 0; }
+  .race-name, .cell-text { @include shared.hidden-visually; }
+  td { height: 19px; }
+}

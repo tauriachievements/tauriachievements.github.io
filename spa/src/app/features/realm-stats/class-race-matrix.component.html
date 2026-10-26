@@ -1,0 +1,60 @@
+<table class="matrix" (pointerover)="pointAt($event)">
+  <caption class="visually-hidden">Characters by race and class</caption>
+  <thead>
+    <tr>
+      <td class="corner"></td>
+      @for (entry of matrix().classes; track entry.id) {
+        <th scope="col" [class.active]="activeCell()?.classId === entry.id">
+          <img [src]="entry.icon" alt="" width="20" height="20" />
+          <span class="class-name" [style.color]="entry.color">{{ entry.name }}</span>
+        </th>
+      }
+    </tr>
+  </thead>
+  @for (group of groups(); track group.name) {
+    <tbody>
+      <tr class="group-row">
+        <th scope="rowgroup" [attr.colspan]="matrix().classes.length + 1" [style.color]="group.color">{{ group.name }}</th>
+      </tr>
+      @for (race of group.races; track race.id) {
+        <tr [class.active]="activeCell()?.raceId === race.id">
+          <th scope="row">
+            <img [src]="race.icon" alt="" width="18" height="18" />
+            <span class="race-name">{{ race.label }}</span>
+          </th>
+          @for (item of race.cells; track item.cell.key) {
+            <td
+              [attr.data-cell]="item.cell.key"
+              [class.empty]="!item.cell.count"
+              [class.active]="item.cell.key === activeCell()?.key"
+              [style.--heat]="item.heat">
+              <span class="cell-text">{{ item.text }}</span>
+            </td>
+          }
+        </tr>
+      }
+    </tbody>
+  }
+</table>
+
+<div class="matrix-footer">
+  @if (readout(); as readout) {
+    <div class="readout">
+      <span class="readout-title">
+        @for (icon of readout.icons; track icon) {
+          <img [src]="icon" alt="" width="22" height="22" />
+        }
+        <span>{{ readout.race }} <span [style.color]="readout.color">{{ readout.className }}</span></span>
+      </span>
+      <b class="readout-count">{{ readout.count }}</b>
+      @if (readout.facts.length) {
+        <ul class="readout-facts">
+          @for (fact of readout.facts; track fact) {
+            <li>{{ fact }}</li>
+          }
+        </ul>
+      }
+    </div>
+  }
+  <span class="heat-legend" aria-hidden="true">Fewer <i></i> More</span>
+</div>

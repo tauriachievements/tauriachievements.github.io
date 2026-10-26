@@ -81,8 +81,8 @@ the page's store. The component keeps the URL, the filters and the event handler
   then the final `'**'` redirect to the ladder.
 - Every page loads lazily through `loadComponent`, except the ladder: it's the home page,
   so it ships in the initial bundle and the first visit needs no extra request. New pages are
-  lazy too ([guides/howto-add-page.md](guides/howto-add-page.md)). Importing a page or its
-  heavy dependency (Chart.js) from an eager file pulls it back into the initial bundle.
+  lazy too ([guides/howto-add-page.md](guides/howto-add-page.md)). Importing a page from an
+  eager file pulls it, and everything it imports, back into the initial bundle.
 - A code deploy renames the page chunks and Pages deletes the old ones, so a tab left open
   across it can't load a page it hasn't opened yet. `reloadOnNewDeploy`
   (`core/new-deploy-reload.ts`, the router's navigation error handler) turns that failed
@@ -148,6 +148,7 @@ The query parameters each page reads:
 | `/arena` | `bracket`: `2v2` (default) or `3v3` |
 | `/rated-battleground` | `view`: `players` (default) or `matches`; `page` (the players view) |
 | `/mythic-plus` | `view` (`runs`, `players`), `sort` (`best`, `latest`), `period` (`season`, `week`), `dungeon`, `realm`, `class`, `spec`, `role`, `page`, `character` (`Name-Realm`: the runs view shows only theirs, the players view picks out their row), `compare` (`Name-Realm,…`: opens compare mode with those picks) |
+| `/stats` | `realm` (`evermoon`, `tauri`, `wod`; all realms by default), `level` (`100`, `90`, `80`, `all`; 110 by default) |
 | `/mythic-plus/stats` | `period` |
 | `/mythic-plus/records` | `dungeon` (the server firsts' filter) |
 | `/mythic-plus/compare` | `players`: `Name-Realm,…`, at most four |
@@ -484,7 +485,13 @@ Adding to that list is a product decision: ask first.
 
 Charts follow the same rule. A bar chart with more bars than fit turns into horizontal bars on
 phones: the bar's length is the `--bar` custom property, which is the height on desktop and
-the width on phones (`spec-charts/spec-chart.scss`).
+the width on phones (`spec-charts/spec-chart.scss`, and the Realm Stats distributions in
+`stats-column-chart.component.scss`, which on phones also write each count beside its bar
+instead of in a tooltip).
+
+Every chart is HTML and CSS; the app carries no chart library. A grid too dense for numbers on
+a phone, like the Realm Stats race and class grid, shows only its shading there, and a readout
+under it gives the numbers of the square last pointed at or tapped, so it needs no tooltips.
 
 ## Styles
 
@@ -492,8 +499,8 @@ the width on phones (`spec-charts/spec-chart.scss`).
   class colours, and the styles of item tooltips injected as HTML from TauriShoot
   (`.legendary-tooltip-content`), which component styles can't reach.
 - Plain SCSS per component, with no CSS framework.
-- Text on a coloured cell keeps 4.5:1 contrast: the talents heatmap's gold stops at about half
-  strength under its white figures. Most colours are literals. The shared
+- Text on a coloured cell keeps 4.5:1 contrast: the talents heatmap's gold and the Realm Stats
+  grid's gold stop at about half strength under their white figures. Most colours are literals. The shared
   tokens are the motion variables (`_motion.scss`), `--update-bar-height`, `--class-<id>` and
   the skeleton colours (`_skeleton.scss`).
   The site colours are background `#050505`, text `#e0e0e0` and gold `#f7b500`. Body text is

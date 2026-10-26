@@ -51,10 +51,34 @@ explains it together.
 
 ## Realm Stats
 
-- **Code:** `spa/scripts/compute-server-stats.js`.
+- **Code:** `spa/scripts/compute-server-stats.js` counts; `features/realm-stats/realm-stats-views.ts`
+  turns the counts into what the page shows.
+- Every number counts only the characters the realm and level filters pick. A guild's size is how
+  many of those characters it holds (guild and realm together name a guild).
 - A value falls in the highest bucket whose lower bound it reaches (bounds inclusive).
-- Factions list Horde, Alliance and Neutral in that order, then anything else.
-- **Tests:** `scripts/compute-server-stats.test.js`.
+- Factions list Horde, Alliance and Neutral in that order, then anything else. A class's faction
+  balance leaves Neutral out.
+- Gender 1 is female. A race's icon shows the gender at least half of its characters play,
+  female on a tie.
+- An item level of 0 means unknown and is left out of the item level average, median and chart.
+  The item level buckets adapt to the filter: they start at the round step below the lowest
+  tenth of the characters, the step is the smallest of 1, 2, 5, 10, 20, 25, 50 and 100 that
+  fits the rest of the spread into about twelve bars, and everyone under the first step shares
+  one "<" bucket.
+- The character age chart counts the year (UTC) of the Level 10 achievement. A character
+  without one is left out; the years between the first and the last are all shown, empty or not.
+- A distribution's gold bar is the bucket where the running count reaches half the characters.
+- Most played pairings: count, then race id, then class id. Rarest pairings: the fewest
+  characters first, leaving out any pair already in the most played ten.
+- The race and class grid shades each square by the square root of its value over the
+  strongest square of the mode (count, share of the class, share of the race), so small pairs
+  still show.
+- The item level class averages draw their bars from a baseline below the lowest class, the
+  lowest average minus the spread (at least 10), rounded down to a multiple of 10, and the page
+  says where it starts. Played time and points start at zero.
+- Split bars (faction, female share) show whole percentages, the second being 100 minus the
+  first, so the two always add up.
+- **Tests:** `scripts/compute-server-stats.test.js`, `realm-stats-views.spec.ts`.
 
 ## Rare Achievements
 

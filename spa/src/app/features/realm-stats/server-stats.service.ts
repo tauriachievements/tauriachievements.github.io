@@ -2,37 +2,73 @@ import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 import { DataFileService } from '../../core/data-file.service';
 
-export interface ServerStatsIdCount {
-  id: number;
-  count: number;
-}
-
 export interface ServerStatsNamedCount {
   name: string;
   count: number;
+}
+
+export interface ServerStatsClass {
+  id: number;
+  count: number;
+  female: number;
+  horde: number;
+  alliance: number;
+  avgItemLevel: number;
+  avgPlayedHours: number;
+  avgAchievementPoints: number;
+}
+
+export interface ServerStatsRace {
+  id: number;
+  count: number;
+  female: number;
+}
+
+export interface ServerStatsCombo {
+  race: number;
+  class: number;
+  count: number;
+  female: number;
+}
+
+export interface ServerStatsDistribution {
+  labels: string[];
+  counts: number[];
+}
+
+export interface ServerStatsDistributions {
+  itemLevel: ServerStatsDistribution;
+  achievementPoints: ServerStatsDistribution;
+  honorableKills: ServerStatsDistribution;
+  playedDays: ServerStatsDistribution;
+  level10Year: ServerStatsDistribution;
+  guildSize: ServerStatsDistribution;
 }
 
 export interface ServerStatsSnapshot {
   totalPlayers: number;
   guildedPlayers: number;
   uniqueGuilds: number;
+  femalePlayers: number;
   avgAchievementPoints: number;
   maxAchievementPoints: number;
   avgHonorableKills: number;
   maxHonorableKills: number;
+  avgItemLevel: number;
+  medianItemLevel: number;
+  totalPlayedHours: number;
+  medianPlayedHours: number;
   factions: ServerStatsNamedCount[];
-  classes: ServerStatsIdCount[];
-  races: ServerStatsIdCount[];
+  classes: ServerStatsClass[];
+  races: ServerStatsRace[];
+  combos: ServerStatsCombo[];
   guilds: ServerStatsNamedCount[];
   realms: ServerStatsNamedCount[];
-  apBucketLabels: string[];
-  apBucketCounts: number[];
-  hkBucketLabels: string[];
-  hkBucketCounts: number[];
+  distributions: ServerStatsDistributions;
 }
 
 export interface ServerStatsSnapshotCollection {
-  version: 2;
+  version: 3;
   filters: Record<string, ServerStatsSnapshot>;
 }
 

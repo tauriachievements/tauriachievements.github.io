@@ -1,0 +1,29 @@
+@if (columns().length) {
+  <div class="columns" [style.--columns]="columns().length" appReveal>
+    @for (column of columns(); track column.label; let index = $index; let count = $count) {
+      <div
+        class="column"
+        appTapTooltip
+        role="img"
+        tabindex="0"
+        [style.--i]="index"
+        [class.highlight]="column.highlight"
+        [class.flip]="index >= count / 2"
+        [attr.aria-label]="caption() + ' ' + column.label + ': ' + column.countText + ' ' + unit() + ', ' + column.shareText">
+        <span class="label" aria-hidden="true"><span class="tick">{{ column.tick }}</span><span class="full">{{ column.label }}</span></span>
+        <span class="plot" aria-hidden="true">
+          <span class="bar" [style.--bar]="column.percent + '%'">
+            <span class="value"><span class="compact">{{ column.compactText }}</span><span class="full">{{ column.countText }}</span></span>
+          </span>
+        </span>
+        <span class="tooltip" aria-hidden="true">
+          <strong>{{ column.countText }} {{ unit() }}</strong>
+          <span>{{ caption() }} {{ column.label }}</span>
+          <span class="tooltip-meta">{{ column.shareText }} of them</span>
+        </span>
+      </div>
+    }
+  </div>
+} @else {
+  <p class="chart-empty">Nothing to show here.</p>
+}
