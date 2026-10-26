@@ -16,7 +16,7 @@
     </a>
   </header>
 
-  <app-load-state [loading]="isLoading()" [error]="loadError()" loadingText="Counting the keystones..." (retry)="loadData()" />
+  <app-load-state [loading]="isLoading()" [error]="loadError()" [skeleton]="['switch:2', 'tiles:5', 'chart', 'cards:2']" loadingText="Counting the keystones..." (retry)="loadData()" />
 
   @if (!isLoading() && !loadError()) {
     <div class="period-bar">

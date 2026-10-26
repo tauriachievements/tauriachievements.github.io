@@ -3,7 +3,7 @@
 
   <a class="back-link" routerLink="/raid-logs"><span aria-hidden="true">‹</span> Back to Raid Logs</a>
 
-  <app-load-state [loading]="isLoading()" [error]="loadError()" loadingText="Reading the logs..." (retry)="loadData()" />
+  <app-load-state [loading]="isLoading()" [error]="loadError()" [skeleton]="['rows:10']" loadingText="Reading the logs..." (retry)="loadData()" />
 
   @if (!isLoading() && !loadError()) {
     <section class="section" aria-labelledby="invalid-title">

@@ -34,10 +34,7 @@
   </section>
 
   @if (isLoading()) {
-    <section class="feedback">
-      <div class="spinner" aria-hidden="true"></div>
-      <p>Loading the archive...</p>
-    </section>
+    <app-skeleton [blocks]="['rows:8']" label="Loading the archive..." />
   }
 
   @if (!isLoading() && loadError()) {

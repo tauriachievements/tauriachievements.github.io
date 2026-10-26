@@ -1,9 +1,6 @@
 <main class="rated-shell">
   @if (showLoading()) {
-    <div class="rated-feedback loading">
-      <div class="feedback-spinner" aria-hidden="true"></div>
-      <h2>Reading the rated battleground archive...</h2>
-    </div>
+    <app-skeleton [blocks]="['hero', 'toolbar:2', 'tiles:4', 'cards:2']" label="Reading the rated battleground archive..." />
   }
 
   @if (showError()) {

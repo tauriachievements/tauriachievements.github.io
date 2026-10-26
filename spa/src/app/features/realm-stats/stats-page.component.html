@@ -36,11 +36,7 @@
   </header>
 
   @if (showLoading()) {
-    <div class="stats-feedback loading">
-      <div class="feedback-spinner" aria-hidden="true"></div>
-      <h2>Computing server statistics...</h2>
-      <p>Crunching data for every character on the server</p>
-    </div>
+    <app-skeleton [blocks]="['tiles:3', 'cards:4']" label="Computing server statistics..." />
   }
 
   @if (showError()) {

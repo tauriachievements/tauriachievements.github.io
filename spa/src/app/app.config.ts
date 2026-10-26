@@ -23,7 +23,7 @@ export const appConfig: ApplicationConfig = {
       }),
       withEnabledBlockingInitialNavigation(),
       withNavigationErrorHandler(reloadOnNewDeploy),
-      withViewTransitions()
+      withViewTransitions({ skipInitialTransition: true })
     ),
     provideHttpClient()
   ]

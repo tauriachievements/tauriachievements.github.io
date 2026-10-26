@@ -8,7 +8,7 @@
     <p>Dungeon records, server firsts, untimed keys, and the players with the most runs.</p>
   </header>
 
-  <app-load-state [loading]="isLoading()" [error]="loadError()" loadingText="Polishing the trophies..." (retry)="loadData()" />
+  <app-load-state [loading]="isLoading()" [error]="loadError()" [skeleton]="['tiles:3', 'cards:6']" loadingText="Polishing the trophies..." (retry)="loadData()" />
 
   @if (!isLoading() && !loadError()) {
     <dl class="summary">

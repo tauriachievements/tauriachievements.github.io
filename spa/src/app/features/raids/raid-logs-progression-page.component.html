@@ -1,7 +1,7 @@
 <main class="raid-page">
   <h1 class="visually-hidden">Guild progression, {{ index()?.raid?.name ?? 'The Emerald Nightmare' }}</h1>
 
-  <app-load-state [loading]="isLoading()" [error]="loadError()" loadingText="Reading the logs..." (retry)="loadData()" />
+  <app-load-state [loading]="isLoading()" [error]="loadError()" [skeleton]="['toolbar:3', 'rows:15']" loadingText="Reading the logs..." (retry)="loadData()" />
 
   @if (!isLoading() && !loadError() && difficulty(); as current) {
     <section class="section" aria-label="Guild progression">

@@ -9,10 +9,7 @@
   }
 
   @if (isLoading()) {
-    <div class="new-rare-feedback loading">
-      <div class="feedback-spinner" aria-hidden="true"></div>
-      <h2>Loading new rare characters...</h2>
-    </div>
+    <app-skeleton [blocks]="['rows:10']" label="Loading new rare characters..." />
   }
 
   @if (!isLoading() && loadError()) {

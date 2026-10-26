@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component, DestroyRef, OnInit, computed, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { DataFileService } from '../../core/data-file.service';
+import { SkeletonComponent } from '../../shared/skeleton.component';
 
 interface GuildRealmFirstResult {
   guild: string | null;
@@ -87,7 +88,7 @@ const POGCHAMP_EMOTE_URL = 'assets/pogchamp.png';
   selector: 'app-guild-realm-firsts-page',
   templateUrl: './guild-realm-firsts-page.component.html',
   styleUrls: ['./guild-realm-firsts-page.component.scss'],
-  imports: [],
+  imports: [SkeletonComponent],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class GuildRealmFirstsPageComponent implements OnInit {

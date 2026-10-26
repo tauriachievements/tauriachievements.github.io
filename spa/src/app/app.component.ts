@@ -1,8 +1,10 @@
-import { Component, computed, inject } from '@angular/core';
+import { DOCUMENT } from '@angular/common';
+import { Component, DestroyRef, computed, inject } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRouteSnapshot, Data, NavigationEnd, Router, RouterOutlet } from '@angular/router';
 import { filter, map, startWith } from 'rxjs';
 import { BackToTopButtonComponent } from './core/back-to-top-button.component';
+import { markSettledImages } from './core/image-placeholders';
 import { UpdateBarComponent } from './core/update-bar.component';
 
 function deepestRoute(route: ActivatedRouteSnapshot): ActivatedRouteSnapshot {
@@ -37,4 +39,8 @@ export class AppComponent {
 
   readonly showHeader = computed(() => this.routeData()['header'] !== false);
   readonly showBackToTop = computed(() => this.routeData()['backToTop'] !== false);
+
+  constructor() {
+    inject(DestroyRef).onDestroy(markSettledImages(inject(DOCUMENT)));
+  }
 }

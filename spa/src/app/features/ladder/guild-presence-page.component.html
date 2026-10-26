@@ -56,10 +56,7 @@
   }
 
   @if (showLoadingState()) {
-    <div class="guild-presence-feedback loading">
-      <div class="feedback-spinner" aria-hidden="true"></div>
-      <h2>Loading guild rankings...</h2>
-    </div>
+    <app-skeleton [blocks]="['rows:12']" label="Loading guild rankings..." />
   }
 
   @if (showErrorState()) {

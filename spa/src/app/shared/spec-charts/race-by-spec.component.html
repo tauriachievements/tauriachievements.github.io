@@ -21,10 +21,7 @@
   </header>
 
   @if (loading()) {
-    <div class="chart-state" role="status">
-      <span class="state-spinner" aria-hidden="true"></span>
-      <span>Reading the rosters…</span>
-    </div>
+    <app-skeleton bare [blocks]="['rows:6']" label="Reading the rosters…" />
   }
 
   @if (!loading()) {

@@ -18,12 +18,14 @@ import { LeaderboardTableComponent } from './leaderboard-table.component';
 import { LadderFilterState, LadderSort } from './ladder.types';
 import { setPageHeader } from '../../core/page-header';
 import { CLASS_OPTIONS, FACTION_OPTIONS, REALM_OPTIONS } from '../../players/player-filter-options';
+import { SkeletonBlock } from '../../shared/skeleton';
+import { SkeletonComponent } from '../../shared/skeleton.component';
 
 @Component({
   selector: 'app-achievement-ladder',
   templateUrl: './ladder.component.html',
   styleUrls: ['./ladder.component.scss'],
-  imports: [FilterBarComponent, LeaderboardTableComponent],
+  imports: [FilterBarComponent, LeaderboardTableComponent, SkeletonComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   providers: [LadderPageStore]
 })
@@ -39,6 +41,7 @@ export class AchievementLadderComponent implements OnInit {
   readonly factionOptions = FACTION_OPTIONS;
   readonly classOptions = CLASS_OPTIONS;
   readonly pageSizeOptions = [...PAGE_SIZE_OPTIONS];
+  readonly skeleton: readonly SkeletonBlock[] = ['rows:15'];
   readonly filterState = signal<LadderFilterState>(DEFAULT_LADDER_FILTER_STATE);
   readonly currentSort = computed(() => this.filterState().sort);
   readonly currentRealm = computed(() => this.filterState().realm);

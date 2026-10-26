@@ -15,27 +15,6 @@
   .segmented { flex: none; }
 }
 
-.chart-state {
-  display: flex;
-  min-height: 160px;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-  color: #9a9a9a;
-  font-size: .85rem;
-}
-
-.state-spinner {
-  width: 20px;
-  height: 20px;
-  border: 2px solid rgba(255, 255, 255, .15);
-  border-top-color: #f7b500;
-  border-radius: 50%;
-  animation: race-spin .8s linear infinite;
-}
-
-@keyframes race-spin { to { transform: rotate(360deg); } }
-
 .race-rows {
   display: grid;
   grid-template-columns: minmax(0, 1fr);

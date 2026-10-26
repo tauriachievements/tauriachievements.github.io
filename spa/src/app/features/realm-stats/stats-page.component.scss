@@ -115,19 +115,6 @@
   }
 }
 
-.feedback-spinner {
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  border: 3px solid rgba(255, 255, 255, 0.1);
-  border-top-color: #f7b500;
-  animation: stats-spin 0.9s linear infinite;
-}
-
-@keyframes stats-spin {
-  to { transform: rotate(360deg); }
-}
-
 .feedback-action {
   margin-top: 4px;
   padding: 9px 18px;
@@ -324,3 +311,5 @@
     font-size: 1.4rem;
   }
 }
+
+app-skeleton { --skeleton-width: 690px; }

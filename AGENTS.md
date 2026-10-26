@@ -137,6 +137,9 @@ There is no root package manager; each half has its own toolchain.
 - Pure logic lives in `<feature>.ts` with `<feature>.spec.ts` beside it, for example
   `arena-games.ts` next to `arena-games-page.component.ts`. Components stay thin. Most tests
   cover the pure functions.
+- A page that loads data shows a skeleton shaped like it while it loads (`[skeleton]` on
+  `app-load-state`, or `app-skeleton`), not a spinner on an empty screen
+  ([docs/frontend.md](docs/frontend.md#loading-skeletons)).
 - Strict TypeScript, no `any`. Single quotes and 2-space indents (`.editorconfig`). There is no
   Prettier or ESLint config, so match the file you're in.
 
@@ -200,6 +203,11 @@ There is no root package manager; each half has its own toolchain.
   `_motion.scss` ([docs/motion-and-rendering.md](docs/motion-and-rendering.md)).
 - The app is zoneless: right after a click the DOM still shows the old state, so browser checks
   wait a tick.
+- Above 768 px `app-root` is a centred flex row, so a page shrinks to its content's width. A
+  skeleton on a page sized by its table draws as a narrow column until the page sets
+  `--skeleton-width` ([docs/frontend.md](docs/frontend.md#page-skeletons)).
+- The boot skeleton in `index.html` copies the header's and the skeleton's styles by hand;
+  `scripts/boot-skeleton.test.js` fails when they drift.
 - Several page stylesheets sit at the 16 kB `anyComponentStyle` warning budget. Put a page's
   motion in `<page>.motion.scss` and its phone rules in `<component>.phone.scss`, as further
   `styleUrls` entries.

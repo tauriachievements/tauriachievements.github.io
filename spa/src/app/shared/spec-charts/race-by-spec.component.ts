@@ -4,6 +4,7 @@ import { getRaceIconPath } from '../../game/raceIconHelper';
 import { GlideDirective } from '../motion/glide.directive';
 import { RaceFactionFilter, RaceSample, RaceShare, racesBySpec } from './race-popularity';
 import { RevealDirective } from '../motion/reveal.directive';
+import { SkeletonComponent } from '../skeleton.component';
 import { TapTooltipDirective } from '../tap-tooltip.directive';
 import { Role } from '../../game/wow';
 
@@ -40,7 +41,7 @@ const ROLE_TITLES: Readonly<Record<Role, string>> = { dps: 'DPS', tank: 'tank', 
 
 @Component({
   selector: 'app-race-by-spec',
-  imports: [GlideDirective, RevealDirective, TapTooltipDirective, DecimalPipe],
+  imports: [GlideDirective, RevealDirective, TapTooltipDirective, DecimalPipe, SkeletonComponent],
   templateUrl: './race-by-spec.component.html',
   styleUrls: ['./spec-chart.scss', './race-by-spec.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush

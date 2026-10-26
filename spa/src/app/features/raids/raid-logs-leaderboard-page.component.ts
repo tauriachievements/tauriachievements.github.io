@@ -39,7 +39,11 @@ import { injectReplaceUrl, parseInteger, parsePage } from '../../core/url-state'
 import { LoadStateComponent } from '../../shared/load-state.component';
 import { PagerComponent } from '../../shared/pager.component';
 import { pageCount, pageSlice } from '../../shared/pager';
+import { SkeletonBlock } from '../../shared/skeleton';
 import { setPageHeader } from '../../core/page-header';
+
+const ROWS_SKELETON: readonly SkeletonBlock[] = ['rows:15'];
+const PAGE_SKELETON: readonly SkeletonBlock[] = ['switch:3', 'toolbar:4', ...ROWS_SKELETON];
 import { RunQuality, scoreQuality } from '../../shared/score-quality';
 
 interface Loaded {
@@ -91,6 +95,7 @@ export class RaidLogsLeaderboardPageComponent {
   readonly isLoading = signal(true);
   readonly loadError = signal<string | undefined>(undefined);
   readonly lastEdited = computed(() => this.index()?.generatedAt);
+  readonly skeleton = computed(() => (this.index() ? ROWS_SKELETON : PAGE_SKELETON));
 
   private readonly requestedDifficulty = signal(this.query.get('difficulty') ?? this.data.lastDifficulty());
   readonly metric = signal<RaidMetric>(this.query.get('metric') === 'hps' ? 'hps' : 'dps');

@@ -13,6 +13,7 @@ import { Player } from '../../players/character.model';
 import { DataSyncService } from '../../players/data-sync.service';
 import { LadderLastUpdatedService } from '../../players/ladder-last-updated.service';
 import { setPageHeader } from '../../core/page-header';
+import { SkeletonComponent } from '../../shared/skeleton.component';
 
 type SlotId = 'a' | 'b';
 
@@ -23,7 +24,7 @@ const MIN_SEARCH_LENGTH = 2;
   selector: 'app-compare-page',
   templateUrl: './compare-page.component.html',
   styleUrls: ['./compare-page.component.scss'],
-  imports: [DecimalPipe],
+  imports: [DecimalPipe, SkeletonComponent],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class ComparePageComponent implements OnInit {

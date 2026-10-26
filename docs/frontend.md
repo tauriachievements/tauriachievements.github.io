@@ -11,8 +11,8 @@ folders:
 
 | Folder | Holds |
 |---|---|
-| `core/` | what the whole app runs on: the header (`update-bar`, `nav-sections.ts`, `page-header.ts`), the back-to-top button, `url-state.ts`, `page-links.ts` (links into one feature's pages from another's), `DataFileService`, `ObservableCache`, `time-zone-label.ts` |
-| `shared/` | building blocks any page may use: the filter dropdown, the mobile filter toggle, `app-load-state`, `app-pager` and `pager.ts`, `app-icon-tips`, `appTapTooltip`, `compact-viewport.ts`, `time-format.ts`, `score-quality.ts`, `_mythic-plus-shared.scss` |
+| `core/` | what the whole app runs on: the header (`update-bar`, `nav-sections.ts`, `page-header.ts`), the back-to-top button, `url-state.ts`, `page-links.ts` (links into one feature's pages from another's), `DataFileService`, `ObservableCache`, `time-zone-label.ts`, `image-placeholders.ts` |
+| `shared/` | building blocks any page may use: the filter dropdown, the mobile filter toggle, `app-load-state`, `app-skeleton` with `skeleton.ts` and `_skeleton.scss`, `app-pager` and `pager.ts`, `app-icon-tips`, `appTapTooltip`, `compact-viewport.ts`, `time-format.ts`, `score-quality.ts`, `_mythic-plus-shared.scss` |
 | `shared/spec-charts/` | the spec and race popularity charts the Mythic+ and Raids statistics share: `spec-popularity.ts`, `race-popularity.ts`, `app-race-by-spec`, and `spec-chart.scss`, the chart look every spec chart lists first in its `styleUrls` |
 | `shared/motion/` | the motion directives and their helpers (`motion.ts`, `count-up.ts`, `decode-text.ts`) |
 | `game/` | the game's own tables and links: `wow.ts`, `wow-specs.ts`, `class-colors.ts`, `armory.ts`, the class and race icon helpers, and the asset paths in `classIconHelper.ts` (class icons, class crests, spec art) |
@@ -92,6 +92,8 @@ the page's store. The component keeps the URL, the filters and the event handler
 - `app.config.ts` turns on `withViewTransitions()` and `scrollPositionRestoration: 'enabled'`,
   so **every router navigation, even one that only changes query parameters, runs a full-page
   view transition and scrolls to the top.** Back and Forward return to where the reader was.
+  The first navigation is the exception (`skipInitialTransition`): it replaces the
+  [boot skeleton](#the-boot-skeleton), and a transition there would fade through an empty page.
 - Shared URLs never break. A renamed page keeps a `redirectTo` from its old path (as with
   `guild-realm-firsts` and `50-games-played-arenas`).
 - Unlisted routes are unlisted on purpose: the guild pages (`<key>-<8 hex>`) and the Rare Items
@@ -213,6 +215,93 @@ rows of the achievement-point order, and loads every player only when a view nee
 - `DataSyncService` shares one in-flight request between the components that ask on the same
   navigation, and a head response that arrives late never replaces the full set.
 
+## Loading skeletons
+
+Until the data arrives, the reader sees the page's shape, not a blank screen or a spinner. There
+are three layers: the boot skeleton until the app starts, the page's skeleton until its data
+loads, and a placeholder in each image until it downloads.
+
+### The boot skeleton
+
+- `index.html` holds a static skeleton inside `<app-root>`: a header laid out on the real
+  header's grid, at its 1499, 1023, 960 and 640 px breakpoints, and one of three page shapes. A
+  script after the 404 path restore picks the shape from the address and sets `data-boot` on
+  `<html>`:
+  - `mythic-plus`: a switch, dungeon tiles and a chart, then a toolbar and table above 900 px,
+    or cards below;
+  - `raids`: the difficulty switch and boss cards;
+  - `table`: a toolbar and a table, on every other page.
+
+  CSS shows the sections whose `boot-in-<layout>` class matches.
+- It paints with the first chunk of HTML, before any script or stylesheet, so its CSS is
+  inline and doesn't rely on `styles.css` (it sets its own `box-sizing`).
+- Angular replaces it; nothing removes it by hand. `withEnabledBlockingInitialNavigation()`
+  renders the app only once the first page's chunk has loaded, and rendering the root
+  component clears `<app-root>`. The first navigation skips its view transition, so the header
+  and the page, with its own skeleton, take over in one frame.
+- A page whose route resolves its data before it renders (the guild pages) keeps the boot
+  skeleton until that data arrives.
+- Its colours, sweep, header height, header background and breakpoints copy the app's.
+  `scripts/boot-skeleton.test.js` fails when they drift, so change both together.
+- It never names an unlisted page's path, since `index.html` is public. The Rare Items page,
+  which has no header, shows the boot header until it renders.
+
+### Page skeletons
+
+- `app-load-state` takes `[skeleton]`, a list of blocks, and shows `app-skeleton` instead of the
+  spinner while loading. `loadingText` becomes the skeleton's screen-reader status; the shapes
+  are `aria-hidden`. Without `[skeleton]` it still shows the spinner.
+- A page with its own loading markup uses `<app-skeleton [blocks]="…" label="…" />` directly
+  and keeps its own error and empty states.
+- The blocks (`SkeletonBlock`, `skeleton.ts`) take a count after a colon, else a default, and
+  the compiler checks their names:
+
+  | Block | Draws |
+  |---|---|
+  | `hero` | a header card: icon, eyebrow, title and a switch |
+  | `intro` | a heading and two lines of text |
+  | `switch:n` | a row of pills |
+  | `tiles:n` | stat tiles, two columns on phones |
+  | `icons:n` | picker tiles: one phone row up to 7, two rows above that |
+  | `toolbar:n` | filters and a search field |
+  | `rows:n` | a table, with two number columns on phones |
+  | `cards:n` | cards with an icon, a title and two lines |
+  | `chart` | bars falling like a popularity chart, horizontal on phones |
+
+- Static chrome never becomes a skeleton. The back link, the title and the switches that don't
+  need data render at once; the skeleton stands in only for what the data fills. When part of
+  the page appears before the rest (the boss picker, once the raid index is in), the page
+  passes a shorter list from a `computed`, as the boss page and both leaderboards do.
+- `bare` drops the frames, for a skeleton inside a card that is already on screen (the spec and
+  race charts, the AP chest looters' list).
+- Above 768 px `app-root` is a centred flex row, so the older pages shrink to their table's
+  width, and a skeleton there draws as a narrow column. Such a page sets `--skeleton-width` on
+  `app-skeleton` to its loaded content width. The skeleton is a one-column grid,
+  `minmax(0, var(--skeleton-width, 1fr))`: it widens the page as the table would, but never
+  past the screen, and never forces sideways scrolling on a phone.
+- There's no delay before a skeleton shows and no minimum time on screen. Data this session has
+  already loaded arrives synchronously (`shareReplay`), so `isLoading` turns back off before
+  Angular renders, and a revisit never flashes a skeleton.
+- The content replaces the skeleton in one frame, with no fade: there's no entrance animation
+  on table rows.
+
+### Image placeholders
+
+- `markSettledImages()` (`core/image-placeholders.ts`, called once by the shell) listens for
+  `load` and `error` on the document, in the capture phase, and marks each image that settles
+  `data-loaded`.
+- `styles.scss` gives every image without `data-loaded` the skeleton's bone, so an icon still
+  downloading shows a shimmering box instead of a hole. The rule sits in `:where()`, so a
+  component's own background or animation on its images wins.
+
+### The look
+
+- `_skeleton.scss` holds the colours and the `skeleton-bone` and `skeleton-frame` mixins. The
+  bone and its shine are translucent, so bones show on the page background and on cards alike.
+- One light band sweeps across every bone at once: the gradient is sized to the viewport,
+  `background-attachment: fixed`, and moved by the global `mp-skeleton-sweep` keyframe. Under
+  reduced motion the bones stand still.
+
 ## Shared building blocks
 
 Reuse these before you build anything new. Making a new shared piece is an architectural
@@ -236,7 +325,8 @@ decision (ask first).
 | `app-back-to-top-button` | the floating back-to-top button |
 | `app-pager` (`pager.component`) | every list split into pages: « First, ‹ Prev, Next ›, Last ». `<app-pager [page]="currentPage()" [pages]="pages()" [count]="(total() \| number) + ' characters'" [scrollTarget]="listSection" (pageChange)="goToPage($event)" />`. With `count`, it shows "Page 3 of 41 · 2,034 characters" after the buttons, and anything inside it (the M+ dungeon timer) sits there too. It emits only a page in range that differs from the current one, and the page writes it to `?page=`. Given a `scrollTarget`, the pager under a list scrolls back to the list's top after a change; give that element a `scroll-margin-top` that clears the header. `pageCount` and `pageSlice` (`pager.ts`) do the page maths. The Mythic+ leaderboard, the Raids Rankings and boss pages, and Rated Battlegrounds use it. A list that grows in place ("Show 50 more") isn't a pager |
 | `appBottomBar` (`core/bottom-bar.directive.ts`) | a bar fixed to the bottom of the screen, such as the Mythic+ compare tray. It publishes its height as `--bottom-bar-height`, so on phones the page end and the back-to-top button stay above it ([below](#the-app-shell-and-the-header-height-contract)) |
-| `app-load-state` | a page's loading spinner and its error box with "Try again": `<app-load-state [loading]="isLoading()" [error]="loadError()" loadingText="Reading the logs..." (retry)="loadData()" />`. It renders nothing once loaded; content inside it shows in the error box (the character page's difficulty switch). The Mythic+ and Raids pages use it; the older pages and the themed Arena, Emerald Nightmare and Rare Items pages keep their own |
+| `app-load-state` | a page's loading skeleton and its error box with "Try again": `<app-load-state [loading]="isLoading()" [error]="loadError()" [skeleton]="['tiles:5', 'rows:10']" loadingText="Reading the logs..." (retry)="loadData()" />`. It renders nothing once loaded; content inside it shows in the error box (the character page's difficulty switch). Without `[skeleton]` it shows a spinner. The Mythic+ and Raids pages use it; the older pages and the themed Arena, Emerald Nightmare and Rare Items pages keep their own error boxes and use `app-skeleton` directly |
+| `app-skeleton` | the shape of a page while its data loads: `<app-skeleton [blocks]="['rows:12']" label="Loading guild rankings..." />`, `bare` inside a card that is already on screen ([Loading skeletons](#loading-skeletons)) |
 | `class-colors.ts` | the one class-colour table: `getClassColor()` in code, `var(--class-<id>)` in SCSS |
 | `game/armory.ts` | `getArmoryUrl()` for every armory link |
 | `core/time-zone-label.ts` | the "GMT+2"-style label beside local times |
@@ -294,6 +384,9 @@ decision (ask first).
   no header) and `backToTop: false` (the guild pages and the Hall of Fame).
 - The header persists across navigation, so it closes its dropdown and drawer on every
   `NavigationStart`.
+- The header names the current page from the router's URL, which is `/` until the first
+  navigation ends. Before that it reads the browser's address (`Location.path()`), so a deep
+  link never shows "Players" for a moment.
 - The header is fixed. Its height is `--update-bar-height` (44 px, in `styles.scss`).
 - Pages were designed for a 36 px header (30 px at ≤640 px). A `::before` on the routed page's
   host (`app-root > router-outlet + *::before` in `styles.scss`) takes the difference as its
@@ -401,7 +494,8 @@ the width on phones (`spec-charts/spec-chart.scss`).
 - Plain SCSS per component, with no CSS framework.
 - Text on a coloured cell keeps 4.5:1 contrast: the talents heatmap's gold stops at about half
   strength under its white figures. Most colours are literals. The shared
-  tokens are the motion variables (`_motion.scss`), `--update-bar-height` and `--class-<id>`.
+  tokens are the motion variables (`_motion.scss`), `--update-bar-height`, `--class-<id>` and
+  the skeleton colours (`_skeleton.scss`).
   The site colours are background `#050505`, text `#e0e0e0` and gold `#f7b500`. Body text is
   Arial, and no web fonts are loaded. Introducing a design-token system is an architectural
   decision.
@@ -472,8 +566,8 @@ To cover a new page or a new URL state, add it to `e2e/visual-pages.ts`.
 ## Phone layout check
 
 `npm run test:layout` (`e2e/phone.layout.ts`) opens every page in `e2e/visual-pages.ts`, except
-the desktop-only states and the loading and error states, as a phone at 320, 360, 390 and 412
-px. It fails on:
+the desktop-only states and the error states, as a phone at 320, 360, 390 and 412 px. The
+loading states are in, because their skeletons have to fit a phone like any page. It fails on:
 
 - a box that scrolls sideways, unless `SIDEWAYS_BY_DESIGN` lists it;
 - an element that runs past a box that clips it (cropped icons and text ending in an ellipsis

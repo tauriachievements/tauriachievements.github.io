@@ -155,6 +155,8 @@ $gold: #f7b500;
   70%, 100% { box-shadow: 0 0 0 6px rgba(247, 181, 0, 0); }
 }
 
+@keyframes mp-skeleton-sweep { from { background-position: -100vw 0; } to { background-position: 100vw 0; } }
+
 @keyframes mp-sheen { from { background-position: -150% 0; } to { background-position: 250% 0; } }
 @keyframes mp-sheen-hover { from { background-position: -150% 0; } to { background-position: 250% 0; } }
 

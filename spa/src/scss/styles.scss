@@ -1,4 +1,5 @@
 @use 'motion';
+@use '../app/shared/skeleton' as *;
 
 :root {
   --update-bar-height: 44px;
@@ -46,6 +47,10 @@ body {
 .tap-area {
   position: absolute;
   inset: -9px -4px;
+}
+
+:where(app-root img:not([data-loaded])) {
+  @include skeleton-bone;
 }
 
 app-root {

@@ -100,19 +100,9 @@
   }
 }
 
-.feedback-spinner {
-  width: 34px;
-  height: 34px;
-  border-radius: 50%;
-  border: 3px solid rgba(255, 255, 255, 0.12);
-  border-top-color: #f7b500;
-  animation: ladder-spin 0.9s linear infinite;
-}
-
-@keyframes ladder-spin {
-  to {
-    transform: rotate(360deg);
-  }
+.ladder-skeleton {
+  --skeleton-width: 1620px;
+  margin-bottom: 12px;
 }
 
 @media (max-width: 768px) {

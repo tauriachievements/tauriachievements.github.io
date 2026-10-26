@@ -12,12 +12,13 @@ import { GuildPresencePageStore } from './guild-presence-page.store';
 import { getGuildArmoryUrl } from '../../game/armory';
 import { setPageHeader } from '../../core/page-header';
 import { LadderSelectOption } from '../../players/player-filter-options';
+import { SkeletonComponent } from '../../shared/skeleton.component';
 
 @Component({
   selector: 'app-guild-presence-page',
   templateUrl: './guild-presence-page.component.html',
   styleUrls: ['./guild-presence-page.component.scss'],
-  imports: [FilterDropdownComponent, DecimalPipe],
+  imports: [FilterDropdownComponent, DecimalPipe, SkeletonComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   providers: [GuildPresencePageStore, FilterDropdownCoordinatorService]
 })

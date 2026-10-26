@@ -102,6 +102,12 @@ export const VISUAL_PAGES: readonly VisualPage[] = [
   { name: 'state-error-raid-logs-leaderboard', path: '/raid-logs/leaderboard', fail: ['raid-log-data/'] },
   { name: 'state-error-raid-logs-character', path: '/raid-logs/character/evermoon/Gankuh?difficulty=mythic', fail: ['-mythic\\.json'] },
   { name: 'state-loading-raid-logs-talents-rosters', path: '/raid-logs/talents', hold: ['-mythic\\.json'] },
+  { name: 'state-loading-ladder', path: '/', hold: ['players\\.(head\\.)?snapshot\\.json'] },
+  { name: 'state-loading-top-gainers', path: '/top-gainers', hold: ['players\\.history\\.snapshot\\.json'] },
+  { name: 'state-loading-rated-battleground', path: '/rated-battleground', hold: ['rated-battlegrounds\\.json'] },
+  { name: 'state-loading-mythic-plus-profile', path: '/mythic-plus/character/evermoon/Pashao', hold: ['mythic-plus-data/'] },
+  { name: 'state-loading-raid-logs-boss', path: '/raid-logs/boss/xavius?difficulty=mythic', hold: ['raid-log-data/'] },
+  { name: 'state-loading-raid-logs-stats', path: '/raid-logs/stats', hold: ['raid-log-data/'] },
   { name: 'state-error-raid-log', path: '/raid-logs/log/tauri/1684762', fail: ['raid-log-data/'] },
   { name: 'state-error-arena', path: '/arena', fail: ['arena-ladder-2v2\\.json'] },
   { name: 'state-error-ladder', path: '/', fail: ['players\\.(head\\.)?snapshot\\.json'] }

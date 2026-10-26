@@ -173,21 +173,6 @@
   }
 }
 
-.feedback-spinner {
-  width: 34px;
-  height: 34px;
-  border-radius: 50%;
-  border: 3px solid rgba(255, 255, 255, 0.12);
-  border-top-color: #f7b500;
-  animation: guild-presence-spin 0.9s linear infinite;
-}
-
-@keyframes guild-presence-spin {
-  to {
-    transform: rotate(360deg);
-  }
-}
-
 .guild-presence-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -367,3 +352,5 @@
     padding: 10px 6px;
   }
 }
+
+app-skeleton { --skeleton-width: 1025px; }

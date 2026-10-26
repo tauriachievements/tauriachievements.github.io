@@ -40,13 +40,12 @@
   }
 
   @if (showLoadingState()) {
-    <div class="ladder-feedback loading">
-      <div class="feedback-spinner" aria-hidden="true"></div>
-      <h2>{{ loadingTitle() }}</h2>
-      @if (loadingHint()) {
-        <p>{{ loadingHint() }}</p>
-      }
-    </div>
+    @if (loadingHint()) {
+      <div class="ladder-status-banner info">
+        <span><strong>{{ loadingTitle() }}</strong> {{ loadingHint() }}</span>
+      </div>
+    }
+    <app-skeleton class="ladder-skeleton" [blocks]="skeleton" [label]="loadingTitle()" />
   }
 
   @if (showErrorState()) {

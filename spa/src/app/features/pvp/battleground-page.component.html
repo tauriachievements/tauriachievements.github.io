@@ -1,9 +1,6 @@
 <main class="battleground-shell">
   @if (showLoading()) {
-    <div class="battleground-feedback loading">
-      <div class="feedback-spinner" aria-hidden="true"></div>
-      <h2>Loading battleground data...</h2>
-    </div>
+    <app-skeleton [blocks]="['toolbar:2', 'tiles:4', 'chart', 'rows:8']" label="Loading battleground data..." />
   }
 
   @if (showError()) {

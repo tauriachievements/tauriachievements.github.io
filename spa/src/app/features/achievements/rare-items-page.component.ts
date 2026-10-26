@@ -5,6 +5,7 @@ import { getArmoryUrl } from '../../game/armory';
 import { DataFileService } from '../../core/data-file.service';
 import { getClassColor } from '../../game/class-colors';
 import { Realm } from '../../game/wow';
+import { SkeletonComponent } from '../../shared/skeleton.component';
 
 interface RareItem {
   id: number;
@@ -33,7 +34,7 @@ type RealmFilter = 'all' | Realm;
   selector: 'app-rare-items-page',
   templateUrl: './rare-items-page.component.html',
   styleUrls: ['./rare-items-page.component.scss'],
-  imports: [DecimalPipe],
+  imports: [DecimalPipe, SkeletonComponent],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class RareItemsPageComponent implements OnInit {

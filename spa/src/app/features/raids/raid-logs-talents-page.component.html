@@ -1,7 +1,7 @@
 <main class="raid-page">
   <h1 class="visually-hidden">Talent analytics, {{ index()?.raid?.name ?? 'The Emerald Nightmare' }}</h1>
 
-  <app-load-state [loading]="isLoading()" [error]="loadError()" loadingText="Reading the logs..." (retry)="loadData()" />
+  <app-load-state [loading]="isLoading()" [error]="loadError()" [skeleton]="['icons:8', 'switch:4', 'toolbar:2', 'cards:6']" loadingText="Reading the logs..." (retry)="loadData()" />
 
   @if (!isLoading() && !loadError() && index(); as loaded) {
     <nav class="boss-picker" aria-label="Pick a boss">
@@ -75,7 +75,7 @@
       </div>
     </div>
 
-    <app-load-state [loading]="killsLoading()" [error]="killsError()" loadingText="Reading the {{ difficulty()?.name }} raid rosters..." (retry)="retryKills()" />
+    <app-load-state [loading]="killsLoading()" [error]="killsError()" [skeleton]="['cards:6']" loadingText="Reading the {{ difficulty()?.name }} raid rosters..." (retry)="retryKills()" />
 
     @if (!killsLoading() && !killsError()) {
       <app-icon-tips [spells]="talentTooltips()">

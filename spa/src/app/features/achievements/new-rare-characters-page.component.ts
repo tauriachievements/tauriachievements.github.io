@@ -22,6 +22,7 @@ import { Player } from '../../players/character.model';
 import { DataSyncService } from '../../players/data-sync.service';
 import { LadderLastUpdatedService } from '../../players/ladder-last-updated.service';
 import { setPageHeader } from '../../core/page-header';
+import { SkeletonComponent } from '../../shared/skeleton.component';
 
 interface NewRareCharacterView {
   rank: number;
@@ -50,7 +51,7 @@ const KEYSTONE_MASTER_ACHIEVEMENT_IDS: ReadonlySet<number> = new Set([11224]);
   selector: 'app-new-rare-characters-page',
   templateUrl: './new-rare-characters-page.component.html',
   styleUrls: ['./new-rare-characters-page.component.scss'],
-  imports: [DecimalPipe],
+  imports: [DecimalPipe, SkeletonComponent],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class NewRareCharactersPageComponent implements OnInit {

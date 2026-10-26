@@ -2,6 +2,7 @@ import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/cor
 import { getArmoryUrl } from '../../game/armory';
 import { DataFileService } from '../../core/data-file.service';
 import { getClassColor } from '../../game/class-colors';
+import { SkeletonComponent } from '../../shared/skeleton.component';
 
 interface ApChestLooter {
   name: string;
@@ -13,7 +14,7 @@ interface ApChestLooter {
 
 @Component({
   selector: 'app-ap-chest-looters-page',
-  imports: [],
+  imports: [SkeletonComponent],
   templateUrl: './ap-chest-looters-page.component.html',
   styleUrls: ['./ap-chest-looters-page.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush

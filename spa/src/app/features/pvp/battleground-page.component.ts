@@ -15,6 +15,7 @@ import { FilterDropdownCoordinatorService } from '../../shared/filter-dropdown-c
 import { FilterDropdownComponent } from '../../shared/filter-dropdown.component';
 import { FilterDropdownValue } from '../../shared/filter-dropdown.types';
 import { setPageHeader } from '../../core/page-header';
+import { SkeletonComponent } from '../../shared/skeleton.component';
 
 interface BattlegroundStartEntry {
   id: string;
@@ -38,7 +39,7 @@ const BATTLEGROUND_ERA_OPTIONS: ReadonlyArray<{ value: BattlegroundEra; label: s
   selector: 'app-battleground-page',
   templateUrl: './battleground-page.component.html',
   styleUrls: ['./battleground-page.component.scss'],
-  imports: [FilterDropdownComponent, DecimalPipe],
+  imports: [FilterDropdownComponent, DecimalPipe, SkeletonComponent],
   providers: [FilterDropdownCoordinatorService],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
