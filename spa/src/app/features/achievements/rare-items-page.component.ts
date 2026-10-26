@@ -27,6 +27,7 @@ import {
   eliteSeasonOptions,
   findOwners,
   fitOwnerQuery,
+  hasOwnerFilters,
   otherItemOptions,
   otherPickFromValue,
   otherPickValue,
@@ -94,6 +95,7 @@ export class RareItemsPageComponent implements OnInit {
   readonly page = computed(() => Math.min(this.requestedPage(), this.pages()));
   readonly pageRows = computed(() => pageSlice(this.owners(), this.page(), PAGE_SIZE));
   readonly firstRank = computed(() => (this.page() - 1) * PAGE_SIZE + 1);
+  readonly canReset = computed(() => hasOwnerFilters(this.query()) || this.page() > 1);
 
   ngOnInit(): void {
     this.loadData();
@@ -113,6 +115,10 @@ export class RareItemsPageComponent implements OnInit {
 
   selectRealm(value: FilterDropdownValue): void {
     this.setQuery({ ...this.query(), realm: typeof value === 'string' ? value : undefined });
+  }
+
+  resetFilters(): void {
+    this.setQuery({});
   }
 
   goToPage(page: number): void {

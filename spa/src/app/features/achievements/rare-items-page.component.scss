@@ -1,6 +1,7 @@
 @use '../../shared/mythic-plus-shared' as *;
 
 @include visually-hidden;
+@include filter-reset;
 
 :host {
   display: block;
@@ -14,7 +15,7 @@
 .rare-items-page {
   width: min(980px, calc(100% - 32px));
   margin: 0 auto;
-  padding: 54px 0 36px;
+  padding: 16px 0 36px;
 }
 
 .rare-items-header,
@@ -29,7 +30,7 @@
 .rare-items-header {
   position: relative;
   z-index: 2;
-  padding: 24px;
+  padding: 10px;
 }
 
 .eyebrow {
@@ -45,25 +46,19 @@ h2 { margin: 0; color: #f4f7ee; font-size: 1.35rem; }
 
 .filter-grid {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 14px;
-}
+  grid-template-columns: auto minmax(0, 0.95fr) minmax(0, 1.25fr) minmax(0, 1.25fr) minmax(0, 0.75fr);
+  gap: 8px;
 
-.filter-field {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr);
-  gap: 7px;
-  min-width: 0;
+  app-filter-dropdown { min-width: 0; }
+  .filter-reset { height: auto; justify-content: center; }
 }
-
-.filter-label { color: #dbe2d3; font-size: 0.84rem; font-weight: 700; }
 
 .feedback {
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 12px;
-  margin-top: 16px;
+  margin-top: 10px;
   padding: 34px;
   color: #aeb5a6;
   text-align: center;
@@ -78,10 +73,10 @@ h2 { margin: 0; color: #f4f7ee; font-size: 1.35rem; }
   }
 }
 
-app-skeleton { margin-top: 16px; }
+app-skeleton { margin-top: 10px; }
 
 .results {
-  margin-top: 16px;
+  margin-top: 10px;
   overflow: hidden;
   scroll-margin-top: 16px;
 }
@@ -149,13 +144,21 @@ app-pager {
 }
 
 @media (max-width: 860px) {
-  .filter-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .filter-grid {
+    grid-template-columns: auto repeat(2, minmax(0, 1fr));
+
+    .other-filter { grid-column: 2; }
+  }
 }
 
 @media (max-width: 600px) {
-  .rare-items-page { width: min(100% - 20px, 980px); padding-top: 24px; }
-  .rare-items-header { padding: 18px; }
-  .filter-grid { grid-template-columns: minmax(0, 1fr); gap: 12px; }
+  .rare-items-page { width: min(100% - 20px, 980px); padding-top: 10px; }
+  .rare-items-header { padding: 8px; }
+  .filter-grid {
+    grid-template-columns: auto minmax(0, 1fr);
+
+    .season-filter, .other-filter, .realm-filter { grid-column: 1 / -1; }
+  }
   .results-heading { align-items: flex-start; flex-direction: column; }
   th, td { padding: 11px 8px; }
   .rank { width: 40px; }

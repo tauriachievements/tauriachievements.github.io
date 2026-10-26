@@ -99,7 +99,7 @@ export function weaponsLabel(season: EliteSeason): string {
 
 export const ALL_SEASONS_OPTION: FilterDropdownOption = { value: undefined, label: 'All seasons' };
 
-export const NO_OTHER_ITEM_OPTION: FilterDropdownOption = { value: undefined, label: 'Choose an item' };
+export const NO_OTHER_ITEM_OPTION: FilterDropdownOption = { value: undefined, label: 'Other items' };
 
 export function eliteSeasonOptions(catalog: EliteCatalog, classId?: number): FilterDropdownOption[] {
   const offered = new Set<string>();
@@ -161,6 +161,10 @@ export function fitOwnerQuery(query: OwnerQuery, dataset: RareItemsDataset, cata
     : undefined;
 
   return { classId: query.classId, realm: query.realm, season, other };
+}
+
+export function hasOwnerFilters(query: OwnerQuery): boolean {
+  return query.classId !== undefined || query.season !== undefined || query.other !== undefined || query.realm !== undefined;
 }
 
 export type OwnerUrlParams = {

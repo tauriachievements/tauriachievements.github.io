@@ -9,6 +9,7 @@ import {
   eliteSeasonOptions,
   findOwners,
   fitOwnerQuery,
+  hasOwnerFilters,
   otherItemOptions,
   otherPickFromValue,
   otherPickValue,
@@ -88,7 +89,7 @@ describe('eliteSeasonOptions', () => {
 describe('otherItemOptions', () => {
   it('lists the rare items that are not elite pieces, then each season\'s elite weapons', () => {
     expect(otherItemOptions(dataset, catalog).map(option => [option.value, option.label])).toEqual([
-      [undefined, 'Choose an item'],
+      [undefined, 'Other items'],
       [22818, 'The Plague Bearer'],
       [45983, "Furious Gladiator's Tabard"],
       ['wrathful', 'Wrathful elite weapons (Season 8)']
@@ -153,6 +154,17 @@ describe('the URL', () => {
     expect(fitOwnerQuery({ other: { kind: 'weapons', season: 'malevolent' } }, dataset, catalog).other).toBeUndefined();
     expect(fitOwnerQuery({ season: 'wrathful' }, dataset, catalog).season).toBeUndefined();
     expect(fitOwnerQuery({ classId: 6, season: 'malevolent' }, dataset, catalog)).toEqual({ classId: 6, realm: undefined, season: 'malevolent', other: undefined });
+  });
+
+  it('knows when any pick differs from the defaults', () => {
+    expect(hasOwnerFilters({})).toBe(false);
+    expect(hasOwnerFilters({ classId: undefined, realm: undefined, season: undefined, other: undefined })).toBe(false);
+    expect([
+      hasOwnerFilters({ classId: 6 }),
+      hasOwnerFilters({ season: 'malevolent' }),
+      hasOwnerFilters({ other: { kind: 'item', id: 22818 } }),
+      hasOwnerFilters({ realm: 'wod' })
+    ]).toEqual([true, true, true, true]);
   });
 
   it('writes only what differs from the defaults', () => {

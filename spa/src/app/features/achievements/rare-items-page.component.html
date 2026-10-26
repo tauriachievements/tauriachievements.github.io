@@ -3,58 +3,55 @@
     <h1 class="visually-hidden">Rare Item Holders</h1>
 
     <div class="filter-grid">
-      <div class="filter-field">
-        <span class="filter-label">Class</span>
-        <app-filter-dropdown
-          dropdownId="rareItemsClass"
-          triggerId="rareItemsClassTrigger"
-          ariaLabel="Class"
-          [options]="classOptions"
-          [selectedValue]="query().classId"
-          [showIcons]="true"
-          [highlightWhenSelected]="true"
-          [disabled]="isLoading() || !!loadError()"
-          (selectionChange)="selectClass($event)" />
-      </div>
-
-      <div class="filter-field">
-        <span class="filter-label">PvP season</span>
-        <app-filter-dropdown
-          dropdownId="rareItemsSeason"
-          triggerId="rareItemsSeasonTrigger"
-          ariaLabel="PvP season"
-          [options]="seasonOptions()"
-          [selectedValue]="query().season"
-          [highlightWhenSelected]="true"
-          [disabled]="isLoading() || !!loadError()"
-          (selectionChange)="selectSeason($event)" />
-      </div>
-
-      <div class="filter-field">
-        <span class="filter-label">Other items</span>
-        <app-filter-dropdown
-          dropdownId="rareItemsOther"
-          triggerId="rareItemsOtherTrigger"
-          ariaLabel="Other items"
-          [options]="otherOptions()"
-          [selectedValue]="otherValue()"
-          [highlightWhenSelected]="true"
-          [disabled]="isLoading() || !!loadError()"
-          (selectionChange)="selectOther($event)" />
-      </div>
-
-      <div class="filter-field">
-        <span class="filter-label">Realm</span>
-        <app-filter-dropdown
-          dropdownId="rareItemsRealm"
-          triggerId="rareItemsRealmTrigger"
-          ariaLabel="Realm"
-          [options]="realmOptions"
-          [selectedValue]="query().realm"
-          [highlightWhenSelected]="true"
-          [disabled]="isLoading() || !!loadError()"
-          (selectionChange)="selectRealm($event)" />
-      </div>
+      <button
+        type="button"
+        class="filter-reset"
+        [disabled]="!canReset()"
+        aria-label="Reset class, season, other item and realm"
+        (click)="resetFilters()">
+        Reset
+      </button>
+      <app-filter-dropdown
+        class="class-filter"
+        dropdownId="rareItemsClass"
+        triggerId="rareItemsClassTrigger"
+        ariaLabel="Class"
+        [options]="classOptions"
+        [selectedValue]="query().classId"
+        [showIcons]="true"
+        [highlightWhenSelected]="true"
+        [disabled]="isLoading() || !!loadError()"
+        (selectionChange)="selectClass($event)" />
+      <app-filter-dropdown
+        class="season-filter"
+        dropdownId="rareItemsSeason"
+        triggerId="rareItemsSeasonTrigger"
+        ariaLabel="PvP season"
+        [options]="seasonOptions()"
+        [selectedValue]="query().season"
+        [highlightWhenSelected]="true"
+        [disabled]="isLoading() || !!loadError()"
+        (selectionChange)="selectSeason($event)" />
+      <app-filter-dropdown
+        class="other-filter"
+        dropdownId="rareItemsOther"
+        triggerId="rareItemsOtherTrigger"
+        ariaLabel="Other items"
+        [options]="otherOptions()"
+        [selectedValue]="otherValue()"
+        [highlightWhenSelected]="true"
+        [disabled]="isLoading() || !!loadError()"
+        (selectionChange)="selectOther($event)" />
+      <app-filter-dropdown
+        class="realm-filter"
+        dropdownId="rareItemsRealm"
+        triggerId="rareItemsRealmTrigger"
+        ariaLabel="Realm"
+        [options]="realmOptions"
+        [selectedValue]="query().realm"
+        [highlightWhenSelected]="true"
+        [disabled]="isLoading() || !!loadError()"
+        (selectionChange)="selectRealm($event)" />
     </div>
   </section>
 
