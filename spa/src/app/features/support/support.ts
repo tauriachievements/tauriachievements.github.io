@@ -76,7 +76,8 @@ export const TESTIMONIALS: readonly Testimonial[] = [
     quote: 'amazing, the animations add a nice touch 🙂 encourages pushing other specs',
     names: [{ name: 'Nap', classId: 11, realm: 'evermoon' }],
     from: 'discord'
-  }
+  },
+  { quote: 'ngl Xyhop, this website you did is sick af', names: [{ name: 'Hutas' }], from: 'stoat' }
 ];
 
 const SOURCE_LABELS: Record<TestimonialSource, string> = {
