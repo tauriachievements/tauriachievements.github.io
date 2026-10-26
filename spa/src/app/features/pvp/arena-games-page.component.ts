@@ -26,6 +26,7 @@ import { GlideDirective } from '../../shared/motion/glide.directive';
 import { DataFileService } from '../../core/data-file.service';
 import { getClassColor } from '../../game/class-colors';
 import { setPageHeader } from '../../core/page-header';
+import { SkeletonComponent } from '../../shared/skeleton.component';
 
 const MIN_GAMES = 50;
 
@@ -47,7 +48,7 @@ const SORT_COLUMNS: readonly SortColumn[] = [
   selector: 'app-arena-games-page',
   templateUrl: './arena-games-page.component.html',
   styleUrls: ['./arena-games-page.component.scss'],
-  imports: [GlideDirective, DatePipe, DecimalPipe, PercentPipe],
+  imports: [GlideDirective, DatePipe, DecimalPipe, PercentPipe, SkeletonComponent],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class ArenaGamesPageComponent implements OnInit {

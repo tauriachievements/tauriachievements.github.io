@@ -10,6 +10,7 @@ import {
 } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { injectCompactViewport } from '../../shared/compact-viewport';
+import { SkeletonBlock } from '../../shared/skeleton';
 import {
   MythicPlusAffix,
   ROLE_LABELS,
@@ -115,6 +116,8 @@ export class MythicPlusPageComponent implements OnInit {
 
   readonly cards = injectCompactViewport(MYTHIC_PLUS_CARDS_QUERY);
   private readonly pageSize = computed(() => this.cards() ? MYTHIC_PLUS_CARDS_PAGE_SIZE : MYTHIC_PLUS_PAGE_SIZE);
+  readonly runsSkeleton = computed((): readonly SkeletonBlock[] => ['chart', 'toolbar:3', this.cards() ? 'cards:4' : 'rows:12']);
+  readonly skeleton = computed((): readonly SkeletonBlock[] => ['switch:2', 'icons:10', ...this.runsSkeleton()]);
   readonly filtersOpen = signal(false);
 
   readonly index = this.store.index;

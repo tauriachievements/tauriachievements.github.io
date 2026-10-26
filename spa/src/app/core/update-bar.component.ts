@@ -1,4 +1,4 @@
-import { DatePipe, NgTemplateOutlet } from '@angular/common';
+import { DatePipe, Location, NgTemplateOutlet } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -50,7 +50,7 @@ export class UpdateBarComponent {
       filter((event): event is NavigationEnd => event instanceof NavigationEnd),
       map((event) => event.urlAfterRedirects)
     ),
-    { initialValue: this.router.url }
+    { initialValue: this.router.navigated ? this.router.url : inject(Location).path() }
   );
 
   protected readonly location = computed(() => findNavLocation(this.url()));

@@ -61,10 +61,7 @@
   </section>
 
   @if (isLoading()) {
-    <div class="ladder-feedback loading">
-      <div class="feedback-spinner" aria-hidden="true"></div>
-      <h2>Loading rare achievement data...</h2>
-    </div>
+    <app-skeleton [blocks]="['rows:15']" label="Loading rare achievement data..." />
   }
 
   @if (!isLoading() && loadError()) {

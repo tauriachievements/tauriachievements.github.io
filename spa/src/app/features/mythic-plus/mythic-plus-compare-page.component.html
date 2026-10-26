@@ -3,7 +3,7 @@
     <span aria-hidden="true">‹</span> Back to the M+ Leaderboard
   </a>
 
-  <app-load-state [loading]="isLoading()" [error]="loadError()" loadingText="Charging the keystones..." (retry)="loadData()" />
+  <app-load-state [loading]="isLoading()" [error]="loadError()" [skeleton]="['intro', 'toolbar:1', 'rows:10', 'chart']" loadingText="Charging the keystones..." (retry)="loadData()" />
 
   @if (!isLoading() && !loadError()) {
     <header class="compare-header">

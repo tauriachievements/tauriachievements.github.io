@@ -1,3 +1,5 @@
+import { Location } from '@angular/common';
+import { provideLocationMocks } from '@angular/common/testing';
 import { Component } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { Router, Routes, provideRouter } from '@angular/router';
@@ -67,6 +69,20 @@ describe('UpdateBarComponent drawer', () => {
     expect(toggle.textContent).toContain('Character Rankings');
     expect(toggle.getAttribute('aria-label')).toBe('Menu: Character Rankings');
     expect(toggle.getAttribute('aria-expanded')).toBe('false');
+  });
+
+  it('labels the menu button with the page being opened before the first navigation ends', async () => {
+    await TestBed.configureTestingModule({
+      imports: [UpdateBarComponent],
+      providers: [provideRouter(routes), provideLocationMocks()]
+    }).compileComponents();
+    TestBed.inject(Location).go('/raid-logs/leaderboard?difficulty=mythic');
+
+    const fixture = TestBed.createComponent(UpdateBarComponent);
+    fixture.detectChanges();
+
+    expect(TestBed.inject(Router).navigated).toBe(false);
+    expect(query<HTMLButtonElement>(fixture, '.site-menu-toggle').textContent).toContain('Character Rankings');
   });
 
   it('reads just "Menu" on a page outside the navigation', async () => {

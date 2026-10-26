@@ -20,7 +20,7 @@
     }
   </ng-template>
 
-  <app-load-state [loading]="isLoading()" [error]="loadError()" loadingText="Looking through the logs..." (retry)="loadData()">
+  <app-load-state [loading]="isLoading()" [error]="loadError()" [skeleton]="['hero', 'tiles:5', 'switch:3', 'rows:7']" loadingText="Looking through the logs..." (retry)="loadData()">
     @if (index(); as loadedIndex) {
       <app-raid-difficulty-switch
         [difficulties]="loadedIndex.difficulties"

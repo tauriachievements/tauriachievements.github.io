@@ -158,7 +158,7 @@
       </aside>
     }
 
-    <app-load-state [loading]="isLoading()" [error]="loadError()" loadingText="Reading the logs..." (retry)="loadData()" />
+    <app-load-state [loading]="isLoading()" [error]="loadError()" [skeleton]="skeleton()" loadingText="Reading the logs..." (retry)="loadData()" />
 
     @if (!isLoading() && !loadError() && difficulty(); as current) {
       @if (rankings().length) {

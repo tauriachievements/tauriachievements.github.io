@@ -36,6 +36,7 @@ import {
   rankMatchingCharacters,
   toAchievementId
 } from './rare-achievement-matches';
+import { SkeletonComponent } from '../../shared/skeleton.component';
 
 type AchievementDropdownKey = 'r1Gladiators' | 'gladiatorMounts' | 'ratedBattlegroundHeroes' | 'keystoneMasters';
 
@@ -123,7 +124,7 @@ const GROUPED_ACHIEVEMENT_LABELS = new Map<AchievementFilterValue, string>([
   selector: 'app-rare-achievements-page',
   templateUrl: './rare-achievements-page.component.html',
   styleUrls: ['./rare-achievements-page.component.scss'],
-  imports: [FilterDropdownComponent],
+  imports: [FilterDropdownComponent, SkeletonComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   providers: [FilterDropdownCoordinatorService]
 })

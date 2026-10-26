@@ -47,10 +47,7 @@
   </header>
 
   @if (loading()) {
-    <div class="chart-state" role="status">
-      <span class="state-spinner" aria-hidden="true"></span>
-      <span>Reading {{ selectedDifficultyName() }} raid rosters…</span>
-    </div>
+    <app-skeleton bare [blocks]="['chart']" [label]="'Reading ' + selectedDifficultyName() + ' raid rosters…'" />
   }
 
   @if (!loading() && error()) {

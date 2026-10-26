@@ -38,7 +38,9 @@
     </div>
   }
 
-  @if (historyAvailable()) {
+  @if (isLoading()) {
+    <app-skeleton [blocks]="['toolbar:4', 'cards:4']" label="Loading top gainers..." />
+  } @else if (historyAvailable()) {
     <app-history-summary
       [achievementSourceLimitOptions]="achievementSourceLimitOptions"
       [achievementSourceLimit]="achievementSourceLimit()"

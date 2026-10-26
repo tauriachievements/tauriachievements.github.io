@@ -53,22 +53,6 @@
   }
 }
 
-.feedback-spinner {
-  width: 36px;
-  height: 36px;
-  margin: 0 auto 16px;
-  border-radius: 50%;
-  border: 3px solid rgba(247, 181, 0, 0.18);
-  border-top-color: #f7b500;
-  animation: compare-spin 0.9s linear infinite;
-}
-
-@keyframes compare-spin {
-  to {
-    transform: rotate(360deg);
-  }
-}
-
 .feedback-action {
   margin-top: 16px;
   padding: 9px 18px;

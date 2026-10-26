@@ -9,7 +9,7 @@
     <a class="back-link" routerLink="/raid-logs"><span aria-hidden="true">‹</span> Back to Raid Logs</a>
   }
 
-  <app-load-state [loading]="isLoading()" [error]="loadError()" loadingText="Reading the log..." (retry)="reload()" />
+  <app-load-state [loading]="isLoading()" [error]="loadError()" [skeleton]="['hero', 'tiles:5', 'switch:4', 'rows:10']" loadingText="Reading the log..." (retry)="reload()" />
 
   @if (!isLoading() && !loadError() && kill(); as current) {
     @if (current.invalid !== undefined) {

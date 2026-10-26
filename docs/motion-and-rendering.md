@@ -11,7 +11,11 @@ touching motion or layering.
   `src/app/shared/motion/motion.ts`, which the directives use for Web Animations.
 - **Keyframes:** every one the M+ and Support motion uses is global in `_motion.scss`, with an
   `mp-` prefix (see the first gotcha).
-- **Page changes:** `withViewTransitions()`. `_motion.scss` styles `::view-transition-old/new`
+- **Skeletons:** `mp-skeleton-sweep` moves one light band across every skeleton bone and every
+  image still downloading. The bones' gradient is `background-attachment: fixed`, so they all
+  show the same band at once ([frontend.md](frontend.md#loading-skeletons)). The boot skeleton
+  in `index.html` runs before any stylesheet loads, so it has its own inline copy, `boot-sweep`.
+- **Page changes:** `withViewTransitions()`, skipped on the first navigation. `_motion.scss` styles `::view-transition-old/new`
   and gives `.update-bar` its own `view-transition-name`, so the header stays put while the
   page changes. The old page fades out quickly and the new one rises in, with
   `mix-blend-mode: normal`: the browser's default `plus-lighter` brightens the moment the two

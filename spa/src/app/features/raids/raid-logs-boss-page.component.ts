@@ -46,7 +46,11 @@ import { injectReplaceUrl, parseInteger, parsePage } from '../../core/url-state'
 import { LoadStateComponent } from '../../shared/load-state.component';
 import { PagerComponent } from '../../shared/pager.component';
 import { pageCount, pageSlice } from '../../shared/pager';
+import { SkeletonBlock } from '../../shared/skeleton';
 import { setPageHeader } from '../../core/page-header';
+
+const KILLS_SKELETON: readonly SkeletonBlock[] = ['tiles:5', 'switch:6', 'toolbar:3', 'rows:10'];
+const PAGE_SKELETON: readonly SkeletonBlock[] = ['icons:7', 'hero', ...KILLS_SKELETON];
 
 type BossTab = 'dps' | 'ranged' | 'melee' | 'hps' | 'fastest' | 'latest';
 
@@ -123,6 +127,7 @@ export class RaidLogsBossPageComponent {
   readonly loadError = signal<string | undefined>(undefined);
   readonly now = signal(Date.now());
   readonly lastEdited = computed(() => this.index()?.generatedAt);
+  readonly skeleton = computed(() => (this.index() ? KILLS_SKELETON : PAGE_SKELETON));
 
   private readonly requestedDifficulty = signal(this.query.get('difficulty') ?? undefined);
   readonly tab = signal<BossTab>(parseTab(this.query.get('tab')));

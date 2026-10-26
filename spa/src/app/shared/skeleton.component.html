@@ -1,0 +1,116 @@
+@if (label(); as text) {
+  <p class="visually-hidden" role="status">{{ text }}</p>
+}
+<div class="skeleton" [class.bare]="bare()" aria-hidden="true">
+  @for (section of sections(); track $index) {
+    @switch (section.kind) {
+      @case ('hero') {
+        <div class="frame hero">
+          <span class="bone hero-icon"></span>
+          <span class="hero-lines">
+            <span class="bone line eyebrow"></span>
+            <span class="bone line title"></span>
+            <span class="bone line note"></span>
+          </span>
+          <span class="bone pill hero-side"></span>
+        </div>
+      }
+      @case ('intro') {
+        <div class="intro">
+          <span class="bone line title"></span>
+          <span class="bone line text"></span>
+          <span class="bone line text short"></span>
+        </div>
+      }
+      @case ('switch') {
+        <div class="switch">
+          @for (item of section.items; track item) {
+            <span class="bone pill"></span>
+          }
+        </div>
+      }
+      @case ('tiles') {
+        <div class="tiles">
+          @for (item of section.items; track item) {
+            <div class="frame tile">
+              <span class="bone line label"></span>
+              <span class="bone line value"></span>
+              <span class="bone line note"></span>
+            </div>
+          }
+        </div>
+      }
+      @case ('icons') {
+        <div class="icons" [style.--icon-columns]="iconColumns(section.items.length)">
+          @for (item of section.items; track item) {
+            <div class="frame icon-tile">
+              <span class="bone icon"></span>
+              <span class="bone line caption"></span>
+            </div>
+          }
+        </div>
+      }
+      @case ('toolbar') {
+        <div class="toolbar">
+          @for (item of section.items; track item) {
+            <span class="bone pill filter"></span>
+          }
+          <span class="bone pill search"></span>
+        </div>
+      }
+      @case ('rows') {
+        <div class="frame table">
+          <div class="row head">
+            <span class="bone line rank"></span>
+            <span class="bone line name"></span>
+            <span class="bone line number"></span>
+            <span class="bone line number"></span>
+            <span class="bone line number wide-only"></span>
+            <span class="bone line number wide-only"></span>
+          </div>
+          @for (item of section.items; track item) {
+            <div class="row">
+              <span class="bone line rank"></span>
+              <span class="name-cell">
+                <span class="bone avatar"></span>
+                <span class="bone line name" [style.width.%]="nameWidth(item)"></span>
+              </span>
+              <span class="bone line number"></span>
+              <span class="bone line number"></span>
+              <span class="bone line number wide-only"></span>
+              <span class="bone line number wide-only"></span>
+            </div>
+          }
+        </div>
+      }
+      @case ('cards') {
+        <div class="cards">
+          @for (item of section.items; track item) {
+            <div class="frame card">
+              <span class="card-head">
+                <span class="bone avatar"></span>
+                <span class="card-title">
+                  <span class="bone line" [style.width.%]="nameWidth(item)"></span>
+                  <span class="bone line note"></span>
+                </span>
+                <span class="bone line score"></span>
+              </span>
+              <span class="bone line text"></span>
+              <span class="bone line text short"></span>
+            </div>
+          }
+        </div>
+      }
+      @case ('chart') {
+        <div class="frame chart">
+          <span class="bone line chart-title"></span>
+          <div class="bars">
+            @for (item of section.items; track item) {
+              <span class="bone bar" [style.--share]="barShare(item, section.items.length) + '%'"></span>
+            }
+          </div>
+        </div>
+      }
+    }
+  }
+</div>

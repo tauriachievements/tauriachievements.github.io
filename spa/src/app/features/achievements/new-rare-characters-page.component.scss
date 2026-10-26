@@ -139,21 +139,6 @@
   text-transform: uppercase;
 }
 
-.feedback-spinner {
-  width: 34px;
-  height: 34px;
-  border-radius: 50%;
-  border: 3px solid rgba(255, 255, 255, 0.12);
-  border-top-color: #1eff00;
-  animation: new-rare-spin 0.9s linear infinite;
-}
-
-@keyframes new-rare-spin {
-  to {
-    transform: rotate(360deg);
-  }
-}
-
 .feedback-action {
   padding: 9px 14px;
   border-radius: 8px;
@@ -437,3 +422,5 @@
     font-size: 0.72rem;
   }
 }
+
+app-skeleton { --skeleton-width: 850px; }

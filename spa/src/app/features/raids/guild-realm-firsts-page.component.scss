@@ -50,21 +50,6 @@
   color: #ffd2d2;
 }
 
-.feedback-spinner {
-  width: 34px;
-  height: 34px;
-  border-radius: 50%;
-  border: 3px solid rgba(255, 255, 255, 0.12);
-  border-top-color: #f7b500;
-  animation: realm-firsts-spin 0.9s linear infinite;
-}
-
-@keyframes realm-firsts-spin {
-  to {
-    transform: rotate(360deg);
-  }
-}
-
 .feedback-action {
   padding: 9px 14px;
   border-radius: 8px;
@@ -556,3 +541,5 @@
     grid-template-columns: 1fr;
   }
 }
+
+app-skeleton { --skeleton-width: 1230px; }

@@ -22,7 +22,7 @@
     </div>
 
     @if (isLoading()) {
-      <p class="message">Loading the hall of fame...</p>
+      <app-skeleton bare [blocks]="['rows:8']" label="Loading the hall of fame..." />
     }
     @if (loadError()) {
       <p class="message error">

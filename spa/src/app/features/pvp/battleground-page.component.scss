@@ -150,21 +150,6 @@
   }
 }
 
-.feedback-spinner {
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  border: 3px solid rgba(255, 255, 255, 0.11);
-  border-top-color: #f6c453;
-  animation: battleground-spin 0.9s linear infinite;
-}
-
-@keyframes battleground-spin {
-  to {
-    transform: rotate(360deg);
-  }
-}
-
 .activity-panel {
   padding: 20px;
 }
@@ -784,3 +769,5 @@
     th, td { padding: 10px 4px; white-space: normal; }
   }
 }
+
+app-skeleton { --skeleton-width: 1420px; }

@@ -12,6 +12,7 @@ import { LadderHistoryService } from './ladder-history.service';
 import { LadderLastUpdatedService } from '../../players/ladder-last-updated.service';
 import { setPageHeader } from '../../core/page-header';
 import { CLASS_OPTIONS, REALM_OPTIONS } from '../../players/player-filter-options';
+import { SkeletonComponent } from '../../shared/skeleton.component';
 
 type TopGainersDropdownKey = 'limit' | 'realm' | 'class';
 
@@ -60,7 +61,7 @@ const APPEARANCE_SOURCE_LIMIT_OPTIONS: ReadonlyArray<FilterDropdownOption<number
   selector: 'app-rank-movement-page',
   templateUrl: './rank-movement-page.component.html',
   styleUrls: ['./rank-movement-page.component.scss'],
-  imports: [FilterDropdownComponent, HistorySummaryComponent, MobileFilterToggleComponent],
+  imports: [FilterDropdownComponent, HistorySummaryComponent, MobileFilterToggleComponent, SkeletonComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   providers: [FilterDropdownCoordinatorService]
 })
@@ -71,6 +72,7 @@ export class TopGainersPageComponent implements OnInit {
   private readonly dropdownCoordinator = inject(FilterDropdownCoordinatorService);
 
   readonly history = signal<LadderHistoryData | null>(null);
+  readonly isLoading = signal(true);
   readonly lastEdited = signal<Date | undefined>(undefined);
   readonly topGainersLimit = signal(DEFAULT_TOP_GAINERS_LIMIT);
   readonly filtersOpen = signal(false);
@@ -226,6 +228,7 @@ export class TopGainersPageComponent implements OnInit {
       takeUntilDestroyed(this.destroyRef)
     ).subscribe((history) => {
       this.history.set(history);
+      this.isLoading.set(false);
     });
 
     this.ladderLastUpdatedService.getLastUpdated().pipe(

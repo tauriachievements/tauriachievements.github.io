@@ -91,7 +91,7 @@ for (const width of PHONE_WIDTHS) {
   test.describe(`${width} px`, () => {
     test.use({ viewport: { width, height: 780 }, isMobile: true, hasTouch: true });
 
-    for (const visualPage of VISUAL_PAGES.filter(entry => !entry.fail && !entry.hold && entry.only !== 'desktop')) {
+    for (const visualPage of VISUAL_PAGES.filter(entry => !entry.fail && entry.only !== 'desktop')) {
       test(visualPage.name, async ({ page }) => {
         await openPage(page, visualPage);
         const problems = await page.evaluate(findLayoutProblems, SIDEWAYS_BY_DESIGN.map(entry => entry.selector));

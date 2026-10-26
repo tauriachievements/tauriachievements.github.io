@@ -3,6 +3,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { TapTooltipDirective } from '../../shared/tap-tooltip.directive';
 import { getGuildArmoryUrl } from '../../game/armory';
 import { DataFileService } from '../../core/data-file.service';
+import { SkeletonComponent } from '../../shared/skeleton.component';
 
 type BossKey = 'nythendra' | 'ursoc' | 'elerethe-renferal' | 'ilgynoth' |
   'dragons-of-nightmare' | 'cenarius' | 'xavius';
@@ -74,7 +75,7 @@ const TIMELINE_GUILD_REALMS: Readonly<Record<string, string>> = {
 
 @Component({
   selector: 'app-emerald-nightmare-page',
-  imports: [TapTooltipDirective],
+  imports: [TapTooltipDirective, SkeletonComponent],
   templateUrl: './emerald-nightmare-page.component.html',
   styleUrls: ['./emerald-nightmare-page.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush

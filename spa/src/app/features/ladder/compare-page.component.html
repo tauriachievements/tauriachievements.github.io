@@ -7,10 +7,7 @@
   }
 
   @if (isLoading()) {
-    <div class="compare-feedback loading">
-      <div class="feedback-spinner" aria-hidden="true"></div>
-      <h2>Loading players...</h2>
-    </div>
+    <app-skeleton [blocks]="['cards:2', 'rows:8']" label="Loading players..." />
   }
 
   @if (!isLoading() && loadError()) {

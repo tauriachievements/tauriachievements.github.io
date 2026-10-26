@@ -46,8 +46,196 @@
         }
       })();
     </script>
+    <script>
+      (function () {
+        var path = window.location.pathname;
+        var layout = /^\/mythic-plus(\/|$)/.test(path) ? "mythic-plus" : /^\/raid-logs(\/|$)/.test(path) ? "raids" : "table";
+        document.documentElement.setAttribute("data-boot", layout);
+      })();
+    </script>
+    <style>
+      .boot-bar,
+      .boot,
+      .boot * { box-sizing: border-box; }
+      .boot-bar {
+        position: fixed;
+        top: 0;
+        right: 0;
+        left: 0;
+        z-index: 600;
+        display: grid;
+        grid-template-columns: minmax(116px, 1fr) max-content minmax(116px, 1fr);
+        align-items: center;
+        gap: 10px;
+        height: 44px;
+        padding: 0 calc(10px + env(safe-area-inset-right, 0px)) 0 calc(10px + env(safe-area-inset-left, 0px));
+        border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        background: linear-gradient(135deg, rgba(25, 25, 30, 0.99), rgba(10, 10, 14, 0.995));
+      }
+      .boot-menu { display: none; width: 112px; height: 16px; margin-left: 8px; }
+      .boot-status { width: 228px; height: 11px; }
+      .boot-nav { display: flex; gap: 30px; }
+      .boot-nav .boot-b { height: 14px; }
+      .boot-actions { display: flex; gap: 6px; justify-self: end; }
+      .boot-actions .boot-b { width: 78px; height: 28px; border-radius: 6px; }
+      .boot-actions .boot-b + .boot-b { width: 128px; }
+      .boot {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+        width: 100%;
+        max-width: 1240px;
+        margin: 0 auto;
+        padding: 62px 20px 40px;
+      }
+      .boot-section { display: none; }
+      [data-boot="table"] .boot-in-table,
+      [data-boot="mythic-plus"] .boot-in-mythic-plus,
+      [data-boot="raids"] .boot-in-raids { display: var(--boot-display, block); }
+      .boot-b { display: block; border-radius: 4px; background-color: rgba(255, 255, 255, .07); }
+      .boot-f { border: 1px solid rgba(255, 255, 255, .06); border-radius: 8px; background: #0e0e10; }
+      .boot-switch { --boot-display: flex; gap: 6px; }
+      .boot-switch .boot-b { width: 88px; height: 30px; border-radius: 6px; }
+      [data-boot="mythic-plus"] .boot-switch .boot-b:nth-child(3) { display: none; }
+      .boot-icons { --boot-display: grid; grid-template-columns: repeat(auto-fit, minmax(72px, 1fr)); gap: 6px; }
+      .boot-icons .boot-f { display: flex; flex-direction: column; align-items: center; gap: 7px; padding: 8px 6px; }
+      .boot-icon { width: 36px; height: 36px; border-radius: 6px; }
+      .boot-caption { width: 46%; height: 8px; }
+      .boot-chart { --boot-display: flex; flex-direction: column; gap: 18px; padding: 16px 18px 18px; }
+      .boot-chart > .boot-b { width: 32%; height: 12px; }
+      .boot-bars { display: flex; align-items: flex-end; gap: 8px; height: 220px; }
+      .boot-bars .boot-b { flex: 1 1 0; height: var(--s); border-radius: 4px 4px 0 0; }
+      .boot-toolbar { --boot-display: flex; flex-wrap: wrap; gap: 8px; }
+      .boot-toolbar .boot-b { width: 132px; height: 34px; border-radius: 6px; }
+      .boot-toolbar .boot-b:last-child { flex: 0 1 240px; margin-left: auto; }
+      .boot-table { padding: 4px 0; }
+      .boot-row {
+        display: grid;
+        grid-template-columns: 24px minmax(0, 1fr) repeat(4, 64px);
+        align-items: center;
+        gap: 16px;
+        min-height: 40px;
+        padding: 0 16px;
+        border-top: 1px solid rgba(255, 255, 255, .06);
+      }
+      .boot-row:first-child { min-height: 34px; border-top: 0; }
+      .boot-row .boot-b { height: 10px; border-radius: 3px; }
+      .boot-row:first-child .boot-b { height: 7px; opacity: .6; }
+      .boot-row > .boot-b:first-child { width: 18px; }
+      .boot-name { display: flex; align-items: center; gap: 10px; min-width: 0; }
+      .boot-name .boot-b:first-child { width: 24px; height: 24px; flex: none; border-radius: 4px; }
+      .boot-cards { --boot-display: grid; grid-template-columns: repeat(auto-fill, minmax(min(300px, 100%), 1fr)); gap: 10px; }
+      [data-boot="mythic-plus"] .boot-cards .boot-f:nth-child(n + 5) { display: none; }
+      .boot-cards .boot-f { display: flex; flex-direction: column; gap: 10px; min-height: 132px; padding: 14px 16px; }
+      .boot-card-head { display: flex; align-items: center; gap: 12px; margin-bottom: 4px; }
+      .boot-card-head > .boot-b:first-child { width: 36px; height: 36px; flex: none; border-radius: 6px; }
+      .boot-card-head > span:nth-child(2) { display: flex; flex: 1; flex-direction: column; gap: 7px; }
+      .boot-card-head > .boot-b:last-child { width: 44px; height: 18px; flex: none; }
+      .boot-cards .boot-f > .boot-b, .boot-card-head span .boot-b { height: 10px; border-radius: 3px; }
+      .boot-card-head span .boot-b:first-child { height: 12px; }
+      .boot-cards .boot-f > .boot-b:last-child { width: 64%; }
+      @media (prefers-reduced-motion: no-preference) {
+        .boot-b {
+          background-image: linear-gradient(100deg, transparent 38%, rgba(255, 226, 170, .1) 50%, transparent 62%);
+          background-repeat: no-repeat;
+          background-size: 100vw 100vh;
+          background-attachment: fixed;
+          animation: boot-sweep 1.8s ease-in-out infinite;
+        }
+      }
+      @keyframes boot-sweep { from { background-position: -100vw 0; } to { background-position: 100vw 0; } }
+      @media (max-width: 1499px) {
+        .boot-actions .boot-b + .boot-b { width: 34px; }
+      }
+      @media (max-width: 1023px) {
+        .boot-bar { grid-template-columns: minmax(96px, 1fr) max-content minmax(96px, 1fr); }
+        .boot-status { width: 104px; }
+      }
+      @media (min-width: 901px) {
+        [data-boot="mythic-plus"] .boot-cards { display: none; }
+      }
+      @media (max-width: 900px) {
+        [data-boot="mythic-plus"] .boot-table { display: none; }
+      }
+      @media (max-width: 960px) {
+        .boot-bar { grid-template-columns: minmax(0, 1fr) max-content max-content; }
+        .boot-nav { display: none; }
+        .boot-menu { display: block; }
+        .boot-status { justify-self: end; }
+      }
+      @media (max-width: 640px) {
+        .boot-bar {
+          grid-template-columns: minmax(0, 1fr) max-content;
+          gap: 4px;
+          padding: 0 calc(8px + env(safe-area-inset-right, 0px)) 0 calc(4px + env(safe-area-inset-left, 0px));
+        }
+        .boot-actions { display: none; }
+        .boot { padding: 50px 12px 40px; }
+        .boot-switch .boot-b { width: 76px; }
+        .boot-icons { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+        .boot-toolbar .boot-b { flex: 1 1 100px; width: auto; }
+        .boot-toolbar .boot-b:last-child { flex: 1 1 100%; margin-left: 0; }
+        .boot-row { grid-template-columns: 18px minmax(0, 1fr) repeat(2, 52px); gap: 10px; padding: 0 10px; }
+        .boot-row > .boot-b:nth-child(n + 5) { display: none; }
+        .boot-bars { flex-direction: column; align-items: stretch; gap: 7px; height: auto; }
+        .boot-bars .boot-b { flex: none; width: var(--s); height: 14px; border-radius: 0 4px 4px 0; }
+        .boot-bars .boot-b:nth-child(n + 9) { display: none; }
+      }
+    </style>
 </head>
 <body>
-    <app-root></app-root>
+    <app-root>
+        <div class="boot-bar" aria-hidden="true">
+            <span class="boot-b boot-menu"></span>
+            <span class="boot-b boot-status"></span>
+            <span class="boot-nav"><span class="boot-b" style="width:64px"></span><span class="boot-b" style="width:108px"></span><span class="boot-b" style="width:44px"></span><span class="boot-b" style="width:52px"></span><span class="boot-b" style="width:70px"></span><span class="boot-b" style="width:96px"></span></span>
+            <span class="boot-actions"><span class="boot-b"></span><span class="boot-b"></span></span>
+        </div>
+        <div class="boot" aria-hidden="true">
+            <div class="boot-section boot-in-mythic-plus boot-in-raids boot-switch"><span class="boot-b"></span><span class="boot-b"></span><span class="boot-b"></span></div>
+            <div class="boot-section boot-in-mythic-plus boot-icons">
+                <div class="boot-f"><span class="boot-b boot-icon"></span><span class="boot-b boot-caption"></span></div>
+                <div class="boot-f"><span class="boot-b boot-icon"></span><span class="boot-b boot-caption"></span></div>
+                <div class="boot-f"><span class="boot-b boot-icon"></span><span class="boot-b boot-caption"></span></div>
+                <div class="boot-f"><span class="boot-b boot-icon"></span><span class="boot-b boot-caption"></span></div>
+                <div class="boot-f"><span class="boot-b boot-icon"></span><span class="boot-b boot-caption"></span></div>
+                <div class="boot-f"><span class="boot-b boot-icon"></span><span class="boot-b boot-caption"></span></div>
+                <div class="boot-f"><span class="boot-b boot-icon"></span><span class="boot-b boot-caption"></span></div>
+                <div class="boot-f"><span class="boot-b boot-icon"></span><span class="boot-b boot-caption"></span></div>
+                <div class="boot-f"><span class="boot-b boot-icon"></span><span class="boot-b boot-caption"></span></div>
+                <div class="boot-f"><span class="boot-b boot-icon"></span><span class="boot-b boot-caption"></span></div>
+            </div>
+            <div class="boot-section boot-in-mythic-plus boot-f boot-chart">
+                <span class="boot-b"></span>
+                <div class="boot-bars"><span class="boot-b" style="--s:96%"></span><span class="boot-b" style="--s:91%"></span><span class="boot-b" style="--s:86%"></span><span class="boot-b" style="--s:81%"></span><span class="boot-b" style="--s:75%"></span><span class="boot-b" style="--s:70%"></span><span class="boot-b" style="--s:65%"></span><span class="boot-b" style="--s:60%"></span><span class="boot-b" style="--s:54%"></span><span class="boot-b" style="--s:49%"></span><span class="boot-b" style="--s:44%"></span><span class="boot-b" style="--s:39%"></span><span class="boot-b" style="--s:34%"></span><span class="boot-b" style="--s:28%"></span><span class="boot-b" style="--s:23%"></span><span class="boot-b" style="--s:18%"></span></div>
+            </div>
+            <div class="boot-section boot-in-table boot-in-mythic-plus boot-toolbar"><span class="boot-b"></span><span class="boot-b"></span><span class="boot-b"></span><span class="boot-b"></span></div>
+            <div class="boot-section boot-in-table boot-in-mythic-plus boot-f boot-table">
+                <div class="boot-row"><span class="boot-b"></span><span class="boot-b" style="width:24%"></span><span class="boot-b"></span><span class="boot-b"></span><span class="boot-b"></span><span class="boot-b"></span></div>
+                <div class="boot-row"><span class="boot-b"></span><span class="boot-name"><span class="boot-b"></span><span class="boot-b" style="width:62%"></span></span><span class="boot-b"></span><span class="boot-b"></span><span class="boot-b"></span><span class="boot-b"></span></div>
+                <div class="boot-row"><span class="boot-b"></span><span class="boot-name"><span class="boot-b"></span><span class="boot-b" style="width:48%"></span></span><span class="boot-b"></span><span class="boot-b"></span><span class="boot-b"></span><span class="boot-b"></span></div>
+                <div class="boot-row"><span class="boot-b"></span><span class="boot-name"><span class="boot-b"></span><span class="boot-b" style="width:74%"></span></span><span class="boot-b"></span><span class="boot-b"></span><span class="boot-b"></span><span class="boot-b"></span></div>
+                <div class="boot-row"><span class="boot-b"></span><span class="boot-name"><span class="boot-b"></span><span class="boot-b" style="width:55%"></span></span><span class="boot-b"></span><span class="boot-b"></span><span class="boot-b"></span><span class="boot-b"></span></div>
+                <div class="boot-row"><span class="boot-b"></span><span class="boot-name"><span class="boot-b"></span><span class="boot-b" style="width:68%"></span></span><span class="boot-b"></span><span class="boot-b"></span><span class="boot-b"></span><span class="boot-b"></span></div>
+                <div class="boot-row"><span class="boot-b"></span><span class="boot-name"><span class="boot-b"></span><span class="boot-b" style="width:44%"></span></span><span class="boot-b"></span><span class="boot-b"></span><span class="boot-b"></span><span class="boot-b"></span></div>
+                <div class="boot-row"><span class="boot-b"></span><span class="boot-name"><span class="boot-b"></span><span class="boot-b" style="width:58%"></span></span><span class="boot-b"></span><span class="boot-b"></span><span class="boot-b"></span><span class="boot-b"></span></div>
+                <div class="boot-row"><span class="boot-b"></span><span class="boot-name"><span class="boot-b"></span><span class="boot-b" style="width:71%"></span></span><span class="boot-b"></span><span class="boot-b"></span><span class="boot-b"></span><span class="boot-b"></span></div>
+                <div class="boot-row"><span class="boot-b"></span><span class="boot-name"><span class="boot-b"></span><span class="boot-b" style="width:51%"></span></span><span class="boot-b"></span><span class="boot-b"></span><span class="boot-b"></span><span class="boot-b"></span></div>
+                <div class="boot-row"><span class="boot-b"></span><span class="boot-name"><span class="boot-b"></span><span class="boot-b" style="width:64%"></span></span><span class="boot-b"></span><span class="boot-b"></span><span class="boot-b"></span><span class="boot-b"></span></div>
+                <div class="boot-row"><span class="boot-b"></span><span class="boot-name"><span class="boot-b"></span><span class="boot-b" style="width:62%"></span></span><span class="boot-b"></span><span class="boot-b"></span><span class="boot-b"></span><span class="boot-b"></span></div>
+                <div class="boot-row"><span class="boot-b"></span><span class="boot-name"><span class="boot-b"></span><span class="boot-b" style="width:48%"></span></span><span class="boot-b"></span><span class="boot-b"></span><span class="boot-b"></span><span class="boot-b"></span></div>
+            </div>
+            <div class="boot-section boot-in-mythic-plus boot-in-raids boot-cards">
+                <div class="boot-f"><span class="boot-card-head"><span class="boot-b"></span><span><span class="boot-b" style="width:62%"></span><span class="boot-b" style="width:40%"></span></span><span class="boot-b"></span></span><span class="boot-b"></span><span class="boot-b"></span></div>
+                <div class="boot-f"><span class="boot-card-head"><span class="boot-b"></span><span><span class="boot-b" style="width:48%"></span><span class="boot-b" style="width:40%"></span></span><span class="boot-b"></span></span><span class="boot-b"></span><span class="boot-b"></span></div>
+                <div class="boot-f"><span class="boot-card-head"><span class="boot-b"></span><span><span class="boot-b" style="width:74%"></span><span class="boot-b" style="width:40%"></span></span><span class="boot-b"></span></span><span class="boot-b"></span><span class="boot-b"></span></div>
+                <div class="boot-f"><span class="boot-card-head"><span class="boot-b"></span><span><span class="boot-b" style="width:55%"></span><span class="boot-b" style="width:40%"></span></span><span class="boot-b"></span></span><span class="boot-b"></span><span class="boot-b"></span></div>
+                <div class="boot-f"><span class="boot-card-head"><span class="boot-b"></span><span><span class="boot-b" style="width:68%"></span><span class="boot-b" style="width:40%"></span></span><span class="boot-b"></span></span><span class="boot-b"></span><span class="boot-b"></span></div>
+                <div class="boot-f"><span class="boot-card-head"><span class="boot-b"></span><span><span class="boot-b" style="width:44%"></span><span class="boot-b" style="width:40%"></span></span><span class="boot-b"></span></span><span class="boot-b"></span><span class="boot-b"></span></div>
+                <div class="boot-f"><span class="boot-card-head"><span class="boot-b"></span><span><span class="boot-b" style="width:58%"></span><span class="boot-b" style="width:40%"></span></span><span class="boot-b"></span></span><span class="boot-b"></span><span class="boot-b"></span></div>
+                <div class="boot-f"><span class="boot-card-head"><span class="boot-b"></span><span><span class="boot-b" style="width:71%"></span><span class="boot-b" style="width:40%"></span></span><span class="boot-b"></span></span><span class="boot-b"></span><span class="boot-b"></span></div>
+            </div>
+        </div>
+    </app-root>
 </body>
 </html>

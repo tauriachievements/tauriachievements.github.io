@@ -1,7 +1,7 @@
 <main class="mplus-page">
   <h1 class="visually-hidden">Mythic+ Leaderboard</h1>
 
-  <app-load-state [loading]="isLoading()" [error]="loadError()" loadingText="Charging the keystones..." (retry)="retryLoad()" />
+  <app-load-state [loading]="isLoading()" [error]="loadError()" [skeleton]="skeleton()" loadingText="Charging the keystones..." (retry)="retryLoad()" />
 
   @if (!isLoading() && !loadError()) {
     <div class="period-bar">
@@ -59,7 +59,7 @@
       }
     </nav>
 
-    <app-load-state [loading]="runsLoading()" loadingText="Loading runs..." />
+    <app-load-state [loading]="runsLoading()" [skeleton]="runsSkeleton()" loadingText="Loading runs..." />
     @if (!runsLoading()) {
       <app-mythic-plus-spec-chart
         class="spec-chart"

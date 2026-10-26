@@ -1,9 +1,6 @@
 <main class="realm-firsts-page">
   @if (isLoading()) {
-    <div class="realm-firsts-feedback loading">
-      <div class="feedback-spinner" aria-hidden="true"></div>
-      <h2>Loading raid history...</h2>
-    </div>
+    <app-skeleton [blocks]="['rows:12']" label="Loading raid history..." />
   }
 
   @if (!isLoading() && loadError()) {

@@ -897,17 +897,6 @@
   p { color: #929bac; }
 }
 
-.feedback-spinner {
-  width: 36px;
-  height: 36px;
-  border: 3px solid rgba(255, 255, 255, 0.1);
-  border-top-color: #f7c85e;
-  border-radius: 50%;
-  animation: spin 0.85s linear infinite;
-}
-
-@keyframes spin { to { transform: rotate(360deg); } }
-
 .action-button {
   min-height: 38px;
   padding: 0 14px;
@@ -993,3 +982,5 @@
     strong { color: #dce1e8; }
   }
 }
+
+app-skeleton { --skeleton-width: 1250px; }

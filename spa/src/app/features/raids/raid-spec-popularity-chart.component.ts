@@ -15,6 +15,7 @@ import {
   specPerformance
 } from './raid-scores';
 import { RevealDirective } from '../../shared/motion/reveal.directive';
+import { SkeletonComponent } from '../../shared/skeleton.component';
 import { TapTooltipDirective } from '../../shared/tap-tooltip.directive';
 import { SpecDefinition } from '../../game/wow-specs';
 
@@ -44,7 +45,7 @@ export function parseChartView(value: string | null | undefined): ChartView {
 
 @Component({
   selector: 'app-raid-spec-popularity-chart',
-  imports: [TapTooltipDirective, GlideDirective, RevealDirective, FlipDirective, DecimalPipe],
+  imports: [TapTooltipDirective, GlideDirective, RevealDirective, FlipDirective, DecimalPipe, SkeletonComponent],
   templateUrl: './raid-spec-popularity-chart.component.html',
   styleUrls: ['../../shared/spec-charts/spec-chart.scss', './raid-spec-popularity-chart.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush

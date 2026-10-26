@@ -47,7 +47,9 @@ export class <Name>PageComponent {
 The shell renders the site header and the back-to-top button; the page only hands the header
 its timestamp ([frontend.md](../frontend.md#the-app-shell-and-the-header-height-contract)).
 The template starts with the page's own content, and its loading and error states use
-`<app-load-state>`.
+`<app-load-state>`. Give it a `[skeleton]` shaped like the part of the page the data fills
+(`[skeleton]="['tiles:4', 'rows:10']"`), so the page never shows a spinner on an empty screen
+([frontend.md](../frontend.md#loading-skeletons)).
 
 - Load data only through `DataFileService`, or the area's data service when it has one.
 - Write in-page state to the URL with `injectReplaceUrl()`, never `router.navigate`

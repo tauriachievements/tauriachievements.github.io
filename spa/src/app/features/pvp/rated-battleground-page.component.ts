@@ -36,6 +36,7 @@ import {
 } from './rated-battleground-view-switcher.component';
 import { injectReplaceUrl, parsePage } from '../../core/url-state';
 import { setPageHeader } from '../../core/page-header';
+import { SkeletonComponent } from '../../shared/skeleton.component';
 
 const METRIC_OPTIONS: ReadonlyArray<{ value: RatedLeaderboardMetric; label: string }> = [
   { value: 'rating', label: 'Net rating change' },
@@ -65,7 +66,8 @@ const LEADERBOARD_PAGE_SIZE = 25;
     PagerComponent,
     ScrollToEndDirective,
     DecimalPipe,
-    PercentPipe
+    PercentPipe,
+    SkeletonComponent
   ],
   providers: [FilterDropdownCoordinatorService],
   changeDetection: ChangeDetectionStrategy.OnPush

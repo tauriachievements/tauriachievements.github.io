@@ -35,6 +35,7 @@ import {
 } from './server-stats.service';
 import { CLASS_NAMES, RACE_NAMES, REALMS, Realm } from '../../game/wow';
 import { setPageHeader } from '../../core/page-header';
+import { SkeletonComponent } from '../../shared/skeleton.component';
 
 Chart.register(BarController, BarElement, CategoryScale, LinearScale, DoughnutController, ArcElement, Tooltip, Legend);
 Chart.defaults.color = '#9fa6b4';
@@ -122,7 +123,7 @@ export function emptyStats(): ServerStats {
   selector: 'app-stats-page',
   templateUrl: './stats-page.component.html',
   styleUrls: ['./stats-page.component.scss'],
-  imports: [DecimalPipe],
+  imports: [DecimalPipe, SkeletonComponent],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class StatsPageComponent {
