@@ -51,6 +51,14 @@ h2 { margin: 0; color: #f4f7ee; font-size: 1.35rem; }
 
   app-filter-dropdown { min-width: 0; }
   .filter-reset { height: auto; justify-content: center; }
+
+  .season-filter, .other-filter {
+    ::ng-deep .dropdown.compact .dropdown-menu {
+      max-height: min(420px, calc(100vh - 120px));
+      overflow-y: auto;
+      overscroll-behavior: contain;
+    }
+  }
 }
 
 .feedback {

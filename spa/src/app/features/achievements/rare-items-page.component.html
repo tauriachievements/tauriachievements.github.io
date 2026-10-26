@@ -19,6 +19,7 @@
         [options]="classOptions"
         [selectedValue]="query().classId"
         [showIcons]="true"
+        [compact]="true"
         [highlightWhenSelected]="true"
         [disabled]="isLoading() || !!loadError()"
         (selectionChange)="selectClass($event)" />
@@ -29,6 +30,7 @@
         ariaLabel="PvP season"
         [options]="seasonOptions()"
         [selectedValue]="query().season"
+        [compact]="true"
         [highlightWhenSelected]="true"
         [disabled]="isLoading() || !!loadError()"
         (selectionChange)="selectSeason($event)" />
@@ -39,6 +41,7 @@
         ariaLabel="Other items"
         [options]="otherOptions()"
         [selectedValue]="otherValue()"
+        [compact]="true"
         [highlightWhenSelected]="true"
         [disabled]="isLoading() || !!loadError()"
         (selectionChange)="selectOther($event)" />
@@ -49,6 +52,7 @@
         ariaLabel="Realm"
         [options]="realmOptions"
         [selectedValue]="query().realm"
+        [compact]="true"
         [highlightWhenSelected]="true"
         [disabled]="isLoading() || !!loadError()"
         (selectionChange)="selectRealm($event)" />

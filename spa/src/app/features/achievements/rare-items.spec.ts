@@ -77,7 +77,7 @@ describe('decodeEliteCatalog', () => {
 describe('eliteSeasonOptions', () => {
   it('lists the seasons with armour, leaving out weapon-only seasons', () => {
     expect(eliteSeasonOptions(catalog).map(option => option.label))
-      .toEqual(['All seasons', 'Cataclysmic (Season 11)', 'Malevolent (Season 12)', 'Vindictive (Legion Season 1)']);
+      .toEqual(['All seasons', 'Season 11 - Cataclysmic', 'Season 12 - Malevolent', 'Legion Season 1 - Vindictive']);
   });
 
   it('lists only the seasons with a piece for the picked class', () => {
@@ -92,7 +92,7 @@ describe('otherItemOptions', () => {
       [undefined, 'Other items'],
       [22818, 'The Plague Bearer'],
       [45983, "Furious Gladiator's Tabard"],
-      ['wrathful', 'Wrathful elite weapons (Season 8)']
+      ['wrathful', 'Season 8 - Wrathful elite weapons']
     ]);
   });
 
@@ -198,8 +198,8 @@ describe('emptyOwnersMessage', () => {
 describe('ownersHeading', () => {
   it('names what the list shows', () => {
     expect(ownersHeading(dataset, catalog, {})).toEqual({ eyebrow: 'Elite PvP set', title: 'All classes · All seasons' });
-    expect(ownersHeading(dataset, catalog, { classId: 6, season: 'malevolent' }).title).toBe('Death Knight · Malevolent (Season 12)');
+    expect(ownersHeading(dataset, catalog, { classId: 6, season: 'malevolent' }).title).toBe('Death Knight · Season 12 - Malevolent');
     expect(ownersHeading(dataset, catalog, { other: { kind: 'item', id: 22818 } })).toEqual({ eyebrow: 'Rare item', title: 'The Plague Bearer' });
-    expect(ownersHeading(dataset, catalog, { other: { kind: 'weapons', season: 'wrathful' } }).title).toBe('Wrathful elite weapons (Season 8)');
+    expect(ownersHeading(dataset, catalog, { other: { kind: 'weapons', season: 'wrathful' } }).title).toBe('Season 8 - Wrathful elite weapons');
   });
 });

@@ -96,11 +96,11 @@ export function decodeEliteCatalog(file: ElitePvpItemsFile): EliteCatalog {
 }
 
 export function seasonLabel(season: EliteSeason): string {
-  return `${season.name} (${season.label})`;
+  return `${season.label} - ${season.name}`;
 }
 
 export function weaponsLabel(season: EliteSeason): string {
-  return `${season.name} elite weapons (${season.label})`;
+  return `${seasonLabel(season)} elite weapons`;
 }
 
 export const ALL_SEASONS_OPTION: FilterDropdownOption = { value: undefined, label: 'All seasons' };
