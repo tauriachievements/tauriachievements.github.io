@@ -1,35 +1,61 @@
 <main class="rare-items-page">
   <section class="rare-items-header">
-    <p class="eyebrow">Collector's archive</p>
-    <h1>Rare Item Holders</h1>
-    <p class="intro">Choose a rare item to see every known character who owns it.</p>
+    <h1 class="visually-hidden">Rare Item Holders</h1>
 
-    <div class="filter-row">
-      <label class="item-picker">
-        <span>Rare item</span>
-        <select
-          [disabled]="isLoading() || !!loadError()"
-          [value]="selectedItemId() ?? ''"
-          (change)="selectItem($event)">
-          <option value="">Select an item...</option>
-          @for (item of dataset()?.items; track item) {
-            <option [value]="item.id">{{ item.name }}</option>
-          }
-        </select>
-      </label>
-
-      <label class="realm-picker">
-        <span>Realm</span>
-        <select
-          [disabled]="isLoading() || !!loadError()"
-          [value]="selectedRealm()"
-          (change)="selectRealm($event)">
-          <option value="all">All realms</option>
-          <option value="Evermoon">Evermoon</option>
-          <option value="Tauri">Tauri</option>
-          <option value="WoD">WoD</option>
-        </select>
-      </label>
+    <div class="filter-grid">
+      <button
+        type="button"
+        class="filter-reset"
+        [disabled]="!canReset()"
+        aria-label="Reset class, season, other item and realm"
+        (click)="resetFilters()">
+        Reset
+      </button>
+      <app-filter-dropdown
+        class="class-filter"
+        dropdownId="rareItemsClass"
+        triggerId="rareItemsClassTrigger"
+        ariaLabel="Class"
+        [options]="classOptions"
+        [selectedValue]="query().classId"
+        [showIcons]="true"
+        [compact]="true"
+        [highlightWhenSelected]="true"
+        [disabled]="isLoading() || !!loadError()"
+        (selectionChange)="selectClass($event)" />
+      <app-filter-dropdown
+        class="season-filter"
+        dropdownId="rareItemsSeason"
+        triggerId="rareItemsSeasonTrigger"
+        ariaLabel="PvP season"
+        [options]="seasonOptions()"
+        [selectedValue]="query().season"
+        [compact]="true"
+        [highlightWhenSelected]="true"
+        [disabled]="isLoading() || !!loadError()"
+        (selectionChange)="selectSeason($event)" />
+      <app-filter-dropdown
+        class="other-filter"
+        dropdownId="rareItemsOther"
+        triggerId="rareItemsOtherTrigger"
+        ariaLabel="Other items"
+        [options]="otherOptions()"
+        [selectedValue]="otherValue()"
+        [compact]="true"
+        [highlightWhenSelected]="true"
+        [disabled]="isLoading() || !!loadError()"
+        (selectionChange)="selectOther($event)" />
+      <app-filter-dropdown
+        class="realm-filter"
+        dropdownId="rareItemsRealm"
+        triggerId="rareItemsRealmTrigger"
+        ariaLabel="Realm"
+        [options]="realmOptions"
+        [selectedValue]="query().realm"
+        [compact]="true"
+        [highlightWhenSelected]="true"
+        [disabled]="isLoading() || !!loadError()"
+        (selectionChange)="selectRealm($event)" />
     </div>
   </section>
 
@@ -44,50 +70,66 @@
     </section>
   }
 
-  @if (!isLoading() && !loadError() && !selectedItem()) {
-    <section class="selection-prompt">
-      Select an item above to view its owners.
-    </section>
-  }
-
-  @if (selectedItem(); as item) {
-    <section class="results">
+  @if (heading(); as heading) {
+    <section class="results" #resultsSection>
       <div class="results-heading">
         <div>
-          <p class="eyebrow">Selected item</p>
-          <h2>{{ item.name }}</h2>
+          <p class="eyebrow">{{ heading.eyebrow }}</p>
+          <h2>{{ heading.title }}</h2>
         </div>
-        <strong>{{ matchingCharacters().length | number }} characters</strong>
+        <strong>{{ ownerCount() }}</strong>
       </div>
 
-      <div class="table-scroll">
+      @if (owners().length) {
         <table>
           <thead>
             <tr>
-              <th>#</th>
               <th>Character</th>
-              <th>Realm</th>
+              @if (showPieces()) {
+                <th class="pieces">Pieces</th>
+              }
+              <th class="realm">Realm</th>
             </tr>
           </thead>
           <tbody>
-            @for (character of matchingCharacters(); track `${character.realm}::${character.name}`; let index = $index) {
+            @for (row of pageRows(); track row.key) {
               <tr>
-                <td>{{ index + 1 }}</td>
-                <td>
-                  <a
-                    [href]="getArmoryUrl(character.name, character.realm)"
-                    [style.color]="getCharacterClassColor(character)"
-                    target="_blank"
-                    rel="noopener noreferrer">
-                    {{ character.name }}
-                  </a>
+                <td class="character">
+                  <div class="identity">
+                    <img class="icon" [src]="row.raceIcon" [alt]="row.raceName" [title]="row.raceName" width="20" height="20" loading="lazy" />
+                    <img class="icon" [src]="row.classIcon" [alt]="row.className" [title]="row.className" width="20" height="20" loading="lazy" />
+                    <div class="name">
+                      <a
+                        [href]="armoryUrl(row)"
+                        [style.color]="classColor(row)"
+                        target="_blank"
+                        rel="noopener noreferrer">{{ row.character.name }}</a>
+                      @if (row.detail) {
+                        <span class="detail">{{ row.detail }}</span>
+                      }
+                    </div>
+                  </div>
                 </td>
-                <td>{{ character.realm }}</td>
+                @if (showPieces()) {
+                  <td class="pieces">{{ row.pieces }}</td>
+                }
+                <td class="realm">{{ row.character.realm }}</td>
               </tr>
             }
           </tbody>
         </table>
-      </div>
+
+        @if (pages() > 1) {
+          <app-pager
+            [page]="page()"
+            [pages]="pages()"
+            [count]="ownerCount()"
+            [scrollTarget]="resultsSection"
+            (pageChange)="goToPage($event)" />
+        }
+      } @else {
+        <p class="empty">{{ emptyMessage() }}</p>
+      }
     </section>
   }
 </main>

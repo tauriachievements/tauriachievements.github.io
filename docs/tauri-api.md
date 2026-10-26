@@ -48,6 +48,10 @@ response first.
     a lifetime total.
 - Observed 2026-10-17: deleted or transferred characters come back from
   `character-minimal-data` with no name and class 0.
+- `character-itemappearances` lists the owned appearances by item id, in groups
+  (`itemappearances.owned`, an array of arrays). Code: `ItemAppearanceCounter`. Observed
+  2026-10-26: all 85 owners of a tracked elite piece in `RareItems.json` were the piece's own
+  class, which suggests the list is the character's, not the account's (not checked further).
 
 ## Mythic+ (`challenge-index`, `challenge-leaderboard`)
 
@@ -103,6 +107,20 @@ The Legion database site. RaidLogExporter reads three of its endpoints, with no 
   1 kB and 0.2 s per spell. Code: `TauriShootSpellTooltipSource`.
 - `?spell=<id>` is the page for people: about 15 kB of HTML, and no CORS headers, so the site
   can't read it from the browser.
+
+What building the elite PvP list ([data-pipeline.md](data-pipeline.md#elite-pvp-items)) found,
+observed 2026-10-26:
+
+- `?search=<words>` is the only way to list items: the words must all appear in the name, and
+  the results are capped at 300 per kind (items, NPCs, quests…), as `new Listview({ template:
+  'item', … data: [...] })` blocks in the HTML. Each item there has `id`, `name` (with its quality
+  digit in front), `quality`, `level`, `classs`, `subclass` and `reqclass`, but no name
+  description. The `?items=…&filter=…` listings ignore their filters and return the first 300
+  items, and `?itemsets` holds only some sets (one Death Knight PvP set).
+- `?item=<id>&xml` carries a tooltip's name description as `<b class="dsc q2">Season 12
+  Elite</b>`: "Season N", "Warlords Season N" or "Legion Season N", with " Elite" on an elite
+  piece. The usable classes are `<span class="c<classId>">` spans after "Classes:"; six
+  Vindictive cloaks have none.
 
 Tooltip quirks, observed 2026-10-22 over the 603 talent spells. The exporter cleans them up as
 [data-pipeline.md](data-pipeline.md#talent-tooltips) describes.

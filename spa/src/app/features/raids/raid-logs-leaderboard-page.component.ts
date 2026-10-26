@@ -34,7 +34,7 @@ import {
 import { RaidBoss, RaidCharacter, RaidDifficulty, RaidKillDetails, RaidLogsIndex, RaidSpec } from './raid-logs.types';
 import { bossesInKillOrder, characterKey, defaultDifficulty } from './raid-logs';
 import { RaidLogsDataService } from './raid-logs-data.service';
-import { CLASS_NAMES, REALMS, realmSlug } from '../../game/wow';
+import { CLASS_NAMES, REALM_FILTER_OPTIONS } from '../../game/wow';
 import { injectReplaceUrl, parseInteger, parsePage } from '../../core/url-state';
 import { LoadStateComponent } from '../../shared/load-state.component';
 import { PagerComponent } from '../../shared/pager.component';
@@ -195,10 +195,7 @@ export class RaidLogsLeaderboardPageComponent {
     return [{ value: undefined, label: 'All specs' }, ...specs.map(spec => ({ value: spec.id, label: spec.name, icon: spec.icon }))];
   });
 
-  readonly realmOptions: ReadonlyArray<FilterDropdownOption> = [
-    { value: undefined, label: 'All realms' },
-    ...REALMS.map(realm => ({ value: realmSlug(realm), label: realm }))
-  ];
+  readonly realmOptions = REALM_FILTER_OPTIONS;
 
   readonly classWidthLabels: ReadonlyArray<string> = ['All classes', ...Object.values(CLASS_NAMES)];
   readonly specWidthLabels = computed<string[]>(() =>

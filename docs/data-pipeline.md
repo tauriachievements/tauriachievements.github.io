@@ -20,6 +20,7 @@ Tauri API ──► api/ console apps ──► spa/src/ data files ──► co
 |---|---|---|---|
 | `Players.csv`, `lastUpdated.txt`, `RareAchievements.json` | `AchievementLadder`, `MissingPlayerFinder` | `sync data` | `prepare-app.js`, the ladder pages |
 | `RareItems.json` | `AchievementLadder` | `sync data` | Rare Items page |
+| `elite-pvp-items.json` | built once from TauriShoot, then kept by hand ([below](#elite-pvp-items)) | `feat:` / `chore:` | Rare Items page, `AchievementLadder` |
 | `battlegrounds.json`, `battleground-collector-state.json`, `rated-battlegrounds.json` | `BattlegroundCollector` | `sync data` | Battleground and Rated Battleground pages |
 | `arena-ladder-2v2.json`, `arena-ladder-3v3.json` | `ArenaLadderExporter` | `sync data` | Arena page |
 | `mythic-plus-data/` | `MythicPlusExporter` | `sync data`, or `sync mythic plus data` from `Run-MythicPlus.cmd` | `/mythic-plus/*` |
@@ -31,8 +32,11 @@ The scan inputs live under `api/AchievementLadder/Data/`. `BattlegroundCollector
 members of every match it reads, arenas included) and the two `*GuildAndCharScan` jobs append
 new guilds and guildless characters to the realm lists;
 `GuildCharacterExporter` removes guilds that no longer exist; `RealmFirstAchievements` rewrites
-`valid-realm-first-characters.txt`. `sync data` commits these lists too. One file there is kept by
-hand: `invalid-raid-logs.txt`, the raid kills that don't count ([below](#invalid-raid-logs)).
+`valid-realm-first-characters.txt`. `sync data` commits these lists too. Two files there are kept
+by hand: `invalid-raid-logs.txt`, the raid kills that don't count ([below](#invalid-raid-logs)),
+and `rare-items.txt`, the rare items that aren't elite PvP pieces, as `Name - ID` lines.
+AchievementLadder looks for those items and every piece in `spa/src/elite-pvp-items.json` in each
+character's appearance collection, and writes the owners to `RareItems.json`.
 
 ## The daily update
 
@@ -214,6 +218,50 @@ taken straight from the ladder ([tauri-api.md](tauri-api.md#arena-ladder-arena-l
 
 A ladder entry without a name, class, known realm or games is left out, and so is a second
 entry for the same realm and guid.
+
+## Elite PvP items
+
+`spa/src/elite-pvp-items.json` lists every elite PvP piece a character can collect as an
+appearance: 3,046 items over 20 seasons, from Furious (Season 6) to Demonic (Legion Season 7).
+It's one file for both sides: the Rare Items page reads it for its class, season and weapon
+lists, and AchievementLadder adds its ids to the items it looks for
+(`RareItemCatalog.LoadElitePvpItems`), so the page shows every owner after the next scan.
+
+```
+{ "version": 1,
+  "seasons": [[key, name, label], ...],          oldest first: ["malevolent", "Malevolent", "Season 12"]
+  "items":   [[id, season, [classId, ...], slot, name], ...] }
+```
+
+One season or item per line. `slot` is TauriShoot's (`Head`, `Back`, `Two-hand`, `Off Hand`, …);
+an armour slot makes a set piece, anything else a weapon ([scoring.md](scoring.md#rare-items)).
+`classes` is empty for a piece any class can use, and holds two or three classes for some Cata
+and MoP boots and belts.
+
+It was built on 2026-10-26 from TauriShoot ([tauri-api.md](tauri-api.md#taurishoot-legion-shoottaurihu)):
+
+- every item whose name starts with a season's "<Season> Gladiator's", found by searching each
+  season's name, and that name with each word that follows "Gladiator's" while a search hit the
+  300-result cap;
+- of those, the epic armour and weapons whose tooltip tag ends in "Elite" ("Season 12 Elite").
+  The tag, not the name, gives the season: some Vicious items carry the Season 10 tag. Every
+  weapon from Season 1 on and all armour from Season 5 on was checked; the armour of Seasons 1
+  to 4 was only sampled (the Plate and Silk pieces), and none of it was elite;
+- without necks, rings and trinkets (226 items), which have no appearance, so a scan never sees
+  them.
+
+What came out of it:
+
+- Seasons 6 to 8 have elite weapons only. From Season 9 every class has elite armour.
+- Legion lists two item ids for each piece, with the same appearance. Both are in the file.
+- TauriShoot names no class on six Vindictive cloaks; the file gives them the class the same
+  cloak has in the later Legion seasons (Drape of the Tracker: Hunter, Ironskin Cloak: Monk,
+  Demonthread Cloak: Demon Hunter).
+
+The seasons are over, so the list doesn't change on its own: edit it by hand, and bump `version`
+in the file, `ELITE_PVP_ITEMS_VERSION` (`rare-items.ts`) and `ElitePvpItemsFormatVersion`
+(`RareItemCatalog`) together if its shape changes. An id in both this file and `rare-items.txt`
+counts once, under the `rare-items.txt` name.
 
 ## What `prepare-app.js` builds
 
