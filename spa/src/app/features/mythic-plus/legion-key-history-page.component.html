@@ -8,7 +8,10 @@
     </p>
 
     <ng-container *ngTemplateOutlet="downloadButton" />
-    <p class="download-note">Windows, Mac and Linux <span aria-hidden="true">·</span> Updates itself</p>
+    <p class="download-note">
+      Windows, Mac and Linux <span aria-hidden="true">·</span>
+      <button type="button" class="setup-link" (click)="showSetup(setup)">One-time setup<span class="tap-area" aria-hidden="true"></span></button>, then it updates itself
+    </p>
   </section>
 
   <section class="showcase" aria-label="Screenshots">
@@ -71,22 +74,35 @@
     </div>
   </section>
 
-  <section class="closing" appSpotlight aria-labelledby="closing-title">
-    <h2 id="closing-title">Set it up once</h2>
-    <p class="closing-text">
-      The leaderboard refreshes every hour in the background and new versions install themselves,
-      so you are always up to date. Keys you already have on the leaderboard show up in your
-      journal the first time you log in.
-    </p>
+  <section class="setup" id="setup" #setup tabindex="-1" aria-labelledby="closing-title">
+    <div class="closing" appSpotlight>
+      <h2 id="closing-title">Set it up once</h2>
 
-    <ng-container *ngTemplateOutlet="downloadButton" />
+      <ol class="setup-steps">
+        <li class="setup-step">
+          <ng-container *ngTemplateOutlet="downloadButton" />
+        </li>
+        <li class="setup-step"><span><strong>Unzip it</strong> into your WoW AddOns folder.</span></li>
+        <li class="setup-step">
+          <span><strong>Open LKH Updater once</strong> (it's in the LegionKeyHistory folder) and choose <strong>2</strong>.</span>
+        </li>
+      </ol>
 
-    <p class="fine-print">
-      Scores are unofficial and match the
-      <a routerLink="/mythic-plus" [queryParams]="{ view: 'players' }">Mythic+ leaderboard</a> on this site.
-      Need a hand installing?
-      <a [href]="installGuideUrl" target="_blank" rel="noopener noreferrer">See the guide on GitHub<span aria-hidden="true"> ↗</span></a>
-    </p>
+      <p class="closing-text">
+        That last step is what keeps you up to date: the leaderboard refreshes every hour and new
+        versions install themselves. Skip it and the addon never updates.
+      </p>
+      <p class="setup-help">
+        On Mac or Linux, or stuck?
+        <a [href]="installGuideUrl" target="_blank" rel="noopener noreferrer">See the guide on GitHub<span aria-hidden="true"> ↗</span></a>
+      </p>
+
+      <p class="fine-print">
+        Keys you already have on the leaderboard show up in your journal the first time you log in.
+        Scores are unofficial and match the
+        <a routerLink="/mythic-plus" [queryParams]="{ view: 'players' }">Mythic+ leaderboard</a> on this site.
+      </p>
+    </div>
   </section>
 </main>
 

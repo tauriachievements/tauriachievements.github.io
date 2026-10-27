@@ -178,7 +178,9 @@ There is no root package manager; each half has its own toolchain.
   ([docs/frontend.md](docs/frontend.md#tables-on-phones)). Ask before adding anything else that
   scrolls sideways. A mobile fix leaves the desktop layout alone unless asked.
 - **Promo and info pages are marketing.** The Addon and Support pages use plain benefit copy:
-  no commands, file paths or install steps. Link out for the how-to.
+  no commands or file paths. The Addon page shows the minimum setup steps (download, unzip, run
+  the updater once), because skipping them means the addon never updates. The full how-to,
+  Mac and Linux included, stays on GitHub.
 - **In-page controls keep the scroll position.** Filters, tabs and pagers write the URL with
   `Location.replaceState` ([docs/frontend.md](docs/frontend.md)).
 - **No entrance animation on leaderboard table rows.** Everything that moves respects

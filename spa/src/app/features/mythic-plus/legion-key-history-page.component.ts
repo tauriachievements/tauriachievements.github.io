@@ -1,6 +1,7 @@
 import { NgTemplateOutlet } from '@angular/common';
 import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
+import { prefersReducedMotion } from '../../shared/motion/motion';
 import { ScrollRiseDirective } from '../../shared/motion/scroll-rise.directive';
 import { SpotlightDirective } from '../../shared/motion/spotlight.directive';
 
@@ -93,4 +94,9 @@ export class LegionKeyHistoryPageComponent {
   protected readonly screenshots = SCREENSHOTS;
   protected readonly features = FEATURES;
   protected readonly shown = signal(SCREENSHOTS[0]);
+
+  protected showSetup(setup: HTMLElement): void {
+    setup.scrollIntoView({ behavior: prefersReducedMotion() ? 'auto' : 'smooth', block: 'start' });
+    setup.focus({ preventScroll: true });
+  }
 }
