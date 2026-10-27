@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { KillAppearance, killChart, killHistory, recordChange } from './raid-kill-history';
+import { KillAppearance, killChart, killHistory, predictedChange, recordChange } from './raid-kill-history';
 import { RaidCharacter, RaidKillDetails, RaidMember, RaidSpec } from './raid-logs.types';
 import { mythic, nythendra } from './raid-logs.fixture';
 
@@ -91,6 +91,67 @@ describe('killHistory', () => {
   });
 });
 
+describe('killHistory prediction', () => {
+  const trendOf = (values: number[]) =>
+    killHistory(values.map((value, index) => appearance(index, index * 1_000, value)), 'dps').trend;
+  const predictionOf = (values: number[]) => trendOf(values)?.next;
+
+  it('continues the best-fit line through the kills by one kill', () => {
+    expect(predictionOf([400, 500, 600])).toBeCloseTo(700);
+    expect(predictionOf([560, 575, 590, 610, 600, 640])).toBeCloseTo(645.33);
+  });
+
+  it('follows the last six kills only', () => {
+    expect(predictionOf([2_000, 2_000, 400, 500, 600, 700, 800, 900])).toBeCloseTo(1_000);
+  });
+
+  it('gives the line from the first kill it fits, where the line passes that kill', () => {
+    const trend = trendOf([2_000, 2_000, 400, 500, 600, 700, 800, 900]);
+    const scattered = trendOf([330, 550, 440]);
+
+    expect(trend?.from).toBe(2);
+    expect(trend?.start).toBeCloseTo(400);
+    expect(scattered?.from).toBe(0);
+    expect(scattered?.start).toBeCloseTo(385);
+    expect(scattered?.next).toBeCloseTo(550);
+  });
+
+  it('waits for a third kill', () => {
+    expect(predictionOf([400, 500])).toBeUndefined();
+    expect(predictionOf([])).toBeUndefined();
+  });
+
+  it('never predicts below zero', () => {
+    expect(predictionOf([600, 300, 100])).toBe(0);
+  });
+
+  it('predicts from the kills that count, as the spec when one is given', () => {
+    const history = killHistory([
+      appearance(1, 1_000, 400),
+      appearance(2, 2_000, 9_000, frost),
+      appearance(3, 3_000, 500),
+      appearance(4, 4_000, 600)
+    ], 'dps', 63);
+
+    expect(history.trend?.next).toBeCloseTo(700);
+  });
+});
+
+describe('predictedChange', () => {
+  const historyOf = (values: number[]) =>
+    killHistory(values.map((value, index) => appearance(index, index * 1_000, value)), 'dps');
+
+  it('measures the predicted next kill against the PR', () => {
+    expect(predictedChange(historyOf([400, 500, 600]))).toBeCloseTo(1 / 6);
+    expect(predictedChange(historyOf([500, 800, 600]))).toBeCloseTo(-1 / 12);
+    expect(predictedChange(historyOf([600, 500, 400]))).toBeCloseTo(-.5);
+  });
+
+  it('has nothing to measure before a third kill', () => {
+    expect(predictedChange(historyOf([400, 500]))).toBeUndefined();
+  });
+});
+
 describe('recordChange', () => {
   it('rounds to a whole percent, with an arrow for the way it went', () => {
     expect(recordChange(.44)).toEqual({ trend: 'up', label: '▲ 44%', amount: '44%' });
@@ -178,5 +239,57 @@ describe('killChart', () => {
 
   it('has no chart without kills', () => {
     expect(killChart(killHistory([], 'dps'), 1_000, 63, 12)).toBeUndefined();
+  });
+});
+
+describe('killChart with a prediction', () => {
+  const predicted = (appearances: KillAppearance[], top = 1_000) =>
+    killChart(killHistory(appearances, 'dps'), top, 63, 12, true)!;
+
+  it('adds the predicted next kill as a column after the latest, its line dashed on from it', () => {
+    const chart = predicted([appearance(1, 1_000, 330), appearance(2, 2_000, 440), appearance(3, 3_000, 550)]);
+
+    expect([chart.columns, chart.viewBox, chart.line]).toEqual([4, '0 0 4 100', '0.5,70.00 1.5,60.00 2.5,50.00']);
+    expect(chart.area).toBe('0.5,100 0.5,70.00 1.5,60.00 2.5,50.00 2.5,100');
+    expect(chart.prediction).toMatchObject({ quality: 3, line: '2.5,50.00 3.5,40.00' });
+    expect(chart.prediction?.value).toBeCloseTo(660);
+    expect(chart.prediction?.bottom).toBeCloseTo(60);
+    expect(chart.prediction?.relative).toBeCloseTo(.66);
+  });
+
+  it('draws the trend line from the first kill it fits to the prediction', () => {
+    const scattered = predicted([appearance(1, 1_000, 330), appearance(2, 2_000, 550), appearance(3, 3_000, 440)]);
+    const long = predicted([990, 330, 440, 550, 660, 770, 880].map((dps, index) => appearance(index, index * 1_000, dps)));
+
+    expect(scattered.prediction?.trend).toBe('0.5,65.00 3.5,50.00');
+    expect(long.prediction?.trend).toBe('1.5,70.00 7.5,10.00');
+  });
+
+  it('leaves the end of the chart and the right half to the prediction', () => {
+    const chart = predicted([appearance(1, 1_000, 330), appearance(2, 2_000, 440), appearance(3, 3_000, 550)]);
+
+    expect(chart.points.map(point => [point.flip, point.edge])).toEqual([[false, 'start'], [false, undefined], [true, undefined]]);
+  });
+
+  it('makes room for a prediction above the best anyone did', () => {
+    const chart = predicted([appearance(1, 1_000, 800), appearance(2, 2_000, 900), appearance(3, 3_000, 1_000)]);
+
+    expect(chart.prediction?.bottom).toBeCloseTo(100 / 1.1);
+    expect(chart.topBottom).toBeCloseTo(1_000 / 1_210 * 100);
+  });
+
+  it('puts the best-anyone label on the right when the prediction leaves it clear', () => {
+    const falling = [appearance(1, 1_000, 950), appearance(2, 2_000, 900), appearance(3, 3_000, 850)];
+
+    expect(predicted(falling).referenceSide).toBe('right');
+    expect(killChart(killHistory(falling, 'dps'), 1_000, 63, 12)!.referenceSide).toBe('below');
+  });
+
+  it('has no prediction column before a third kill, or when predictions are off', () => {
+    const two = predicted([appearance(1, 1_000, 330), appearance(2, 2_000, 440)]);
+    const off = killChart(killHistory([appearance(1, 1_000, 330), appearance(2, 2_000, 440), appearance(3, 3_000, 550)], 'dps'), 1_000, 63, 12)!;
+
+    expect([two.columns, two.viewBox, two.prediction]).toEqual([2, '0 0 2 100', undefined]);
+    expect([off.columns, off.viewBox, off.prediction]).toEqual([3, '0 0 3 100', undefined]);
   });
 });

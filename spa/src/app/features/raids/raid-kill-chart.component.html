@@ -6,11 +6,19 @@
         @if (chart.line) {
           <polyline class="stroke" [attr.points]="chart.line" vector-effect="non-scaling-stroke" />
         }
+        @if (chart.prediction; as prediction) {
+          <polyline class="stroke predicted" [attr.points]="prediction.line" vector-effect="non-scaling-stroke" />
+        }
       </svg>
-      <div class="kills" [style.--columns]="chart.points.length">
+      <div class="kills" [style.--columns]="chart.columns">
         @for (point of chart.points; track $index) {
           <span class="column" [style.--at]="point.bottom + '%'">
             <span class="dot" [class.best]="point.best" [style.background]="qualityColors[point.quality]"></span>
+          </span>
+        }
+        @if (chart.prediction; as prediction) {
+          <span class="column prediction" [style.--at]="prediction.bottom + '%'">
+            <span class="dot" [style.border-color]="qualityColors[prediction.quality]"></span>
           </span>
         }
       </div>
@@ -31,11 +39,15 @@
           @if (chart.line) {
             <polyline class="stroke" [attr.points]="chart.line" vector-effect="non-scaling-stroke" />
           }
+          @if (chart.prediction; as prediction) {
+            <polyline class="trend" [attr.points]="prediction.trend" vector-effect="non-scaling-stroke" />
+            <polyline class="stroke predicted" [attr.points]="prediction.line" vector-effect="non-scaling-stroke" />
+          }
           @if (chart.record; as record) {
             <line class="record" [attr.x1]="record.from" [attr.x2]="record.to" [attr.y1]="record.y" [attr.y2]="record.y" vector-effect="non-scaling-stroke" />
           }
         </svg>
-        <ol class="kills" [style.--columns]="chart.points.length">
+        <ol class="kills" [style.--columns]="chart.columns">
           @for (point of chart.points; track $index; let index = $index) {
             <li
               class="column"
@@ -73,15 +85,31 @@
               </a>
             </li>
           }
+          @if (chart.prediction; as prediction) {
+            <li class="column prediction flip edge-end" [style.--at]="prediction.bottom + '%'" aria-hidden="true">
+              <span class="kill">
+                <span class="dot" [style.border-color]="qualityColors[prediction.quality]"></span>
+                <span class="tooltip">
+                  <strong>≈{{ formatPerSecond(prediction.value) }} {{ unit() }}</strong>
+                  <span class="tooltip-row"><span class="tooltip-key" [style.background]="qualityColors[prediction.quality]"></span>{{ percent(prediction.relative) }} of best</span>
+                  <span class="tooltip-best">Prediction</span>
+                  <span class="tooltip-meta">If the trend of the last kills goes on</span>
+                </span>
+              </span>
+            </li>
+          }
         </ol>
       </div>
-      <ol class="ticks" [style.--columns]="chart.points.length" aria-hidden="true">
+      <ol class="ticks" [style.--columns]="chart.columns" aria-hidden="true">
         @for (point of chart.points; track $index) {
           <li [class.edge-start]="point.edge === 'start'" [class.edge-end]="point.edge === 'end'">
             @if (point.showLabel) {
               <span class="tick">{{ point.kill.kill.killedAt | date:'d MMM' }}<small>{{ point.kill.member.itemLevel }} ilvl</small></span>
             }
           </li>
+        }
+        @if (chart.prediction) {
+          <li class="edge-end"><span class="tick prediction-tick">Next<small>prediction</small></span></li>
         }
       </ol>
     </div>

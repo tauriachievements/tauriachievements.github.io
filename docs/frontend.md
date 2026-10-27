@@ -506,7 +506,11 @@ HTML placed at the same percentages, so they keep their size. The Mythic+ score 
 raid character page's kill chart (`app-raid-kill-chart`) work this way. In the kill chart each
 column is the link to its kill's log. A mouse gets a tooltip, while a tap opens the log, as the
 talent icons do. The same component, with `compact`, draws the small progress line in each boss
-row, without links. A click anywhere on a boss row opens its chart, as on the Mythic+ runs list:
+row, without links. With `predict`, `killChart` adds one more column for the predicted next kill
+([scoring.md](scoring.md)): a hollow dot, a dashed line from the latest kill and a "Next" tick,
+with the grid sized by `columns`, not by the number of kills. The full chart also draws the
+dotted trend line the prediction sits on; the compact one leaves it out, as 30 px is too short
+for two lines. A click anywhere on a boss row opens its chart, as on the Mythic+ runs list:
 the `tr` toggles, and the links and the toggle button inside it stop the click from reaching it.
 
 ## Styles

@@ -20,6 +20,13 @@ export interface KillHistory {
   kills: HistoryKill[];
   best?: HistoryKill;
   check?: RecordCheck;
+  trend?: KillTrend;
+}
+
+export interface KillTrend {
+  from: number;
+  start: number;
+  next: number;
 }
 
 export type RecordTrend = 'up' | 'down' | 'flat';
@@ -52,8 +59,19 @@ export interface KillChartRecord {
   below: boolean;
 }
 
+export interface KillChartPrediction {
+  value: number;
+  bottom: number;
+  relative: number;
+  quality: number;
+  line: string;
+  trend: string;
+}
+
 export interface KillChart {
   points: KillChartPoint[];
+  columns: number;
+  prediction?: KillChartPrediction;
   viewBox: string;
   line: string;
   area: string;
@@ -65,6 +83,8 @@ export interface KillChart {
 const HEADROOM = 1.1;
 const REFERENCE_CLEARANCE = 16;
 const LABEL_UNDER_FLOOR = 22;
+const PREDICTION_MIN_KILLS = 3;
+const PREDICTION_WINDOW = 6;
 
 export function killHistory(appearances: readonly KillAppearance[], metric: RaidMetric, specId?: number): KillHistory {
   const kills = appearances
@@ -76,8 +96,28 @@ export function killHistory(appearances: readonly KillAppearance[], metric: Raid
   return {
     kills,
     best: bestOf(kills),
-    check: latest && record && record.value > 0 ? { latest, record, change: latest.value / record.value - 1 } : undefined
+    check: latest && record && record.value > 0 ? { latest, record, change: latest.value / record.value - 1 } : undefined,
+    trend: trendOf(kills.map(kill => kill.value))
   };
+}
+
+function trendOf(values: readonly number[]): KillTrend | undefined {
+  if (values.length < PREDICTION_MIN_KILLS) {
+    return undefined;
+  }
+
+  const from = Math.max(0, values.length - PREDICTION_WINDOW);
+  const recent = values.slice(from);
+  const middle = (recent.length - 1) / 2;
+  const mean = recent.reduce((sum, value) => sum + value, 0) / recent.length;
+  const spread = recent.reduce((sum, _, index) => sum + (index - middle) ** 2, 0);
+  const slope = recent.reduce((sum, value, index) => sum + (index - middle) * (value - mean), 0) / spread;
+  const at = (index: number) => Math.max(0, mean + slope * (index - middle));
+  return { from, start: at(0), next: at(recent.length) };
+}
+
+export function predictedChange({ trend, best }: KillHistory): number | undefined {
+  return trend && best && best.value > 0 ? trend.next / best.value - 1 : undefined;
 }
 
 export function recordChange(change: number): RecordChange {
@@ -91,17 +131,26 @@ export function recordChange(change: number): RecordChange {
   return { trend, label: `${trend === 'up' ? '▲' : '▼'} ${percent ? amount : '<1%'}`, amount };
 }
 
-export function killChart(history: KillHistory, top: number, mainSpecId: number | undefined, maxLabels: number): KillChart | undefined {
+export function killChart(
+  history: KillHistory,
+  top: number,
+  mainSpecId: number | undefined,
+  maxLabels: number,
+  predict = false
+): KillChart | undefined {
   const count = history.kills.length;
   if (!count) {
     return undefined;
   }
 
-  const max = Math.max(top, ...history.kills.map(kill => kill.value)) * HEADROOM || 1;
+  const trend = predict ? history.trend : undefined;
+  const columns = trend ? count + 1 : count;
+  const max = Math.max(top, trend?.start ?? 0, trend?.next ?? 0, ...history.kills.map(kill => kill.value)) * HEADROOM || 1;
   const bottomOf = (value: number) => value / max * 100;
+  const relativeOf = (value: number) => top > 0 ? value / top : 0;
   const labelled = labelledColumns(count, maxLabels);
   const points = history.kills.map<KillChartPoint>((kill, index) => {
-    const relative = top > 0 ? kill.value / top : 0;
+    const relative = relativeOf(kill.value);
     return {
       kill,
       bottom: bottomOf(kill.value),
@@ -110,22 +159,36 @@ export function killChart(history: KillHistory, top: number, mainSpecId: number 
       best: kill === history.best,
       offSpec: mainSpecId !== undefined && kill.member.spec?.id !== mainSpecId,
       showLabel: labelled.has(index),
-      edge: count > 1 && index === 0 ? 'start' : count > 1 && index === count - 1 ? 'end' : undefined,
-      flip: count > 1 && index >= count / 2
+      edge: columns > 1 && index === 0 ? 'start' : columns > 1 && index === columns - 1 ? 'end' : undefined,
+      flip: columns > 1 && index >= columns / 2
     };
   });
 
-  const line = count > 1 ? points.map((point, index) => `${index + .5},${(100 - point.bottom).toFixed(2)}`).join(' ') : '';
+  const line = count > 1 ? points.map((point, index) => `${index + .5},${yOf(point.bottom)}`).join(' ') : '';
+  const prediction = trend && {
+    value: trend.next,
+    bottom: bottomOf(trend.next),
+    relative: relativeOf(trend.next),
+    quality: performanceQuality(relativeOf(trend.next)),
+    line: `${count - .5},${yOf(points[count - 1].bottom)} ${count + .5},${yOf(bottomOf(trend.next))}`,
+    trend: `${trend.from + .5},${yOf(bottomOf(trend.start))} ${count + .5},${yOf(bottomOf(trend.next))}`
+  };
   const topBottom = bottomOf(top);
   return {
     points,
-    viewBox: `0 0 ${count} 100`,
+    columns,
+    prediction,
+    viewBox: `0 0 ${columns} 100`,
     line,
     area: line ? `0.5,100 ${line} ${count - .5},100` : '',
     topBottom,
-    referenceSide: referenceSide(points, topBottom),
+    referenceSide: referenceSide([...points, ...prediction ? [prediction] : []], topBottom),
     record: history.check && recordLine(history.check, history.kills, bottomOf)
   };
+}
+
+function yOf(bottom: number): string {
+  return (100 - bottom).toFixed(2);
 }
 
 function bestOf(kills: readonly HistoryKill[]): HistoryKill | undefined {
@@ -141,8 +204,8 @@ function labelledColumns(count: number, maxLabels: number): Set<number> {
   return new Set(Array.from({ length: slots }, (_, slot) => Math.round(slot * (count - 1) / (slots - 1))));
 }
 
-function referenceSide(points: readonly KillChartPoint[], topBottom: number): ReferenceSide {
-  const crowded = (point: KillChartPoint) => Math.abs(point.bottom - topBottom) < REFERENCE_CLEARANCE;
+function referenceSide(points: readonly { bottom: number }[], topBottom: number): ReferenceSide {
+  const crowded = (point: { bottom: number }) => Math.abs(point.bottom - topBottom) < REFERENCE_CLEARANCE;
   if (points.length < 2 || !crowded(points[points.length - 1])) {
     return 'right';
   }

@@ -82,14 +82,23 @@ const bossFiles: Record<string, RaidBossFile> = Object.fromEntries([
   bossFile('nythendra', 'heroic', [log(20, 500, [member(FROSTY, 64, 400), member(KAEL, 63, 500), member(RET, 70, 300), member(MOVED, 70, 100)])])
 ].map(file => [`raid-log-data/${file.boss}-${file.difficulty}.json`, file]));
 
+const steadyBossFiles: Record<string, RaidBossFile> = {
+  ...bossFiles,
+  'raid-log-data/nythendra-mythic.json': bossFile('nythendra', 'mythic', [
+    log(10, 1_000, [member(KAEL, 63, 600)]),
+    log(11, 2_000, [member(KAEL, 63, 700)]),
+    log(14, 2_500, [member(KAEL, 63, 800)])
+  ])
+};
+
 class FakeDataFiles {
-  constructor(private readonly index: RaidLogsIndexFile) {}
+  constructor(private readonly index: RaidLogsIndexFile, private readonly files: Record<string, RaidBossFile>) {}
 
   fetchJson<T>(path: string): Observable<T> {
     if (path === 'raid-log-data/index.json') {
       return of(this.index as T);
     }
-    const file = bossFiles[path];
+    const file = this.files[path];
     return file ? of(file as T) : throwError(() => new Error(`No ${path}`));
   }
 
@@ -99,7 +108,7 @@ class FakeDataFiles {
 @Component({ template: '' })
 class ElsewhereComponent {}
 
-async function open(url: string, index = indexFile) {
+async function open(url: string, index = indexFile, files = bossFiles) {
   TestBed.configureTestingModule({
     providers: [
       provideRouter([
@@ -107,7 +116,7 @@ async function open(url: string, index = indexFile) {
         { path: 'raid-logs/leaderboard', component: ElsewhereComponent }
       ]),
       provideLocationMocks(),
-      { provide: DataFileService, useValue: new FakeDataFiles(index) }
+      { provide: DataFileService, useValue: new FakeDataFiles(index, files) }
     ]
   });
   const harness = await RouterTestingHarness.create();
@@ -178,8 +187,21 @@ function openDetail(element: HTMLElement) {
     boss: detail.dataset['boss'],
     logs: [...detail.querySelectorAll('a.kill')].map(link => link.getAttribute('href')),
     sentence: detail.querySelector('.record-sentence')?.textContent?.replace(/\s+/g, ' ').trim(),
-    facts: detail.querySelector('.detail-facts')?.textContent?.replace(/\s+/g, ' ').trim()
+    facts: detail.querySelector('.detail-facts')?.textContent?.replace(/\s+/g, ' ').trim(),
+    prediction: detail.querySelector('.prediction-note')?.textContent?.replace(/\s+/g, ' ').trim()
   };
+}
+
+function predictionToggle(element: HTMLElement) {
+  return element.querySelector<HTMLButtonElement>('.prediction-switch button');
+}
+
+function recordHeading(element: HTMLElement) {
+  return element.querySelectorAll('.bosses-table thead th')[5]?.textContent?.trim();
+}
+
+function predictedRows(element: HTMLElement) {
+  return bossRows(element).map(row => !!row.querySelector('.progress-cell .prediction'));
 }
 
 function bossHref(element: HTMLElement) {
@@ -306,6 +328,48 @@ describe('RaidLogsCharacterPageComponent boss progress', () => {
     expect(recordChecks(element)).toEqual(['First kill', '', '']);
     toggleBoss(harness, element, 0);
     expect(openDetail(element)).toMatchObject({ boss: 'nythendra', logs: ['/raid-logs/log/tauri/11'] });
+  });
+});
+
+describe('RaidLogsCharacterPageComponent prediction', () => {
+  it('predicts nothing until Prediction is switched on, then keeps it in the URL', async () => {
+    const { harness, element, location } = await open('/raid-logs/character/tauri/Kael', indexFile, steadyBossFiles);
+    expect(predictionToggle(element)?.getAttribute('aria-pressed')).toBe('false');
+    expect(predictedRows(element)).toEqual([false, false, false]);
+
+    predictionToggle(element)?.click();
+    harness.detectChanges();
+    expect(predictionToggle(element)?.getAttribute('aria-pressed')).toBe('true');
+    expect(location.path()).toBe('/raid-logs/character/tauri/Kael?predict=1');
+    expect(predictedRows(element)).toEqual([true, false, false]);
+
+    predictionToggle(element)?.click();
+    harness.detectChanges();
+    expect(location.path()).toBe('/raid-logs/character/tauri/Kael');
+    expect(predictedRows(element)).toEqual([false, false, false]);
+  });
+
+  it('opens on ?predict=1 and tells the predicted next kill under an open boss', async () => {
+    const { harness, element, location } = await open('/raid-logs/character/tauri/Kael?predict=1', indexFile, steadyBossFiles);
+    expect(predictionToggle(element)?.getAttribute('aria-pressed')).toBe('true');
+
+    toggleBoss(harness, element, 0);
+    expect(openDetail(element)?.prediction).toBe('Predicted next kill: ≈900, on the trend of the last 3 kills.');
+
+    toggleBoss(harness, element, 1);
+    expect(openDetail(element)?.prediction).toBeUndefined();
+    expect(location.path()).toBe('/raid-logs/character/tauri/Kael?predict=1');
+  });
+
+  it('puts the predicted change against the PR in place of Latest vs PR, without a date', async () => {
+    const { harness, element } = await open('/raid-logs/character/tauri/Kael', indexFile, steadyBossFiles);
+    expect(recordHeading(element)).toBe('Latest vs PR');
+
+    predictionToggle(element)?.click();
+    harness.detectChanges();
+    expect(recordHeading(element)).toBe('Prediction');
+    expect(recordChecks(element)).toEqual(['▲ 13%', 'Needs 3 kills', 'Needs 3 kills']);
+    expect(bossRows(element)[0].querySelector('.record-cell .record-date')).toBeNull();
   });
 });
 

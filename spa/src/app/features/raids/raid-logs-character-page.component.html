@@ -84,11 +84,27 @@
                 [highlightWhenSelected]="true"
                 (selectionChange)="setComparison($event)" />
             </div>
+            <div class="view-switch prediction-switch">
+              <button
+                type="button"
+                [class.active]="predict()"
+                [attr.aria-pressed]="predict()"
+                title="Show where each boss's next kill lands if the trend of the last kills goes on"
+                (click)="togglePrediction()">Prediction</button>
+            </div>
           </div>
         </header>
 
         <ng-template #recordCheck let-row let-dated="dated">
-          @if (row.history.check; as check) {
+          @if (predict()) {
+            @if (row.predicted; as predicted) {
+              <span class="record-check" [title]="predictionTitle(row.history)">
+                <span class="record-pill" [class.positive]="predicted.trend === 'up'" [class.negative]="predicted.trend === 'down'">{{ predicted.label }}</span>
+              </span>
+            } @else if (row.best) {
+              <span class="record-check muted">Needs 3 kills</span>
+            }
+          } @else if (row.history.check; as check) {
             <span class="record-check" [title]="recordTitle(check)">
               <span class="record-pill" [class.positive]="row.record.trend === 'up'" [class.negative]="row.record.trend === 'down'">{{ row.record.label }}</span>
               @if (dated) {
@@ -109,7 +125,7 @@
                 <th scope="col" class="num" [title]="columnTitles().relative">Of best</th>
                 <th scope="col" class="num" [title]="columnTitles().rank">Rank</th>
                 <th scope="col" class="phone-hidden progress-cell">Progress</th>
-                <th scope="col" class="phone-hidden">Latest vs PR</th>
+                <th scope="col" class="phone-hidden">{{ predict() ? 'Prediction' : 'Latest vs PR' }}</th>
                 <th scope="col"><span class="visually-hidden">Every kill</span></th>
               </tr>
             </thead>
@@ -132,7 +148,7 @@
                   </td>
                   <td class="phone-hidden progress-cell">
                     @if (row.best) {
-                      <app-raid-kill-chart [history]="row.history" [top]="row.top" [metric]="metric()" [mainSpecId]="mainSpec()?.id" [color]="classColor(current.classId)" [compact]="true" />
+                      <app-raid-kill-chart [history]="row.history" [top]="row.top" [metric]="metric()" [mainSpecId]="mainSpec()?.id" [color]="classColor(current.classId)" [predict]="predict()" [compact]="true" />
                     }
                   </td>
                   <td class="phone-hidden record-cell">
@@ -162,7 +178,7 @@
                   <tr class="phone-detail-row opens" [class.open]="open" (click)="toggleBoss(row)">
                     <td colspan="7">
                       <div class="phone-progress">
-                        <app-raid-kill-chart [history]="row.history" [top]="row.top" [metric]="metric()" [mainSpecId]="mainSpec()?.id" [color]="classColor(current.classId)" [compact]="true" />
+                        <app-raid-kill-chart [history]="row.history" [top]="row.top" [metric]="metric()" [mainSpecId]="mainSpec()?.id" [color]="classColor(current.classId)" [predict]="predict()" [compact]="true" />
                         <ng-container [ngTemplateOutlet]="recordCheck" [ngTemplateOutletContext]="{ $implicit: row, dated: false }" />
                       </div>
                     </td>
@@ -191,6 +207,9 @@
                           item level {{ first.member.itemLevel }}@if (first.member.itemLevel !== last.member.itemLevel) { → {{ last.member.itemLevel }}} ·
                           <a class="log-link" [routerLink]="logLink(best.kill)">Best log <span aria-hidden="true">›</span></a>
                         </p>
+                        @if (predict() && row.history.trend; as trend) {
+                          <p class="prediction-note">Predicted next kill: <strong>≈{{ formatPerSecond(trend.next) }}</strong>, on the trend of the last {{ row.history.kills.length - trend.from }} kills.</p>
+                        }
                       </div>
                       <app-raid-kill-chart
                         [history]="row.history"
@@ -198,7 +217,8 @@
                         [metric]="metric()"
                         [mainSpecId]="mainSpec()?.id"
                         [referenceLabel]="referenceLabel()"
-                        [color]="classColor(current.classId)" />
+                        [color]="classColor(current.classId)"
+                        [predict]="predict()" />
                     </td>
                   </tr>
                 }

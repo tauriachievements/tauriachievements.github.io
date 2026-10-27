@@ -28,11 +28,12 @@ export class RaidKillChartComponent {
   readonly referenceLabel = input('#1');
   readonly color = input('#e0e0e0');
   readonly compact = input(false);
+  readonly predict = input(false);
 
   private readonly phone = injectCompactViewport();
 
   readonly chart = computed(() =>
-    killChart(this.history(), this.top(), this.mainSpecId(), this.phone() ? PHONE_LABELS : WIDE_LABELS));
+    killChart(this.history(), this.top(), this.mainSpecId(), this.phone() ? PHONE_LABELS : WIDE_LABELS, this.predict()));
 
   readonly record = computed(() => {
     const check = this.history().check;

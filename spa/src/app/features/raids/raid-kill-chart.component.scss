@@ -40,6 +40,8 @@ svg.line {
 }
 
 :host(.compact) svg.line .stroke { stroke-opacity: .85; stroke-width: 1.5; }
+svg.line .predicted { stroke-dasharray: 4 4; }
+svg.line .trend { fill: none; stroke: #fff; stroke-opacity: .45; stroke-dasharray: 1 5; stroke-linecap: round; stroke-width: 2; }
 
 .kills {
   position: absolute;
@@ -83,6 +85,11 @@ svg.line {
 
 :host(.compact) .dot { width: 6px; height: 6px; box-shadow: 0 0 0 1.5px var(--surface); }
 :host(.compact) .dot.best { box-shadow: 0 0 0 1.5px var(--surface), 0 0 0 3px $gold; }
+
+.prediction .dot { border: 2px solid; background: var(--surface); }
+:host(.compact) .prediction .dot { width: 7px; height: 7px; border-width: 1.5px; }
+.prediction .kill { cursor: default; }
+.prediction-tick { color: #bdbdbd; }
 
 .value-label, .record-label, .off-spec {
   position: absolute;
