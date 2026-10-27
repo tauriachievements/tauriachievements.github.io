@@ -82,14 +82,23 @@ const bossFiles: Record<string, RaidBossFile> = Object.fromEntries([
   bossFile('nythendra', 'heroic', [log(20, 500, [member(FROSTY, 64, 400), member(KAEL, 63, 500), member(RET, 70, 300), member(MOVED, 70, 100)])])
 ].map(file => [`raid-log-data/${file.boss}-${file.difficulty}.json`, file]));
 
+const steadyBossFiles: Record<string, RaidBossFile> = {
+  ...bossFiles,
+  'raid-log-data/nythendra-mythic.json': bossFile('nythendra', 'mythic', [
+    log(10, 1_000, [member(KAEL, 63, 600)]),
+    log(11, 2_000, [member(KAEL, 63, 700)]),
+    log(14, 2_500, [member(KAEL, 63, 800)])
+  ])
+};
+
 class FakeDataFiles {
-  constructor(private readonly index: RaidLogsIndexFile) {}
+  constructor(private readonly index: RaidLogsIndexFile, private readonly files: Record<string, RaidBossFile>) {}
 
   fetchJson<T>(path: string): Observable<T> {
     if (path === 'raid-log-data/index.json') {
       return of(this.index as T);
     }
-    const file = bossFiles[path];
+    const file = this.files[path];
     return file ? of(file as T) : throwError(() => new Error(`No ${path}`));
   }
 
@@ -99,7 +108,7 @@ class FakeDataFiles {
 @Component({ template: '' })
 class ElsewhereComponent {}
 
-async function open(url: string, index = indexFile) {
+async function open(url: string, index = indexFile, files = bossFiles) {
   TestBed.configureTestingModule({
     providers: [
       provideRouter([
@@ -107,7 +116,7 @@ async function open(url: string, index = indexFile) {
         { path: 'raid-logs/leaderboard', component: ElsewhereComponent }
       ]),
       provideLocationMocks(),
-      { provide: DataFileService, useValue: new FakeDataFiles(index) }
+      { provide: DataFileService, useValue: new FakeDataFiles(index, files) }
     ]
   });
   const harness = await RouterTestingHarness.create();
@@ -120,8 +129,12 @@ function rows(page: RaidLogsCharacterPageComponent) {
   return page.bossRows().map(row => [row.boss.shortName, row.relative, row.rank, row.ranked]);
 }
 
+function bossRows(element: HTMLElement) {
+  return [...element.querySelectorAll('section[aria-labelledby="character-bosses-title"] tbody tr.boss-row')];
+}
+
 function cells(element: HTMLElement) {
-  return [...element.querySelectorAll('section[aria-labelledby="character-bosses-title"] tbody tr')]
+  return bossRows(element)
     .map(row => [...row.querySelectorAll('td')].slice(0, 4).map(cell => cell.textContent?.replace(/\s+/g, ' ').trim()))
     .map(([boss, , relative, rank]) => [boss, relative, rank]);
 }
@@ -143,8 +156,52 @@ function compareWith(harness: RouterTestingHarness, element: HTMLElement, label:
 }
 
 function logCell(element: HTMLElement, boss: number) {
-  return element.querySelectorAll('section[aria-labelledby="character-bosses-title"] tbody tr')[boss]
-    ?.querySelector('td:last-child')?.textContent?.trim();
+  return bossRows(element)[boss]?.querySelector('td:last-child')?.textContent?.trim();
+}
+
+function recordChecks(element: HTMLElement) {
+  return bossRows(element).map(row => {
+    const check = row.querySelector('.record-cell .record-check')?.cloneNode(true) as HTMLElement | undefined;
+    check?.querySelector('.record-date')?.remove();
+    return check?.textContent?.replace(/\s+/g, ' ').trim() ?? '';
+  });
+}
+
+function toggles(element: HTMLElement) {
+  return bossRows(element).map(row => row.querySelector('button.detail-toggle')?.getAttribute('aria-expanded') ?? null);
+}
+
+function toggleBoss(harness: RouterTestingHarness, element: HTMLElement, boss: number) {
+  bossRows(element)[boss].querySelector<HTMLButtonElement>('button.detail-toggle')?.click();
+  harness.detectChanges();
+}
+
+function clickRow(harness: RouterTestingHarness, element: HTMLElement, boss: number, cell: number) {
+  bossRows(element)[boss].querySelectorAll<HTMLElement>('td')[cell].click();
+  harness.detectChanges();
+}
+
+function openDetail(element: HTMLElement) {
+  const detail = element.querySelector<HTMLElement>('section[aria-labelledby="character-bosses-title"] tr.boss-detail');
+  return detail && {
+    boss: detail.dataset['boss'],
+    logs: [...detail.querySelectorAll('a.kill')].map(link => link.getAttribute('href')),
+    sentence: detail.querySelector('.record-sentence')?.textContent?.replace(/\s+/g, ' ').trim(),
+    facts: detail.querySelector('.detail-facts')?.textContent?.replace(/\s+/g, ' ').trim(),
+    prediction: detail.querySelector('.prediction-note')?.textContent?.replace(/\s+/g, ' ').trim()
+  };
+}
+
+function predictionToggle(element: HTMLElement) {
+  return element.querySelector<HTMLButtonElement>('.prediction-switch button');
+}
+
+function recordHeading(element: HTMLElement) {
+  return element.querySelectorAll('.bosses-table thead th')[5]?.textContent?.trim();
+}
+
+function predictedRows(element: HTMLElement) {
+  return bossRows(element).map(row => !!row.querySelector('.progress-cell .prediction'));
 }
 
 function bossHref(element: HTMLElement) {
@@ -192,15 +249,127 @@ describe('RaidLogsCharacterPageComponent with an invalid log', () => {
     ]);
   });
 
-  it('lists the invalid kill among the latest kills, tagged with its reason', async () => {
+  it('leaves the invalid kill out of the latest kills', async () => {
     const { page, element } = await open('/raid-logs/character/tauri/Kael', flagged);
 
-    expect(page.recent().map(({ kill }) => [kill.logId, kill.invalid])).toEqual([
-      [13, undefined], [12, undefined], [11, 'Invalid log, bug abusing'], [10, undefined]
-    ]);
-    const tags = [...element.querySelectorAll('section[aria-labelledby="character-recent-title"] tbody tr')]
-      .map(row => row.querySelector('.invalid-tag')?.getAttribute('title'));
-    expect(tags).toEqual([undefined, undefined, 'Invalid log, bug abusing', undefined]);
+    expect(page.recent().map(({ kill }) => kill.logId)).toEqual([13, 12, 10]);
+    expect(element.querySelectorAll('section[aria-labelledby="character-recent-title"] tbody tr')).toHaveLength(3);
+  });
+
+  it("leaves the invalid kill out of the boss's kills, as if it never happened", async () => {
+    const { harness, element } = await open('/raid-logs/character/tauri/Kael', flagged);
+
+    expect(recordChecks(element)).toEqual(['First kill', 'First kill', 'First kill']);
+    toggleBoss(harness, element, 0);
+    expect(openDetail(element)).toMatchObject({ logs: ['/raid-logs/log/tauri/10'] });
+    expect(openDetail(element)?.facts).toMatch(/^1 kill ·/);
+  });
+});
+
+describe('RaidLogsCharacterPageComponent boss progress', () => {
+  it("compares each boss's latest kill with the best kill before it", async () => {
+    const { element } = await open('/raid-logs/character/tauri/Kael');
+
+    expect(recordChecks(element)).toEqual(['▲ 17%', 'First kill', 'First kill']);
+  });
+
+  it('shows how far under the PR a lower latest kill landed', async () => {
+    const { element } = await open('/raid-logs/character/evermoon/Frosty');
+
+    expect(recordChecks(element)).toEqual(['▼ 19%', 'First kill', '']);
+  });
+
+  it('opens no boss until one is picked, its chart linking every kill to its log', async () => {
+    const { harness, element } = await open('/raid-logs/character/evermoon/Frosty');
+
+    expect(toggles(element)).toEqual(['false', 'false', null]);
+    expect(openDetail(element)).toBeNull();
+
+    toggleBoss(harness, element, 1);
+    expect(openDetail(element)).toMatchObject({ boss: 'ilgynoth', logs: ['/raid-logs/log/tauri/12'] });
+  });
+
+  it('opens one boss at a time with its button, and closes it again', async () => {
+    const { harness, element } = await open('/raid-logs/character/tauri/Kael');
+
+    toggleBoss(harness, element, 0);
+    expect(toggles(element)).toEqual(['true', 'false', 'false']);
+    expect(openDetail(element)).toMatchObject({ boss: 'nythendra', logs: ['/raid-logs/log/tauri/10', '/raid-logs/log/tauri/11'] });
+    expect(openDetail(element)?.sentence).toContain('700, 17% over the old PR of 600');
+
+    toggleBoss(harness, element, 0);
+    expect(toggles(element)).toEqual(['false', 'false', 'false']);
+    expect(openDetail(element)).toBeNull();
+  });
+
+  it('opens and closes a boss from a click anywhere on its row', async () => {
+    const { harness, element } = await open('/raid-logs/character/tauri/Kael');
+
+    clickRow(harness, element, 1, 1);
+    expect(toggles(element)).toEqual(['false', 'true', 'false']);
+
+    clickRow(harness, element, 0, 4);
+    expect(toggles(element)).toEqual(['true', 'false', 'false']);
+
+    clickRow(harness, element, 0, 2);
+    expect(toggles(element)).toEqual(['false', 'false', 'false']);
+  });
+
+  it('leaves a boss row nobody killed closed when clicked', async () => {
+    const { harness, element } = await open('/raid-logs/character/evermoon/Frosty');
+
+    clickRow(harness, element, 2, 1);
+    expect(openDetail(element)).toBeNull();
+  });
+
+  it('compares only the kills played as the spec picked to compare with', async () => {
+    const { harness, element } = await open('/raid-logs/character/evermoon/Frosty?compare=class&spec=63');
+
+    expect(recordChecks(element)).toEqual(['First kill', '', '']);
+    toggleBoss(harness, element, 0);
+    expect(openDetail(element)).toMatchObject({ boss: 'nythendra', logs: ['/raid-logs/log/tauri/11'] });
+  });
+});
+
+describe('RaidLogsCharacterPageComponent prediction', () => {
+  it('predicts nothing until Prediction is switched on, then keeps it in the URL', async () => {
+    const { harness, element, location } = await open('/raid-logs/character/tauri/Kael', indexFile, steadyBossFiles);
+    expect(predictionToggle(element)?.getAttribute('aria-pressed')).toBe('false');
+    expect(predictedRows(element)).toEqual([false, false, false]);
+
+    predictionToggle(element)?.click();
+    harness.detectChanges();
+    expect(predictionToggle(element)?.getAttribute('aria-pressed')).toBe('true');
+    expect(location.path()).toBe('/raid-logs/character/tauri/Kael?predict=1');
+    expect(predictedRows(element)).toEqual([true, false, false]);
+
+    predictionToggle(element)?.click();
+    harness.detectChanges();
+    expect(location.path()).toBe('/raid-logs/character/tauri/Kael');
+    expect(predictedRows(element)).toEqual([false, false, false]);
+  });
+
+  it('opens on ?predict=1 and tells the predicted next kill under an open boss', async () => {
+    const { harness, element, location } = await open('/raid-logs/character/tauri/Kael?predict=1', indexFile, steadyBossFiles);
+    expect(predictionToggle(element)?.getAttribute('aria-pressed')).toBe('true');
+
+    toggleBoss(harness, element, 0);
+    expect(openDetail(element)?.prediction).toBe('Predicted next kill: ≈900, on the trend of the last 3 kills.');
+
+    toggleBoss(harness, element, 1);
+    expect(openDetail(element)?.prediction).toBeUndefined();
+    expect(location.path()).toBe('/raid-logs/character/tauri/Kael?predict=1');
+  });
+
+  it('leaves the Latest vs PR column as it is', async () => {
+    const { harness, element } = await open('/raid-logs/character/tauri/Kael', indexFile, steadyBossFiles);
+    const before = bossRows(element).map(row => row.querySelector('.record-cell')?.textContent?.replace(/\s+/g, ' ').trim());
+
+    predictionToggle(element)?.click();
+    harness.detectChanges();
+    expect(recordHeading(element)).toBe('Latest vs PR');
+    expect(bossRows(element).map(row => row.querySelector('.record-cell')?.textContent?.replace(/\s+/g, ' ').trim())).toEqual(before);
+    expect(bossRows(element)[0].querySelector('.record-cell .record-date')).not.toBeNull();
   });
 });
 
@@ -290,7 +459,7 @@ describe('RaidLogsCharacterPageComponent comparison', () => {
     expect(summaryTile(element, 'DPS score')).toEqual({ value: '2729', note: '#3 of 4 on the leaderboard' });
     expect(summaryTile(element, 'Best damage rank')).toEqual({ value: '#2', note: 'Nythendra, of 4' });
     expect(element.querySelector('th[title]')?.getAttribute('title')).toBe('The best kill against the best anyone did on the boss');
-    expect(element.querySelector('.list-note')?.textContent).toContain("Rank among every character's best kill of the boss");
+    expect(element.querySelector('.list-note')).toBeNull();
   });
 
   it('compares with the same class when picked, keeping the all-player score', async () => {
@@ -314,9 +483,7 @@ describe('RaidLogsCharacterPageComponent comparison', () => {
       'The best kill against the best any Mage did on the boss',
       "Among every Mage's best kill of the boss"
     ]);
-    const note = element.querySelector('.list-note')?.textContent?.replace(/\s+/g, ' ');
-    expect(note).toContain('"Of best" and Rank compare with Mages only');
-    expect(note).toContain('The DPS score above still compares each boss with the best of all players');
+    expect(element.querySelector('.list-note')).toBeNull();
     expect(bossHref(element)).toBe('/raid-logs/boss/nythendra?difficulty=mythic&tab=dps&class=8');
 
     compareWith(harness, element, 'All players');
@@ -393,8 +560,7 @@ describe('RaidLogsCharacterPageComponent spec comparison', () => {
       'The best kill against the best any Fire Mage did on the boss',
       "Among every Fire Mage's best kill of the boss"
     ]);
-    expect(element.querySelector('.list-note')?.textContent?.replace(/\s+/g, ' ')).toContain(
-      '"Of best" and Rank compare with Fire Mages only: every Mage\'s best kill of the boss as Fire on this difficulty, this character\'s too.');
+    expect(element.querySelector('.list-note')).toBeNull();
     expect(bossHref(element)).toBe('/raid-logs/boss/nythendra?difficulty=mythic&tab=dps&class=8&spec=63');
 
     compareWith(harness, element, 'Frost');

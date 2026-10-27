@@ -1,4 +1,4 @@
-import { DatePipe, DecimalPipe, NgTemplateOutlet } from '@angular/common';
+import { DatePipe, DecimalPipe, NgTemplateOutlet, formatDate } from '@angular/common';
 import { ChangeDetectionStrategy, Component, DestroyRef, computed, effect, inject, signal, untracked } from '@angular/core';
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, RouterLink } from '@angular/router';
@@ -11,6 +11,8 @@ import { FilterDropdownCoordinatorService } from '../../shared/filter-dropdown-c
 import { FilterDropdownOption, FilterDropdownValue } from '../../shared/filter-dropdown.types';
 import { GlideDirective } from '../../shared/motion/glide.directive';
 import { RaidDifficultySwitchComponent } from './raid-difficulty-switch.component';
+import { RaidKillChartComponent } from './raid-kill-chart.component';
+import { KillHistory, RecordChange, RecordCheck, killHistory, recordChange } from './raid-kill-history';
 import {
   ITEM_QUALITY_COLORS,
   formatFightTime,
@@ -20,12 +22,10 @@ import {
   raidLogLink
 } from './raid-display';
 import {
-  MAX_SCORE,
   RaidMetric,
   RankedScore,
   bossBest,
   bossStanding,
-  countsFor,
   performanceQuality,
   rankScores,
   rankedSpecs,
@@ -57,17 +57,19 @@ export type RaidComparison = 'all' | 'class';
 interface BossRow {
   boss: RaidBoss;
   kills: number;
+  history: KillHistory;
   best?: Appearance;
+  top: number;
   value: number;
   relative: number;
   rank?: number;
   ranked: number;
+  record?: RecordChange;
 }
 
 interface Loaded {
   difficulty: RaidDifficulty;
   bossKills: RaidKillDetails[][];
-  invalidKills: RaidKillDetails[];
   key: string;
 }
 
@@ -92,6 +94,7 @@ const NOT_RANKED = 'Earlier character, not ranked';
     RouterLink,
     FilterDropdownComponent,
     RaidDifficultySwitchComponent,
+    RaidKillChartComponent,
     GlideDirective,
     DatePipe,
     DecimalPipe,
@@ -124,6 +127,7 @@ export class RaidLogsCharacterPageComponent {
   readonly comparison = signal<RaidComparison>(parseComparison(this.route.snapshot.queryParamMap.get('compare')));
   private readonly pickedSpec = signal(parseInteger(this.route.snapshot.queryParamMap.get('spec')));
   private readonly requestedClass = signal(parseClass(this.route.snapshot.queryParamMap.get('class')));
+  readonly predict = signal(this.route.snapshot.queryParamMap.get('predict') === '1');
 
   private readonly classes = computed(() => {
     const index = this.index();
@@ -151,11 +155,6 @@ export class RaidLogsCharacterPageComponent {
   readonly appearances = computed<Appearance[]>(() => {
     const loaded = this.loaded();
     return loaded ? this.appearancesIn(loaded.bossKills.flat(), loaded.key) : [];
-  });
-
-  private readonly invalidAppearances = computed<Appearance[]>(() => {
-    const loaded = this.loaded();
-    return loaded ? this.appearancesIn(loaded.invalidKills, loaded.key) : [];
   });
 
   readonly character = computed(() => latestFirst(this.appearances())[0]?.member.character);
@@ -243,25 +242,31 @@ export class RaidLogsCharacterPageComponent {
     return index.bosses.map(boss => {
       const kills = loaded.bossKills[boss.index] ?? [];
       const own = this.appearances().filter(appearance => appearance.kill.boss === boss);
-      const best = own
-        .filter(appearance => countsFor(metric, appearance.member.spec) && (!spec || appearance.member.spec?.id === spec.id))
-        .sort((a, b) => b.member[metric] - a.member[metric] || a.kill.killedAt - b.kill.killedAt)[0];
+      const history = killHistory(own, metric, spec?.id);
+      const best = history.best;
       const filter = best && byClass ? { classId: best.member.character.classId, specId: spec?.id } : {};
       const standing = best && !earlier ? bossStanding(kills, metric, loaded.key, filter) : undefined;
-      const top = best && earlier ? bossBest(kills, metric, filter) : 0;
+      const top = best ? bossBest(kills, metric, filter) : 0;
       return {
         boss,
         kills: own.length,
+        history,
         best,
-        value: best?.member[metric] ?? 0,
-        relative: standing?.relative ?? (best && top > 0 ? best.member[metric] / top : 0),
+        top,
+        value: best?.value ?? 0,
+        relative: standing?.relative ?? (best && top > 0 ? best.value / top : 0),
         rank: standing?.rank,
-        ranked: standing?.ranked ?? 0
+        ranked: standing?.ranked ?? 0,
+        record: history.check && recordChange(history.check.change)
       };
     });
   });
 
-  readonly recent = computed(() => latestFirst([...this.appearances(), ...this.invalidAppearances()]).slice(0, RECENT_KILLS));
+  readonly openBoss = signal<string | undefined>(undefined);
+
+  readonly referenceLabel = computed(() => this.comparison() === 'class' ? `#1 ${this.comparedMember()}` : '#1');
+
+  readonly recent = computed(() => latestFirst(this.appearances()).slice(0, RECENT_KILLS));
 
   readonly summary = computed<SummaryTile[]>(() => {
     const rows = this.bossRows();
@@ -298,7 +303,6 @@ export class RaidLogsCharacterPageComponent {
     return character && !character.former ? getArmoryUrl(character.name, character.realm) : undefined;
   });
 
-  readonly maxScore = MAX_SCORE;
   readonly logLink = raidLogLink;
   readonly bossLink = raidBossLink;
   readonly guildLink = raidGuildLink;
@@ -367,6 +371,22 @@ export class RaidLogsCharacterPageComponent {
     this.writeUrl();
   }
 
+  togglePrediction(): void {
+    this.predict.update(predict => !predict);
+    this.writeUrl();
+  }
+
+  toggleBoss({ boss, best }: BossRow): void {
+    if (best) {
+      this.openBoss.update(open => open === boss.slug ? undefined : boss.slug);
+    }
+  }
+
+  recordTitle({ latest, record }: RecordCheck): string {
+    const day = (at: number) => formatDate(at, 'd MMM', 'en-US');
+    return `Latest kill, ${day(latest.kill.killedAt)}: ${formatPerSecond(latest.value)}. Best kill before it, ${day(record.kill.killedAt)}: ${formatPerSecond(record.value)}.`;
+  }
+
   classColor(classId: number): string {
     return getClassColor(classId) ?? '#e0e0e0';
   }
@@ -389,14 +409,10 @@ export class RaidLogsCharacterPageComponent {
     }
 
     const files = index.bosses.map(boss => this.data.bossKills(index, boss, difficulty));
-    const invalidFiles = index.bosses.map(boss => this.data.invalidBossKills(index, boss, difficulty));
-    this.subscription = forkJoin({
-      bossKills: files.length ? forkJoin(files) : of([]),
-      invalidKills: invalidFiles.length ? forkJoin(invalidFiles) : of([])
-    })
+    this.subscription = (files.length ? forkJoin(files) : of([]))
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
-        next: ({ bossKills, invalidKills }) => {
+        next: bossKills => {
           const key = this.findCharacterKey(bossKills);
           if (!key && rest.length) {
             this.loadDifficulty(index, rest);
@@ -414,7 +430,7 @@ export class RaidLogsCharacterPageComponent {
             this.requestedDifficulty.set(difficulty.slug);
             this.writeUrl();
           }
-          this.loaded.set({ difficulty, bossKills, invalidKills: invalidKills.flat(), key });
+          this.loaded.set({ difficulty, bossKills, key });
           this.isLoading.set(false);
         },
         error: error => this.fail(error)
@@ -472,7 +488,8 @@ export class RaidLogsCharacterPageComponent {
       metric: this.pickedMetric() ?? null,
       compare: this.comparison() === 'class' ? 'class' : null,
       spec: this.comparedSpec()?.id ?? null,
-      class: this.formerClass() ?? null
+      class: this.formerClass() ?? null,
+      predict: this.predict() ? 1 : null
     });
   }
 }
