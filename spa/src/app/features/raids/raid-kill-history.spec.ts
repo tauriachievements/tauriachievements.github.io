@@ -1,0 +1,207 @@
+import { describe, expect, it } from 'vitest';
+import { KillAppearance, killChart, killHistory, recordChange } from './raid-kill-history';
+import { RaidCharacter, RaidKillDetails, RaidMember, RaidSpec } from './raid-logs.types';
+import { mythic, nythendra } from './raid-logs.fixture';
+
+const fire: RaidSpec = { id: 63, classId: 8, name: 'Fire', role: 'dps' };
+const frost: RaidSpec = { id: 64, classId: 8, name: 'Frost', role: 'dps' };
+const holy: RaidSpec = { id: 65, classId: 8, name: 'Holy', role: 'healer' };
+const kael: RaidCharacter = { name: 'Kael', realm: 'Tauri', classId: 8, race: 1, gender: 0, guild: '' };
+
+function appearance(logId: number, killedAt: number, dps: number, spec = fire, invalid?: string): KillAppearance {
+  const member: RaidMember = {
+    character: kael,
+    spec,
+    itemLevel: 870,
+    damage: 0,
+    healing: 0,
+    absorbs: 0,
+    overhealing: 0,
+    damageTaken: 0,
+    interrupts: 0,
+    dispels: 0,
+    dps,
+    hps: dps / 10,
+    talents: '',
+    trinkets: []
+  };
+  const kill: RaidKillDetails = {
+    realm: 'Tauri',
+    logId,
+    boss: nythendra,
+    difficulty: mythic,
+    killedAt,
+    fightMs: 300_000,
+    faction: 1,
+    wipes: 0,
+    deaths: 0,
+    resurrects: 0,
+    members: [member],
+    items: [],
+    invalid
+  };
+  return { kill, member };
+}
+
+const logIds = (kills: readonly { kill: RaidKillDetails }[]) => kills.map(({ kill }) => kill.logId);
+
+describe('killHistory', () => {
+  it('lists the kills that count for the metric, oldest first, the invalid ones too', () => {
+    const history = killHistory([
+      appearance(3, 3_000, 500),
+      appearance(1, 1_000, 400),
+      appearance(4, 4_000, 900, fire, 'Bug abuse'),
+      appearance(2, 2_000, 0, holy)
+    ], 'dps');
+
+    expect(logIds(history.kills)).toEqual([1, 3, 4]);
+    expect(history.kills.map(kill => kill.value)).toEqual([400, 500, 900]);
+  });
+
+  it('measures healing on the healing kills only', () => {
+    const history = killHistory([appearance(1, 1_000, 400), appearance(2, 2_000, 5_000, holy)], 'hps');
+
+    expect(logIds(history.kills)).toEqual([2]);
+    expect(history.best?.value).toBe(500);
+  });
+
+  it('keeps only the kills played as the spec when one is given', () => {
+    const history = killHistory([appearance(1, 1_000, 400), appearance(2, 2_000, 800, frost)], 'dps', 63);
+
+    expect(logIds(history.kills)).toEqual([1]);
+  });
+
+  it('picks the best kill that counts, the earlier on a tie, never an invalid one', () => {
+    const history = killHistory([
+      appearance(1, 1_000, 600),
+      appearance(2, 2_000, 600),
+      appearance(3, 3_000, 900, fire, 'Bug abuse')
+    ], 'dps');
+
+    expect(history.best?.kill.logId).toBe(1);
+  });
+
+  it('compares the latest kill with the best kill before it', () => {
+    const lower = killHistory([appearance(1, 1_000, 400), appearance(2, 2_000, 600), appearance(3, 3_000, 500)], 'dps');
+    const higher = killHistory([appearance(1, 1_000, 400), appearance(2, 2_000, 600), appearance(3, 3_000, 750)], 'dps');
+
+    expect(lower.check && [lower.check.latest.kill.logId, lower.check.record.kill.logId]).toEqual([3, 2]);
+    expect(lower.check?.change).toBeCloseTo(-1 / 6);
+    expect(higher.check && [higher.check.latest.kill.logId, higher.check.record.kill.logId]).toEqual([3, 2]);
+    expect(higher.check?.change).toBeCloseTo(.25);
+  });
+
+  it('skips an invalid latest kill, comparing the latest kill that counts', () => {
+    const history = killHistory([
+      appearance(1, 1_000, 400),
+      appearance(2, 2_000, 600),
+      appearance(3, 3_000, 900, fire, 'Bug abuse')
+    ], 'dps');
+
+    expect(history.check && [history.check.latest.kill.logId, history.check.record.kill.logId]).toEqual([2, 1]);
+  });
+
+  it('has nothing to compare before a second kill that counts', () => {
+    expect(killHistory([appearance(1, 1_000, 400), appearance(2, 2_000, 900, fire, 'Bug abuse')], 'dps').check).toBeUndefined();
+    expect(killHistory([], 'dps')).toEqual({ kills: [], best: undefined, check: undefined });
+  });
+});
+
+describe('recordChange', () => {
+  it('rounds to a whole percent, with an arrow for the way it went', () => {
+    expect(recordChange(.44)).toEqual({ trend: 'up', label: '▲ 44%', amount: '44%' });
+    expect(recordChange(-.2207)).toEqual({ trend: 'down', label: '▼ 22%', amount: '22%' });
+  });
+
+  it('keeps a change under half a percent on its side', () => {
+    expect(recordChange(.003)).toEqual({ trend: 'up', label: '▲ <1%', amount: 'less than 1%' });
+    expect(recordChange(-.004)).toEqual({ trend: 'down', label: '▼ <1%', amount: 'less than 1%' });
+    expect(recordChange(0)).toEqual({ trend: 'flat', label: '±0%', amount: '0%' });
+  });
+});
+
+describe('killChart', () => {
+  const chartOf = (appearances: KillAppearance[], top = 1_000, maxLabels = 12) =>
+    killChart(killHistory(appearances, 'dps'), top, 63, maxLabels)!;
+
+  it('gives every kill a column of its own, oldest on the left', () => {
+    const chart = chartOf([appearance(1, 1_000, 550), appearance(2, 2_000, 440), appearance(3, 3_000, 880)]);
+
+    expect(chart.viewBox).toBe('0 0 3 100');
+    expect(chart.line).toBe('0.5,50.00 1.5,60.00 2.5,20.00');
+    expect(chart.area).toBe('0.5,100 0.5,50.00 1.5,60.00 2.5,20.00 2.5,100');
+  });
+
+  it('scales against the best anyone did, with room above it', () => {
+    const chart = chartOf([appearance(1, 1_000, 550)]);
+
+    expect(chart.topBottom).toBeCloseTo(100 / 1.1);
+    expect(chart.points[0].bottom).toBeCloseTo(50);
+  });
+
+  it('plots an invalid kill off the line, above the best anyone did when it beat it', () => {
+    const chart = chartOf([appearance(1, 1_000, 330), appearance(2, 2_000, 1_200, fire, 'Bug abuse'), appearance(3, 3_000, 660)]);
+
+    expect(chart.line).toBe('0.5,75.00 2.5,50.00');
+    expect(chart.points.map(point => point.invalid)).toEqual([false, true, false]);
+    expect(chart.points[1].bottom).toBeCloseTo(100 / 1.1);
+    expect(chart.topBottom).toBeCloseTo(1_000 / 1_320 * 100);
+  });
+
+  it('draws no line for a single kill', () => {
+    const chart = chartOf([appearance(1, 1_000, 550)]);
+
+    expect([chart.viewBox, chart.line, chart.area]).toEqual(['0 0 1 100', '', '']);
+  });
+
+  it('colours each kill by its share of the best, and marks the best and the off-spec kills', () => {
+    const chart = chartOf([appearance(1, 1_000, 500), appearance(2, 2_000, 960, frost), appearance(3, 3_000, 800)]);
+
+    expect(chart.points.map(point => [point.relative, point.quality, point.best, point.offSpec])).toEqual([
+      [.5, 3, false, false],
+      [.96, 5, true, true],
+      [.8, 4, false, false]
+    ]);
+  });
+
+  it('runs the PR line from the PR to the latest kill, its label under a lower kill', () => {
+    const lower = chartOf([appearance(1, 1_000, 330), appearance(2, 2_000, 770), appearance(3, 3_000, 550)]);
+    const higher = chartOf([appearance(1, 1_000, 770), appearance(2, 2_000, 330), appearance(3, 3_000, 880)]);
+
+    expect(lower.record).toEqual({ from: 1.5, to: 2.5, y: 30, latest: 2, below: true });
+    expect(higher.record).toEqual({ from: 0.5, to: 2.5, y: 30, latest: 2, below: false });
+  });
+
+  it('puts the label over a lower kill that sits too near the bottom for one under it', () => {
+    const chart = chartOf([appearance(1, 1_000, 770), appearance(2, 2_000, 110)]);
+
+    expect(chart.record?.below).toBe(false);
+  });
+
+  it('labels every kill when they fit, else an even spread from the first to the last', () => {
+    const many = Array.from({ length: 13 }, (_, index) => appearance(index, index * 1_000, 500));
+
+    expect(chartOf(many.slice(0, 4), 1_000, 5).points.map(point => point.showLabel)).toEqual([true, true, true, true]);
+    expect(chartOf(many, 1_000, 5).points.flatMap((point, index) => point.showLabel ? [index] : [])).toEqual([0, 3, 6, 9, 12]);
+  });
+
+  it('opens the right half\'s tooltips to the left and lines the end columns up with the edges', () => {
+    const chart = chartOf([appearance(1, 1_000, 500), appearance(2, 2_000, 500), appearance(3, 3_000, 500), appearance(4, 4_000, 500)]);
+
+    expect(chart.points.map(point => [point.flip, point.edge])).toEqual([
+      [false, 'start'], [false, undefined], [true, undefined], [true, 'end']
+    ]);
+    expect(chartOf([appearance(1, 1_000, 500)]).points.map(point => [point.flip, point.edge])).toEqual([[false, undefined]]);
+  });
+
+  it('puts the best-anyone label on the side the kills leave clear', () => {
+    expect(chartOf([appearance(1, 1_000, 500), appearance(2, 2_000, 950)]).referenceSide).toBe('left');
+    expect(chartOf([appearance(1, 1_000, 950), appearance(2, 2_000, 980)]).referenceSide).toBe('below');
+    expect(chartOf([appearance(1, 1_000, 950), appearance(2, 2_000, 500)]).referenceSide).toBe('right');
+    expect(chartOf([appearance(1, 1_000, 1_000)]).referenceSide).toBe('right');
+  });
+
+  it('has no chart without kills', () => {
+    expect(killChart(killHistory([], 'dps'), 1_000, 63, 12)).toBeUndefined();
+  });
+});

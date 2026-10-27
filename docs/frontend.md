@@ -36,7 +36,7 @@ A file's name says what it is:
 |---|---|
 | `<name>-page.component.{ts,html,scss}` | a routed page |
 | `<name>.component.*` | a child or shared component |
-| `<feature>.ts` + `<feature>.spec.ts` | pure logic: types, parsing, ranking, formatting (e.g. `mythic-plus.ts`, `raid-scores.ts`, `arena-games.ts`). A big area splits it by job: the Raids keep the file formats in `raid-logs.types.ts`, decoding in `raid-logs.ts`, scores in `raid-scores.ts`, guild progression in `raid-progression.ts` and display helpers in `raid-display.ts`, with their test fixtures in `raid-logs.fixture.ts` |
+| `<feature>.ts` + `<feature>.spec.ts` | pure logic: types, parsing, ranking, formatting (e.g. `mythic-plus.ts`, `raid-scores.ts`, `arena-games.ts`). A big area splits it by job: the Raids keep the file formats in `raid-logs.types.ts`, decoding in `raid-logs.ts`, scores in `raid-scores.ts`, guild progression in `raid-progression.ts`, a character's kills of a boss over time in `raid-kill-history.ts` and display helpers in `raid-display.ts`, with their test fixtures in `raid-logs.fixture.ts` |
 | `<feature>-views.ts` | pure functions that turn the logic's results into what a page shows: rows, tiles, labels, insight text (`mythic-plus-views.ts`, `raid-talents-views.ts`) |
 | `<name>.directive.ts` | an attribute directive (`app` prefix: `[appReveal]`) |
 | `<name>.service.ts` | data loading shared by several pages |
@@ -498,6 +498,15 @@ instead of in a tooltip).
 Every chart is HTML and CSS; the app carries no chart library. A grid too dense for numbers on
 a phone, like the Realm Stats race and class grid, shows only its shading there, and a readout
 under it gives the numbers of the square last pointed at or tapped, so it needs no tooltips.
+
+A line chart gives each point an equal grid column and draws only the line in an inline SVG:
+a `polyline` in a `0 0 <points> 100` viewBox, stretched with `preserveAspectRatio="none"` and
+kept 2 px wide with `vector-effect="non-scaling-stroke"`. The points, labels and tooltips are
+HTML placed at the same percentages, so they keep their size. The Mythic+ score chart and the
+raid character page's kill chart (`app-raid-kill-chart`) work this way. In the kill chart each
+column is the link to its kill's log. A mouse gets a tooltip, while a tap opens the log, as the
+talent icons do. The same component, with `compact`, draws the small progress line in each boss
+row, without links.
 
 ## Styles
 

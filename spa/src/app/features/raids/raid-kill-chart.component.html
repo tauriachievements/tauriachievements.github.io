@@ -1,0 +1,102 @@
+@if (chart(); as chart) {
+  @if (compact()) {
+    <div class="plot" [style.--line]="color()">
+      <span class="reference" [style.bottom.%]="chart.topBottom"></span>
+      <svg class="line" [attr.viewBox]="chart.viewBox" preserveAspectRatio="none" focusable="false">
+        @if (chart.line) {
+          <polyline class="stroke" [attr.points]="chart.line" vector-effect="non-scaling-stroke" />
+        }
+      </svg>
+      <div class="kills" [style.--columns]="chart.points.length">
+        @for (point of chart.points; track $index) {
+          <span class="column" [style.--at]="point.bottom + '%'">
+            <span
+              class="dot"
+              [class.best]="point.best"
+              [class.invalid]="point.invalid"
+              [style.background]="point.invalid ? null : qualityColors[point.quality]"></span>
+          </span>
+        }
+      </div>
+    </div>
+  } @else {
+    <div class="chart" [style.--line]="color()">
+      <div class="plot">
+        <span class="reference" [style.bottom.%]="chart.topBottom"></span>
+        <span
+          class="reference-label"
+          [class.left]="chart.referenceSide === 'left'"
+          [class.below]="chart.referenceSide === 'below'"
+          [style.bottom.%]="chart.topBottom">{{ referenceLabel() }} · {{ formatPerSecond(top()) }}</span>
+        <svg class="line" [attr.viewBox]="chart.viewBox" preserveAspectRatio="none" aria-hidden="true" focusable="false">
+          @if (chart.area) {
+            <polygon class="area" [attr.points]="chart.area" />
+          }
+          @if (chart.line) {
+            <polyline class="stroke" [attr.points]="chart.line" vector-effect="non-scaling-stroke" />
+          }
+          @if (chart.record; as record) {
+            <line class="record" [attr.x1]="record.from" [attr.x2]="record.to" [attr.y1]="record.y" [attr.y2]="record.y" vector-effect="non-scaling-stroke" />
+          }
+        </svg>
+        <ol class="kills" [style.--columns]="chart.points.length">
+          @for (point of chart.points; track $index; let index = $index) {
+            <li
+              class="column"
+              [class.flip]="point.flip"
+              [class.edge-start]="point.edge === 'start'"
+              [class.edge-end]="point.edge === 'end'"
+              [style.--at]="point.bottom + '%'">
+              <a
+                class="kill"
+                [class.best]="point.best"
+                [class.invalid]="point.invalid"
+                [routerLink]="logLink(point.kill.kill)"
+                [attr.aria-label]="labels()[index]">
+                <span class="dot" [style.background]="point.invalid ? null : qualityColors[point.quality]"></span>
+                @if (point.offSpec && point.kill.member.spec?.icon; as icon) {
+                  <img class="off-spec" [src]="icon" alt="" loading="lazy" />
+                }
+                @if (point.best) {
+                  <span class="value-label">{{ formatPerSecond(point.kill.value) }}</span>
+                }
+                @if (point.invalid) {
+                  <span class="invalid-label">Invalid</span>
+                }
+                @if (chart.record; as line) {
+                  @if (line.latest === index && record(); as change) {
+                    <span class="record-label" [class.up]="change.trend === 'up'" [class.down]="change.trend === 'down'" [class.under]="line.below">{{ change.label }} {{ change.trend === 'up' ? 'new PR' : change.trend === 'down' ? 'under PR' : 'level with PR' }}</span>
+                  }
+                }
+                <span class="tooltip" aria-hidden="true">
+                  <strong>{{ formatPerSecond(point.kill.value) }} {{ unit() }}</strong>
+                  @if (point.invalid) {
+                    <span class="tooltip-invalid">Invalid, doesn't count</span>
+                    <span class="tooltip-reason">{{ point.kill.kill.invalid }}</span>
+                  } @else {
+                    <span class="tooltip-row"><span class="tooltip-key" [style.background]="qualityColors[point.quality]"></span>{{ percent(point.relative) }} of best</span>
+                  }
+                  @if (point.best) {
+                    <span class="tooltip-best">Best kill</span>
+                  }
+                  <span>{{ point.kill.kill.killedAt | date:'EEE d MMM, HH:mm' }}</span>
+                  <span>{{ point.kill.member.spec?.name }} · item level {{ point.kill.member.itemLevel }}</span>
+                  <span class="tooltip-meta">{{ point.kill.kill.guild?.name || 'Pickup group' }} · {{ formatFightTime(point.kill.kill.fightMs) }}</span>
+                </span>
+              </a>
+            </li>
+          }
+        </ol>
+      </div>
+      <ol class="ticks" [style.--columns]="chart.points.length" aria-hidden="true">
+        @for (point of chart.points; track $index) {
+          <li [class.edge-start]="point.edge === 'start'" [class.edge-end]="point.edge === 'end'">
+            @if (point.showLabel) {
+              <span class="tick">{{ point.kill.kill.killedAt | date:'d MMM' }}<small>{{ point.kill.member.itemLevel }} ilvl</small></span>
+            }
+          </li>
+        }
+      </ol>
+    </div>
+  }
+}

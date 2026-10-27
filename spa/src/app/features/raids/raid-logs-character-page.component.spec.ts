@@ -120,8 +120,12 @@ function rows(page: RaidLogsCharacterPageComponent) {
   return page.bossRows().map(row => [row.boss.shortName, row.relative, row.rank, row.ranked]);
 }
 
+function bossRows(element: HTMLElement) {
+  return [...element.querySelectorAll('section[aria-labelledby="character-bosses-title"] tbody tr.boss-row')];
+}
+
 function cells(element: HTMLElement) {
-  return [...element.querySelectorAll('section[aria-labelledby="character-bosses-title"] tbody tr')]
+  return bossRows(element)
     .map(row => [...row.querySelectorAll('td')].slice(0, 4).map(cell => cell.textContent?.replace(/\s+/g, ' ').trim()))
     .map(([boss, , relative, rank]) => [boss, relative, rank]);
 }
@@ -143,8 +147,34 @@ function compareWith(harness: RouterTestingHarness, element: HTMLElement, label:
 }
 
 function logCell(element: HTMLElement, boss: number) {
-  return element.querySelectorAll('section[aria-labelledby="character-bosses-title"] tbody tr')[boss]
-    ?.querySelector('td:last-child')?.textContent?.trim();
+  return bossRows(element)[boss]?.querySelector('td:last-child')?.textContent?.trim();
+}
+
+function recordChecks(element: HTMLElement) {
+  return bossRows(element).map(row => {
+    const check = row.querySelector('.record-cell .record-check')?.cloneNode(true) as HTMLElement | undefined;
+    check?.querySelector('.record-date')?.remove();
+    return check?.textContent?.replace(/\s+/g, ' ').trim() ?? '';
+  });
+}
+
+function toggles(element: HTMLElement) {
+  return bossRows(element).map(row => row.querySelector('button.detail-toggle')?.getAttribute('aria-expanded') ?? null);
+}
+
+function toggleBoss(harness: RouterTestingHarness, element: HTMLElement, boss: number) {
+  bossRows(element)[boss].querySelector<HTMLButtonElement>('button.detail-toggle')?.click();
+  harness.detectChanges();
+}
+
+function openDetail(element: HTMLElement) {
+  const detail = element.querySelector<HTMLElement>('section[aria-labelledby="character-bosses-title"] tr.boss-detail');
+  return detail && {
+    boss: detail.dataset['boss'],
+    logs: [...detail.querySelectorAll('a.kill')].map(link => link.getAttribute('href')),
+    invalid: detail.querySelectorAll('a.kill.invalid').length,
+    sentence: detail.querySelector('.record-sentence')?.textContent?.replace(/\s+/g, ' ').trim()
+  };
 }
 
 function bossHref(element: HTMLElement) {
@@ -201,6 +231,56 @@ describe('RaidLogsCharacterPageComponent with an invalid log', () => {
     const tags = [...element.querySelectorAll('section[aria-labelledby="character-recent-title"] tbody tr')]
       .map(row => row.querySelector('.invalid-tag')?.getAttribute('title'));
     expect(tags).toEqual([undefined, undefined, 'Invalid log, bug abusing', undefined]);
+  });
+});
+
+describe('RaidLogsCharacterPageComponent boss progress', () => {
+  it("compares each boss's latest kill with the best kill before it", async () => {
+    const { element } = await open('/raid-logs/character/tauri/Kael');
+
+    expect(recordChecks(element)).toEqual(['▲ 17% New PR', 'First kill', 'First kill']);
+  });
+
+  it('shows how far under the PR a lower latest kill landed', async () => {
+    const { element } = await open('/raid-logs/character/evermoon/Frosty');
+
+    expect(recordChecks(element)).toEqual(['▼ 19%', 'First kill', '']);
+  });
+
+  it('opens the boss with the latest kill, its chart linking every kill to its log', async () => {
+    const { element } = await open('/raid-logs/character/evermoon/Frosty');
+
+    expect(toggles(element)).toEqual(['false', 'true', null]);
+    expect(openDetail(element)).toMatchObject({ boss: 'ilgynoth', logs: ['/raid-logs/log/tauri/12'] });
+  });
+
+  it('opens one boss at a time with its button, and closes it again', async () => {
+    const { harness, element } = await open('/raid-logs/character/tauri/Kael');
+
+    toggleBoss(harness, element, 0);
+    expect(toggles(element)).toEqual(['true', 'false', 'false']);
+    expect(openDetail(element)).toMatchObject({ boss: 'nythendra', logs: ['/raid-logs/log/tauri/10', '/raid-logs/log/tauri/11'] });
+    expect(openDetail(element)?.sentence).toContain('700, 17% over the old PR of 600');
+
+    toggleBoss(harness, element, 0);
+    expect(toggles(element)).toEqual(['false', 'false', 'false']);
+    expect(openDetail(element)).toBeNull();
+  });
+
+  it('plots an invalid kill without comparing with it', async () => {
+    const flagged: RaidLogsIndexFile = { ...indexFile, invalidLogs: [['Tauri', 11, 'Invalid log, bug abusing']] };
+    const { harness, element } = await open('/raid-logs/character/tauri/Kael', flagged);
+
+    expect(recordChecks(element)).toEqual(['First kill', 'First kill', 'First kill']);
+    toggleBoss(harness, element, 0);
+    expect(openDetail(element)).toMatchObject({ logs: ['/raid-logs/log/tauri/10', '/raid-logs/log/tauri/11'], invalid: 1 });
+  });
+
+  it('compares only the kills played as the spec picked to compare with', async () => {
+    const { element } = await open('/raid-logs/character/evermoon/Frosty?compare=class&spec=63');
+
+    expect(recordChecks(element)).toEqual(['First kill', '', '']);
+    expect(openDetail(element)).toMatchObject({ boss: 'nythendra', logs: ['/raid-logs/log/tauri/11'] });
   });
 });
 

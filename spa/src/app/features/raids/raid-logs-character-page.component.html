@@ -92,23 +92,39 @@
           </div>
         </header>
 
+        <ng-template #recordCheck let-row let-dated="dated">
+          @if (row.history.check; as check) {
+            <span class="record-check" [title]="recordTitle(check)">
+              <span class="record-pill" [class.positive]="row.record.trend === 'up'" [class.negative]="row.record.trend === 'down'">{{ row.record.label }}</span>
+              @if (row.record.trend === 'up') {
+                <span class="new-record"> New PR</span>
+              }
+              @if (dated) {
+                <span class="record-date muted"> {{ check.latest.kill.killedAt | date:'d MMM' }}</span>
+              }
+            </span>
+          } @else if (row.best) {
+            <span class="record-check muted">First kill</span>
+          }
+        </ng-template>
+
         <div class="table-scroll">
-          <table>
+          <table class="bosses-table">
             <thead>
               <tr>
                 <th scope="col">Boss</th>
                 <th scope="col" class="num">Best {{ metric() === 'hps' ? 'HPS' : 'DPS' }}</th>
                 <th scope="col" class="num" [title]="columnTitles().relative">Of best</th>
                 <th scope="col" class="num" [title]="columnTitles().rank">Rank</th>
-                <th scope="col" class="phone-hidden">Spec</th>
-                <th scope="col" class="num phone-hidden">Item level</th>
-                <th scope="col" class="num phone-hidden">Kills</th>
-                <th scope="col"><span class="visually-hidden">Log</span></th>
+                <th scope="col" class="phone-hidden">Progress</th>
+                <th scope="col" class="phone-hidden">Latest vs PR</th>
+                <th scope="col"><span class="visually-hidden">Every kill</span></th>
               </tr>
             </thead>
             <tbody>
               @for (row of bossRows(); track row.boss.slug) {
-                <tr [class.alive]="!row.kills">
+                @let open = openBoss() === row.boss.slug;
+                <tr class="boss-row" [class.alive]="!row.kills" [class.open]="open">
                   <td class="phone-fluid">
                     <a class="boss-cell" [routerLink]="bossLink(row.boss)" [queryParams]="bossQueryParams()">
                       <img [src]="row.boss.portrait" alt="" loading="lazy" />
@@ -122,45 +138,95 @@
                       <span class="rank-cell">#{{ row.rank }} <span class="muted phone-hidden">/ {{ row.ranked | number }}</span></span>
                     }
                   </td>
-                  <td class="phone-hidden">
-                    @if (row.best?.member?.spec; as spec) {
-                      <span class="spec-cell">
-                        @if (spec.icon) {
-                          <img class="spec-icon" [src]="spec.icon" alt="" loading="lazy" />
-                        } {{ spec.name }}
-                        </span>
-                      }
-                    </td>
-                    <td class="num phone-hidden">{{ row.best?.member?.itemLevel ?? '' }}</td>
-                    <td class="num phone-hidden">{{ row.kills || '' }}</td>
-                    <td>
-                      @if (row.best; as best) {
-                        <a class="log-link" [routerLink]="logLink(best.kill)">Log <span aria-hidden="true">›</span></a>
-                      }
-                      @if (!row.kills) {
-                        <span class="muted">Not killed</span>
-                      }
-                      @if (row.kills && !row.best && comparedSpec(); as spec) {
-                        <span class="muted phone-hidden">Not as {{ spec.name }}</span>
-                      }
+                  <td class="phone-hidden progress-cell">
+                    @if (row.best) {
+                      <app-raid-kill-chart [history]="row.history" [top]="row.top" [metric]="metric()" [mainSpecId]="mainSpec()?.id" [color]="classColor(current.classId)" [compact]="true" />
+                    }
+                  </td>
+                  <td class="phone-hidden record-cell">
+                    <ng-container [ngTemplateOutlet]="recordCheck" [ngTemplateOutletContext]="{ $implicit: row, dated: true }" />
+                  </td>
+                  <td class="toggle-cell">
+                    @if (row.best) {
+                      <button
+                        type="button"
+                        class="detail-toggle"
+                        [attr.aria-expanded]="open"
+                        [attr.aria-controls]="open ? 'boss-detail-' + row.boss.slug : null"
+                        [attr.aria-label]="(open ? 'Hide' : 'Show') + ' every ' + row.boss.shortName + ' kill'"
+                        (click)="toggleBoss(row.boss.slug)">
+                        <span class="chevron" aria-hidden="true">▾</span><span class="tap-area"></span>
+                      </button>
+                    }
+                    @if (!row.kills) {
+                      <span class="muted">Not killed</span>
+                    }
+                    @if (row.kills && !row.best && comparedSpec(); as spec) {
+                      <span class="muted phone-hidden">Not as {{ spec.name }}</span>
+                    }
+                  </td>
+                </tr>
+                @if (row.best) {
+                  <tr class="phone-detail-row">
+                    <td colspan="7">
+                      <div class="phone-progress">
+                        <app-raid-kill-chart [history]="row.history" [top]="row.top" [metric]="metric()" [mainSpecId]="mainSpec()?.id" [color]="classColor(current.classId)" [compact]="true" />
+                        <ng-container [ngTemplateOutlet]="recordCheck" [ngTemplateOutletContext]="{ $implicit: row, dated: false }" />
+                      </div>
                     </td>
                   </tr>
                 }
-              </tbody>
-            </table>
-          </div>
-          <p class="list-note">
-            @if (comparison() === 'class') {
-              "Of best" and Rank compare with <span class="class-name" [style.color]="classColor(current.classId)">{{ comparedPlural() }}</span> only: every {{ ownClass() }}'s best kill of the boss@if (comparedSpec(); as spec) { as {{ spec.name }}} on this difficulty@if (comparedSpec()) {, this character's too}.
-            } @else {Rank among every character's best kill of the boss on this difficulty.}
-            {{ metric() === 'hps' ? 'Only healing specs are ranked by healing.' : 'Healing specs are ranked under Healing.' }}
-            @if (comparison() === 'class') {
-              The {{ metric() === 'hps' ? 'HPS' : 'DPS' }} score above still compares each boss with the best of all players, out of {{ maxScore }}:
-            } @else {The score averages "Of best" over the bosses, out of {{ maxScore }}:}
-            <a class="leaderboard-link" routerLink="/raid-logs/leaderboard" [queryParams]="{ difficulty: data.difficulty.slug, metric: metric() === 'hps' ? 'hps' : null }">see the leaderboard <span aria-hidden="true">›</span></a>
-          </p>
-        </section>
-      }
+                @if (open && row.best; as best) {
+                  @let first = row.history.kills[0];
+                  @let last = row.history.kills[row.history.kills.length - 1];
+                  <tr class="boss-detail" [id]="'boss-detail-' + row.boss.slug" [attr.data-boss]="row.boss.slug">
+                    <td colspan="7">
+                      <div class="detail-head">
+                        <p class="record-sentence">
+                          @if (row.history.check; as check) {
+                            @switch (row.record?.trend) {
+                              @case ('up') {New PR on {{ check.latest.kill.killedAt | date:'d MMM' }}: <strong>{{ formatPerSecond(check.latest.value) }}</strong>, {{ row.record?.amount }} over the old PR of {{ formatPerSecond(check.record.value) }} ({{ check.record.kill.killedAt | date:'d MMM' }}).}
+                              @case ('down') {Latest kill on {{ check.latest.kill.killedAt | date:'d MMM' }}: <strong>{{ formatPerSecond(check.latest.value) }}</strong>, {{ row.record?.amount }} under the PR of {{ formatPerSecond(check.record.value) }} ({{ check.record.kill.killedAt | date:'d MMM' }}).}
+                              @default {Latest kill on {{ check.latest.kill.killedAt | date:'d MMM' }}: <strong>{{ formatPerSecond(check.latest.value) }}</strong>, level with the PR from {{ check.record.kill.killedAt | date:'d MMM' }}.}
+                            }
+                          } @else {First kill: <strong>{{ formatPerSecond(row.value) }}</strong> on {{ best.kill.killedAt | date:'d MMM' }}. The next kill is measured against it.}
+                        </p>
+                        <p class="detail-facts">
+                          {{ row.history.kills.length - row.invalidKills }} {{ row.history.kills.length - row.invalidKills === 1 ? 'kill' : 'kills' }}@if (row.invalidKills) { · {{ row.invalidKills }} invalid} ·
+                          @if (best.member.spec; as spec) {
+                            <span class="fact-spec">@if (spec.icon) {<img class="spec-icon" [src]="spec.icon" alt="" loading="lazy" />} {{ spec.name }}</span> ·
+                          }
+                          item level {{ first.member.itemLevel }}@if (first.member.itemLevel !== last.member.itemLevel) { → {{ last.member.itemLevel }}} ·
+                          <a class="log-link" [routerLink]="logLink(best.kill)">Best log <span aria-hidden="true">›</span></a>
+                        </p>
+                      </div>
+                      <app-raid-kill-chart
+                        [history]="row.history"
+                        [top]="row.top"
+                        [metric]="metric()"
+                        [mainSpecId]="mainSpec()?.id"
+                        [referenceLabel]="referenceLabel()"
+                        [color]="classColor(current.classId)" />
+                    </td>
+                  </tr>
+                }
+              }
+            </tbody>
+          </table>
+        </div>
+        <p class="list-note">
+          @if (comparison() === 'class') {
+            "Of best" and Rank compare with <span class="class-name" [style.color]="classColor(current.classId)">{{ comparedPlural() }}</span> only: every {{ ownClass() }}'s best kill of the boss@if (comparedSpec(); as spec) { as {{ spec.name }}} on this difficulty@if (comparedSpec()) {, this character's too}.
+          } @else {Rank among every character's best kill of the boss on this difficulty.}
+          {{ metric() === 'hps' ? 'Only healing specs are ranked by healing.' : 'Healing specs are ranked under Healing.' }}
+          Latest vs PR compares the latest kill that counts with the best kill before it.
+          @if (comparison() === 'class') {
+            The {{ metric() === 'hps' ? 'HPS' : 'DPS' }} score above still compares each boss with the best of all players, out of {{ maxScore }}:
+          } @else {The score averages "Of best" over the bosses, out of {{ maxScore }}:}
+          <a class="leaderboard-link" routerLink="/raid-logs/leaderboard" [queryParams]="{ difficulty: data.difficulty.slug, metric: metric() === 'hps' ? 'hps' : null }">see the leaderboard <span aria-hidden="true">›</span></a>
+        </p>
+      </section>
+    }
 
       <section class="section" aria-labelledby="character-recent-title">
         <header class="section-header">

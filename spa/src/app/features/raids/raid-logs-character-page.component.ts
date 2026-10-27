@@ -1,4 +1,4 @@
-import { DatePipe, DecimalPipe, NgTemplateOutlet } from '@angular/common';
+import { DatePipe, DecimalPipe, NgTemplateOutlet, formatDate } from '@angular/common';
 import { ChangeDetectionStrategy, Component, DestroyRef, computed, effect, inject, signal, untracked } from '@angular/core';
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, RouterLink } from '@angular/router';
@@ -11,6 +11,8 @@ import { FilterDropdownCoordinatorService } from '../../shared/filter-dropdown-c
 import { FilterDropdownOption, FilterDropdownValue } from '../../shared/filter-dropdown.types';
 import { GlideDirective } from '../../shared/motion/glide.directive';
 import { RaidDifficultySwitchComponent } from './raid-difficulty-switch.component';
+import { RaidKillChartComponent } from './raid-kill-chart.component';
+import { KillHistory, RecordChange, RecordCheck, killHistory, recordChange } from './raid-kill-history';
 import {
   ITEM_QUALITY_COLORS,
   formatFightTime,
@@ -25,7 +27,6 @@ import {
   RankedScore,
   bossBest,
   bossStanding,
-  countsFor,
   performanceQuality,
   rankScores,
   rankedSpecs,
@@ -57,11 +58,15 @@ export type RaidComparison = 'all' | 'class';
 interface BossRow {
   boss: RaidBoss;
   kills: number;
+  history: KillHistory;
+  invalidKills: number;
   best?: Appearance;
+  top: number;
   value: number;
   relative: number;
   rank?: number;
   ranked: number;
+  record?: RecordChange;
 }
 
 interface Loaded {
@@ -92,6 +97,7 @@ const NOT_RANKED = 'Earlier character, not ranked';
     RouterLink,
     FilterDropdownComponent,
     RaidDifficultySwitchComponent,
+    RaidKillChartComponent,
     GlideDirective,
     DatePipe,
     DecimalPipe,
@@ -240,26 +246,44 @@ export class RaidLogsCharacterPageComponent {
     const byClass = this.comparison() === 'class';
     const spec = this.comparedSpec();
     const earlier = this.formerClass() !== undefined;
+    const invalid = this.invalidAppearances();
     return index.bosses.map(boss => {
       const kills = loaded.bossKills[boss.index] ?? [];
       const own = this.appearances().filter(appearance => appearance.kill.boss === boss);
-      const best = own
-        .filter(appearance => countsFor(metric, appearance.member.spec) && (!spec || appearance.member.spec?.id === spec.id))
-        .sort((a, b) => b.member[metric] - a.member[metric] || a.kill.killedAt - b.kill.killedAt)[0];
+      const history = killHistory([...own, ...invalid.filter(appearance => appearance.kill.boss === boss)], metric, spec?.id);
+      const best = history.best;
       const filter = best && byClass ? { classId: best.member.character.classId, specId: spec?.id } : {};
       const standing = best && !earlier ? bossStanding(kills, metric, loaded.key, filter) : undefined;
-      const top = best && earlier ? bossBest(kills, metric, filter) : 0;
+      const top = best ? bossBest(kills, metric, filter) : 0;
       return {
         boss,
         kills: own.length,
+        history,
+        invalidKills: history.kills.filter(({ kill }) => kill.invalid !== undefined).length,
         best,
-        value: best?.member[metric] ?? 0,
-        relative: standing?.relative ?? (best && top > 0 ? best.member[metric] / top : 0),
+        top,
+        value: best?.value ?? 0,
+        relative: standing?.relative ?? (best && top > 0 ? best.value / top : 0),
         rank: standing?.rank,
-        ranked: standing?.ranked ?? 0
+        ranked: standing?.ranked ?? 0,
+        record: history.check && recordChange(history.check.change)
       };
     });
   });
+
+  private readonly pickedBoss = signal<string | null | undefined>(undefined);
+
+  readonly openBoss = computed(() => {
+    const picked = this.pickedBoss();
+    const charted = this.bossRows().filter(row => row.best);
+    if (picked === null) {
+      return undefined;
+    }
+
+    return (charted.find(row => row.boss.slug === picked) ?? latestKilled(charted))?.boss.slug;
+  });
+
+  readonly referenceLabel = computed(() => this.comparison() === 'class' ? `#1 ${this.comparedMember()}` : '#1');
 
   readonly recent = computed(() => latestFirst([...this.appearances(), ...this.invalidAppearances()]).slice(0, RECENT_KILLS));
 
@@ -365,6 +389,15 @@ export class RaidLogsCharacterPageComponent {
     this.comparison.set(value === undefined ? 'all' : 'class');
     this.pickedSpec.set(typeof value === 'number' ? value : undefined);
     this.writeUrl();
+  }
+
+  toggleBoss(slug: string): void {
+    this.pickedBoss.set(this.openBoss() === slug ? null : slug);
+  }
+
+  recordTitle({ latest, record }: RecordCheck): string {
+    const day = (at: number) => formatDate(at, 'd MMM', 'en-US');
+    return `Latest kill, ${day(latest.kill.killedAt)}: ${formatPerSecond(latest.value)}. Best kill before it, ${day(record.kill.killedAt)}: ${formatPerSecond(record.value)}.`;
   }
 
   classColor(classId: number): string {
@@ -479,6 +512,11 @@ export class RaidLogsCharacterPageComponent {
 
 function latestFirst(appearances: readonly Appearance[]): Appearance[] {
   return [...appearances].sort((a, b) => b.kill.killedAt - a.kill.killedAt);
+}
+
+function latestKilled(rows: readonly BossRow[]): BossRow | undefined {
+  const lastKillAt = ({ history }: BossRow) => history.kills[history.kills.length - 1]?.kill.killedAt ?? 0;
+  return rows.reduce<BossRow | undefined>((latest, row) => !latest || lastKillAt(row) > lastKillAt(latest) ? row : latest, undefined);
 }
 
 function parseMetric(value: string | null): RaidMetric | undefined {

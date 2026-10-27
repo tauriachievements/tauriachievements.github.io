@@ -7,6 +7,7 @@
 @include summary-tiles;
 @include sections;
 @include raid-table;
+@include phone-detail-rows;
 @include character-cell;
 @include difficulty-colors;
 
@@ -113,6 +114,61 @@ td a.log-link { color: $gold; font-size: .8rem; font-weight: 600; }
 .leaderboard-link:focus-visible { outline: 2px solid $gold; outline-offset: 2px; }
 .list-note { margin: 0; color: $raid-muted; font-size: .8rem; }
 
+.progress-cell { width: 220px; }
+.progress-cell app-raid-kill-chart { width: 200px; }
+.record-cell { width: 1%; }
+.toggle-cell { width: 1%; text-align: right; }
+
+.record-check { display: inline-flex; align-items: center; gap: 8px; font-size: .8rem; white-space: nowrap; }
+.record-pill { @include change-pill; }
+.new-record { @include new-tag; }
+
+.detail-toggle {
+  position: relative;
+  display: inline-grid;
+  width: 30px;
+  height: 30px;
+  place-items: center;
+  border: 1px solid $raid-line;
+  border-radius: 6px;
+  background: #111;
+  color: $gold;
+  font: inherit;
+  font-size: .85rem;
+  cursor: pointer;
+
+  &[aria-expanded="true"] { background: #2e2716; }
+  &[aria-expanded="true"] .chevron { transform: rotate(180deg); }
+  &:hover { border-color: rgba(247, 181, 0, .4); }
+  &:focus-visible { outline: 2px solid $gold; outline-offset: 2px; }
+}
+
+.chevron { display: inline-block; @include motion-safe { transition: transform .15s ease; } }
+
+tr.open > td { border-bottom-color: transparent; }
+tr.boss-detail > td { padding: 4px 16px 16px; background: #121212; white-space: normal; }
+tbody tr.boss-detail:hover td { background: #121212; }
+
+.detail-head {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 4px 16px;
+  margin-top: 8px;
+  color: $raid-muted;
+  font-size: .8rem;
+  line-height: 1.5;
+
+  p { margin: 0; }
+  strong { color: #fff; }
+}
+
+.detail-facts .spec-icon { width: 16px; height: 16px; margin-right: 2px; vertical-align: -3px; }
+.fact-spec { white-space: nowrap; }
+
+.phone-progress { display: flex; align-items: center; gap: 10px; }
+.phone-progress app-raid-kill-chart { flex: 1; }
+
 @media (max-width: 640px) {
   .raid-page { padding-top: 32px; }
   .boss-cell { gap: 8px; }
@@ -121,4 +177,6 @@ td a.log-link { color: $gold; font-size: .8rem; font-weight: 600; }
   .crest { width: 56px; height: 56px; img { width: 46px; height: 46px; } }
   .character-heading h1 { font-size: 1.3rem; }
   .view-switch button { padding: 6px 9px; }
+  tr.boss-detail > td { padding: 2px 8px 14px; }
+  .phone-detail-row .record-check { gap: 6px; }
 }
