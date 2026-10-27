@@ -7,7 +7,7 @@ namespace ArenaLadderExporter;
 
 public static class ArenaLadderFileWriter
 {
-    public const int FormatVersion = 1;
+    public const int FormatVersion = 2;
 
     private static readonly JsonWriterOptions WriterOptions = new()
     {
@@ -18,12 +18,14 @@ public static class ArenaLadderFileWriter
         string path,
         ArenaBracket bracket,
         IReadOnlyList<ArenaLadderPlayer> players,
+        PreviousArenaLadder previous,
         DateTimeOffset generatedAt,
         CancellationToken cancellationToken
     ) =>
         AtomicFile.WriteAsync(
             path,
-            (stream, token) => WriteLadderAsync(stream, bracket, players, generatedAt, token),
+            (stream, token) =>
+                WriteLadderAsync(stream, bracket, players, previous, generatedAt, token),
             cancellationToken
         );
 
@@ -34,6 +36,7 @@ public static class ArenaLadderFileWriter
         Stream stream,
         ArenaBracket bracket,
         IReadOnlyList<ArenaLadderPlayer> players,
+        PreviousArenaLadder previous,
         DateTimeOffset generatedAt,
         CancellationToken cancellationToken
     )
@@ -52,10 +55,15 @@ public static class ArenaLadderFileWriter
                 CultureInfo.InvariantCulture
             )
         );
+        if (previous.GeneratedAt is { } previousGeneratedAt)
+        {
+            writer.WriteString("previousGeneratedAt", previousGeneratedAt);
+        }
         writer.WriteStartArray("players");
         foreach (var player in players)
         {
-            line.WriteTo(writer, item => WritePlayer(item, player));
+            previous.Standings.TryGetValue((player.Realm, player.Guid), out var standing);
+            line.WriteTo(writer, item => WritePlayer(item, player, standing));
             await JsonLineWriter.FlushIfLargeAsync(writer, cancellationToken);
         }
         writer.WriteEndArray();
@@ -63,7 +71,11 @@ public static class ArenaLadderFileWriter
         await writer.FlushAsync(cancellationToken);
     }
 
-    private static void WritePlayer(Utf8JsonWriter item, ArenaLadderPlayer player)
+    private static void WritePlayer(
+        Utf8JsonWriter item,
+        ArenaLadderPlayer player,
+        PreviousArenaStanding? previous
+    )
     {
         item.WriteStartObject();
         item.WriteNumber("guid", player.Guid);
@@ -82,6 +94,11 @@ public static class ArenaLadderFileWriter
         item.WriteNumber("rating", player.Rating);
         item.WriteNumber("peakRating", player.PeakRating);
         item.WriteNumber("weekPeakRating", player.WeekPeakRating);
+        if (previous is not null)
+        {
+            item.WriteNumber("previousRating", previous.Rating);
+            item.WriteNumber("previousGames", previous.Games);
+        }
         item.WriteEndObject();
     }
 }

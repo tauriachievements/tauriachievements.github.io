@@ -1,4 +1,4 @@
-import { DatePipe, DecimalPipe, PercentPipe } from '@angular/common';
+import { DatePipe, DecimalPipe, NgTemplateOutlet, PercentPipe } from '@angular/common';
 import { ChangeDetectionStrategy, Component, DestroyRef, OnInit, computed, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -14,6 +14,8 @@ import {
   REWARD_MIN_WINS,
   SortDirection,
   TitleCutoff,
+  arenaPlayerKey,
+  arenaRatingChanges,
   formatTitleShare,
   getArenaLadderFile,
   getTitle,
@@ -27,6 +29,7 @@ import { DataFileService } from '../../core/data-file.service';
 import { getClassColor } from '../../game/class-colors';
 import { setPageHeader } from '../../core/page-header';
 import { SkeletonComponent } from '../../shared/skeleton.component';
+import { ScanChange, rankChangeLabel, signedChange, valueChangeLabel } from '../../shared/scan-change';
 
 const MIN_GAMES = 50;
 
@@ -48,7 +51,7 @@ const SORT_COLUMNS: readonly SortColumn[] = [
   selector: 'app-arena-games-page',
   templateUrl: './arena-games-page.component.html',
   styleUrls: ['./arena-games-page.component.scss'],
-  imports: [GlideDirective, DatePipe, DecimalPipe, PercentPipe, SkeletonComponent],
+  imports: [GlideDirective, DatePipe, DecimalPipe, NgTemplateOutlet, PercentPipe, SkeletonComponent],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class ArenaGamesPageComponent implements OnInit {
@@ -107,6 +110,15 @@ export class ArenaGamesPageComponent implements OnInit {
     });
     return groups;
   });
+  private readonly changes = computed(() => {
+    const dataset = this.dataset();
+    return dataset ? arenaRatingChanges(dataset, MIN_GAMES) : new Map<string, ScanChange>();
+  });
+  readonly hasChanges = computed(() => this.changes().size > 0);
+  readonly changesSince = computed(() => this.hasChanges() ? this.dataset()?.previousGeneratedAt : undefined);
+  readonly showRankChanges = computed(() =>
+    this.hasChanges() && this.sortKey() === 'rating' && this.sortDirection() === 'desc'
+  );
   readonly lastEdited = computed(() => {
     const generatedAt = this.dataset()?.generatedAt;
     return generatedAt ? new Date(generatedAt) : undefined;
@@ -114,6 +126,8 @@ export class ArenaGamesPageComponent implements OnInit {
 
   readonly getArmoryUrl = getArmoryUrl;
   readonly formatTitleShare = formatTitleShare;
+  readonly signed = signedChange;
+  readonly rankChangeLabel = rankChangeLabel;
 
   constructor() {
     setPageHeader(() => ({ lastEdited: this.lastEdited() }));
@@ -181,6 +195,14 @@ export class ArenaGamesPageComponent implements OnInit {
 
   isRewardEligible(player: ArenaPlayerRow): boolean {
     return player.wins >= REWARD_MIN_WINS;
+  }
+
+  change(player: ArenaPlayerRow): ScanChange | undefined {
+    return this.changes().get(arenaPlayerKey(player));
+  }
+
+  ratingChangeLabel(change: number): string {
+    return valueChangeLabel(change, 'rating');
   }
 
   getPlayerClassColor(player: ArenaPlayerRow): string {

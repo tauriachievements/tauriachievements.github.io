@@ -1,4 +1,4 @@
-@use '../../shared/tables' as *;
+@use '../../shared/mythic-plus-shared' as *;
 
 :host {
   display: block;
@@ -445,8 +445,13 @@
 
 .table-scroll {
   width: 100%;
-  overflow-x: auto;
+  @include table-scroll;
 }
+
+@include visually-hidden;
+@include scan-change-marks(#ff9a9a);
+
+.changes-note { margin: -8px 0 16px; color: #8f98aa; font-size: 0.74rem; line-height: 1.45; }
 
 .leaderboard-table,
 .scoreboard-table {
@@ -503,7 +508,15 @@
   }
 }
 
-.rank-cell span {
+.rank-line { display: flex; align-items: center; }
+
+.with-changes .rank-line {
+  display: grid;
+  grid-template-columns: 27px 34px;
+  column-gap: 6px;
+}
+
+.rank-cell .rank-badge {
   display: grid;
   width: 27px;
   height: 27px;
@@ -583,6 +596,16 @@
 }
 
 .metric-cell--negative { color: #fb7185 !important; }
+
+.with-changes .metric-line {
+  display: inline-grid;
+  grid-template-columns: minmax(7ch, auto) 7ch;
+  column-gap: 8px;
+  align-items: center;
+}
+
+.metric-value { justify-self: end; }
+.metric-line .value-change { justify-self: start; }
 
 .leaderboard-pager { padding: 17px 12px 0; }
 
@@ -915,72 +938,6 @@
   .overview-grid { grid-template-columns: 1fr; }
   .leaderboard-heading { align-items: stretch; flex-direction: column; }
   .leaderboard-controls { min-width: 0; width: 100%; }
-}
-
-@media (max-width: 720px) {
-  .rated-shell { padding: 28px 14px 48px; }
-  .season-hero { min-height: 0; padding: 27px 22px; align-items: stretch; flex-direction: column; }
-  .season-copy h1 { font-size: 2.2rem; }
-  .season-copy h1,
-  .season-copy p { white-space: normal; }
-  .season-record { width: 100%; text-align: left; }
-  .season-aside { width: 100%; justify-items: start; }
-  .filter-console { align-items: stretch; flex-direction: column; }
-  .filter-field { width: 100%; }
-  .filter-context { text-align: left; }
-  .metric-grid { grid-template-columns: 1fr; }
-  .panel { padding: 17px; }
-  .panel-heading { align-items: stretch; flex-direction: column; }
-  .panel-note { display: none; }
-  .map-meta { gap: 5px 10px; }
-  .leaderboard-controls { flex-direction: column; }
-  .leaderboard-controls app-filter-dropdown { min-width: 0; }
-  .section-heading { align-items: flex-start; flex-direction: column; }
-  .match-detail-header { align-items: flex-start; flex-direction: column; padding: 19px; }
-  .match-verdict { text-align: left; }
-  .team-summary-grid { grid-template-columns: 1fr; padding: 12px 12px 0; }
-  .team-stat-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-  .scoreboard { margin: 12px; }
-}
-
-@media (max-width: 430px) {
-  .map-row { align-items: flex-start; }
-  .team-stat-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-}
-
-@media (max-width: $phone-breakpoint) {
-  .leaderboard-table {
-    th, td { padding: 10px 6px; }
-    th { white-space: normal; }
-  }
-
-  .leaderboard-table .player-td { @include fluid-cell; }
-  .player-primary { overflow: hidden; }
-  .player-primary span { min-width: 0; @include truncate; }
-  .player-cell .player-stats { display: block; color: #8f98aa; }
-
-  .scoreboard-table {
-    min-width: 0;
-
-    th, td { padding: 9px 6px; }
-    th { white-space: normal; }
-  }
-
-  .scoreboard-table .member-td { @include fluid-cell; }
-  .member-cell { min-width: 0; }
-
-  .scoreboard-table td { white-space: nowrap; }
-
-  .member-stats {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 3px 12px;
-    padding-left: 41px;
-    color: #7e8898;
-    font-size: 0.69rem;
-
-    strong { color: #dce1e8; }
-  }
 }
 
 app-skeleton { --skeleton-width: 1250px; }

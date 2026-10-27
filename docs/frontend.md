@@ -12,7 +12,7 @@ folders:
 | Folder | Holds |
 |---|---|
 | `core/` | what the whole app runs on: the header (`update-bar`, `nav-sections.ts`, `page-header.ts`), the back-to-top button, `url-state.ts`, `page-links.ts` (links into one feature's pages from another's), `DataFileService`, `ObservableCache`, `time-zone-label.ts`, `image-placeholders.ts` |
-| `shared/` | building blocks any page may use: the filter dropdown, the mobile filter toggle, `app-load-state`, `app-skeleton` with `skeleton.ts` and `_skeleton.scss`, `app-pager` and `pager.ts`, `app-icon-tips`, `appTapTooltip`, `compact-viewport.ts`, `time-format.ts`, `score-quality.ts`, `_mythic-plus-shared.scss` |
+| `shared/` | building blocks any page may use: the filter dropdown, the mobile filter toggle, `app-load-state`, `app-skeleton` with `skeleton.ts` and `_skeleton.scss`, `app-pager` and `pager.ts`, `app-icon-tips`, `appTapTooltip`, `compact-viewport.ts`, `time-format.ts`, `score-quality.ts`, `scan-change.ts`, `_mythic-plus-shared.scss` |
 | `shared/spec-charts/` | the spec and race popularity charts the Mythic+ and Raids statistics share: `spec-popularity.ts`, `race-popularity.ts`, `app-race-by-spec`, and `spec-chart.scss`, the chart look every spec chart lists first in its `styleUrls` |
 | `shared/motion/` | the motion directives and their helpers (`motion.ts`, `count-up.ts`, `decode-text.ts`) |
 | `game/` | the game's own tables and links: `wow.ts`, `wow-specs.ts`, `class-colors.ts`, `armory.ts`, the class and race icon helpers, and the asset paths in `classIconHelper.ts` (class icons, class crests, spec art) |
@@ -190,7 +190,8 @@ finds Sósa), while a picked character matches name and realm exactly.
   List and Talent Analytics links carry `?difficulty=mythic`, so those three always open on
   Mythic, unless Mythic has no kill yet.
 - Files only some icons or names depend on (raid genders, talent tables and tooltips) fail
-  soft: a file that won't load is an empty table, not an error. A kill the raid index doesn't
+  soft: a file that won't load is an empty table, not an error. So does the battleground
+  collector's state on Rated Battlegrounds: without it the page shows no changes. A kill the raid index doesn't
   list may be newer than the index this tab loaded, so it's loaded fresh once before the page
   gives up.
 - When a control switches which file a page shows (the arena bracket, a boss), drop a response
@@ -336,10 +337,11 @@ decision (ask first).
 | `mythicPlusProfileLink()` (`core/page-links.ts`) | the router link to a character's Mythic+ profile, from any page |
 | `formatClock()`, `formatDuration()` (`shared/time-format.ts`) | seconds as `29:07` / `1:02:05`, or the fixed-width `00:29:07` |
 | `scoreQuality()` (`shared/score-quality.ts`) | a score's item-quality tier against the best score (`artifact` down to `uncommon`), for the `quality-colors` mixin |
+| `shared/scan-change.ts` | changes since the last scan on a leaderboard: `scanChanges(current, previous, key, value)` compares two rankings (each entry's place in its list is its rank) and gives each changed entry its ranks climbed, its value change and whether it's new; `signedChange` (`+24`, `−12`), `rankChangeLabel` and `valueChangeLabel` for the marks' titles. The raid leaderboard, Arena and Rated Battlegrounds use it, with the `scan-change-marks` mixin |
 | Raids helpers | in `raid-display.ts`: `nameMatches` for name search, `parseRoleFilter` for `?role=` (`tank`, `healer`, `dps`), the links, icon URLs and number formats, and `DIFFICULTY_COLORS` for code that draws (the same colours as `$difficulty-colors` in `_raid-logs-shared.scss`, so change both); in `raid-logs.ts`: `bossShortName` (a boss's `shortName`) for tiles, table cells and other tight spots: the name up to its first comma, or a shorter name from `BOSS_SHORT_NAMES` ("Elerethe", "Dragons"). A long boss name in a new raid gets an entry there |
 | `_tables.scss` (forwarded by `_mythic-plus-shared.scss`) | the phone rules every table shares: `table-scroll`, `phone-columns` (`phone-hidden`, `narrow-phone-hidden`, `phone-only`), `phone-detail-rows`, `fluid-cell`, `fluid-identity`, `truncate`, and `$phone-breakpoint` / `$narrow-phone-breakpoint` ([Tables on phones](#tables-on-phones)) |
-| `_mythic-plus-shared.scss` | mixins such as `tooltip-box`, `quality-colors`, `visually-hidden` (and `hidden-visually`, its declarations alone), `motion-safe`, `glide-pill`, `week-bands` (a chart's affix-week bands), `details-reveal` ([motion](motion-and-rendering.md)), `filter-reset` (a toolbar's Reset button, greyed out while there's nothing to reset; the Raids Rankings, Guilds and Talent Analytics pages and Rare Items). `crest-glow` needs `isolation: isolate` on the crest's parent, so the glow sits under the crest and above the parent's background. `spotlight-card` takes the card's `::before` and `::after` |
-| `_raid-logs-shared.scss` | forwards the M+ mixins, and adds `raid-table` (with the phone column rules and `phone-fluid` cells), `boss-picker($count)`, `ranking-toolbar`, `difficulty-switch`, `segmented-switch` (the difficulty switch's pill look, for any other switch beside it), and the since-the-last-scan marks: `change-pill` (a rank or count change, with `.positive` / `.negative`) and `new-tag` (the gold "new"); `invalid-tag`, the red "Invalid" on a kill that doesn't count |
+| `_mythic-plus-shared.scss` | mixins such as `tooltip-box`, `quality-colors`, `visually-hidden` (and `hidden-visually`, its declarations alone), `motion-safe`, `glide-pill`, `week-bands` (a chart's affix-week bands), `details-reveal` ([motion](motion-and-rendering.md)), `filter-reset` (a toolbar's Reset button, greyed out while there's nothing to reset; the Raids Rankings, Guilds and Talent Analytics pages and Rare Items). `crest-glow` needs `isolation: isolate` on the crest's parent, so the glow sits under the crest and above the parent's background. `spotlight-card` takes the card's `::before` and `::after`. `scan-change-marks($drop-color)` styles the since-the-last-scan marks: `.rank-move` (with `.move-arrow`) beside a rank, `.value-change` beside a value, both green with `.up` and `$drop-color` without, and `.rank-new` (the `new-tag` mixin's gold "new"). The raid leaderboard's drops are grey, the PvP pages' red ([scoring.md](scoring.md#arena-changes-since-the-last-scan)) |
+| `_raid-logs-shared.scss` | forwards the M+ mixins, and adds `raid-table` (with the phone column rules and `phone-fluid` cells), `boss-picker($count)`, `ranking-toolbar`, `difficulty-switch`, `segmented-switch` (the difficulty switch's pill look, for any other switch beside it), and `change-pill` (a guild's progress change, with `.positive` / `.negative`); `invalid-tag`, the red "Invalid" on a kill that doesn't count |
 | `.tap-area` (global) | an empty span inside a small link that grows its tap target |
 
 `app-filter-bar` and `app-leaderboard-table` belong to the ladder page.
@@ -512,7 +514,7 @@ under it gives the numbers of the square last pointed at or tapped, so it needs 
   a component stylesheet warns at 16 kB and errors at 24 kB. Several page stylesheets are
   close to theirs (`npm run build` lists any over it). Don't add to either. Move a page's
   motion into `<page>.motion.scss`, its phone rules into `<component>.phone.scss` (the ladder
-  table, Talent Analytics and the Mythic+ profile do), shared rules into a mixin, and anything
+  table, Talent Analytics, the Mythic+ profile and Rated Battlegrounds do), shared rules into a mixin, and anything
   a first visit doesn't need into a lazy route.
 
 ## Template and test gotchas

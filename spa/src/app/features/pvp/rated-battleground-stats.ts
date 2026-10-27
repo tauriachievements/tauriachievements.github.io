@@ -1,6 +1,8 @@
 import { getClassColor as getSharedClassColor } from '../../game/class-colors';
 import { CLASS_NAMES, Role } from '../../game/wow';
 import { specById } from '../../game/wow-specs';
+import { ScanChange, scanChanges, signedChange } from '../../shared/scan-change';
+import { BattlegroundCollectorState } from './battlegrounds.service';
 
 export interface RatedBattlegroundCharacter {
   charname: string;
@@ -328,6 +330,61 @@ export function metricValue(player: RatedPlayerSummary, metric: RatedLeaderboard
     case 'wins': return player.wins;
     default: return player.games;
   }
+}
+
+export function rankRatedPlayers(
+  players: readonly RatedPlayerSummary[],
+  metric: RatedLeaderboardMetric
+): RatedPlayerSummary[] {
+  return [...players].sort((left, right) => metricValue(right, metric) - metricValue(left, metric)
+    || right.wins - left.wins
+    || left.name.localeCompare(right.name));
+}
+
+export interface RatedNewMatches {
+  readonly since: string;
+  readonly matchIds: ReadonlySet<number>;
+}
+
+export function readNewMatches(
+  state: Pick<BattlegroundCollectorState, 'newRatedMatchesSince' | 'newRatedMatchIds'> | null | undefined
+): RatedNewMatches | undefined {
+  const since = state?.newRatedMatchesSince;
+  const matchIds = state?.newRatedMatchIds;
+  return since && Array.isArray(matchIds) && matchIds.length ? { since, matchIds: new Set(matchIds) } : undefined;
+}
+
+export function matchesBeforeScan(
+  matches: readonly RatedBattlegroundMatch[],
+  newMatches: RatedNewMatches | undefined
+): RatedBattlegroundMatch[] | undefined {
+  if (!newMatches) {
+    return undefined;
+  }
+
+  const before = matches.filter(match => !newMatches.matchIds.has(match.matchid));
+  return before.length < matches.length ? before : undefined;
+}
+
+export function ratedPlayerChanges(
+  ranked: readonly RatedPlayerSummary[],
+  previousMatches: readonly RatedBattlegroundMatch[],
+  metric: RatedLeaderboardMetric
+): Map<string, ScanChange> {
+  return scanChanges(
+    ranked,
+    rankRatedPlayers(buildRatedBattlegroundAnalytics(previousMatches).players, metric),
+    player => player.key,
+    player => metricValue(player, metric)
+  );
+}
+
+export function formatMetricAmount(amount: number, metric: RatedLeaderboardMetric): string {
+  return metric === 'damage' || metric === 'healing' ? formatCompact(amount) : Math.round(amount).toLocaleString();
+}
+
+export function formatMetricChange(change: number, metric: RatedLeaderboardMetric): string {
+  return signedChange(change, magnitude => formatMetricAmount(magnitude, metric));
 }
 
 export function formatDuration(milliseconds: number): string {

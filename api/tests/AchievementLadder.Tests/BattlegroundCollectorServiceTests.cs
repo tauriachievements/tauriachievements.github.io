@@ -86,6 +86,89 @@ public sealed class BattlegroundCollectorServiceTests
         }
     }
 
+    [Fact]
+    public async Task ExecuteAsync_KeepsTheLatestScanThatAddedRatedMatchesInTheState()
+    {
+        var testRoot = Path.Combine(
+            Path.GetTempPath(),
+            $"battleground-collector-tests-{Guid.NewGuid():N}"
+        );
+        var projectRoot = Path.Combine(testRoot, "BattlegroundCollector");
+        var frontendSrc = Path.Combine(testRoot, "frontend", "src");
+        Directory.CreateDirectory(projectRoot);
+        Directory.CreateDirectory(frontendSrc);
+
+        try
+        {
+            var statePath = Path.Combine(frontendSrc, "battleground-collector-state.json");
+            await File.WriteAllTextAsync(
+                statePath,
+                """
+                {
+                  "nextMatchId": 200,
+                  "apiRealm": "[EN] Evermoon",
+                  "displayRealm": "Evermoon",
+                  "lastScanUtc": "2026-10-26T23:10:45+00:00",
+                  "lastStopReason": "Response did not contain complete battleground details.",
+                  "lastAddedCount": 3,
+                  "lastAddedMatchId": 199
+                }
+                """
+            );
+            var apiClient = new MatchSequenceApiClient(
+                new Dictionary<int, TauriApiResponseResult>
+                {
+                    [200] = Success(MatchJson(200, "Warsong Gulch", isRanked: true, "first")),
+                    [201] = Success(MatchJson(201, "Twin Peaks", isRanked: false, "unranked")),
+                    [202] = Success(MatchJson(202, "Twin Peaks", isRanked: true, "second")),
+                }
+            );
+            var collector = new BattlegroundCollectorService(
+                projectRoot,
+                testRoot,
+                frontendSrc,
+                apiClient
+            );
+            var options = new BattlegroundCollectorOptions(
+                null,
+                "[EN] Evermoon",
+                "Evermoon",
+                null,
+                null
+            );
+
+            await collector.ExecuteAsync(options, CancellationToken.None);
+            var afterNewMatches = await ReadStateAsync(statePath);
+
+            Assert.Equal(
+                new DateTimeOffset(2026, 10, 26, 23, 10, 45, TimeSpan.Zero),
+                afterNewMatches.NewRatedMatchesSince
+            );
+            Assert.Equal([200, 202], afterNewMatches.NewRatedMatchIds!);
+            Assert.Equal(203, afterNewMatches.NextMatchId);
+
+            await collector.ExecuteAsync(options, CancellationToken.None);
+            var afterQuietScan = await ReadStateAsync(statePath);
+
+            Assert.True(afterQuietScan.LastScanUtc >= afterNewMatches.LastScanUtc);
+            Assert.Equal(afterNewMatches.NewRatedMatchesSince, afterQuietScan.NewRatedMatchesSince);
+            Assert.Equal([200, 202], afterQuietScan.NewRatedMatchIds!);
+        }
+        finally
+        {
+            if (Directory.Exists(testRoot))
+            {
+                Directory.Delete(testRoot, recursive: true);
+            }
+        }
+    }
+
+    private static async Task<BattlegroundCollectorState> ReadStateAsync(string statePath) =>
+        JsonSerializer.Deserialize<BattlegroundCollectorState>(
+            await File.ReadAllTextAsync(statePath),
+            new JsonSerializerOptions(JsonSerializerDefaults.Web)
+        )!;
+
     private static string MatchJson(int matchId, string mapName, bool isRanked, string sentinel) =>
         $$"""
             {

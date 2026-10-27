@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   ARENA_TITLES,
   ArenaPlayer,
+  arenaRatingChanges,
   formatTitleShare,
   getArenaLadderFile,
   getArenaSpec,
@@ -180,5 +181,55 @@ describe('formatTitleShare', () => {
   it('writes the share as a percentage', () => {
     expect(ARENA_TITLES['2v2'].map(formatTitleShare)).toEqual(['0.6%', '3%', '10%', '35%']);
     expect(ARENA_TITLES['3v3'].map(formatTitleShare)).toEqual(['0.5%', '3%', '10%', '35%', '45%']);
+  });
+});
+
+describe('arenaRatingChanges', () => {
+  const scanned = (base: ArenaPlayer, guid: number, previousRating?: number, previousGames?: number): ArenaPlayer =>
+    ({ ...base, guid, previousRating, previousGames });
+  const changes = (players: ArenaPlayer[]) =>
+    [...arenaRatingChanges({ players, previousGeneratedAt: '2026-10-26T23:10:46Z' }, 50)];
+
+  it("compares each active player's rank and rating with the previous scan", () => {
+    const players = [
+      scanned(player('Climber', 40, 20, 2100), 1, 1900, 55),
+      scanned(player('Steady', 30, 30, 2000), 2, 2000, 60),
+      scanned(player('Faller', 25, 35, 1950), 3, 2050, 58)
+    ];
+
+    expect(changes(players)).toEqual([
+      ['Evermoon::1', { rank: 2, value: 200, isNew: false }],
+      ['Evermoon::3', { rank: -2, value: -100, isNew: false }]
+    ]);
+  });
+
+  it('marks a player new who was short of the minimum games or not on the ladder', () => {
+    const players = [
+      scanned(player('Fresh', 40, 15, 2200), 1, 2150, 45),
+      scanned(player('Unseen', 30, 25, 2100), 2),
+      scanned(player('Kept', 30, 30, 2000), 3, 2000, 60)
+    ];
+
+    expect(changes(players)).toEqual([
+      ['Evermoon::1', { rank: 0, value: 0, isNew: true }],
+      ['Evermoon::2', { rank: 0, value: 0, isNew: true }],
+      ['Evermoon::3', { rank: -2, value: 0, isNew: false }]
+    ]);
+  });
+
+  it('orders the previous ladder like the table: rating, then more games', () => {
+    const players = [
+      scanned(player('Alpha', 30, 30, 2000), 1, 1800, 60),
+      scanned(player('Bravo', 30, 40, 1990), 2, 1800, 70)
+    ];
+
+    expect(changes(players)).toEqual([
+      ['Evermoon::1', { rank: 1, value: 200, isNew: false }],
+      ['Evermoon::2', { rank: -1, value: 190, isNew: false }]
+    ]);
+  });
+
+  it('shows no changes when the file has no previous scan', () => {
+    expect(arenaRatingChanges({ players: [player('Alpha', 30, 30, 2000)] }, 50).size).toBe(0);
   });
 });

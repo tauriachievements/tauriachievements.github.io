@@ -229,9 +229,9 @@
                   <td class="num center strong score" [class]="'q-' + scoreTier(entry)">
                     <span class="score-cell">
                       <span class="score-value">{{ entry.score }}</span>
-                      @if (change(entry)?.score; as scoreChange) {
+                      @if (change(entry)?.value; as scoreChange) {
                         <span
-                          class="score-change"
+                          class="value-change"
                           [class.up]="scoreChange > 0"
                           [title]="scoreChangeLabel(scoreChange)"><span aria-hidden="true">{{ signed(scoreChange) }}</span><span class="visually-hidden">, {{ scoreChangeLabel(scoreChange) }}</span></span>
                       }

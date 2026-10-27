@@ -2,6 +2,7 @@ import { getClassColor } from '../../game/class-colors';
 import { compareSpecLists } from '../../shared/spec-charts/spec-popularity';
 import { CLASS_FILTER_OPTIONS, CLASS_NAMES, DamageRange, raceFaction, realmSlug, Role } from '../../game/wow';
 import { FilterDropdownOption } from '../../shared/filter-dropdown.types';
+import { ScanChange, scanChanges } from '../../shared/scan-change';
 import { LEGION_SPECS, LegionSpec } from '../../game/wow-specs';
 import { RaidBoss, RaidSpec, RaidCharacter, RaidMember, RaidKillDetails } from './raid-logs.types';
 import { characterKey, logKey } from './raid-logs';
@@ -447,27 +448,8 @@ export function killsBefore(
   return bossKills.map(kills => kills.filter(kill => !newLogs.has(logKey(kill))));
 }
 
-export interface ScoreChange {
-  rank: number;
-  score: number;
-  isNew: boolean;
-}
-
-export function scoreChanges(current: readonly RankedScore[], previous: readonly RankedScore[]): Map<string, ScoreChange> {
-  const before = new Map(previous.map(entry => [cachedCharacterKey(entry.character), entry]));
-  const changes = new Map<string, ScoreChange>();
-
-  for (const entry of current) {
-    const key = cachedCharacterKey(entry.character);
-    const earlier = before.get(key);
-    if (!earlier) {
-      changes.set(key, { rank: 0, score: 0, isNew: true });
-    } else if (earlier.rank !== entry.rank || earlier.score !== entry.score) {
-      changes.set(key, { rank: earlier.rank - entry.rank, score: entry.score - earlier.score, isNew: false });
-    }
-  }
-
-  return changes;
+export function scoreChanges(current: readonly RankedScore[], previous: readonly RankedScore[]): Map<string, ScanChange> {
+  return scanChanges(current, previous, entry => cachedCharacterKey(entry.character), entry => entry.score);
 }
 
 export function performanceQuality(relative: number): number {

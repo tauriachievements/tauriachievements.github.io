@@ -62,6 +62,9 @@ internal static class Program
                 Console.WriteLine(
                     $"{bracket.Bracket.Name}: {bracket.PlayerCount} players, {bracket.GamesPlayed} games played ({change})"
                 );
+                Console.WriteLine(
+                    $"  {bracket.ComparedPlayerCount} of them compared with the previous export"
+                );
                 if (bracket.SkippedCount > 0)
                 {
                     Console.WriteLine(

@@ -89,7 +89,7 @@ async function open(index: RaidLogsIndexFile) {
 function rows(element: HTMLElement) {
   return [...element.querySelectorAll('tbody tr')].map(row => {
     const rankMove = row.querySelector('td.rank .rank-move');
-    const scoreChange = row.querySelector('td.score .score-change');
+    const scoreChange = row.querySelector('td.score .value-change');
     return [
       row.querySelector('.character-name')?.textContent,
       rankMove?.querySelector('[aria-hidden="true"]')?.textContent ?? '',
@@ -114,7 +114,7 @@ describe('RaidLogsLeaderboardPageComponent changes since the last scan', () => {
     ]);
     expect(element.querySelector('.rank-move')?.getAttribute('title')).toBe('Climbed 1 rank since the last scan');
     expect(element.querySelector('.rank-move .visually-hidden')?.textContent).toBe(', Climbed 1 rank since the last scan');
-    expect(element.querySelector('.score-change .visually-hidden')?.textContent).toBe(', +3485 score since the last scan');
+    expect(element.querySelector('.value-change .visually-hidden')?.textContent).toBe(', +3485 score since the last scan');
   });
 
   it('shows plain ranks and scores when there is no earlier scan to compare with', async () => {

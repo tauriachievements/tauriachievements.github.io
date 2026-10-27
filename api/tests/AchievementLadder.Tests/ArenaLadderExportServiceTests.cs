@@ -271,6 +271,91 @@ public sealed class ArenaLadderExportServiceTests
         }
     }
 
+    [Fact]
+    public async Task ExportAsync_KeepsEachPlayersRatingAndGamesFromThePreviousExport()
+    {
+        var outputDirectory = CreateTempDirectory();
+        try
+        {
+            await File.WriteAllTextAsync(
+                Path.Combine(outputDirectory, "arena-ladder-2v2.json"),
+                """
+                {"version":1,"bracket":"2v2","seasonStart":"2026-09-16T00:00:00+02:00","generatedAt":"2026-10-25T00:01:05Z","players":[
+                {"guid":1,"realm":"Evermoon","name":"Bravo","games":58,"rating":2140},
+                {"guid":2,"realm":"WoD","name":"Alpha","games":80,"rating":2100},
+                {"guid":3,"realm":"Evermoon","name":"Charlie","games":20,"rating":1900}]}
+                """
+            );
+            await File.WriteAllTextAsync(
+                Path.Combine(outputDirectory, "arena-ladder-3v3.json"),
+                """
+                {"version":1,"bracket":"3v3","seasonStart":"2026-06-01T00:00:00+02:00","generatedAt":"2026-10-25T00:01:05Z","players":[
+                {"guid":4,"realm":"Evermoon","name":"Delta","games":50,"rating":1800}]}
+                """
+            );
+            var apiClient = new FakeArenaLadderApiClient(
+                new()
+                {
+                    [2] = LadderJson(
+                        Entry(1, Evermoon, "Bravo", classId: 1, games: 60, wins: 40, rating: 2100),
+                        Entry(2, WoD, "Alpha", classId: 2, games: 80, wins: 50, rating: 2100),
+                        Entry(3, Tauri, "Charlie", classId: 3, games: 21, wins: 9, rating: 2300)
+                    ),
+                    [3] = LadderJson(
+                        Entry(4, Evermoon, "Delta", classId: 5, games: 55, wins: 30, rating: 1900)
+                    ),
+                }
+            );
+            var service = new ArenaLadderExportService(
+                outputDirectory,
+                apiClient,
+                new FixedTimeProvider(Now)
+            );
+
+            var result = await service.ExportAsync(
+                new ArenaLadderExporterOptions(false),
+                CancellationToken.None
+            );
+
+            Assert.Equal([2, 0], result.Brackets.Select(bracket => bracket.ComparedPlayerCount));
+
+            using var twos = JsonDocument.Parse(
+                await File.ReadAllTextAsync(Path.Combine(outputDirectory, "arena-ladder-2v2.json"))
+            );
+            Assert.Equal(
+                "2026-10-25T00:01:05Z",
+                twos.RootElement.GetProperty("previousGeneratedAt").GetString()
+            );
+            Assert.Equal(
+                [("Charlie", null, null), ("Alpha", 2100, 80), ("Bravo", 2140, 58)],
+                twos.RootElement.GetProperty("players")
+                    .EnumerateArray()
+                    .Select(player =>
+                        (
+                            player.GetProperty("name").GetString(),
+                            ReadOptionalInt(player, "previousRating"),
+                            ReadOptionalInt(player, "previousGames")
+                        )
+                    )
+            );
+
+            using var threes = JsonDocument.Parse(
+                await File.ReadAllTextAsync(Path.Combine(outputDirectory, "arena-ladder-3v3.json"))
+            );
+            Assert.False(threes.RootElement.TryGetProperty("previousGeneratedAt", out _));
+            Assert.False(
+                threes.RootElement.GetProperty("players")[0].TryGetProperty("previousRating", out _)
+            );
+        }
+        finally
+        {
+            Directory.Delete(outputDirectory, recursive: true);
+        }
+    }
+
+    private static int? ReadOptionalInt(JsonElement element, string propertyName) =>
+        element.TryGetProperty(propertyName, out var property) ? property.GetInt32() : null;
+
     private static string PreviousFile(string seasonStart, params int[] games)
     {
         var players = games.Select(
