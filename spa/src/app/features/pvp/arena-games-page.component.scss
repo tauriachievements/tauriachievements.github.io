@@ -49,6 +49,19 @@
   .eyebrow { margin: 0; }
 }
 
+.header-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.games-filter {
+  flex: none;
+
+  ::ng-deep .dropdown-menu { min-width: 100%; }
+}
+
 .bracket-switch {
   display: inline-flex;
   gap: 4px;

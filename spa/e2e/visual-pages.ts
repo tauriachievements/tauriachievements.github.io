@@ -82,6 +82,8 @@ export const VISUAL_PAGES: readonly VisualPage[] = [
   { name: 'state-mythic-plus-records-dungeon', path: '/mythic-plus/records?dungeon=brh' },
   { name: 'state-battleground-starts', path: '/battleground', clicks: ['.bg-count-row >> nth=0'] },
   { name: 'state-rated-battleground-history', path: '/rated-battleground', clicks: ['.player-history-trigger >> nth=0'] },
+  { name: 'state-arena-min-games', path: '/arena?bracket=3v3&games=30' },
+  { name: 'state-arena-min-games-menu', path: '/arena', clicks: ['#arenaMinGamesTrigger'] },
   { name: 'state-rare-achievements-filtered', path: '/rare-achievements?realm=Tauri&class=2' },
   { name: 'state-rare-items-class-season', path: '/k7m2q9v4x8p3n6z?class=6&season=malevolent' },
   { name: 'state-rare-items-other', path: '/k7m2q9v4x8p3n6z?item=22691&realm=tauri' },

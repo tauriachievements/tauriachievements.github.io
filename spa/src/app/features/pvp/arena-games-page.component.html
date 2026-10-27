@@ -3,21 +3,34 @@
     <div class="header-main">
       <div class="header-top">
         <h1 class="eyebrow">Rated {{ bracket() }} arena</h1>
-        <div class="bracket-switch" role="group" aria-label="Bracket" appGlide>
-          @for (option of brackets; track option) {
-            <button
-              type="button"
-              [class.active]="option === bracket()"
-              [attr.aria-pressed]="option === bracket()"
-              (click)="selectBracket(option)">
-              {{ option }}
-            </button>
-          }
+        <div class="header-controls">
+          <div class="bracket-switch" role="group" aria-label="Bracket" appGlide>
+            @for (option of brackets; track option) {
+              <button
+                type="button"
+                [class.active]="option === bracket()"
+                [attr.aria-pressed]="option === bracket()"
+                (click)="selectBracket(option)">
+                {{ option }}
+              </button>
+            }
+          </div>
+          <div class="games-filter">
+            <app-filter-dropdown
+              dropdownId="arenaMinGames"
+              triggerId="arenaMinGamesTrigger"
+              ariaLabel="Minimum rated games for an active player"
+              [options]="minGamesOptions"
+              [selectedValue]="minGames()"
+              [widthLabels]="minGamesWidthLabels"
+              [compact]="true"
+              (selectionChange)="setMinGames($event)" />
+          </div>
         </div>
       </div>
       @if (dataset(); as data) {
         <p class="intro">
-          The season's active players: {{ minGames }}+ rated {{ bracket() }} games since
+          The season's active players: {{ minGames() }}+ rated {{ bracket() }} games since
           {{ data.seasonStart | date: 'd MMM y' : '+0200' }} on Tauri, Evermoon and WoD, read from the
           server's arena ladder. Rating is each player's current personal rating.
         </p>
@@ -33,7 +46,7 @@
       @if (dataset(); as data) {
         <dl class="summary">
           <div>
-            <dt>Active players <small>{{ minGames }}+ games</small></dt>
+            <dt>Active players <small>{{ minGames() }}+ games</small></dt>
             <dd>{{ players().length | number }}</dd>
           </div>
           <div>
