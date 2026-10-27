@@ -3,7 +3,6 @@
 :host { display: block; width: 100%; }
 
 @include visually-hidden;
-@include back-link;
 @include summary-tiles;
 @include sections;
 @include raid-table;
@@ -11,14 +10,14 @@
 @include character-cell;
 @include difficulty-colors;
 
-.raid-page { @include raid-page; }
+.raid-page { @include raid-page; --skeleton-hero-height: 86px; }
 
 .character-header {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 14px 18px;
-  padding: 18px;
+  gap: 10px 14px;
+  padding: 10px 12px;
   border: 1px solid $raid-line;
   border-radius: 10px;
   background:
@@ -26,38 +25,41 @@
     radial-gradient(circle at 95% 120%, rgba(120, 40, 160, .16), transparent 50%),
     #101210;
 
-  .summary { display: flex; flex: 1 1 100%; flex-wrap: wrap; }
-  .summary > div { flex: 1 1 120px; border: 1px solid rgba(255, 255, 255, .06); background: rgba(255, 255, 255, .04); }
+  .summary { display: flex; flex: 1 1 560px; flex-wrap: wrap; gap: 6px; }
+  .summary > div { flex: 1 1 auto; padding: 5px 10px; border: 1px solid rgba(255, 255, 255, .06); background: rgba(255, 255, 255, .04); }
+  .summary dt { font-size: .7rem; }
+  .summary dd { margin: 0; font-size: 1.05rem; line-height: 1.25; }
+  .summary-note { font-size: .72rem; }
 }
 
 .crest {
   position: relative;
   isolation: isolate;
   display: grid;
-  width: 68px;
-  height: 68px;
+  width: 52px;
+  height: 52px;
   flex: none;
   place-items: center;
   border: 1px solid rgba(255, 255, 255, .1);
   border-radius: 50%;
   background: #0b0b0b;
 
-  @include crest-glow(14px);
+  @include crest-glow(10px);
 
-  img { width: 56px; height: 56px; }
+  img { width: 42px; height: 42px; }
 }
 
-.character-heading { min-width: 0; flex: 1 1 260px; }
-.character-heading h1 { margin: 2px 0 2px; font-size: 1.6rem; line-height: 1.2; overflow-wrap: anywhere; }
-.eyebrow { margin: 0; color: #bdbdbd; font-size: .78rem; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; }
+.character-heading { min-width: 0; flex: 0 1 auto; }
+.character-heading h1 { margin: 0; font-size: 1.35rem; line-height: 1.2; overflow-wrap: anywhere; }
+.eyebrow { margin: 0; color: #bdbdbd; font-size: .72rem; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; }
 
 .character-meta {
   display: flex;
   flex-wrap: wrap;
-  gap: 6px 12px;
+  gap: 4px 10px;
   margin: 0;
   color: #bdbdbd;
-  font-size: .88rem;
+  font-size: .82rem;
 
   a { color: $gold; font-weight: 600; text-decoration: none; }
   a:hover { text-decoration: underline; }
@@ -72,7 +74,7 @@
 .section-controls { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
 .comparison-select { flex: none; }
 .class-switch img { width: 16px; height: 16px; border-radius: 3px; }
-.class-switch { flex-wrap: wrap; margin-top: 10px; }
+.class-switch { flex-wrap: wrap; margin-top: 6px; }
 .class-switch .earlier { color: $raid-muted; font-weight: 500; }
 .class-name { font-weight: 600; }
 
@@ -146,13 +148,17 @@ tbody tr.boss-detail:hover td { background: #121212; }
 .phone-progress app-raid-kill-chart { flex: 1; }
 
 @media (max-width: 640px) {
-  .raid-page { padding-top: 32px; }
+  .raid-page { padding-top: 32px; --skeleton-hero-height: 235px; }
   .boss-cell { gap: 8px; }
-  .character-header { padding: 14px; }
-  .character-header .summary { gap: 8px; }
-  .character-header .summary > div { padding: 10px 12px; }
-  .crest { width: 56px; height: 56px; img { width: 46px; height: 46px; } }
-  .character-heading h1 { font-size: 1.3rem; }
+  .character-header { gap: 8px 12px; padding: 10px; }
+  .character-header .summary { flex-direction: column; gap: 0; border: 1px solid rgba(255, 255, 255, .06); border-radius: 4px; background: rgba(255, 255, 255, .04); }
+  .character-header .summary > div { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; padding: 4px 8px; border: 0; border-radius: 0; background: none; }
+  .character-header .summary > div + div { border-top: 1px solid rgba(255, 255, 255, .06); }
+  .character-header .summary dt { flex: none; }
+  .character-header .summary dd { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: flex-end; gap: 0 6px; font-size: .95rem; text-align: right; }
+  .character-header .summary-note { display: inline; }
+  .crest { width: 44px; height: 44px; img { width: 36px; height: 36px; } }
+  .character-heading h1 { font-size: 1.2rem; }
   tr.boss-detail > td { padding: 2px 8px 14px; }
   .phone-detail-row .record-check { gap: 6px; }
 }

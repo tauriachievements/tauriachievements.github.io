@@ -1,8 +1,4 @@
 <main class="raid-page">
-  <a class="back-link" routerLink="/raid-logs" [queryParams]="{ difficulty: loaded()?.difficulty?.slug }">
-    <span aria-hidden="true">‹</span> Back to Raid Logs
-  </a>
-
   <ng-template #classSwitch>
     @if (classOptions().length) {
       <div class="view-switch class-switch" role="group" aria-label="Characters with this name" appGlide>
@@ -20,7 +16,7 @@
     }
   </ng-template>
 
-  <app-load-state [loading]="isLoading()" [error]="loadError()" [skeleton]="['hero', 'tiles:5', 'switch:3', 'rows:7']" loadingText="Looking through the logs..." (retry)="loadData()">
+  <app-load-state [loading]="isLoading()" [error]="loadError()" [skeleton]="['hero', 'switch:3', 'rows:7']" loadingText="Looking through the logs..." (retry)="loadData()">
     @if (index(); as loadedIndex) {
       <app-raid-difficulty-switch
         [difficulties]="loadedIndex.difficulties"
