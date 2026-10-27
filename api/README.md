@@ -138,6 +138,9 @@ from the guild lists; BattlegroundCollector adds them back if they reappear.
 
 ## Tests and CI
 
+New logic and every bug fix start with a failing test, written before the code
+([docs/testing.md](../docs/testing.md)).
+
 The solution's focused tests cover:
 
 - Rare-achievement parsing across valid, missing, and malformed payloads

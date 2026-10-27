@@ -31,7 +31,18 @@ Before designing the parsing, read [tauri-api.md](../tauri-api.md) for the endpo
   - a non-zero exit code on failure, which stops the daily update at this step.
 - Put the work in a service class that takes an `ITauriApiClient`, so tests can hand it a fake.
 
-## 2. Writing the file
+## 2. Tests first
+
+Each rule in the next step starts as a test that fails ([testing.md](../testing.md)).
+
+- Tests go in `api/tests/AchievementLadder.Tests/<Name>ServiceTests.cs`, with a project
+  reference added to that test project. Feed recorded or hand-written responses through a fake
+  `ITauriApiClient`. No test calls the live API.
+- Build the parsing, the all-or-nothing rule and the shrink guard one at a time, each only
+  after its test has failed. Run the class on its own while you work:
+  `dotnet test AchievementLadder.sln --filter "FullyQualifiedName~<Name>ServiceTests"`.
+
+## 3. Writing the file
 
 - Read responses defensively (`JsonElement`, as the existing parsers do), and map them into
   stable records before writing.
@@ -49,14 +60,14 @@ Before designing the parsing, read [tauri-api.md](../tauri-api.md) for the endpo
   ([data-pipeline.md](../data-pipeline.md#caching-the-data-manifest)).
 - If you write LF, add the folder to the root `.gitattributes` (`text eol=lf`).
 
-## 3. Wiring it into the site
+## 4. Wiring it into the site
 
 - Add the file or folder to `assets` in `spa/angular.json`. The data manifest then hashes it
   automatically.
 - Load it in the spa through `DataFileService`, with the file's types and a decoder in the
-  feature's pure `<feature>.ts`.
+  feature's pure `<feature>.ts`. Its decoder's spec comes first, as for any pure logic.
 
-## 4. The daily update
+## 5. The daily update
 
 - `api/Run-DailyUpdate.ps1`: add `@{ Name = '<Step>'; Project = '<Name>' }` to `$steps` at the
   agreed place, and the output path to `$publishPaths`. The `sync data` commit only includes
@@ -65,12 +76,8 @@ Before designing the parsing, read [tauri-api.md](../tauri-api.md) for the endpo
   table, and update the daily update's step list.
 - Update the step list in [data-pipeline.md](../data-pipeline.md#the-daily-update).
 
-## 5. Tests and formatting
+## 6. Formatting and the full run
 
-- Tests go in `api/tests/AchievementLadder.Tests/<Name>ServiceTests.cs`, with a project
-  reference added to that test project. Feed recorded or hand-written responses through a fake
-  `ITauriApiClient`. Cover parsing, the all-or-nothing rule and the shrink guard. No test
-  calls the live API.
 - `dotnet csharpier format .`, then `dotnet build AchievementLadder.sln` and
   `dotnet test AchievementLadder.sln`.
 - Run the exporter once against the live API, and check the output file and the page that

@@ -70,7 +70,8 @@ be served from the site itself: a picture from another origin (the `legion-stati
 the canvas, and the export then fails.
 
 Keep components thin. A ranking, filter, count or empty-state message goes into the pure
-`<feature>.ts`, where a spec can pin it down without a TestBed. When a page's loading has more
+`<feature>.ts`, where a spec, written first ([testing.md](testing.md)), can pin it down without
+a TestBed. When a page's loading has more
 to it than one request (several files, retries, recovering from a newer export), it goes into
 the page's store. The component keeps the URL, the filters and the event handlers.
 

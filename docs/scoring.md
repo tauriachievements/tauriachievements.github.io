@@ -2,8 +2,8 @@
 
 Every number the site ranks by follows a rule the owner chose. Some deliberately reproduce
 another site's numbers, and players compare them. **Changing any rule here is an architectural
-decision: ask first.** When a rule does change, update its code, its tests and the page that
-explains it together.
+decision: ask first.** When a rule does change, change its tests first and see them fail
+([testing.md](testing.md)), then its code and the page that explains it, in the same PR.
 
 ## Achievement ladder
 
