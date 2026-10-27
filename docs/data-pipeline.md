@@ -32,7 +32,10 @@ The scan inputs live under `api/AchievementLadder/Data/`. `BattlegroundCollector
 members of every match it reads, arenas included) and the two `*GuildAndCharScan` jobs append
 new guilds and guildless characters to the realm lists;
 `GuildCharacterExporter` removes guilds that no longer exist; `RealmFirstAchievements` rewrites
-`valid-realm-first-characters.txt`. `sync data` commits these lists too. Two files there are kept
+`valid-realm-first-characters.txt`. `sync data` commits these lists too. The scans only append,
+and skip a name already listed, ignoring case. `guildless-characters.txt` holds one
+`Name-[EN] Evermoon` line per character, always with the API realm name, whatever spelling the
+source used (`GuildListFiles`). Two files there are kept
 by hand: `invalid-raid-logs.txt`, the raid kills that don't count ([below](#invalid-raid-logs)),
 and `rare-items.txt`, the rare items that aren't elite PvP pieces, as `Name - ID` lines.
 AchievementLadder looks for those items and every piece in `spa/src/elite-pvp-items.json` in each
@@ -64,6 +67,11 @@ If every step succeeded and `-NoPush` wasn't given, the `.cmd` then calls
 - The commit message must stay exactly `sync data`: `discord-on-push.yml` matches on it.
 - Retry queues (`MissingGuildsToScan.txt`, `MissingPlayersToScan.txt`) and run logs live in the
   git-ignored `api/.work/`.
+- `MythicPlusNames` and `RaidLogNames` don't fail over a leaderboard or character sheet that
+  didn't load. They only add names, so they warn, and the next run catches up.
+- `MissingPlayers` works in rounds and stops once a round resolves nobody: characters gone from
+  the realm fail every time. A character already in Players.csv only gets its rare achievements
+  refreshed, which needs `character-achievements` alone.
 - `Run-MythicPlus.cmd` and `Run-RaidLogs.cmd` refresh one dataset on its own. Their arguments
   go to the exporter (`Run-MythicPlus.cmd --allow-shrink` at a season reset). Before the
   export, each checks that the push at the end will be accepted: you're on `main` and level
@@ -85,6 +93,8 @@ On top of that:
 - MythicPlusExporter and RaidLogExporter refuse to write when the run or kill count shrinks by
   more than 2%. Pass `--allow-shrink` when the drop is real, such as a new season.
 - MythicPlusExporter writes nothing unless it read every leaderboard.
+- MythicPlusExporter and RaidLogExporter write the dungeon or boss files first and `index.json`
+  last: the index is what makes new dungeons and kills visible.
 - ArenaLadderExporter writes nothing unless it read both brackets' ladders. It refuses to
   write when a bracket's games played (the season games of everyone listed, summed) fall by
   more than 2% against the file of the same season (`seasonStart`). A deleted character takes
@@ -94,7 +104,10 @@ On top of that:
   more than 5% of all guilds per run.
 - RaidLogExporter is incremental: it re-reads its own boss files and fetches only new logs.
   `--full` refetches everything. A boss file with an older format version makes the next run
-  re-read every log.
+  re-read every log. A boss file it can't read, or one of a newer format, makes it start over
+  as if there were no earlier export.
+- RaidLogExporter looks up each loot item's name once. An item TauriShoot can't give is left
+  out and looked up again next run; the page shows its id meanwhile.
 - RaidLogExporter looks up each talent's tooltip once and keeps it in `talent-tooltips.json`
   ([below](#talent-tooltips)). A run looks up only the spells the file lacks; `--full`, or a
   file of another `version`, looks them all up again (about 20 s). A tooltip TauriShoot can't
@@ -102,6 +115,30 @@ On top of that:
   `talents.json` and `talent-tooltips.json` both stay as they are.
 
 Keep these guards in any new exporter ([guides/howto-add-exporter.md](guides/howto-add-exporter.md)).
+
+## Mythic+ files
+
+MythicPlusExporter writes `mythic-plus-data/` for the `/mythic-plus` pages, which decode it in
+`mythic-plus.ts`. Every entry goes on its own line.
+
+- `index.json`: `version`, when the leaderboards were read (`generatedAt`, UTC ISO 8601),
+  `previousGeneratedAt` once there is an earlier export, the `tables` fingerprint (below), the
+  `season`, `dungeons` and `affixes`, and the tables the dungeon files point into: `specs` as
+  objects and `players` as `[name, realm, guild, class, race, gender]`, sorted by realm, then
+  name. `standings` is aligned with `players`: `[score, rank, scoreChange, rankChange]`, a rank
+  change positive when the character climbed. A character new since the last export, and every
+  character on a first export, has no two changes. The exporter works the changes out once, so
+  no browser needs the previous run files.
+- `<dungeon>.json`, named by the dungeon's slug: `version`, `dungeon`, `tables` and the
+  dungeon's `runs`, best first (the higher score, then the faster clear, then the earlier
+  finish), each `[keyLevel, clearTimeMs, completedAtUnix, score, [affixId, ...], [[player, spec], ...]]`
+  with player and spec as positions in the index's tables. A dungeon nobody has run yet has no
+  file and no tile.
+- `tables` is a short hash of the spec table and the players' realms and names, in order. A new
+  player shifts the sorted table and changes it; a known player's new guild or race doesn't, so
+  an unchanged dungeon file stays byte for byte the same and still matches a newer index. The
+  page uses it to never read a dungeon file against another export's index
+  ([below](#caching-the-data-manifest)).
 
 ## Raid log files
 
@@ -114,7 +151,9 @@ appearance, so a new kill is a few added lines in git.
   `[realm, logId, boss, difficultyId, killedAtUnix, fightMs, guild, faction, wipes, deaths, members]`
   (boss and guild are positions in `bosses` and `guilds`, guild -1 for a pickup group, members a
   count). Once there is an earlier export to compare with, `previousGeneratedAt` and the kills
-  added since it as `newLogs` (`[realm, logId]`). The invalid logs
+  added since it as `newLogs` (`[realm, logId]`), measured against its boss files, so `--full`
+  doesn't change them. A run that finds no new kill keeps the last export's `newLogs` and
+  `previousGeneratedAt`, so running twice in a row doesn't wipe the day's changes. The invalid logs
   ([below](#invalid-raid-logs)) as `invalidLogs` (`[realm, logId, reason]`). `guilds` as `[name, realm, faction, guildId]`
   (an empty name for a guild that couldn't be named), each name with a former character (below)
   as `formerCharacters` (`[name, realm, classNow, [earlierClass, ...]]`, latest first), each boss
@@ -375,6 +414,13 @@ tables, so they don't. The page code has its own guard for a code deploy
 - **Never hand-edit or hand-merge a generated data file.** After a format change, a merge
   conflicts with the daily data commits on `main`. Take `main`'s side and rerun the job.
 - Exporters write one entry per line (`JsonLineWriter`), so the daily git diffs stay small.
+- **Keep the slugs stable.** A Mythic+ dungeon's slug (`MythicPlusCatalog`) is its file name
+  and the page's `?dungeon=` value; a raid boss's slug (`RaidCatalog`) is in its file name and
+  page URLs.
+- MythicPlusExporter and RaidLogExporter write names unescaped (`UnsafeRelaxedJsonEscaping`):
+  many character and guild names are Cyrillic or accented.
+- Guildkukker's `guild-analysis/` file names drop accents ("Témérité" becomes "Temerite"), so
+  their URLs never need encoding.
 - MythicPlusExporter, RaidLogExporter and ArenaLadderExporter write LF. The root
   `.gitattributes` keeps their files LF on checkout, so `core.autocrlf` doesn't warn on every
   commit. A new exporter that writes LF needs a line there too.

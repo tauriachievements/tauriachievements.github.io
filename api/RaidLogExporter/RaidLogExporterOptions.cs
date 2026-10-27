@@ -8,11 +8,6 @@ public sealed record RaidLogExporterOptions(
     bool AllowShrink
 )
 {
-    /// <summary>
-    /// Legion raids of Evermoon and Tauri characters are all logged on Tauri's API; Evermoon's
-    /// lists none of them (checked 2026-10-12) but costs little to ask, in case that changes.
-    /// WoD logs its own.
-    /// </summary>
     public static readonly IReadOnlyList<string> DefaultRealms =
     [
         "[HU] Tauri WoW Server",

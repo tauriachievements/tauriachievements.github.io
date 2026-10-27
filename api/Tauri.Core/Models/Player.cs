@@ -13,10 +13,6 @@ namespace Tauri.Core.Models
         public string Faction { get; set; } = string.Empty;
         public int AppearanceCount { get; set; }
 
-        /// <summary>
-        /// UTC date the character earned the "Level 10" achievement, which marks when it was
-        /// started. The frontend derives the character's age from it at display time.
-        /// </summary>
         public DateOnly? Level10Date { get; set; }
         public int Level { get; set; }
         public decimal? ItemLevel { get; set; }

@@ -73,8 +73,6 @@ internal static class Program
             Console.WriteLine($"New guilds: {result.NewGuildCount}");
             Console.WriteLine($"New guildless characters: {result.NewGuildlessCharacterCount}");
 
-            // Names are only ever added, so a partial read is safe to keep. Do not stop the
-            // daily update over character sheets that failed to load; the next run catches up.
             if (result.Failures.Count > 0)
             {
                 Console.WriteLine();

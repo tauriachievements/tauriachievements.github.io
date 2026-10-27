@@ -2,10 +2,6 @@ using Tauri.Core.Infrastructure;
 
 namespace RaidLogExporter;
 
-/// <summary>
-/// Each character's current guild from the ladder's Players.csv. Logs only name the guild of
-/// members with an armory link, so without this every Evermoon raider would look guildless.
-/// </summary>
 public sealed class PlayerGuildDirectory
 {
     public static readonly PlayerGuildDirectory Empty = new([]);
@@ -22,7 +18,6 @@ public sealed class PlayerGuildDirectory
     public string? Find(string realm, string name) =>
         _guilds.TryGetValue((realm, name), out var guild) ? guild : null;
 
-    /// <summary>Reads Players.csv; a missing or unreadable file gives an empty directory.</summary>
     public static PlayerGuildDirectory Load(string playersCsvPath)
     {
         if (!File.Exists(playersCsvPath))

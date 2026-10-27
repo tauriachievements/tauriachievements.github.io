@@ -13,12 +13,10 @@ public static class RaidLogFileWriter
     public const string TalentTooltipsFileName = "talent-tooltips.json";
     public const int TalentTooltipsFormatVersion = 1;
 
-    /// <summary>The export's folder under spa/src.</summary>
     public const string DataDirectoryName = "raid-log-data";
 
     private static readonly JsonWriterOptions WriterOptions = new()
     {
-        // Character and guild names are often Cyrillic or accented; keep them readable.
         Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
     };
 
@@ -52,7 +50,6 @@ public static class RaidLogFileWriter
             );
         }
 
-        // Boss files first and the index last: the index is what makes new kills visible.
         foreach (var encounter in dataset.Encounters.Where(encounter => encounter.Logs.Count > 0))
         {
             await AtomicFile.WriteAsync(
@@ -561,7 +558,6 @@ public static class RaidLogFileWriter
         writer.WriteEndArray();
     }
 
-    /// <summary>UTC ISO 8601, to the second.</summary>
     private static string FormatTimestamp(DateTimeOffset at) =>
         at.UtcDateTime.ToString("yyyy-MM-dd'T'HH:mm:ss'Z'", CultureInfo.InvariantCulture);
 

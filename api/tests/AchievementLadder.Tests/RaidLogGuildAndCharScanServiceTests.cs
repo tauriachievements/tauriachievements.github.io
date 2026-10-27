@@ -23,13 +23,11 @@ public sealed class RaidLogGuildAndCharScanServiceTests
             var guildsDirectory = Path.Combine(root, "Guilds");
             var guildlessPath = Path.Combine(root, "guildless-characters.txt");
             Directory.CreateDirectory(guildsDirectory);
-            // Known names, without a trailing newline, in a different case than the API.
             File.WriteAllText(Path.Combine(guildsDirectory, "evermoon-guilds.txt"), "outlaws");
             File.WriteAllText(guildlessPath, "Known-[EN] Evermoon");
 
             await WriteExportAsync(
                 raidLogDirectory,
-                // The log still names Alpha's old guild; the character sheet decides.
                 Log(
                     "Tauri",
                     1,
@@ -63,7 +61,6 @@ public sealed class RaidLogGuildAndCharScanServiceTests
                         "API returned 400 Bad Request (error 6: character not found)",
                         TauriApiResponseResult.CharacterNotFoundErrorCode
                     ),
-                    // A sheet without guildName says nothing about the guild.
                     [(Evermoon, "Odd")] = TauriApiResponseResult.Success(Parse("{}")),
                     [(Tauri, "Delta")] = Sheet("Tauri Guild"),
                     [(Evermoon, "Flaky")] = TauriApiResponseResult.Failure("API down."),
@@ -94,7 +91,6 @@ public sealed class RaidLogGuildAndCharScanServiceTests
                 failure => Assert.StartsWith("Flaky-Evermoon: API down.", failure),
                 failure => Assert.StartsWith("Odd-Evermoon:", failure)
             );
-            // Each raider once, on their own realm, whatever case a log used.
             Assert.Equal(9, apiClient.Requests.Count);
             Assert.Equal(9, apiClient.Requests.Distinct().Count());
             Assert.All(
@@ -114,7 +110,6 @@ public sealed class RaidLogGuildAndCharScanServiceTests
                 ["Dark Ones"],
                 File.ReadAllLines(Path.Combine(guildsDirectory, "wod-guilds.txt"))
             );
-            // Gone, Odd and Flaky were not read as guildless: only an empty guildName counts.
             Assert.Equal(
                 ["Known-[EN] Evermoon", "Beta-[EN] Evermoon", "Zeta-[HU] Warriors of Darkness"],
                 File.ReadAllLines(guildlessPath)

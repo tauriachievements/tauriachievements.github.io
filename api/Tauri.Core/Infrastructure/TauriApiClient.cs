@@ -167,7 +167,6 @@ public sealed class TauriApiClient : ITauriApiClient, IDisposable
         return TauriApiResponseResult.Failure(lastFailure ?? "Unknown failure.", lastApiErrorCode);
     }
 
-    // Error responses carry a JSON body like {"success":false,"errorcode":13,"errorstring":"guild not found"}.
     private static async Task<(int Code, string Message)?> TryReadApiErrorAsync(
         HttpResponseMessage response,
         CancellationToken cancellationToken
@@ -253,13 +252,8 @@ public readonly record struct TauriApiResponseResult(
     int? ApiErrorCode = null
 )
 {
-    /// <summary>The API's errorcode for a guild name that does not exist on the realm.</summary>
     public const int GuildNotFoundErrorCode = 13;
 
-    /// <summary>
-    /// The API's errorcode for a character name that does not exist on the realm (renamed,
-    /// deleted or moved away). Comes with HTTP 400, like a missing guild.
-    /// </summary>
     public const int CharacterNotFoundErrorCode = 6;
 
     public static TauriApiResponseResult Success(JsonElement responseElement) =>

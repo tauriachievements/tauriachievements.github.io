@@ -47,7 +47,6 @@ public static class RareScanCatalog
     >
     {
         { 11224, "Realm First! Keystone Master" },
-        // Rank 1 Gladiators
         { 8666, "Prideful Gladiator" },
         { 8643, "Grievous Gladiator" },
         { 8791, "Tyrannical Gladiator" },
@@ -62,7 +61,6 @@ public static class RareScanCatalog
         { 420, "Brutal Gladiator" },
         { 419, "Vengeful Gladiator" },
         { 418, "Merciless Gladiator" },
-        // Gladiator Mounts
         { 8707, "Prideful Gladiator's Cloud Serpent" },
         { 8705, "Grievous Gladiator's Cloud Serpent" },
         { 8678, "Tyrannical Gladiator's Cloud Serpent" },
@@ -78,7 +76,6 @@ public static class RareScanCatalog
         { 888, "Vengeful Nether Drake" },
         { 887, "Merciless Nether Drake" },
         { 886, "Swift Nether Drake" },
-        // Rated Battleground Horde
         { 8659, "Hero of the Horde: Prideful" },
         { 8657, "Hero of the Horde: Grievous" },
         { 8653, "Hero of the Horde: Tyrannical" },
@@ -86,7 +83,6 @@ public static class RareScanCatalog
         { 6940, "Hero of the Horde: Cataclysmic" },
         { 6317, "Hero of the Horde: Ruthless" },
         { 5358, "Hero of the Horde: Vicious" },
-        // Rated Battleground Alliance
         { 8658, "Hero of the Alliance: Prideful" },
         { 8654, "Hero of the Alliance: Grievous" },
         { 8652, "Hero of the Alliance: Tyrannical" },
@@ -210,10 +206,6 @@ public static class RareScanCatalog
 
     private static readonly DateOnly MayThird2015 = new(2015, 5, 3);
 
-    /// <summary>
-    /// Additional conditions for rare achievements that are only meaningful as a matched set.
-    /// Both Cataclysm heroic achievements must exist and have been obtained on 3 May 2015.
-    /// </summary>
     public static readonly IReadOnlyDictionary<
         int,
         IReadOnlyDictionary<int, DateOnly>
@@ -223,10 +215,6 @@ public static class RareScanCatalog
         [5108] = new Dictionary<int, DateOnly> { [5116] = MayThird2015, [5108] = MayThird2015 },
     };
 
-    /// <summary>
-    /// Achievement ids whose obtained dates are consumed downstream: the rare achievements
-    /// plus the "Level 10" achievement used to compute character age.
-    /// </summary>
     public static readonly FrozenSet<int> DateTrackedAchievementIds = RareAchievementNames
         .Keys.Append(CharacterResponseMapper.Level10AchievementId)
         .ToFrozenSet();

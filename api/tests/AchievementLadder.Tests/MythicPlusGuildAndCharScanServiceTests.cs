@@ -17,7 +17,6 @@ public sealed class MythicPlusGuildAndCharScanServiceTests
             var guildsDirectory = Path.Combine(root, "Guilds");
             var guildlessPath = Path.Combine(root, "guildless-characters.txt");
             Directory.CreateDirectory(guildsDirectory);
-            // Known names, without a trailing newline, in a different case than the API.
             File.WriteAllText(Path.Combine(guildsDirectory, "evermoon-guilds.txt"), "outlaws");
             File.WriteAllText(guildlessPath, "Known-[EN] Evermoon");
 
@@ -35,7 +34,6 @@ public sealed class MythicPlusGuildAndCharScanServiceTests
                             Member("Beta", Evermoon, 2, "Holy", 1, ""),
                             Member("Known", Evermoon, 3, "Marksmanship", 2, "")
                         ),
-                        // Gamma was guildless back then but has a guild in a newer run.
                         Run(
                             10,
                             2_000_000,
@@ -138,7 +136,6 @@ public sealed class MythicPlusGuildAndCharScanServiceTests
 
             var result = await service.ScanAsync([Evermoon], CancellationToken.None);
 
-            // Seat of the Triumvirate is unreleased and never requested, so only EOA fails.
             Assert.Contains("Eye of Azshara", Assert.Single(result.Failures));
             Assert.Equal(
                 ["Outlaws"],

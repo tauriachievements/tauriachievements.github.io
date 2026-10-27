@@ -18,8 +18,6 @@ public sealed class GuildCharacterExportService(
     private const int ProgressInterval = 25;
     private const string RetryFileName = "MissingGuildsToScan.txt";
 
-    // A large batch of "guild not found" answers more likely means the API misbehaved than
-    // that hundreds of guilds disbanded overnight, so pruning is skipped above this share.
     private const double MaxPrunedGuildShare = 0.05;
 
     private static readonly RealmSource[] RealmSources =
@@ -36,10 +34,6 @@ public sealed class GuildCharacterExportService(
     private readonly int _retryRounds = Math.Max(0, retryRounds);
     private readonly TimeSpan _retryRoundDelay = retryRoundDelay ?? TimeSpan.FromSeconds(30);
 
-    /// <param name="retryOnly">
-    /// Scan only the guilds left in the retry file by an earlier run and merge them into the
-    /// existing GuildCharacters.txt, instead of rebuilding it from every known guild.
-    /// </param>
     public async Task<GuildCharacterExportResult> ExportAsync(
         bool retryOnly,
         CancellationToken cancellationToken
@@ -169,7 +163,6 @@ public sealed class GuildCharacterExportService(
         );
     }
 
-    /// <returns>The guilds that failed for a reason worth retrying.</returns>
     private async Task<List<GuildSource>> ScanGuildsAsync(
         IReadOnlyList<GuildSource> guilds,
         ConcurrentDictionary<string, byte> characterLines,
@@ -221,10 +214,6 @@ public sealed class GuildCharacterExportService(
         return retryGuilds.ToList();
     }
 
-    /// <summary>
-    /// Removes guilds the API reports as nonexistent from the realm guild lists. A guild that
-    /// is later re-founded under the same name is added back by BattlegroundCollector.
-    /// </summary>
     private static async Task<int> PruneDeadGuildsAsync(
         string guildDataDirectory,
         IReadOnlyList<GuildSource> deadGuilds,

@@ -4,10 +4,6 @@ namespace MythicPlusExporter;
 
 public sealed record MythicPlusExporterOptions(IReadOnlyList<string> Realms, bool AllowShrink)
 {
-    /// <summary>
-    /// One realm per leaderboard: Evermoon's also holds every Tauri run, WoD has its own.
-    /// Asking Tauri as well would only return Evermoon's leaderboard a second time.
-    /// </summary>
     public static readonly IReadOnlyList<string> DefaultRealms =
     [
         "[EN] Evermoon",

@@ -10,7 +10,6 @@ public sealed record RaidPlayer(
     bool Former = false
 );
 
-/// <param name="Value">Damage or healing per second, rounded.</param>
 public sealed record RaidTopPerformer(
     string Name,
     string Realm,
@@ -20,9 +19,6 @@ public sealed record RaidTopPerformer(
     RaidLogKey Log
 );
 
-/// <summary>One boss on one difficulty: one data file, with its own guild, player and trinket tables.</summary>
-/// <param name="Logs">Oldest first, so a new kill is a line added at the end of the file.</param>
-/// <param name="Trinkets">Each item at each item level worn, in order of first appearance.</param>
 public sealed record RaidEncounter(
     RaidBoss Boss,
     RaidDifficulty Difficulty,
@@ -159,7 +155,6 @@ public static class RaidLogDatasetBuilder
             )
         );
 
-    /// <summary>Guilds in order of first appearance.</summary>
     private static List<RaidGuild> GuildTable(IReadOnlyList<RaidLog> logs)
     {
         var guilds = new List<RaidGuild>();
@@ -227,10 +222,6 @@ public static class RaidLogDatasetBuilder
         ];
     }
 
-    /// <summary>
-    /// Trinkets in order of first appearance, so a new kill appends rather than renumbers. Name,
-    /// quality and icon come from the first log that has the item at that level.
-    /// </summary>
     private static List<RaidTrinket> TrinketTable(IReadOnlyList<RaidLog> logs)
     {
         var trinkets = new List<RaidTrinket>();
