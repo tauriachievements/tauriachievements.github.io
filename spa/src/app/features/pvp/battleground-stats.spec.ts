@@ -4,8 +4,7 @@ import {
   computeBattlegroundStats,
   decodeBattlegroundSnapshot,
   formatDuration,
-  getBattlegroundDateBounds,
-  getCompletedBattlegroundDateBounds
+  getBattlegroundDateBounds
 } from './battleground-stats';
 
 function battleground(name: string, startTime: string, durationMs?: number): NormalizedBattleground {
@@ -178,29 +177,6 @@ describe('getBattlegroundDateBounds', () => {
       min: '2026-06-29',
       max: '2026-07-02'
     });
-  });
-});
-
-describe('getCompletedBattlegroundDateBounds', () => {
-  it('only allows days that have data on the following calendar day', () => {
-    const bounds = getCompletedBattlegroundDateBounds([
-      battleground('Warsong Gulch', '2026.07.03 10.00'),
-      battleground('Warsong Gulch', '2026.07.04 10.00'),
-      battleground('Warsong Gulch', '2026.07.05 10.00')
-    ]);
-
-    expect(bounds).toEqual({
-      min: '2026-07-03',
-      max: '2026-07-04'
-    });
-  });
-
-  it('returns no selectable date when there is no next-day data', () => {
-    const bounds = getCompletedBattlegroundDateBounds([
-      battleground('Warsong Gulch', '2026.07.05 10.00')
-    ]);
-
-    expect(bounds).toBeUndefined();
   });
 });
 

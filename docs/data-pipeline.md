@@ -365,7 +365,10 @@ git-ignored and regenerated on every build:
   days in date order, each holding its battlegrounds as flat triples (an index into `names`, the
   start minute of the day, the duration in seconds or -1 when unknown), in the collector's
   order. The collector writes `YYYY.MM.DD HH.MM` start times and `HH:MM:SS` durations; a bare
-  number is milliseconds.
+  number is milliseconds. The daily update runs the collector just after midnight, and it stops
+  at the first match still in progress, so the newest day can be a game short until the next
+  scan (at most one between 18 and 26 Oct 2026). The Battlegrounds page still lets you pick
+  that day: its date picker spans every day in the file.
 - `raid-genders.json`: gender corrections for raid characters (the raid API reports almost
   everyone as male), taken from Players.csv: for each raid character the ladder knows, the
   ladder's gender where the two disagree. A ladder character of another class is a different
