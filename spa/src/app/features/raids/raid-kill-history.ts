@@ -38,7 +38,6 @@ export interface KillChartPoint {
   relative: number;
   quality: number;
   best: boolean;
-  invalid: boolean;
   offSpec: boolean;
   showLabel: boolean;
   edge?: 'start' | 'end';
@@ -72,12 +71,11 @@ export function killHistory(appearances: readonly KillAppearance[], metric: Raid
     .filter(({ member }) => countsFor(metric, member.spec) && (specId === undefined || member.spec?.id === specId))
     .map(appearance => ({ ...appearance, value: appearance.member[metric] }))
     .sort((a, b) => a.kill.killedAt - b.kill.killedAt);
-  const counted = kills.filter(({ kill }) => kill.invalid === undefined);
-  const latest = counted[counted.length - 1];
-  const record = bestOf(counted.slice(0, -1));
+  const latest = kills[kills.length - 1];
+  const record = bestOf(kills.slice(0, -1));
   return {
     kills,
-    best: bestOf(counted),
+    best: bestOf(kills),
     check: latest && record && record.value > 0 ? { latest, record, change: latest.value / record.value - 1 } : undefined
   };
 }
@@ -110,7 +108,6 @@ export function killChart(history: KillHistory, top: number, mainSpecId: number 
       relative,
       quality: performanceQuality(relative),
       best: kill === history.best,
-      invalid: kill.kill.invalid !== undefined,
       offSpec: mainSpecId !== undefined && kill.member.spec?.id !== mainSpecId,
       showLabel: labelled.has(index),
       edge: count > 1 && index === 0 ? 'start' : count > 1 && index === count - 1 ? 'end' : undefined,
@@ -118,14 +115,13 @@ export function killChart(history: KillHistory, top: number, mainSpecId: number 
     };
   });
 
-  const counted = points.flatMap((point, index) => point.invalid ? [] : [{ x: index + .5, y: (100 - point.bottom).toFixed(2) }]);
-  const line = counted.length > 1 ? counted.map(({ x, y }) => `${x},${y}`).join(' ') : '';
+  const line = count > 1 ? points.map((point, index) => `${index + .5},${(100 - point.bottom).toFixed(2)}`).join(' ') : '';
   const topBottom = bottomOf(top);
   return {
     points,
     viewBox: `0 0 ${count} 100`,
     line,
-    area: line ? `${counted[0].x},100 ${line} ${counted[counted.length - 1].x},100` : '',
+    area: line ? `0.5,100 ${line} ${count - .5},100` : '',
     topBottom,
     referenceSide: referenceSide(points, topBottom),
     record: history.check && recordLine(history.check, history.kills, bottomOf)

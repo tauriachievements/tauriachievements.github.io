@@ -272,16 +272,17 @@ decision: ask first.** When a rule does change, change its tests first and see t
   `raid-kill-history.ts`): each boss row lists the character's kills of the boss that count for
   the metric, oldest first, and with a spec picked to compare with, only the kills as that spec.
   The best kill is the highest, the earlier on a tie, as on the boss rankings.
-  - **Latest vs PR** compares the latest kill that counts with the best kill before it, so a new
-    PR shows how far it beat the old one instead of 0%. The change is rounded to a whole
-    percent; under half a percent keeps its arrow ("▲ <1%"). With one kill that counts there is
-    nothing to compare yet ("First kill").
-  - An invalid kill is plotted, off the line, but is never the best, the latest or the PR.
+  - **Latest vs PR** compares the latest kill with the best kill before it, so a new PR shows
+    how far it beat the old one instead of 0%. The change is rounded to a whole percent; under
+    half a percent keeps its arrow ("▲ <1%"). The column shows the change and the latest kill's
+    date, without a "New PR" tag. With one kill there is nothing to compare yet ("First kill").
+  - The character page leaves invalid kills out entirely, as if the character hadn't killed the
+    boss that day: they're not in the boss rows, the charts, Latest vs PR or the latest kills.
   - Every kill gets an equal column, whatever the time between kills. The chart's top line is the
     best anyone did on the boss (with a comparison picked, the best of that class or spec), and
     each dot is coloured like "Of best".
-  - The boss with the latest kill opens by default, one boss at a time. Which boss is open isn't
-    in the URL.
+  - Every boss row starts closed; a click anywhere on a row opens its chart, except on the boss's
+    name, which links to the boss page. One boss opens at a time, and which one isn't in the URL.
 - **Tests:** `raid-scores.spec.ts`, `raid-kill-history.spec.ts`,
   `raid-logs-character-page.component.spec.ts`.
 
@@ -335,10 +336,9 @@ decision: ask first.** When a rule does change, change its tests first and see t
   list, Talent Analytics, or the spec and race charts. The whole kill is out, not only the
   players who abused something.
 - It's still listed, tagged "Invalid" with the reason on hover, in the lists of latest kills:
-  the overview's, a boss's Latest tab (without a number), a guild's kill history and a
-  character's latest kills. The character page's kill chart plots it as a hollow red dot off the
-  line, with the reason in its tooltip. Its log page opens with the reason, and the fight time
-  says "Not ranked".
+  the overview's, a boss's Latest tab (without a number) and a guild's kill history. The
+  character page leaves it out altogether, its latest kills and kill charts included. Its log
+  page opens with the reason, and the fight time says "Not ranked".
 - `/raid-logs/invalid` lists every invalid log of every difficulty, latest first, with its
   reason. It has no menu entry: the "List of invalid logs" button on `/raid-logs`, shown only
   while there are any, links to it.

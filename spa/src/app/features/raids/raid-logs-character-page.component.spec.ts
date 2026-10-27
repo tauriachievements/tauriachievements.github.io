@@ -167,13 +167,18 @@ function toggleBoss(harness: RouterTestingHarness, element: HTMLElement, boss: n
   harness.detectChanges();
 }
 
+function clickRow(harness: RouterTestingHarness, element: HTMLElement, boss: number, cell: number) {
+  bossRows(element)[boss].querySelectorAll<HTMLElement>('td')[cell].click();
+  harness.detectChanges();
+}
+
 function openDetail(element: HTMLElement) {
   const detail = element.querySelector<HTMLElement>('section[aria-labelledby="character-bosses-title"] tr.boss-detail');
   return detail && {
     boss: detail.dataset['boss'],
     logs: [...detail.querySelectorAll('a.kill')].map(link => link.getAttribute('href')),
-    invalid: detail.querySelectorAll('a.kill.invalid').length,
-    sentence: detail.querySelector('.record-sentence')?.textContent?.replace(/\s+/g, ' ').trim()
+    sentence: detail.querySelector('.record-sentence')?.textContent?.replace(/\s+/g, ' ').trim(),
+    facts: detail.querySelector('.detail-facts')?.textContent?.replace(/\s+/g, ' ').trim()
   };
 }
 
@@ -222,15 +227,20 @@ describe('RaidLogsCharacterPageComponent with an invalid log', () => {
     ]);
   });
 
-  it('lists the invalid kill among the latest kills, tagged with its reason', async () => {
+  it('leaves the invalid kill out of the latest kills', async () => {
     const { page, element } = await open('/raid-logs/character/tauri/Kael', flagged);
 
-    expect(page.recent().map(({ kill }) => [kill.logId, kill.invalid])).toEqual([
-      [13, undefined], [12, undefined], [11, 'Invalid log, bug abusing'], [10, undefined]
-    ]);
-    const tags = [...element.querySelectorAll('section[aria-labelledby="character-recent-title"] tbody tr')]
-      .map(row => row.querySelector('.invalid-tag')?.getAttribute('title'));
-    expect(tags).toEqual([undefined, undefined, 'Invalid log, bug abusing', undefined]);
+    expect(page.recent().map(({ kill }) => kill.logId)).toEqual([13, 12, 10]);
+    expect(element.querySelectorAll('section[aria-labelledby="character-recent-title"] tbody tr')).toHaveLength(3);
+  });
+
+  it("leaves the invalid kill out of the boss's kills, as if it never happened", async () => {
+    const { harness, element } = await open('/raid-logs/character/tauri/Kael', flagged);
+
+    expect(recordChecks(element)).toEqual(['First kill', 'First kill', 'First kill']);
+    toggleBoss(harness, element, 0);
+    expect(openDetail(element)).toMatchObject({ logs: ['/raid-logs/log/tauri/10'] });
+    expect(openDetail(element)?.facts).toMatch(/^1 kill ·/);
   });
 });
 
@@ -238,7 +248,7 @@ describe('RaidLogsCharacterPageComponent boss progress', () => {
   it("compares each boss's latest kill with the best kill before it", async () => {
     const { element } = await open('/raid-logs/character/tauri/Kael');
 
-    expect(recordChecks(element)).toEqual(['▲ 17% New PR', 'First kill', 'First kill']);
+    expect(recordChecks(element)).toEqual(['▲ 17%', 'First kill', 'First kill']);
   });
 
   it('shows how far under the PR a lower latest kill landed', async () => {
@@ -247,10 +257,13 @@ describe('RaidLogsCharacterPageComponent boss progress', () => {
     expect(recordChecks(element)).toEqual(['▼ 19%', 'First kill', '']);
   });
 
-  it('opens the boss with the latest kill, its chart linking every kill to its log', async () => {
-    const { element } = await open('/raid-logs/character/evermoon/Frosty');
+  it('opens no boss until one is picked, its chart linking every kill to its log', async () => {
+    const { harness, element } = await open('/raid-logs/character/evermoon/Frosty');
 
-    expect(toggles(element)).toEqual(['false', 'true', null]);
+    expect(toggles(element)).toEqual(['false', 'false', null]);
+    expect(openDetail(element)).toBeNull();
+
+    toggleBoss(harness, element, 1);
     expect(openDetail(element)).toMatchObject({ boss: 'ilgynoth', logs: ['/raid-logs/log/tauri/12'] });
   });
 
@@ -267,19 +280,31 @@ describe('RaidLogsCharacterPageComponent boss progress', () => {
     expect(openDetail(element)).toBeNull();
   });
 
-  it('plots an invalid kill without comparing with it', async () => {
-    const flagged: RaidLogsIndexFile = { ...indexFile, invalidLogs: [['Tauri', 11, 'Invalid log, bug abusing']] };
-    const { harness, element } = await open('/raid-logs/character/tauri/Kael', flagged);
+  it('opens and closes a boss from a click anywhere on its row', async () => {
+    const { harness, element } = await open('/raid-logs/character/tauri/Kael');
 
-    expect(recordChecks(element)).toEqual(['First kill', 'First kill', 'First kill']);
-    toggleBoss(harness, element, 0);
-    expect(openDetail(element)).toMatchObject({ logs: ['/raid-logs/log/tauri/10', '/raid-logs/log/tauri/11'], invalid: 1 });
+    clickRow(harness, element, 1, 1);
+    expect(toggles(element)).toEqual(['false', 'true', 'false']);
+
+    clickRow(harness, element, 0, 4);
+    expect(toggles(element)).toEqual(['true', 'false', 'false']);
+
+    clickRow(harness, element, 0, 2);
+    expect(toggles(element)).toEqual(['false', 'false', 'false']);
+  });
+
+  it('leaves a boss row nobody killed closed when clicked', async () => {
+    const { harness, element } = await open('/raid-logs/character/evermoon/Frosty');
+
+    clickRow(harness, element, 2, 1);
+    expect(openDetail(element)).toBeNull();
   });
 
   it('compares only the kills played as the spec picked to compare with', async () => {
-    const { element } = await open('/raid-logs/character/evermoon/Frosty?compare=class&spec=63');
+    const { harness, element } = await open('/raid-logs/character/evermoon/Frosty?compare=class&spec=63');
 
     expect(recordChecks(element)).toEqual(['First kill', '', '']);
+    toggleBoss(harness, element, 0);
     expect(openDetail(element)).toMatchObject({ boss: 'nythendra', logs: ['/raid-logs/log/tauri/11'] });
   });
 });

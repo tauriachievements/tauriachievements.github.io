@@ -59,7 +59,6 @@ interface BossRow {
   boss: RaidBoss;
   kills: number;
   history: KillHistory;
-  invalidKills: number;
   best?: Appearance;
   top: number;
   value: number;
@@ -72,7 +71,6 @@ interface BossRow {
 interface Loaded {
   difficulty: RaidDifficulty;
   bossKills: RaidKillDetails[][];
-  invalidKills: RaidKillDetails[];
   key: string;
 }
 
@@ -159,11 +157,6 @@ export class RaidLogsCharacterPageComponent {
     return loaded ? this.appearancesIn(loaded.bossKills.flat(), loaded.key) : [];
   });
 
-  private readonly invalidAppearances = computed<Appearance[]>(() => {
-    const loaded = this.loaded();
-    return loaded ? this.appearancesIn(loaded.invalidKills, loaded.key) : [];
-  });
-
   readonly character = computed(() => latestFirst(this.appearances())[0]?.member.character);
 
   readonly comparedClass = computed(() => this.comparison() === 'class' ? this.character()?.classId : undefined);
@@ -246,11 +239,10 @@ export class RaidLogsCharacterPageComponent {
     const byClass = this.comparison() === 'class';
     const spec = this.comparedSpec();
     const earlier = this.formerClass() !== undefined;
-    const invalid = this.invalidAppearances();
     return index.bosses.map(boss => {
       const kills = loaded.bossKills[boss.index] ?? [];
       const own = this.appearances().filter(appearance => appearance.kill.boss === boss);
-      const history = killHistory([...own, ...invalid.filter(appearance => appearance.kill.boss === boss)], metric, spec?.id);
+      const history = killHistory(own, metric, spec?.id);
       const best = history.best;
       const filter = best && byClass ? { classId: best.member.character.classId, specId: spec?.id } : {};
       const standing = best && !earlier ? bossStanding(kills, metric, loaded.key, filter) : undefined;
@@ -259,7 +251,6 @@ export class RaidLogsCharacterPageComponent {
         boss,
         kills: own.length,
         history,
-        invalidKills: history.kills.filter(({ kill }) => kill.invalid !== undefined).length,
         best,
         top,
         value: best?.value ?? 0,
@@ -271,21 +262,11 @@ export class RaidLogsCharacterPageComponent {
     });
   });
 
-  private readonly pickedBoss = signal<string | null | undefined>(undefined);
-
-  readonly openBoss = computed(() => {
-    const picked = this.pickedBoss();
-    const charted = this.bossRows().filter(row => row.best);
-    if (picked === null) {
-      return undefined;
-    }
-
-    return (charted.find(row => row.boss.slug === picked) ?? latestKilled(charted))?.boss.slug;
-  });
+  readonly openBoss = signal<string | undefined>(undefined);
 
   readonly referenceLabel = computed(() => this.comparison() === 'class' ? `#1 ${this.comparedMember()}` : '#1');
 
-  readonly recent = computed(() => latestFirst([...this.appearances(), ...this.invalidAppearances()]).slice(0, RECENT_KILLS));
+  readonly recent = computed(() => latestFirst(this.appearances()).slice(0, RECENT_KILLS));
 
   readonly summary = computed<SummaryTile[]>(() => {
     const rows = this.bossRows();
@@ -391,8 +372,10 @@ export class RaidLogsCharacterPageComponent {
     this.writeUrl();
   }
 
-  toggleBoss(slug: string): void {
-    this.pickedBoss.set(this.openBoss() === slug ? null : slug);
+  toggleBoss({ boss, best }: BossRow): void {
+    if (best) {
+      this.openBoss.update(open => open === boss.slug ? undefined : boss.slug);
+    }
   }
 
   recordTitle({ latest, record }: RecordCheck): string {
@@ -422,14 +405,10 @@ export class RaidLogsCharacterPageComponent {
     }
 
     const files = index.bosses.map(boss => this.data.bossKills(index, boss, difficulty));
-    const invalidFiles = index.bosses.map(boss => this.data.invalidBossKills(index, boss, difficulty));
-    this.subscription = forkJoin({
-      bossKills: files.length ? forkJoin(files) : of([]),
-      invalidKills: invalidFiles.length ? forkJoin(invalidFiles) : of([])
-    })
+    this.subscription = (files.length ? forkJoin(files) : of([]))
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
-        next: ({ bossKills, invalidKills }) => {
+        next: bossKills => {
           const key = this.findCharacterKey(bossKills);
           if (!key && rest.length) {
             this.loadDifficulty(index, rest);
@@ -447,7 +426,7 @@ export class RaidLogsCharacterPageComponent {
             this.requestedDifficulty.set(difficulty.slug);
             this.writeUrl();
           }
-          this.loaded.set({ difficulty, bossKills, invalidKills: invalidKills.flat(), key });
+          this.loaded.set({ difficulty, bossKills, key });
           this.isLoading.set(false);
         },
         error: error => this.fail(error)
@@ -512,11 +491,6 @@ export class RaidLogsCharacterPageComponent {
 
 function latestFirst(appearances: readonly Appearance[]): Appearance[] {
   return [...appearances].sort((a, b) => b.kill.killedAt - a.kill.killedAt);
-}
-
-function latestKilled(rows: readonly BossRow[]): BossRow | undefined {
-  const lastKillAt = ({ history }: BossRow) => history.kills[history.kills.length - 1]?.kill.killedAt ?? 0;
-  return rows.reduce<BossRow | undefined>((latest, row) => !latest || lastKillAt(row) > lastKillAt(latest) ? row : latest, undefined);
 }
 
 function parseMetric(value: string | null): RaidMetric | undefined {

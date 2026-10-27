@@ -8,7 +8,7 @@ const frost: RaidSpec = { id: 64, classId: 8, name: 'Frost', role: 'dps' };
 const holy: RaidSpec = { id: 65, classId: 8, name: 'Holy', role: 'healer' };
 const kael: RaidCharacter = { name: 'Kael', realm: 'Tauri', classId: 8, race: 1, gender: 0, guild: '' };
 
-function appearance(logId: number, killedAt: number, dps: number, spec = fire, invalid?: string): KillAppearance {
+function appearance(logId: number, killedAt: number, dps: number, spec = fire): KillAppearance {
   const member: RaidMember = {
     character: kael,
     spec,
@@ -37,8 +37,7 @@ function appearance(logId: number, killedAt: number, dps: number, spec = fire, i
     deaths: 0,
     resurrects: 0,
     members: [member],
-    items: [],
-    invalid
+    items: []
   };
   return { kill, member };
 }
@@ -46,16 +45,15 @@ function appearance(logId: number, killedAt: number, dps: number, spec = fire, i
 const logIds = (kills: readonly { kill: RaidKillDetails }[]) => kills.map(({ kill }) => kill.logId);
 
 describe('killHistory', () => {
-  it('lists the kills that count for the metric, oldest first, the invalid ones too', () => {
+  it('lists the kills that count for the metric, oldest first', () => {
     const history = killHistory([
       appearance(3, 3_000, 500),
       appearance(1, 1_000, 400),
-      appearance(4, 4_000, 900, fire, 'Bug abuse'),
       appearance(2, 2_000, 0, holy)
     ], 'dps');
 
-    expect(logIds(history.kills)).toEqual([1, 3, 4]);
-    expect(history.kills.map(kill => kill.value)).toEqual([400, 500, 900]);
+    expect(logIds(history.kills)).toEqual([1, 3]);
+    expect(history.kills.map(kill => kill.value)).toEqual([400, 500]);
   });
 
   it('measures healing on the healing kills only', () => {
@@ -71,12 +69,8 @@ describe('killHistory', () => {
     expect(logIds(history.kills)).toEqual([1]);
   });
 
-  it('picks the best kill that counts, the earlier on a tie, never an invalid one', () => {
-    const history = killHistory([
-      appearance(1, 1_000, 600),
-      appearance(2, 2_000, 600),
-      appearance(3, 3_000, 900, fire, 'Bug abuse')
-    ], 'dps');
+  it('picks the best kill, the earlier on a tie', () => {
+    const history = killHistory([appearance(1, 1_000, 600), appearance(2, 2_000, 600)], 'dps');
 
     expect(history.best?.kill.logId).toBe(1);
   });
@@ -91,18 +85,8 @@ describe('killHistory', () => {
     expect(higher.check?.change).toBeCloseTo(.25);
   });
 
-  it('skips an invalid latest kill, comparing the latest kill that counts', () => {
-    const history = killHistory([
-      appearance(1, 1_000, 400),
-      appearance(2, 2_000, 600),
-      appearance(3, 3_000, 900, fire, 'Bug abuse')
-    ], 'dps');
-
-    expect(history.check && [history.check.latest.kill.logId, history.check.record.kill.logId]).toEqual([2, 1]);
-  });
-
-  it('has nothing to compare before a second kill that counts', () => {
-    expect(killHistory([appearance(1, 1_000, 400), appearance(2, 2_000, 900, fire, 'Bug abuse')], 'dps').check).toBeUndefined();
+  it('has nothing to compare before a second kill', () => {
+    expect(killHistory([appearance(1, 1_000, 400)], 'dps').check).toBeUndefined();
     expect(killHistory([], 'dps')).toEqual({ kills: [], best: undefined, check: undefined });
   });
 });
@@ -137,15 +121,6 @@ describe('killChart', () => {
 
     expect(chart.topBottom).toBeCloseTo(100 / 1.1);
     expect(chart.points[0].bottom).toBeCloseTo(50);
-  });
-
-  it('plots an invalid kill off the line, above the best anyone did when it beat it', () => {
-    const chart = chartOf([appearance(1, 1_000, 330), appearance(2, 2_000, 1_200, fire, 'Bug abuse'), appearance(3, 3_000, 660)]);
-
-    expect(chart.line).toBe('0.5,75.00 2.5,50.00');
-    expect(chart.points.map(point => point.invalid)).toEqual([false, true, false]);
-    expect(chart.points[1].bottom).toBeCloseTo(100 / 1.1);
-    expect(chart.topBottom).toBeCloseTo(1_000 / 1_320 * 100);
   });
 
   it('draws no line for a single kill', () => {

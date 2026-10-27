@@ -8,9 +8,8 @@
 @include raid-table;
 @include phone-detail-rows;
 @include character-cell;
-@include difficulty-colors;
 
-.raid-page { @include raid-page; --skeleton-hero-height: 86px; }
+.raid-page { @include raid-page; gap: 12px; --skeleton-hero-height: 86px; }
 
 .character-header {
   display: flex;
@@ -71,6 +70,8 @@
   button { white-space: nowrap; }
 }
 
+.bosses-section { margin-top: 0; }
+.bosses-section .section-header { align-items: center; }
 .section-controls { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
 .comparison-select { flex: none; }
 .class-switch img { width: 16px; height: 16px; border-radius: 3px; }
@@ -82,7 +83,6 @@
 .boss-cell img { @include boss-portrait(30px); }
 td a.boss-cell:hover { text-decoration: none; }
 td a.boss-cell:hover .strong { text-decoration: underline; }
-.invalid-tag { @include invalid-tag; }
 .spec-cell { display: inline-flex; align-items: center; gap: 6px; }
 .rank-cell { white-space: nowrap; }
 tr.alive td { color: $raid-muted; }
@@ -99,7 +99,6 @@ td a.log-link { color: $gold; font-size: .8rem; font-weight: 600; }
 
 .record-check { display: inline-flex; align-items: center; gap: 8px; font-size: .8rem; white-space: nowrap; }
 .record-pill { @include change-pill; }
-.new-record { @include new-tag; }
 
 .detail-toggle {
   position: relative;
@@ -123,6 +122,7 @@ td a.log-link { color: $gold; font-size: .8rem; font-weight: 600; }
 
 .chevron { display: inline-block; @include motion-safe { transition: transform .15s ease; } }
 
+tr.opens { cursor: pointer; }
 tr.open > td { border-bottom-color: transparent; }
 tr.boss-detail > td { padding: 4px 16px 16px; background: #121212; white-space: normal; }
 tbody tr.boss-detail:hover td { background: #121212; }

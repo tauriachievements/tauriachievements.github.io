@@ -1,6 +1,6 @@
 @use './raid-logs-shared' as *;
 
-$invalid: #ff9a9a;
+$down: #ff9a9a;
 
 :host { --surface: #121212; display: block; min-width: 0; }
 :host(.compact) { --surface: #{$raid-card}; height: 30px; }
@@ -80,13 +80,11 @@ svg.line {
 }
 
 .best .dot, .dot.best { box-shadow: 0 0 0 2px var(--surface), 0 0 0 4px $gold; }
-.invalid .dot, .dot.invalid { border: 2px solid $invalid; background: var(--surface); }
 
 :host(.compact) .dot { width: 6px; height: 6px; box-shadow: 0 0 0 1.5px var(--surface); }
 :host(.compact) .dot.best { box-shadow: 0 0 0 1.5px var(--surface), 0 0 0 3px $gold; }
-:host(.compact) .dot.invalid { border-width: 1.5px; }
 
-.value-label, .invalid-label, .record-label, .off-spec {
+.value-label, .record-label, .off-spec {
   position: absolute;
   left: 50%;
   transform: translateX(-50%);
@@ -94,13 +92,12 @@ svg.line {
   white-space: nowrap;
 }
 
-.value-label, .invalid-label, .record-label { text-shadow: 0 0 3px var(--surface), 0 0 3px var(--surface); }
+.value-label, .record-label { text-shadow: 0 0 3px var(--surface), 0 0 3px var(--surface); }
 
-.edge-start :is(.value-label, .invalid-label, .record-label) { left: calc(50% - 10px); transform: none; }
-.edge-end :is(.value-label, .invalid-label, .record-label) { right: calc(50% - 10px); left: auto; transform: none; }
+.edge-start :is(.value-label, .record-label) { left: calc(50% - 10px); transform: none; }
+.edge-end :is(.value-label, .record-label) { right: calc(50% - 10px); left: auto; transform: none; }
 
 .value-label { bottom: calc(var(--at) + 9px); color: $gold; font-size: .74rem; font-weight: 700; font-variant-numeric: tabular-nums; }
-.invalid-label { bottom: calc(var(--at) + 9px); color: $invalid; font-size: .6rem; font-weight: 800; letter-spacing: .05em; text-transform: uppercase; }
 
 .record-label {
   bottom: calc(var(--at) + 9px);
@@ -109,7 +106,7 @@ svg.line {
   font-weight: 800;
 
   &.up { color: #8ce89b; }
-  &.down { color: $invalid; }
+  &.down { color: $down; }
   &.under { top: calc(100% - var(--at) + 10px); bottom: auto; }
 }
 
@@ -142,8 +139,6 @@ svg.line {
 .tooltip-row { display: flex; align-items: center; gap: 6px; }
 .tooltip-key { width: 12px; height: 3px; flex: none; border-radius: 2px; }
 .tooltip-best { color: $gold; font-size: .66rem; font-weight: 800; letter-spacing: .05em; text-transform: uppercase; }
-.tooltip-invalid { color: $invalid; font-weight: 700; }
-.tooltip-reason { color: $raid-muted; white-space: normal; }
 .tooltip-meta { color: $raid-muted; }
 
 .kill:focus-visible .tooltip { opacity: 1; visibility: visible; }

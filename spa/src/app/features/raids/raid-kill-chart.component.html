@@ -10,11 +10,7 @@
       <div class="kills" [style.--columns]="chart.points.length">
         @for (point of chart.points; track $index) {
           <span class="column" [style.--at]="point.bottom + '%'">
-            <span
-              class="dot"
-              [class.best]="point.best"
-              [class.invalid]="point.invalid"
-              [style.background]="point.invalid ? null : qualityColors[point.quality]"></span>
+            <span class="dot" [class.best]="point.best" [style.background]="qualityColors[point.quality]"></span>
           </span>
         }
       </div>
@@ -50,18 +46,14 @@
               <a
                 class="kill"
                 [class.best]="point.best"
-                [class.invalid]="point.invalid"
                 [routerLink]="logLink(point.kill.kill)"
                 [attr.aria-label]="labels()[index]">
-                <span class="dot" [style.background]="point.invalid ? null : qualityColors[point.quality]"></span>
+                <span class="dot" [style.background]="qualityColors[point.quality]"></span>
                 @if (point.offSpec && point.kill.member.spec?.icon; as icon) {
                   <img class="off-spec" [src]="icon" alt="" loading="lazy" />
                 }
                 @if (point.best) {
                   <span class="value-label">{{ formatPerSecond(point.kill.value) }}</span>
-                }
-                @if (point.invalid) {
-                  <span class="invalid-label">Invalid</span>
                 }
                 @if (chart.record; as line) {
                   @if (line.latest === index && record(); as change) {
@@ -70,12 +62,7 @@
                 }
                 <span class="tooltip" aria-hidden="true">
                   <strong>{{ formatPerSecond(point.kill.value) }} {{ unit() }}</strong>
-                  @if (point.invalid) {
-                    <span class="tooltip-invalid">Invalid, doesn't count</span>
-                    <span class="tooltip-reason">{{ point.kill.kill.invalid }}</span>
-                  } @else {
-                    <span class="tooltip-row"><span class="tooltip-key" [style.background]="qualityColors[point.quality]"></span>{{ percent(point.relative) }} of best</span>
-                  }
+                  <span class="tooltip-row"><span class="tooltip-key" [style.background]="qualityColors[point.quality]"></span>{{ percent(point.relative) }} of best</span>
                   @if (point.best) {
                     <span class="tooltip-best">Best kill</span>
                   }

@@ -43,7 +43,7 @@ export class RaidKillChartComponent {
 
   readonly labels = computed(() => (this.chart()?.points ?? []).map(point =>
     `${formatDate(point.kill.kill.killedAt, 'd MMM', 'en-US')}: ${formatPerSecond(point.kill.value)} ${this.unit()}, ${
-      point.invalid ? "invalid, doesn't count" : `${this.percent(point.relative)} of best`}. Opens the log.`));
+      this.percent(point.relative)} of best. Opens the log.`));
 
   readonly qualityColors = ITEM_QUALITY_COLORS;
   readonly formatPerSecond = formatPerSecond;
