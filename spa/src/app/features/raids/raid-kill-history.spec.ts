@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { KillAppearance, killChart, killHistory, predictedChange, recordChange } from './raid-kill-history';
+import { KillAppearance, killChart, killHistory, recordChange } from './raid-kill-history';
 import { RaidCharacter, RaidKillDetails, RaidMember, RaidSpec } from './raid-logs.types';
 import { mythic, nythendra } from './raid-logs.fixture';
 
@@ -134,21 +134,6 @@ describe('killHistory prediction', () => {
     ], 'dps', 63);
 
     expect(history.trend?.next).toBeCloseTo(700);
-  });
-});
-
-describe('predictedChange', () => {
-  const historyOf = (values: number[]) =>
-    killHistory(values.map((value, index) => appearance(index, index * 1_000, value)), 'dps');
-
-  it('measures the predicted next kill against the PR', () => {
-    expect(predictedChange(historyOf([400, 500, 600]))).toBeCloseTo(1 / 6);
-    expect(predictedChange(historyOf([500, 800, 600]))).toBeCloseTo(-1 / 12);
-    expect(predictedChange(historyOf([600, 500, 400]))).toBeCloseTo(-.5);
-  });
-
-  it('has nothing to measure before a third kill', () => {
-    expect(predictedChange(historyOf([400, 500]))).toBeUndefined();
   });
 });
 

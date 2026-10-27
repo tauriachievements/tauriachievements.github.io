@@ -361,15 +361,15 @@ describe('RaidLogsCharacterPageComponent prediction', () => {
     expect(location.path()).toBe('/raid-logs/character/tauri/Kael?predict=1');
   });
 
-  it('puts the predicted change against the PR in place of Latest vs PR, without a date', async () => {
+  it('leaves the Latest vs PR column as it is', async () => {
     const { harness, element } = await open('/raid-logs/character/tauri/Kael', indexFile, steadyBossFiles);
-    expect(recordHeading(element)).toBe('Latest vs PR');
+    const before = bossRows(element).map(row => row.querySelector('.record-cell')?.textContent?.replace(/\s+/g, ' ').trim());
 
     predictionToggle(element)?.click();
     harness.detectChanges();
-    expect(recordHeading(element)).toBe('Prediction');
-    expect(recordChecks(element)).toEqual(['▲ 13%', 'Needs 3 kills', 'Needs 3 kills']);
-    expect(bossRows(element)[0].querySelector('.record-cell .record-date')).toBeNull();
+    expect(recordHeading(element)).toBe('Latest vs PR');
+    expect(bossRows(element).map(row => row.querySelector('.record-cell')?.textContent?.replace(/\s+/g, ' ').trim())).toEqual(before);
+    expect(bossRows(element)[0].querySelector('.record-cell .record-date')).not.toBeNull();
   });
 });
 

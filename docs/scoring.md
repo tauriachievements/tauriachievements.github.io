@@ -287,14 +287,14 @@ decision: ask first.** When a rule does change, change its tests first and see t
     chart: the next kill on the least-squares line through the last 6 kills (all of them when
     fewer), floored at 0. It needs 3 kills, and uses the same kills as the chart, so it follows
     Damage/Healing and the spec compared with. An open boss's chart also draws that line, from
-    the first kill it fits to the prediction. The Latest vs PR column becomes **Prediction**: the
-    predicted kill against the PR (the best kill so far, as in Best DPS), rounded like Latest vs
-    PR, without a date, or "Needs 3 kills". The owner chose this over polynomial
-    interpolation after a backtest on the mythic data (Oct 2026, 1,055 player-boss histories,
-    the latest kill predicted from the earlier ones): the trend line missed by 16% at the median
-    and went below 0 or past twice the last kill 2% of the time; a polynomial through every kill
-    missed by 54% and went wild 28% of the time. Simply repeating the last kill missed by 13%, so
-    week-to-week noise is that large and the page shows the prediction as "≈".
+    the first kill it fits to the prediction, and its note gives the predicted kill. The other
+    columns, Latest vs PR included, stay as they are, so the toggle never moves them. The owner
+    chose the trend line over polynomial interpolation after a backtest on the mythic data (Oct
+    2026, 1,055 player-boss histories, the latest kill predicted from the earlier ones): the trend
+    line missed by 16% at the median and went below 0 or past twice the last kill 2% of the time;
+    a polynomial through every kill missed by 54% and went wild 28% of the time. Simply repeating
+    the last kill missed by 13%, so week-to-week noise is that large and the page shows the
+    prediction as "≈".
 - **Tests:** `raid-scores.spec.ts`, `raid-kill-history.spec.ts`,
   `raid-logs-character-page.component.spec.ts`.
 

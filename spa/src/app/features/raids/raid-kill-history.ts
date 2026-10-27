@@ -116,10 +116,6 @@ function trendOf(values: readonly number[]): KillTrend | undefined {
   return { from, start: at(0), next: at(recent.length) };
 }
 
-export function predictedChange({ trend, best }: KillHistory): number | undefined {
-  return trend && best && best.value > 0 ? trend.next / best.value - 1 : undefined;
-}
-
 export function recordChange(change: number): RecordChange {
   const percent = Math.round(Math.abs(change) * 100);
   if (change === 0) {

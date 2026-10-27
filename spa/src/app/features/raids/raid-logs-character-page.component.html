@@ -96,15 +96,7 @@
         </header>
 
         <ng-template #recordCheck let-row let-dated="dated">
-          @if (predict()) {
-            @if (row.predicted; as predicted) {
-              <span class="record-check" [title]="predictionTitle(row.history)">
-                <span class="record-pill" [class.positive]="predicted.trend === 'up'" [class.negative]="predicted.trend === 'down'">{{ predicted.label }}</span>
-              </span>
-            } @else if (row.best) {
-              <span class="record-check muted">Needs 3 kills</span>
-            }
-          } @else if (row.history.check; as check) {
+          @if (row.history.check; as check) {
             <span class="record-check" [title]="recordTitle(check)">
               <span class="record-pill" [class.positive]="row.record.trend === 'up'" [class.negative]="row.record.trend === 'down'">{{ row.record.label }}</span>
               @if (dated) {
@@ -125,7 +117,7 @@
                 <th scope="col" class="num" [title]="columnTitles().relative">Of best</th>
                 <th scope="col" class="num" [title]="columnTitles().rank">Rank</th>
                 <th scope="col" class="phone-hidden progress-cell">Progress</th>
-                <th scope="col" class="phone-hidden">{{ predict() ? 'Prediction' : 'Latest vs PR' }}</th>
+                <th scope="col" class="phone-hidden">Latest vs PR</th>
                 <th scope="col"><span class="visually-hidden">Every kill</span></th>
               </tr>
             </thead>

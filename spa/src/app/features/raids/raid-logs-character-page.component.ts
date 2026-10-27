@@ -12,7 +12,7 @@ import { FilterDropdownOption, FilterDropdownValue } from '../../shared/filter-d
 import { GlideDirective } from '../../shared/motion/glide.directive';
 import { RaidDifficultySwitchComponent } from './raid-difficulty-switch.component';
 import { RaidKillChartComponent } from './raid-kill-chart.component';
-import { KillHistory, RecordChange, RecordCheck, killHistory, predictedChange, recordChange } from './raid-kill-history';
+import { KillHistory, RecordChange, RecordCheck, killHistory, recordChange } from './raid-kill-history';
 import {
   ITEM_QUALITY_COLORS,
   formatFightTime,
@@ -65,7 +65,6 @@ interface BossRow {
   rank?: number;
   ranked: number;
   record?: RecordChange;
-  predicted?: RecordChange;
 }
 
 interface Loaded {
@@ -248,7 +247,6 @@ export class RaidLogsCharacterPageComponent {
       const filter = best && byClass ? { classId: best.member.character.classId, specId: spec?.id } : {};
       const standing = best && !earlier ? bossStanding(kills, metric, loaded.key, filter) : undefined;
       const top = best ? bossBest(kills, metric, filter) : 0;
-      const predicted = predictedChange(history);
       return {
         boss,
         kills: own.length,
@@ -259,8 +257,7 @@ export class RaidLogsCharacterPageComponent {
         relative: standing?.relative ?? (best && top > 0 ? best.value / top : 0),
         rank: standing?.rank,
         ranked: standing?.ranked ?? 0,
-        record: history.check && recordChange(history.check.change),
-        predicted: predicted === undefined ? undefined : recordChange(predicted)
+        record: history.check && recordChange(history.check.change)
       };
     });
   });
@@ -383,10 +380,6 @@ export class RaidLogsCharacterPageComponent {
     if (best) {
       this.openBoss.update(open => open === boss.slug ? undefined : boss.slug);
     }
-  }
-
-  predictionTitle({ trend, best }: KillHistory): string {
-    return trend && best ? `Predicted next kill: ${formatPerSecond(trend.next)}, against the PR of ${formatPerSecond(best.value)}.` : '';
   }
 
   recordTitle({ latest, record }: RecordCheck): string {
