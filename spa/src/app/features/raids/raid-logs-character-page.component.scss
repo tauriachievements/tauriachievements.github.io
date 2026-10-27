@@ -87,8 +87,9 @@ td a.boss-cell:hover .strong { text-decoration: underline; }
 tr.alive td { color: $raid-muted; }
 td a.log-link { color: $gold; font-size: .8rem; font-weight: 600; }
 
-.progress-cell { width: 220px; }
-.progress-cell app-raid-kill-chart { width: 200px; }
+.bosses-table .num { text-align: center; }
+.progress-cell { width: 220px; text-align: center; }
+.progress-cell app-raid-kill-chart { width: 200px; margin: 0 auto; }
 .record-cell { width: 1%; }
 .toggle-cell { width: 1%; text-align: right; }
 
