@@ -27,7 +27,6 @@ public sealed class CharacterResponseMapperTests
         );
         var achievements = new Dictionary<int, DateTimeOffset?>
         {
-            // 01:30 on Jan 2nd at UTC+2 is still Jan 1st in UTC.
             [CharacterResponseMapper.Level10AchievementId] = new DateTimeOffset(
                 2020,
                 1,

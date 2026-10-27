@@ -25,7 +25,7 @@ public sealed class RaidLogExportServiceTests
     [Theory]
     [InlineData("r=[HU] Tauri WoW Server&amp;n=M#27479630", "Tauri", "Tauri")]
     [InlineData("r=[EN] Evermoon&n=Sósa", "Tauri", "Evermoon")]
-    [InlineData("", "Tauri", "Evermoon")] // Evermoon raiders come unlinked on Tauri logs
+    [InlineData("", "Tauri", "Evermoon")]
     [InlineData("", "WoD", "WoD")]
     [InlineData("r=[HU] Warriors of Darkness&amp;n=Pala", "WoD", "WoD")]
     public void MemberRealm_FollowsTheLinkElseTheRealmSharingTauriLogs(
@@ -59,7 +59,6 @@ public sealed class RaidLogExportServiceTests
                     race: 10,
                     guild: "Outlaws"
                 ),
-                // A Druid logged with a Paladin spec keeps its numbers but loses the spec.
                 Member("Oddity", "", classId: 11, specId: 70, race: 4)
             )
         );
@@ -68,7 +67,6 @@ public sealed class RaidLogExportServiceTests
 
         Assert.NotNull(log);
         Assert.Equal((1_790_000_000L, 200_000L), (log.KilledAt, log.FightMilliseconds));
-        // The API named Tauri's guild 7440; the guild is Evermoon's 7440, so no name is kept.
         Assert.Equal(new RaidGuild(7440, "", "Evermoon", RaidCatalog.Horde), log.Guild);
         Assert.Equal(RaidCatalog.Horde, log.Faction);
         Assert.Equal([139236, 139197], log.Items);
@@ -169,8 +167,8 @@ public sealed class RaidLogExportServiceTests
     [InlineData("ba!0201120", "0201120")]
     [InlineData("XZ!00.....", "00.....")]
     [InlineData("", "")]
-    [InlineData("Za!1213212", "")] // there is no fourth column
-    [InlineData("Za!12122121", "")] // nor an eighth tier
+    [InlineData("Za!1213212", "")]
+    [InlineData("Za!12122121", "")]
     public void ParseTalents_KeepsTheColumnOfEachTier(string code, string expected)
     {
         Assert.Equal(expected, RaidLogResponseParser.ParseTalents(code));
@@ -179,8 +177,6 @@ public sealed class RaidLogExportServiceTests
     [Fact]
     public void ParseFragment_PicksTheSpecsOwnTalentElseTheClassWideOne()
     {
-        // TauriShoot's shape: tier 0's first choice differs per spec (an object keyed by spec),
-        // its second is class-wide (spec "0"), its third is missing; the other tiers are class-wide.
         const string ownTier = """
             [
               {"71": {"tier": "0", "column": "0", "id": "202297", "name": "Dauntless", "icon": "dauntless", "spec": "71"},
@@ -211,7 +207,6 @@ public sealed class RaidLogExportServiceTests
         Assert.Equal("War Machine", fury.Tiers[0][0]!.Name);
         Assert.Equal(new RaidTalent(46968, "Shockwave", "shockwave"), fury.Tiers[6][0]);
 
-        // A missing tier, or a tier with nothing for the spec, reads as no talents at all.
         Assert.Null(TauriShootTalentSource.ParseFragment(Parse(Fragment(ownTier, 6)), [71]));
         const string armsOnlyTier = """
             [{"71": {"id": "202297", "name": "Dauntless", "icon": "dauntless", "spec": "71"}}]
@@ -353,7 +348,7 @@ public sealed class RaidLogExportServiceTests
             var api = new FakeRaidApiClient();
             api.Rankings[(Tauri, Nythendra, Heroic)] = [100, 101];
             api.Rankings[(Tauri, Xavius, Mythic)] = [102];
-            api.Rankings[(WoD, Nythendra, Normal)] = [100]; // WoD's log ids are its own
+            api.Rankings[(WoD, Nythendra, Normal)] = [100];
             api.Logs[(Tauri, 100)] = LogJson(
                 100,
                 Nythendra,
@@ -382,7 +377,6 @@ public sealed class RaidLogExportServiceTests
                 200_000,
                 null,
                 [],
-                // A Titanforged copy of the same trinket is another entry in the table.
                 Member(
                     "Mage",
                     "",
@@ -421,7 +415,6 @@ public sealed class RaidLogExportServiceTests
                 [],
                 Member("Hunter", "r=[HU] Warriors of Darkness&amp;n=Hunter", 3, 254)
             );
-            // Players.csv knows the mage's current guild; guild-info confirms it is guild 7440.
             api.Guilds[(Evermoon, "Competence Optional")] = GuildInfoJson(
                 7440,
                 "Competence Optional",
@@ -484,7 +477,6 @@ public sealed class RaidLogExportServiceTests
                         $"{guild[0].GetString()}|{guild[1].GetString()}|{guild[2].GetInt32()}|{guild[3].GetInt32()}"
                     )
             );
-            // [realm, logId, boss, difficulty, killedAt, fightMs, guild, faction, wipes, deaths, members], oldest first.
             Assert.Equal(
                 ["Tauri 100 0 15 0", "WoD 100 0 14 1", "Tauri 101 0 15 -1", "Tauri 102 6 16 2"],
                 root.GetProperty("logs")
@@ -497,7 +489,6 @@ public sealed class RaidLogExportServiceTests
             var heroic = root.GetProperty("top")
                 .EnumerateArray()
                 .Single(top => top.GetProperty("difficulty").GetString() == "heroic");
-            // 140M over 200 s beats 60M over 100 s; the healer counts healing plus absorbs.
             Assert.Equal("Mage", heroic.GetProperty("dps")[0].GetString());
             Assert.Equal(700_000, heroic.GetProperty("dps")[4].GetInt64());
             Assert.Equal(101, heroic.GetProperty("dps")[6].GetInt32());
@@ -520,9 +511,8 @@ public sealed class RaidLogExportServiceTests
             );
             var logs = boss.RootElement.GetProperty("logs").EnumerateArray().ToList();
             Assert.Equal([100, 101], logs.Select(log => log[1].GetInt32()));
-            Assert.Equal(0, logs[1][9][0][0].GetInt32()); // the mage, first seen in the older kill
+            Assert.Equal(0, logs[1][9][0][0].GetInt32());
 
-            // [id, itemLevel, name, quality, icon], in order of first appearance.
             Assert.Equal(
                 ["1 850 Stone", "2 835 Memento", "1 860 Stone"],
                 boss.RootElement.GetProperty("trinkets")
@@ -531,17 +521,15 @@ public sealed class RaidLogExportServiceTests
                         $"{trinket[0].GetInt32()} {trinket[1].GetInt32()} {trinket[2].GetString()}"
                     )
             );
-            // A member ends [..., dispels, talents, [trinket, ...]].
             static string Loadout(JsonElement member) =>
                 $"{member[10].GetString()} [{string.Join(",", member[11].EnumerateArray().Select(trinket => trinket.GetInt32()))}]";
             Assert.Equal("2102121 [0,1]", Loadout(logs[0][9][0]));
-            Assert.Equal(" []", Loadout(logs[0][9][1])); // the priest's log has neither
+            Assert.Equal(" []", Loadout(logs[0][9][1]));
             Assert.Equal(" [2]", Loadout(logs[1][9][0]));
 
             using var talents = JsonDocument.Parse(
                 File.ReadAllText(Path.Combine(outputDirectory, "talents.json"))
             );
-            // [specId, tiers of [spellId, name, icon] choices, null where there is none].
             var arms = Assert.Single(talents.RootElement.GetProperty("specs").EnumerateArray());
             Assert.Equal(71, arms[0].GetInt32());
             Assert.Equal(7, arms[1].GetArrayLength());
@@ -614,14 +602,12 @@ public sealed class RaidLogExportServiceTests
                     !request.StartsWith("raid-rank", StringComparison.Ordinal)
                 )
             );
-            // The guild was confirmed last run and the item named: neither is asked again.
             Assert.All(
                 result.Dataset.Logs,
                 log => Assert.Equal("Competence Optional", log.Guild!.Name)
             );
             Assert.Equal("Item 5", Assert.Single(result.Dataset.Items).Name);
 
-            // The older kill is written back unchanged, and the new one goes on a line after it.
             var secondBossFile = File.ReadAllText(
                 Path.Combine(outputDirectory, "nythendra-heroic.json")
             );
@@ -683,7 +669,6 @@ public sealed class RaidLogExportServiceTests
                         .Select(key => $"{key[0].GetString()} {key[1].GetInt32()}"),
                 ];
 
-            // A first export has nothing to compare with.
             var first = await ExportAt(10);
             Assert.False(first.TryGetProperty("previousGeneratedAt", out _));
             Assert.False(first.TryGetProperty("newLogs", out _));
@@ -715,9 +700,8 @@ public sealed class RaidLogExportServiceTests
                 "2026-10-12T10:00:00Z",
                 second.GetProperty("previousGeneratedAt").GetString()
             );
-            Assert.Equal(["WoD 103", "Tauri 103"], NewLogs(second)); // oldest first, as `logs`
+            Assert.Equal(["WoD 103", "Tauri 103"], NewLogs(second));
 
-            // Nothing new: the last export's changes stay, so a second run the same day keeps them.
             var rerun = await ExportAt(13);
             Assert.Equal("2026-10-12T13:00:00Z", rerun.GetProperty("generatedAt").GetString());
             Assert.Equal(
@@ -726,7 +710,6 @@ public sealed class RaidLogExportServiceTests
             );
             Assert.Equal(["WoD 103", "Tauri 103"], NewLogs(rerun));
 
-            // --full reads every log again, but only the kill the files didn't have is new.
             api.Rankings[(Tauri, Nythendra, Heroic)] = [100, 103, 104];
             api.Logs[(Tauri, 104)] = LogJson(
                 104,
@@ -772,7 +755,6 @@ public sealed class RaidLogExportServiceTests
             await Service(outputDirectory, api, PlayerGuildDirectory.Empty)
                 .ExportAsync(Options(), CancellationToken.None);
 
-            // Turn the files into version 1's: no trinket table, members end at their dispels.
             foreach (
                 var path in new[] { "index.json", "nythendra-heroic.json" }.Select(name =>
                     Path.Combine(outputDirectory, name)
@@ -811,11 +793,9 @@ public sealed class RaidLogExportServiceTests
             var result = await Service(outputDirectory, api, PlayerGuildDirectory.Empty)
                 .ExportAsync(Options(), CancellationToken.None);
 
-            // Both logs are read again to get the talents and trinkets the old files lack...
             Assert.Equal(2, result.ReadLogCount);
             var mage = result.Dataset.Logs[0].Members[0];
             Assert.Equal(("2102121", 1), (mage.Talents, mage.Trinkets.Count));
-            // ...but only the kill they didn't have is new, and the item isn't looked up again.
             using var index = JsonDocument.Parse(
                 File.ReadAllText(Path.Combine(outputDirectory, "index.json"))
             );
@@ -1107,7 +1087,6 @@ public sealed class RaidLogExportServiceTests
                 [],
                 Member("Mage", "", 8, 63, race: 10)
             );
-            // The raiders' current guild exists, but it is another guild than the one in the log.
             api.Guilds[(Evermoon, "Identity Unknown")] = GuildInfoJson(1234, "Identity Unknown", 0);
             var directory = new PlayerGuildDirectory(
                 new() { [("Evermoon", "Mage")] = "Identity Unknown" }
@@ -1423,7 +1402,6 @@ public sealed class RaidLogExportServiceTests
             }
             """;
 
-    /// <summary>The API's <c>trinket_0</c> and <c>trinket_1</c>, each followed by a comma.</summary>
     private static string TrinketsJson((int Id, int ItemLevel, string Name)[] trinkets) =>
         string.Concat(
             trinkets.Select(
@@ -1522,7 +1500,6 @@ public sealed class RaidLogExportServiceTests
             Task.FromResult<RaidItem?>(new RaidItem(itemId, $"Item {itemId}", 4, "icon"));
     }
 
-    /// <summary>Arms with one talent per tier, or nothing, like TauriShoot when it is down.</summary>
     private sealed class FakeTalentSource(bool fails = false) : IRaidTalentSource
     {
         public Task<IReadOnlyList<RaidSpecTalents>?> LoadAsync(

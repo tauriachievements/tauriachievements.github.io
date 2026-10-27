@@ -3,15 +3,6 @@ using System.Text.Json;
 
 namespace RaidLogExporter;
 
-/// <param name="Logs">Every kill the boss files hold, keyed by log.</param>
-/// <param name="LogCount">How many kills the index listed.</param>
-/// <param name="Items">The item names already looked up.</param>
-/// <param name="GeneratedAt">When that export read the rankings.</param>
-/// <param name="Changes">What that export added since the one before it.</param>
-/// <param name="OutOfDate">
-/// Written in an older format, so its logs lack what this one adds: they still tell which kills
-/// are new, but every log is read again.
-/// </param>
 public sealed record PreviousRaidExport(
     IReadOnlyDictionary<RaidLogKey, RaidLog> Logs,
     int LogCount,
@@ -28,12 +19,6 @@ public sealed record PreviousRaidExport(
     );
 }
 
-/// <summary>
-/// Reads an earlier export back. Logs never change once written, so a later run only asks the
-/// API for kills that are not in the boss files yet. Files of an older format are read as far as
-/// they go (<see cref="PreviousRaidExport.OutOfDate"/>). Any file it cannot read, or one of a newer
-/// format, makes it return nothing, and the run then reads every log again.
-/// </summary>
 public static class RaidLogFileReader
 {
     public static PreviousRaidExport Read(string outputDirectory)
@@ -159,7 +144,6 @@ public static class RaidLogFileReader
         }
     }
 
-    /// <summary>The file's format version, or null for one this reader doesn't know.</summary>
     private static int? ReadVersion(JsonElement root) =>
         root.ValueKind == JsonValueKind.Object
         && root.TryGetProperty("version", out var version)
@@ -184,7 +168,6 @@ public static class RaidLogFileReader
             ))
             .ToList();
         var players = root.GetProperty("players").EnumerateArray().Select(ReadPlayer).ToList();
-        // Version 1 files have no trinkets.
         var trinkets = root.TryGetProperty("trinkets", out var trinketTable)
             ? trinketTable.EnumerateArray().Select(ReadTrinket).ToList()
             : [];
@@ -232,7 +215,6 @@ public static class RaidLogFileReader
             trinket[4].GetString()!
         );
 
-    /// <summary>A version 1 member stops after its dispels: no talents, no trinkets.</summary>
     private static RaidLogMember ReadMember(
         JsonElement member,
         IReadOnlyList<RaidPlayer> players,

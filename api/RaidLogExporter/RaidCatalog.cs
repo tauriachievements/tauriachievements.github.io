@@ -6,12 +6,6 @@ public sealed record RaidBoss(int EncounterId, string Slug, string Name);
 
 public sealed record RaidSpec(int Id, int ClassId, string Name, string Role);
 
-/// <summary>
-/// What the API does not tell us about the tracked raid: its bosses in Encounter Journal order
-/// (the API's <c>encounter_order</c> puts Ursoc second), the URL slugs the /raid-logs pages use,
-/// and the realm, spec and faction lookups the logs refer to by id. Keep the slugs stable;
-/// they are page URLs and file names.
-/// </summary>
 public static class RaidCatalog
 {
     public const int MapId = 1520;
@@ -29,10 +23,8 @@ public static class RaidCatalog
     public const int Alliance = 0;
     public const int Horde = 1;
 
-    /// <summary>Legion's talent rows, at levels 15, 30, 45, 60, 75, 90 and 100.</summary>
     public const int TalentTiers = 7;
 
-    /// <summary>In the order the page lists them, easiest first.</summary>
     public static readonly IReadOnlyList<RaidDifficulty> Difficulties =
     [
         new(17, "lfr", "Looking For Raid", "LFR"),
@@ -96,7 +88,6 @@ public static class RaidCatalog
         spec.Id
     );
 
-    /// <summary>The API's realm ids, as in <c>rid</c> and <c>guildrid</c>.</summary>
     private static readonly Dictionary<int, string> RealmsById = new()
     {
         [9] = Evermoon,
@@ -114,11 +105,6 @@ public static class RaidCatalog
 
     public static string? RealmName(int realmId) => RealmsById.GetValueOrDefault(realmId);
 
-    /// <summary>
-    /// The spec only when it belongs to the class. A few logs pair a class with another class's
-    /// spec (a Druid logged as Retribution); those members keep their numbers but get spec 0,
-    /// so no spec ranking counts them.
-    /// </summary>
     public static int ValidSpecId(int classId, int specId) =>
         SpecsById.TryGetValue(specId, out var spec) && spec.ClassId == classId ? specId : 0;
 

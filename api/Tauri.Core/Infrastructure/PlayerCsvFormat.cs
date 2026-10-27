@@ -4,11 +4,6 @@ using Tauri.Core.Models;
 
 namespace Tauri.Core.Infrastructure;
 
-/// <summary>
-/// The one definition of the Players.csv layout. Every job that writes or reads the file goes
-/// through here, so the header and the rows cannot drift apart. The frontend build
-/// (spa/scripts/player-data-utils.js) reads the columns by name.
-/// </summary>
 public static class PlayerCsvFormat
 {
     public const string Level10DateFormat = "yyyy-MM-dd";
@@ -58,7 +53,6 @@ public static class PlayerCsvFormat
         );
     }
 
-    /// <summary>Splits one CSV line, honouring quoted fields and doubled quotes.</summary>
     public static List<string> ParseLine(string line)
     {
         ArgumentNullException.ThrowIfNull(line);

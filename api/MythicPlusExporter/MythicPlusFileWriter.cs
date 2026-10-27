@@ -7,24 +7,6 @@ using Tauri.Core.Infrastructure;
 
 namespace MythicPlusExporter;
 
-/// <summary>
-/// Writes the files the /mythic-plus page reads (contract: spa/src/app/mythic-plus.ts).
-/// <para>
-/// <c>index.json</c> holds when the leaderboards were read (<c>generatedAt</c>, UTC ISO 8601),
-/// a fingerprint of the lookup tables (<c>tables</c>), the season, dungeons, affixes, compact
-/// scan-to-scan standings and the shared lookup tables themselves:
-/// <c>specs</c> as objects, <c>players</c> as <c>[name, realm, guild, class, race, gender]</c>.
-/// </para>
-/// <para>
-/// <c>&lt;dungeon&gt;.json</c> holds that dungeon's runs, best first, as
-/// <c>[keyLevel, clearTimeMs, completedAtUnixSeconds, score, [affixIds], [[player, spec], ...]]</c>
-/// where player and spec are positions in the index tables. Sharing the tables keeps a
-/// dungeon file to its runs; a character plays many dungeons. Each dungeon file repeats the
-/// index's <c>tables</c> fingerprint: the player table is sorted by name, so new players
-/// renumber it, and the page must not read a dungeon file against another export's index.
-/// </para>
-/// Every entry goes on its own line so git can store the daily changes as small deltas.
-/// </summary>
 public static class MythicPlusFileWriter
 {
     public const int FormatVersion = 1;
@@ -32,7 +14,6 @@ public static class MythicPlusFileWriter
 
     private static readonly JsonWriterOptions WriterOptions = new()
     {
-        // Character and guild names are often Cyrillic or accented; keep them readable.
         Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
     };
 
@@ -55,7 +36,6 @@ public static class MythicPlusFileWriter
             .ToDictionary(entry => entry.spec, entry => entry.index);
         var tables = TablesFingerprint(dataset);
 
-        // Dungeon files first and the index last: the index is what makes new dungeons visible.
         foreach (var dungeon in dataset.Dungeons)
         {
             await AtomicFile.WriteAsync(
@@ -84,12 +64,6 @@ public static class MythicPlusFileWriter
         RemoveStaleFiles(outputDirectory, dataset);
     }
 
-    /// <summary>
-    /// A short hash of what the positions in the dungeon files mean: the spec table and the
-    /// player identities, in order. It changes when a player is added (the sorted table shifts)
-    /// but not when a known player's guild or race does, so an unchanged dungeon file stays
-    /// byte for byte the same and still counts as matching a newer index.
-    /// </summary>
     public static string TablesFingerprint(MythicPlusDataset dataset)
     {
         var text = new StringBuilder();
@@ -230,8 +204,6 @@ public static class MythicPlusFileWriter
         }
         writer.WriteEndArray();
 
-        // Aligned with `players`: [current score, current rank, score change, rank change].
-        // New characters (and the first export) have no two change values.
         writer.WriteStartArray("standings");
         foreach (var standing in standings)
         {
@@ -320,7 +292,6 @@ public static class MythicPlusFileWriter
         await writer.FlushAsync(cancellationToken);
     }
 
-    /// <summary>Removes dungeon files from an earlier run whose dungeon is no longer listed.</summary>
     private static void RemoveStaleFiles(string outputDirectory, MythicPlusDataset dataset)
     {
         var expected = dataset

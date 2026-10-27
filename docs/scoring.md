@@ -84,6 +84,9 @@ explains it together.
 
 - **Code:** `rankMatchingCharacters` in
   `spa/src/app/features/achievements/rare-achievement-matches.ts`.
+- Heroic: Nefarian and Heroic: Maloriak count as rare only for a character who earned both on
+  3 May 2015. The character scan applies this (`RareScanCatalog.RareAchievementDateRequirements`,
+  through `CharacterScanner`).
 - One achievement: newest first. A group ("All Gladiator Titles", "All Gladiator Mounts", "All
   Rated Battleground Titles") lists each character once, dated by their latest achievement in
   the group.

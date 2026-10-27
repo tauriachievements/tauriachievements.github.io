@@ -116,8 +116,6 @@ internal static class Program
                     break;
                 }
 
-                // Characters that are gone from the realm fail every time, so stop once a
-                // round resolves nobody instead of burning the remaining rounds on them.
                 if (result.RemainingMissingCharacterCount >= result.MissingCharacterCount)
                 {
                     Console.WriteLine("This round resolved no characters; stopping.");

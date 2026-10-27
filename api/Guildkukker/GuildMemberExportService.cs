@@ -69,7 +69,6 @@ public sealed class GuildMemberExportService(
             [134553] = "Fury",
         };
 
-    // The fishing artifact: it comes back with the weapons but belongs to no spec.
     private const int UnderlightAnglerId = 133755;
 
     private readonly string _outputDirectory = Path.GetFullPath(outputDirectory);
@@ -270,7 +269,6 @@ public sealed class GuildMemberExportService(
             return ArtifactResult.Missing;
         }
 
-        // Character-wide Artifact Knowledge (research) level, not tied to any one artifact.
         int? knowledge =
             response.TryGetProperty("artifact_knowledge", out var knowledgeElement)
             && knowledgeElement.TryGetInt32(out var knowledgeLevel)
@@ -283,7 +281,6 @@ public sealed class GuildMemberExportService(
         }
 
         ArtifactCandidate? bestArtifact = null;
-        // Every artifact the character owns, one per spec, not just the one with the most traits.
         var weaponsBySpecialization = new Dictionary<string, ArtifactWeaponExport>(
             StringComparer.OrdinalIgnoreCase
         );
@@ -585,8 +582,6 @@ public sealed class GuildMemberExportService(
     private static string MakeFileNamePart(string value)
     {
         var invalidCharacters = Path.GetInvalidFileNameChars().ToHashSet();
-        // The site loads these files by URL, so accents are dropped ("Témérité" -> "Temerite")
-        // and the URL never needs encoding.
         var sanitized = new string(
             value
                 .Trim()

@@ -5,15 +5,9 @@ namespace RaidLogExporter;
 
 public interface IRaidTalentSource
 {
-    /// <summary>Every tracked spec's talent tiers, or null when any of them could not be read.</summary>
     Task<IReadOnlyList<RaidSpecTalents>?> LoadAsync(CancellationToken cancellationToken);
 }
 
-/// <summary>
-/// Reads the talent tiers from TauriShoot's talent calculator, <c>?talent-frag&amp;c=&lt;classId&gt;</c>,
-/// the server's own data. Checked on 2026-10-15 against tauriprogress's table, which decodes the
-/// same raid logs: all 756 talents of the 36 specs matched.
-/// </summary>
 public sealed class TauriShootTalentSource : IRaidTalentSource, IDisposable
 {
     private const string BaseUrl = "https://legion-shoot.tauri.hu/";
@@ -62,11 +56,6 @@ public sealed class TauriShootTalentSource : IRaidTalentSource, IDisposable
         return talents;
     }
 
-    /// <summary>
-    /// A class's fragment lists each tier's choices left to right. A choice is one talent for the
-    /// whole class (spec <c>"0"</c>) or one per spec, as an array or an object keyed by spec id.
-    /// Returns null unless every tier is there and every spec has a talent on it.
-    /// </summary>
     public static IReadOnlyList<RaidSpecTalents>? ParseFragment(
         JsonElement fragment,
         IReadOnlyList<int> specIds
@@ -143,7 +132,6 @@ public sealed class TauriShootTalentSource : IRaidTalentSource, IDisposable
         );
     }
 
-    /// <summary>TauriShoot writes numbers as strings; either reads as text.</summary>
     private static string ReadText(JsonElement element, string propertyName) =>
         !element.TryGetProperty(propertyName, out var property) ? ""
         : property.ValueKind == JsonValueKind.String ? property.GetString() ?? ""

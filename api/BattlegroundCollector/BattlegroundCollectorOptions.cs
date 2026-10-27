@@ -187,7 +187,6 @@ public sealed record BattlegroundCollectorOptions(
 
     private static bool TryParseMatchId(string value, out int matchId)
     {
-        // NumberStyles.None allows digits only (no sign, whitespace, or separators).
         return int.TryParse(value, NumberStyles.None, CultureInfo.InvariantCulture, out matchId)
             && matchId > 0;
     }

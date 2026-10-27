@@ -11,14 +11,14 @@ public sealed class MythicPlusExportServiceTests
     internal const string WoD = "[HU] Warriors of Darkness";
 
     [Theory]
-    [InlineData(18, 1_245_000, 1440, 186.7)] // timed, 86% of the timer
-    [InlineData(16, 982_000, 1440, 174.0)] // timed, 68%
-    [InlineData(16, 1_440_000, 1440, 170.0)] // exactly on the timer still counts as timed
-    [InlineData(16, 2_950_000, 2700, 160.6)] // 9% over: scored as a +15, minus the overrun
-    [InlineData(16, 2_016_000, 1440, 154.5)] // exactly 40% over still scores
-    [InlineData(16, 2_016_001, 1440, 0.0)] // more than 40% over scores nothing
-    [InlineData(20, 3_510_000, 2340, 0.0)] // 50% over: 0 however high the key
-    [InlineData(2, 9_000_000, 1440, 0.0)] // far over time
+    [InlineData(18, 1_245_000, 1440, 186.7)]
+    [InlineData(16, 982_000, 1440, 174.0)]
+    [InlineData(16, 1_440_000, 1440, 170.0)]
+    [InlineData(16, 2_950_000, 2700, 160.6)]
+    [InlineData(16, 2_016_000, 1440, 154.5)]
+    [InlineData(16, 2_016_001, 1440, 0.0)]
+    [InlineData(20, 3_510_000, 2340, 0.0)]
+    [InlineData(2, 9_000_000, 1440, 0.0)]
     public void Score_RewardsLevelFirstAndTimeSecond(
         int keyLevel,
         long clearTimeMilliseconds,
@@ -32,17 +32,15 @@ public sealed class MythicPlusExportServiceTests
         );
     }
 
-    // The worked examples on /mythic-plus/scoring (spa mythic-plus-scoring-page.component.html).
-    // If the formula changes, update that page too.
     [Theory]
-    [InlineData(20, 1_837_000, 2340, 202.7)] // BRH +20 in 30:37
-    [InlineData(20, 1_623_000, 1800, 201.2)] // COS +20 in 27:03
-    [InlineData(18, 1_860_000, 2100, 186.4)] // EOA +18 in 31:00
-    [InlineData(18, 1_980_000, 2100, 185.7)] // EOA +18 in 33:00
-    [InlineData(17, 1_530_000, 1440, 168.8)] // MOS +17 in 25:30, over time
-    [InlineData(20, 2_460_000, 2340, 191.5)] // BRH +20 in 41:00, over time
-    [InlineData(19, 2_339_000, 2340, 192.5)] // BRH +19 with one second to spare
-    [InlineData(19, 1_404_000, 2340, 197.5)] // BRH +19 at 60% of the timer
+    [InlineData(20, 1_837_000, 2340, 202.7)]
+    [InlineData(20, 1_623_000, 1800, 201.2)]
+    [InlineData(18, 1_860_000, 2100, 186.4)]
+    [InlineData(18, 1_980_000, 2100, 185.7)]
+    [InlineData(17, 1_530_000, 1440, 168.8)]
+    [InlineData(20, 2_460_000, 2340, 191.5)]
+    [InlineData(19, 2_339_000, 2340, 192.5)]
+    [InlineData(19, 1_404_000, 2340, 197.5)]
     public void Score_MatchesTheScoringPageExamples(
         int keyLevel,
         long clearTimeMilliseconds,
@@ -118,7 +116,6 @@ public sealed class MythicPlusExportServiceTests
                         ),
                         shared
                     ),
-                    // The same run listed on a second leaderboard is kept once.
                     [(WoD, 200)] = LeaderboardJson(shared),
                     [(Evermoon, 197)] = LeaderboardJson(
                         Run(
@@ -159,8 +156,6 @@ public sealed class MythicPlusExportServiceTests
             );
             var root = index.RootElement;
             Assert.Equal("2026-10-07T09:30:15Z", root.GetProperty("generatedAt").GetString());
-            // Seat of the Triumvirate is unreleased: its leaderboard is never requested (the fake
-            // client would fail it) and it gets no tile.
             Assert.Equal(
                 ["eoa", "hov"],
                 root.GetProperty("dungeons")
@@ -183,9 +178,8 @@ public sealed class MythicPlusExportServiceTests
             );
             var runs = hov.RootElement.GetProperty("runs").EnumerateArray().ToList();
             Assert.Equal([15, 14], runs.Select(run => run[0].GetInt32()));
-            Assert.Equal(0, runs[0][5][0][0].GetInt32()); // Alpha, the first player
+            Assert.Equal(0, runs[0][5][0][0].GetInt32());
 
-            // Every dungeon file names the player table its positions point into.
             var tables = root.GetProperty("tables").GetString();
             Assert.Matches("^[0-9a-f]{12}$", tables);
             Assert.Equal(tables, hov.RootElement.GetProperty("tables").GetString());
@@ -301,8 +295,6 @@ public sealed class MythicPlusExportServiceTests
             Assert.True(beta[2].GetDouble() > 0);
             Assert.Equal(1, beta[3].GetInt32());
 
-            // The deployed index predates this feature on its first run. Removing the compact
-            // standings exercises the one-time migration that reconstructs them from run files.
             var indexPath = Path.Combine(outputDirectory, "index.json");
             var legacyIndex = JsonNode.Parse(File.ReadAllText(indexPath))!.AsObject();
             legacyIndex.Remove("standings");
@@ -368,8 +360,6 @@ public sealed class MythicPlusExportServiceTests
         var outputDirectory = CreateTempDirectory();
         try
         {
-            // Alpha, Beta and Gamma timed the same key together. Delta's key was a second slower:
-            // the same score (it rounds to a tenth) but a longer total time. Epsilon scores less.
             var service = new MythicPlusExportService(
                 outputDirectory,
                 new FakeChallengeApiClient(
@@ -444,12 +434,10 @@ public sealed class MythicPlusExportServiceTests
         var gamma = new MythicPlusPlayer("Gamma", Evermoon, "", 10, 2, 1);
         var original = MythicPlusFileWriter.TablesFingerprint(Dataset(alpha, gamma));
 
-        // A guild change leaves every position meaning the same character.
         Assert.Equal(
             original,
             MythicPlusFileWriter.TablesFingerprint(Dataset(alpha with { Guild = "" }, gamma))
         );
-        // A new player sorted in between moves Gamma to another position.
         Assert.NotEqual(
             original,
             MythicPlusFileWriter.TablesFingerprint(

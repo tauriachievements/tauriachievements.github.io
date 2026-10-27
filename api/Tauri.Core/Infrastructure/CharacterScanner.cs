@@ -3,11 +3,6 @@ using Tauri.Core.Shared;
 
 namespace Tauri.Core.Infrastructure;
 
-/// <summary>
-/// Fetches one character and maps it to a <see cref="Player"/> plus its rare achievements and
-/// rare items. Both the full ladder scan and the missing-player backfill use this, so every
-/// row in Players.csv is produced the same way.
-/// </summary>
 public static class CharacterScanner
 {
     public static async Task<CharacterScanResult> ScanAsync(
@@ -88,10 +83,8 @@ public static class CharacterScanner
 
 public enum CharacterScanMode
 {
-    /// <summary>Achievements and item appearances: everything a Players.csv row needs.</summary>
     Full,
 
-    /// <summary>Achievements only, for refreshing rare achievements of a known character.</summary>
     AchievementsOnly,
 }
 

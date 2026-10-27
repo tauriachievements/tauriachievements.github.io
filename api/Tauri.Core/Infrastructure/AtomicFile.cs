@@ -3,11 +3,6 @@ using System.Text.Json;
 
 namespace Tauri.Core.Infrastructure;
 
-/// <summary>
-/// Writes files atomically: content goes to a sibling ".tmp" file that is renamed over the
-/// target only once it is complete, so readers never observe a half-written file and an
-/// interrupted run leaves the previous version in place.
-/// </summary>
 public static class AtomicFile
 {
     public static readonly UTF8Encoding Utf8NoBom = new(encoderShouldEmitUTF8Identifier: false);

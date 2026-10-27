@@ -44,6 +44,8 @@ response first.
     artifact with the highest sum. The free first trait (`isfirstbonus`) and relic ranks don't
     count.
   - `artifact_knowledge` is the Artifact Knowledge level.
+  - The fishing artifact, Underlight Angler (133755), comes back with the weapons but belongs to
+    no spec.
   - Observed 2026-10-14: `artifacts[].artifact.xp` is that weapon's unspent artifact power, not
     a lifetime total.
 - Observed 2026-10-17: deleted or transferred characters come back from
@@ -61,6 +63,11 @@ response first.
 - Empty affix slots come back as id `0`. Affix slots unlock at +4, +7 and +10, in that order.
   Characters the API no longer knows come back with `playerinfo: {}`. Both are dropped. Code:
   `ChallengeResponseParser`.
+- A list comes either as an array or as an object keyed by id (`{"197": {...}}`); the parser
+  reads both. Code: `ChallengeResponseParser`.
+- Icons are names without a host. `dataUrlPrefix` (`legion-`) picks the expansion's static
+  server: `https://legion-static.tauri.hu/images/icons/large/<icon>.png`. Code:
+  `MythicPlusCatalog.IconUrl`.
 - Some dungeons are listed but not open yet. `MythicPlusCatalog.UnreleasedChallengeIds` skips
   them (227, 233, 234, 239). Remove an id when that dungeon opens.
 - The season's name and start date are constants in `MythicPlusCatalog`. Edit them for a new
@@ -74,7 +81,22 @@ response first.
   16 Mythic, 17 LFR. Code: `RaidCatalog`.
 - Legion raids of Evermoon and Tauri characters are all logged under `[HU] Tauri WoW Server`.
   WoD logs its own. Log ids are per realm. Code: `RaidLogExporterOptions` (checked
-  2026-10-12).
+  2026-10-12). Evermoon lists none, but the exporter still asks it: that costs little, and it
+  could change.
+- `raid-rank-encounter` takes a realm, boss and difficulty and lists every kill of that boss.
+  Checked 2026-10-12: all 540 Emerald Nightmare kills in the realm's last 20,000 `raid-last`
+  logs were in the rankings. `raid-log` gives one kill's details; the exporter skips a log
+  whose details describe another raid, boss or difficulty, or nobody. Code: `RaidLogReader`,
+  `RaidLogResponseParser`.
+- **A member's realm.** A member with an armory link (`link`, HTML-escaped:
+  `r=[HU] Tauri WoW Server&amp;n=Name`) plays on the realm it names. On Tauri's logs the
+  Evermoon characters come without one (`valid_player: false`), so an unlinked member of a
+  Tauri log is taken as Evermoon, and elsewhere as the log's realm. Checked 2026-10-12 against
+  the Mythic+ player list: 98,869 such members were Evermoon characters and 169 matched a
+  Tauri name. Code: `RaidLogResponseParser.MemberRealm`.
+- A log names only the guild of members with an armory link, so Evermoon raiders look
+  guildless in it. The exporter takes each character's current guild from Players.csv
+  (`PlayerGuildDirectory`).
 - Observed 2026-10-12: LFR has no logs on any realm. LFR-only raiders therefore never appear.
 - The API's `encounter_order` is not the Encounter Journal order (it puts Ursoc second).
   `RaidCatalog.Bosses` holds the real order. Code: `RaidCatalog`.
@@ -82,7 +104,9 @@ response first.
   (`guildrid` 9) comes back with the name and faction of the *Tauri* guild that has the same
   id, or with no name at all. `RaidGuildResolver` takes the most common Players.csv guild among
   that guild's raiders, and accepts it only when `guild-info` on Evermoon returns the same
-  guild id. Confirmed names are cached in the boss files. Code: `RaidGuildResolver`.
+  guild id. Confirmed names are cached in the boss files; a guild no candidate confirms stays
+  unnamed and is tried again next run. A pickup group has `guildid` 0. Code:
+  `RaidGuildResolver`.
 - **Genders are wrong.** The raid API reports almost everyone as male. The build corrects the
   leaderboard's race icons from Players.csv (`scripts/generate-raid-genders.js` writes
   `raid-genders.json`).
@@ -91,14 +115,18 @@ response first.
 - Talents come as one string per member, for example `"Za!1212212"`: class and spec letters,
   then one 0-based column per tier, with `.` for none. The talent trees, their tooltips and
   the item names come from TauriShoot (below).
+- Trinkets are `trinket_0` and `trinket_1`; an empty slot has no item id.
 
 ## TauriShoot (`legion-shoot.tauri.hu`)
 
 The Legion database site. RaidLogExporter reads three of its endpoints, with no key:
 
 - `?talent-frag&c=<classId>`: a class's talent tiers, each talent's spell id, name and icon.
-  Numbers come as strings. If any class can't be read, the last `talents.json` and
-  `talent-tooltips.json` stay. Code: `TauriShootTalentSource`.
+  Each tier lists its choices left to right; a choice is one talent for the whole class (spec
+  `"0"`) or one per spec, as an array or an object keyed by spec id. Numbers come as strings.
+  If any class can't be read, the last `talents.json` and `talent-tooltips.json` stay. Code:
+  `TauriShootTalentSource`. Checked 2026-10-15 against tauriprogress, which decodes the same
+  raid logs: all 756 talents of the 36 specs matched.
 - `?item=<id>&xml`: an item's name, quality and icon. Code: `TauriShootItemSource`.
 - `ajax/ajax.php?spell=<id>&power2`: a spell's tooltip, the request TauriShoot's own
   `power.js` embed makes. It answers JavaScript,

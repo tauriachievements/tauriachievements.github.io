@@ -72,11 +72,6 @@ public static class RareAchievementExtractor
         );
     }
 
-    /// <summary>
-    /// Extracts every achieved achievement id. Obtained dates are only parsed for ids in
-    /// <paramref name="dateTrackedIds"/>; all other entries are stored with a null date,
-    /// which skips the expensive multi-format date parsing for the vast majority of entries.
-    /// </summary>
     public static IReadOnlyDictionary<int, DateTimeOffset?> ExtractAchievements(
         JsonElement responseElement,
         IReadOnlySet<int> dateTrackedIds
