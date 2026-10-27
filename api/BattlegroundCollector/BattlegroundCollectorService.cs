@@ -158,6 +158,7 @@ public sealed class BattlegroundCollectorService(
             ToSeenCharacters(scannedMembers)
         );
 
+        var addedRatedMatches = newRatedMatches.Count > 0;
         var savedState = new BattlegroundCollectorState(
             currentMatchId,
             options.ApiRealm,
@@ -165,7 +166,11 @@ public sealed class BattlegroundCollectorService(
             DateTimeOffset.UtcNow,
             stopReason,
             newRecords.Count,
-            newRecords.Count == 0 ? null : newRecords.Max(record => record.Id)
+            newRecords.Count == 0 ? null : newRecords.Max(record => record.Id),
+            addedRatedMatches ? existingState?.LastScanUtc : existingState?.NewRatedMatchesSince,
+            addedRatedMatches
+                ? newRatedMatches.Select(match => ReadInt(match, "matchid")).ToList()
+                : existingState?.NewRatedMatchIds
         );
 
         await WriteJsonAsync(statePath, savedState, cancellationToken);
@@ -690,7 +695,9 @@ public sealed record BattlegroundCollectorState(
     DateTimeOffset LastScanUtc,
     string LastStopReason,
     int LastAddedCount,
-    int? LastAddedMatchId
+    int? LastAddedMatchId,
+    DateTimeOffset? NewRatedMatchesSince = null,
+    IReadOnlyList<int>? NewRatedMatchIds = null
 );
 
 public sealed record BattlegroundCollectionResult(

@@ -87,6 +87,7 @@
 }
 
 .intro { margin: 10px 0 12px; color: #bdb8ab; font-size: 0.88rem; line-height: 1.45; }
+.changes-note { margin: -4px 0 12px; color: #958f80; font-size: 0.8rem; line-height: 1.45; }
 
 .summary {
   display: grid;
@@ -228,7 +229,10 @@
 
 .results { margin-top: 16px; overflow: hidden; }
 
-.table-scroll { overflow-x: auto; }
+.table-scroll { @include table-scroll; }
+
+@include visually-hidden;
+@include scan-change-marks(#ff9a9a);
 
 .players-table {
   width: 100%;
@@ -310,6 +314,27 @@
   &:focus-visible { outline: 2px solid #f7b500; outline-offset: 4px; border-radius: 2px; }
 }
 
+.players-table.with-rank-changes th.rank { padding-right: 62px; }
+
+.with-rank-changes .rank-cell {
+  display: grid;
+  grid-template-columns: minmax(3ch, 1fr) 36px;
+  align-items: center;
+  column-gap: 8px;
+}
+
+.with-changes .rating-cell {
+  display: inline-grid;
+  grid-template-columns: 5ch 5ch;
+  align-items: center;
+  column-gap: 6px;
+}
+
+.rating-value { justify-self: end; }
+.rating-cell .value-change { justify-self: start; }
+.realm-inline .rank-move,
+.realm-inline .rank-new { margin-left: 6px; }
+
 .sort-arrow { position: absolute; right: 100%; margin-right: 5px; font-size: 0.6rem; visibility: hidden; }
 .is-active .sort-arrow { visibility: visible; }
 
@@ -352,6 +377,9 @@
     tbody tr.title-group td { padding: 9px 10px 8px; }
     .label-short { display: inline; }
   }
+
+  .with-changes .rating-cell { display: flex; flex-direction: column; align-items: center; gap: 2px; }
+  .rating-cell .value-change { justify-self: auto; font-size: 0.69rem; line-height: 1; }
 
   .sort-button { flex-direction: column; align-items: center; gap: 2px; }
   .sort-arrow { position: static; margin: 0; }

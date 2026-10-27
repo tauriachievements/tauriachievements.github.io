@@ -202,10 +202,10 @@ holds up the page.
 ## Arena ladder files
 
 ArenaLadderExporter writes `arena-ladder-2v2.json` and `arena-ladder-3v3.json` for `/arena`,
-which reads them through `arena-games.ts`. Each file is
-`{ version, bracket, seasonStart, generatedAt, players }`, one player per line, best rating
-first (then most games, name, realm and guid). A player is
-`{ guid, realm, name, class, race, gender, faction, guild, spec, games, wins, weekGames, weekWins, rating, peakRating, weekPeakRating }`,
+which reads them through `arena-games.ts`. Each file (format version 2) is
+`{ version, bracket, seasonStart, generatedAt, previousGeneratedAt, players }`, one player per
+line, best rating first (then most games, name, realm and guid). A player is
+`{ guid, realm, name, class, race, gender, faction, guild, spec, games, wins, weekGames, weekWins, rating, peakRating, weekPeakRating, previousRating, previousGames }`,
 taken straight from the ladder ([tauri-api.md](tauri-api.md#arena-ladder-arena-ladder)):
 
 - `spec` is the spec of the player's latest game, 0 when the ladder has none.
@@ -215,9 +215,34 @@ taken straight from the ladder ([tauri-api.md](tauri-api.md#arena-ladder-arena-l
 - Losses and the win rate are worked out on the page.
 - `generatedAt` (UTC) is when the ladder was read, and the page header shows it.
 - `seasonStart` is `ArenaSeason.Start`.
+- `previousGeneratedAt`, `previousRating` and `previousGames` come from the file the export
+  replaces: its `generatedAt`, and the same realm and guid's `rating` and `games` there. The
+  ladder's own `prev_personal_rating` is always 0 ([tauri-api.md](tauri-api.md#arena-ladder-arena-ladder)),
+  so this is the only record of the previous scan. They're left out when that file is from
+  another season (`seasonStart`) or has no `generatedAt`, and a player's pair is left out when
+  the player wasn't on it. The page turns them into the rank and rating changes
+  ([scoring.md](scoring.md#arena-changes-since-the-last-scan)).
+
+The comparison is with the previous export, published or not: running the exporter twice
+(the whole daily update again after a failure, instead of `-From`) compares the second run with
+the first, and the day's changes shrink to whatever happened in between.
 
 A ladder entry without a name, class, known realm or games is left out, and so is a second
 entry for the same realm and guid.
+
+## Rated battleground changes
+
+`rated-battlegrounds.json` is the archive of every rated battleground the collector has read,
+oldest first; the page ranks its players from those games. To show what the latest games
+changed, `battleground-collector-state.json` carries two more fields:
+
+- `newRatedMatchIds`: the `matchid`s of the rated games the latest scan that found any added;
+- `newRatedMatchesSince`: when the scan before that one ran (its `lastScanUtc`).
+
+A scan that adds no rated game keeps both as they are. Rated battlegrounds are rare (32 games
+on 12 days between 17 Sept and 26 Oct 2026), so the page keeps showing the latest games'
+changes until new ones arrive. Both are `null` until the first scan after they were added finds
+a rated game.
 
 ## Elite PvP items
 

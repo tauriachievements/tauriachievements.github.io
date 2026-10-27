@@ -9,13 +9,29 @@ public sealed record ArenaBracketExport(
     int PlayerCount,
     int SkippedCount,
     int GamesPlayed,
-    int PreviousGamesPlayed
+    int PreviousGamesPlayed,
+    int ComparedPlayerCount
 );
 
 public sealed record ArenaLadderExportResult(
     IReadOnlyList<ArenaBracketExport> Brackets,
     DateTimeOffset GeneratedAt
 );
+
+public sealed record PreviousArenaStanding(int Rating, int Games);
+
+public sealed record PreviousArenaLadder(
+    int GamesPlayed,
+    string? GeneratedAt,
+    IReadOnlyDictionary<(string Realm, int Guid), PreviousArenaStanding> Standings
+)
+{
+    public static readonly PreviousArenaLadder None = new(
+        0,
+        null,
+        new Dictionary<(string Realm, int Guid), PreviousArenaStanding>()
+    );
+}
 
 public sealed class ArenaLadderExportService(
     string outputDirectory,
@@ -45,18 +61,27 @@ public sealed class ArenaLadderExportService(
             .Select(entry =>
             {
                 var path = Path.Combine(outputDirectory, entry.Bracket.FileName);
-                return new ArenaBracketExport(
-                    entry.Bracket,
-                    path,
-                    entry.Ladder.Players.Count,
-                    entry.Ladder.SkippedCount,
-                    CountGamesPlayed(entry.Ladder.Players),
-                    ReadPreviousGamesPlayed(path)
+                var previous = ReadPreviousLadder(path);
+                return (
+                    entry.Ladder,
+                    Previous: previous,
+                    Export: new ArenaBracketExport(
+                        entry.Bracket,
+                        path,
+                        entry.Ladder.Players.Count,
+                        entry.Ladder.SkippedCount,
+                        CountGamesPlayed(entry.Ladder.Players),
+                        previous.GamesPlayed,
+                        entry.Ladder.Players.Count(player =>
+                            previous.Standings.ContainsKey((player.Realm, player.Guid))
+                        )
+                    )
                 );
             })
             .ToList();
 
         var shrunk = exports
+            .Select(entry => entry.Export)
             .Where(export =>
                 export.PreviousGamesPlayed > 0
                 && export.GamesPlayed < export.PreviousGamesPlayed * (1 - MaxShrinkFraction)
@@ -76,18 +101,22 @@ public sealed class ArenaLadderExportService(
             );
         }
 
-        foreach (var (bracket, ladder) in ladders)
+        foreach (var (ladder, previous, export) in exports)
         {
             await ArenaLadderFileWriter.WriteAsync(
-                Path.Combine(outputDirectory, bracket.FileName),
-                bracket,
+                export.Path,
+                export.Bracket,
                 ladder.Players,
+                previous,
                 generatedAt,
                 cancellationToken
             );
         }
 
-        return new ArenaLadderExportResult(exports, generatedAt);
+        return new ArenaLadderExportResult(
+            exports.Select(entry => entry.Export).ToList(),
+            generatedAt
+        );
     }
 
     private async Task<ArenaLadder> ReadLadderAsync(
@@ -115,11 +144,11 @@ public sealed class ArenaLadderExportService(
     private static int CountGamesPlayed(IEnumerable<ArenaLadderPlayer> players) =>
         players.Sum(player => player.Games);
 
-    private static int ReadPreviousGamesPlayed(string path)
+    private static PreviousArenaLadder ReadPreviousLadder(string path)
     {
         if (!File.Exists(path))
         {
-            return 0;
+            return PreviousArenaLadder.None;
         }
 
         try
@@ -136,21 +165,51 @@ public sealed class ArenaLadderExportService(
                 || players.ValueKind != JsonValueKind.Array
             )
             {
-                return 0;
+                return PreviousArenaLadder.None;
             }
 
-            return players
-                .EnumerateArray()
-                .Sum(player =>
-                    player.TryGetProperty("games", out var games)
-                    && games.TryGetInt32(out var value)
-                        ? value
-                        : 0
-                );
+            var gamesPlayed = players.EnumerateArray().Sum(player => ReadInt(player, "games"));
+            if (
+                !root.TryGetProperty("generatedAt", out var generatedAt)
+                || generatedAt.ValueKind != JsonValueKind.String
+                || string.IsNullOrEmpty(generatedAt.GetString())
+            )
+            {
+                return PreviousArenaLadder.None with { GamesPlayed = gamesPlayed };
+            }
+
+            var standings = new Dictionary<(string Realm, int Guid), PreviousArenaStanding>();
+            foreach (var player in players.EnumerateArray())
+            {
+                if (
+                    player.TryGetProperty("realm", out var realm)
+                    && realm.ValueKind == JsonValueKind.String
+                    && ReadInt(player, "guid") is var guid and > 0
+                )
+                {
+                    standings.TryAdd(
+                        (realm.GetString()!, guid),
+                        new PreviousArenaStanding(
+                            ReadInt(player, "rating"),
+                            ReadInt(player, "games")
+                        )
+                    );
+                }
+            }
+
+            return new PreviousArenaLadder(gamesPlayed, generatedAt.GetString(), standings);
         }
         catch (Exception error) when (error is JsonException or IOException)
         {
-            return 0;
+            return PreviousArenaLadder.None;
         }
     }
+
+    private static int ReadInt(JsonElement player, string propertyName) =>
+        player.ValueKind == JsonValueKind.Object
+        && player.TryGetProperty(propertyName, out var property)
+        && property.ValueKind == JsonValueKind.Number
+        && property.TryGetInt32(out var value)
+            ? value
+            : 0;
 }

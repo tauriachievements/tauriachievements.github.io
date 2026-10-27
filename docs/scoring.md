@@ -405,3 +405,41 @@ explains it together.
   for a new season, so the first export doesn't compare its games with the old season's file
   ([data-pipeline.md](data-pipeline.md#publishing-safety)).
 - **Tests:** `arena-games.spec.ts`.
+
+## Arena changes since the last scan
+
+- **Code:** `arenaRatingChanges` in `spa/src/app/features/pvp/arena-games.ts`, on
+  `scanChanges` in `spa/src/app/shared/scan-change.ts`; the previous values come from the
+  exporter ([data-pipeline.md](data-pipeline.md#arena-ladder-files)).
+- The previous ranking is the table's own ranking worked out on each player's previous rating
+  and games: the players who had `MIN_GAMES` (50) or more then, by rating, then more games,
+  then the name. A player's rank change is their place then minus their place now (▲ climbed,
+  ▼ fell); the rating change is the rating now minus the rating then.
+- **New** is a player in today's list who wasn't in that one: under 50 games then, or not on
+  the ladder at all (also a character the ladder moved to a new GUID). New players show "new"
+  and no rating change.
+- A character on the previous list that has left the ladder (deleted, or moved to a new GUID)
+  isn't in the previous ranking either, so it gives the players below it no climb.
+- Rank changes show only in the table's default order, rating from the top, where the `#`
+  column is that ranking. Rating changes show in every order.
+- Gains are green and drops red: unlike a raid score, a rating only drops when its player
+  loses.
+- **Tests:** `arena-games.spec.ts`, `scan-change.spec.ts`, `ArenaLadderExportServiceTests`.
+
+## Rated battleground leaderboard
+
+- **Code:** `buildRatedBattlegroundAnalytics`, `rankRatedPlayers` and `ratedPlayerChanges` in
+  `spa/src/app/features/pvp/rated-battleground-stats.ts`.
+- Players rank by the picked metric over the games in view (all battlegrounds, or one), most
+  first, then more wins, then the name. "Net rating change" adds up every game's
+  `personal_rating_change`.
+- **Changes:** the same ranking (metric and battleground) worked out again without the games
+  the latest scan that found rated games added (`newRatedMatchIds`,
+  [data-pipeline.md](data-pipeline.md#rated-battleground-changes)), compared with today's. The
+  rank change sits beside the rank, and beside the metric what those games added to it.
+  Players those games brought onto the list are "new".
+- The changes stay until a scan finds more rated games, and the note above the table says
+  since which scan and how many games in view that is. A battleground the new games weren't
+  played on shows no changes.
+- Gains are green and drops red, as on the Arena page.
+- **Tests:** `rated-battleground-stats.spec.ts`, `BattlegroundCollectorServiceTests`.

@@ -1,4 +1,5 @@
 import { specById } from '../../game/wow-specs';
+import { ScanChange, scanChanges } from '../../shared/scan-change';
 
 export type ArenaBracket = '2v2' | '3v3';
 export const ARENA_BRACKETS: readonly ArenaBracket[] = ['2v2', '3v3'];
@@ -28,6 +29,8 @@ export interface ArenaPlayer {
   rating: number;
   peakRating: number;
   weekPeakRating: number;
+  previousRating?: number;
+  previousGames?: number;
 }
 
 export interface ArenaLadderFile {
@@ -35,6 +38,7 @@ export interface ArenaLadderFile {
   bracket: ArenaBracket;
   seasonStart: string;
   generatedAt: string;
+  previousGeneratedAt?: string;
   players: ReadonlyArray<ArenaPlayer>;
 }
 
@@ -129,16 +133,44 @@ export function toArenaRows(players: readonly ArenaPlayer[], minGames: number): 
     }));
 }
 
-export function sortArenaRows(
-  rows: readonly ArenaPlayerRow[],
-  key: ArenaSortKey,
+export function sortArenaRows<K extends ArenaSortKey, T extends Pick<ArenaPlayerRow, K | 'games' | 'name'>>(
+  rows: readonly T[],
+  key: K,
   direction: SortDirection
-): ArenaPlayerRow[] {
+): T[] {
   const sign = direction === 'asc' ? 1 : -1;
 
   return [...rows].sort((left, right) =>
     sign * (left[key] - right[key])
     || right.games - left.games
     || left.name.localeCompare(right.name)
+  );
+}
+
+export function arenaPlayerKey(player: Pick<ArenaPlayer, 'realm' | 'guid'>): string {
+  return `${player.realm}::${player.guid}`;
+}
+
+export function arenaRatingChanges(
+  { players, previousGeneratedAt }: Pick<ArenaLadderFile, 'players' | 'previousGeneratedAt'>,
+  minGames: number
+): Map<string, ScanChange> {
+  if (!previousGeneratedAt) {
+    return new Map();
+  }
+
+  const current = sortArenaRows(toArenaRows(players, minGames), 'rating', 'desc');
+  const previous = sortArenaRows(previousLadder(players, minGames), 'rating', 'desc');
+  return scanChanges(current, previous, arenaPlayerKey, player => player.rating);
+}
+
+function previousLadder(
+  players: readonly ArenaPlayer[],
+  minGames: number
+): Array<Pick<ArenaPlayer, 'realm' | 'guid' | 'name' | 'rating' | 'games'>> {
+  return players.flatMap(({ realm, guid, name, previousRating, previousGames }) =>
+    previousRating !== undefined && previousGames !== undefined && previousGames >= minGames
+      ? [{ realm, guid, name, rating: previousRating, games: previousGames }]
+      : []
   );
 }

@@ -22,6 +22,13 @@
           server's arena ladder. Rating is each player's current personal rating.
         </p>
       }
+      @if (changesSince(); as since) {
+        <p class="changes-note">
+          Beside a rank, the places a player climbed (▲) or fell (▼) in rating order since the scan of
+          {{ since | date: 'd MMM, HH:mm' }}; beside a rating, the rating they gained or lost.
+          <span class="rank-new">New</span> marks a player who wasn't on the list then.
+        </p>
+      }
 
       @if (dataset(); as data) {
         <dl class="summary">
@@ -118,7 +125,7 @@
   @if (!isLoading() && !loadError()) {
     <section class="results">
       <div class="table-scroll">
-        <table class="players-table">
+        <table class="players-table" [class.with-changes]="hasChanges()" [class.with-rank-changes]="showRankChanges()">
           <thead>
             <tr>
               <th scope="col" class="rank">#</th>
@@ -165,7 +172,12 @@
                 </tr>
               }
               <tr>
-                <td class="rank">{{ index + 1 }}</td>
+                <td class="rank">
+                  <span class="rank-cell">
+                    <span>{{ index + 1 }}</span>
+                    <ng-container *ngTemplateOutlet="rankMove; context: { $implicit: change(player) }" />
+                  </span>
+                </td>
                 <td class="character">
                   <span class="character-line">
                     @if (player.lastSpec; as spec) {
@@ -186,7 +198,7 @@
                       {{ player.name }}
                     </a>
                   </span>
-                  <span class="realm-inline">{{ player.realm }}</span>
+                  <span class="realm-inline">{{ player.realm }}<ng-container *ngTemplateOutlet="rankMove; context: { $implicit: change(player) }" /></span>
                 </td>
                 <td class="realm">{{ player.realm }}</td>
                 <td class="num games">{{ player.games | number }}</td>
@@ -198,11 +210,33 @@
                 </td>
                 <td class="num losses narrow-phone-hidden">{{ player.losses | number }}</td>
                 <td class="num win-rate">{{ player.winRate | percent: '1.1-1' }}</td>
-                <td class="num rating">{{ player.rating | number }}</td>
+                <td class="num rating">
+                  <span class="rating-cell">
+                    <span class="rating-value">{{ player.rating | number }}</span>
+                    @if (change(player)?.value; as ratingChange) {
+                      <span
+                        class="value-change"
+                        [class.up]="ratingChange > 0"
+                        [title]="ratingChangeLabel(ratingChange)"><span aria-hidden="true">{{ signed(ratingChange) }}</span><span class="visually-hidden">, {{ ratingChangeLabel(ratingChange) }}</span></span>
+                    }
+                  </span>
+                </td>
               </tr>
             }
           </tbody>
         </table>
+        <ng-template #rankMove let-moved>
+          @if (showRankChanges() && moved) {
+            @if (moved.rank) {
+              <span
+                class="rank-move"
+                [class.up]="moved.rank > 0"
+                [title]="rankChangeLabel(moved.rank)"><span aria-hidden="true"><span class="move-arrow">{{ moved.rank > 0 ? '▲' : '▼' }}</span>{{ moved.rank > 0 ? moved.rank : -moved.rank }}</span><span class="visually-hidden">, {{ rankChangeLabel(moved.rank) }}</span></span>
+            } @else if (moved.isNew) {
+              <span class="rank-new" title="New on the list since the last scan">new</span>
+            }
+          }
+        </ng-template>
       </div>
     </section>
   }

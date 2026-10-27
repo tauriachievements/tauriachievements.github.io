@@ -275,3 +275,21 @@ $cards-breakpoint: 900px;
     &:disabled { opacity: .45; cursor: default; }
   }
 }
+
+@mixin new-tag { color: $gold; font-size: .66rem; font-weight: 800; letter-spacing: .04em; text-transform: uppercase; }
+
+@mixin scan-change-marks($drop-color: #9a9a9a) {
+  .rank-move,
+  .value-change {
+    color: $drop-color;
+    font-variant-numeric: tabular-nums;
+    font-weight: 800;
+
+    &.up { color: #8ce89b; }
+  }
+
+  .rank-move { font-size: .72rem; text-align: left; }
+  .move-arrow { display: inline-block; margin-right: 2px; font-size: .78em; transform: translateY(-1px); }
+  .rank-new { @include new-tag; text-align: left; }
+  .value-change { font-size: .76rem; }
+}

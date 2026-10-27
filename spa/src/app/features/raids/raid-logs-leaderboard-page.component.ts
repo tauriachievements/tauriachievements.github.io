@@ -22,7 +22,6 @@ import {
   MAX_SCORE,
   RaidMetric,
   RankedScore,
-  ScoreChange,
   fitClassAndSpec,
   killsBefore,
   rankScores,
@@ -38,6 +37,7 @@ import { CLASS_NAMES, REALM_FILTER_OPTIONS } from '../../game/wow';
 import { injectReplaceUrl, parseInteger, parsePage } from '../../core/url-state';
 import { LoadStateComponent } from '../../shared/load-state.component';
 import { PagerComponent } from '../../shared/pager.component';
+import { ScanChange, rankChangeLabel, signedChange, valueChangeLabel } from '../../shared/scan-change';
 import { pageCount, pageSlice } from '../../shared/pager';
 import { SkeletonBlock } from '../../shared/skeleton';
 import { setPageHeader } from '../../core/page-header';
@@ -150,7 +150,7 @@ export class RaidLogsLeaderboardPageComponent {
     const previousKills = this.previousBossKills();
     const index = this.index();
     if (!previousKills || !index) {
-      return new Map<string, ScoreChange>();
+      return new Map<string, ScanChange>();
     }
     const previous = scoreCharacters(index.bosses, previousKills, this.metric(), this.specFilter());
     return scoreChanges(this.ranked(), rankScores(previous, { classId: this.classFilter(), realm: this.realmFilter() }));
@@ -205,6 +205,8 @@ export class RaidLogsLeaderboardPageComponent {
   readonly characterLink = raidCharacterLink;
   readonly classIcon = getClassIconPath;
   readonly formatPerSecond = formatPerSecond;
+  readonly signed = signedChange;
+  readonly rankChangeLabel = rankChangeLabel;
   readonly factionName = (faction: number) => FACTION_NAMES[faction] ?? '';
 
   private subscription?: Subscription;
@@ -309,21 +311,12 @@ export class RaidLogsLeaderboardPageComponent {
     return scoreQuality(entry.score, this.topScore());
   }
 
-  change(entry: RankedScore): ScoreChange | undefined {
+  change(entry: RankedScore): ScanChange | undefined {
     return this.changes().get(characterKey(entry.character));
   }
 
-  signed(value: number): string {
-    return `${value > 0 ? '+' : '−'}${Math.abs(value)}`;
-  }
-
-  rankChangeLabel(change: number): string {
-    const ranks = Math.abs(change) === 1 ? 'rank' : 'ranks';
-    return `${change > 0 ? 'Climbed' : 'Fell'} ${Math.abs(change)} ${ranks} since the last scan`;
-  }
-
   scoreChangeLabel(change: number): string {
-    return `${this.signed(change)} score since the last scan`;
+    return valueChangeLabel(change, 'score');
   }
 
   private loadDifficulty(index: RaidLogsIndex): void {

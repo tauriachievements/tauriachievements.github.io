@@ -2,6 +2,7 @@ import { DecimalPipe, PercentPipe } from '@angular/common';
 import { ChangeDetectionStrategy, Component, DestroyRef, OnInit, computed, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute } from '@angular/router';
+import { forkJoin } from 'rxjs';
 import { getClassIconPath } from '../../game/classIconHelper';
 import { FilterDropdownCoordinatorService } from '../../shared/filter-dropdown-coordinator.service';
 import { FilterDropdownComponent } from '../../shared/filter-dropdown.component';
@@ -12,6 +13,7 @@ import { ScrollToEndDirective } from '../../shared/motion/scroll-to-end.directiv
 import {
   RatedBattlegroundMatch,
   RatedLeaderboardMetric,
+  RatedNewMatches,
   RatedPlayerMatchHistoryEntry,
   RatedPlayerSummary,
   RatedTeamSummary,
@@ -19,6 +21,8 @@ import {
   buildTeamSummary,
   formatCompact,
   formatDuration,
+  formatMetricAmount,
+  formatMetricChange,
   formatUnixDateTime,
   getClassColor,
   getClassName,
@@ -26,7 +30,10 @@ import {
   getObjectives,
   getSpec,
   getWinningSide,
-  metricValue
+  matchesBeforeScan,
+  metricValue,
+  rankRatedPlayers,
+  ratedPlayerChanges
 } from './rated-battleground-stats';
 import { RatedBattlegroundsService } from './rated-battlegrounds.service';
 import { RatedBattlegroundPlayerHistoryComponent } from './rated-battleground-player-history.component';
@@ -37,20 +44,25 @@ import {
 import { injectReplaceUrl, parsePage } from '../../core/url-state';
 import { setPageHeader } from '../../core/page-header';
 import { SkeletonComponent } from '../../shared/skeleton.component';
+import { ScanChange, rankChangeLabel, valueChangeLabel } from '../../shared/scan-change';
 
-const METRIC_OPTIONS: ReadonlyArray<{ value: RatedLeaderboardMetric; label: string }> = [
-  { value: 'rating', label: 'Net rating change' },
-  { value: 'damage', label: 'Total damage' },
-  { value: 'healing', label: 'Total healing' },
-  { value: 'kills', label: 'Killing blows' },
-  { value: 'honor', label: 'Honor earned' },
-  { value: 'mmr', label: 'Peak MMR' },
-  { value: 'games', label: 'Games played' },
-  { value: 'wins', label: 'Wins' }
+const METRIC_OPTIONS: ReadonlyArray<{ value: RatedLeaderboardMetric; label: string; unit: string }> = [
+  { value: 'rating', label: 'Net rating change', unit: 'rating' },
+  { value: 'damage', label: 'Total damage', unit: 'damage' },
+  { value: 'healing', label: 'Total healing', unit: 'healing' },
+  { value: 'kills', label: 'Killing blows', unit: 'killing blows' },
+  { value: 'honor', label: 'Honor earned', unit: 'honor' },
+  { value: 'mmr', label: 'Peak MMR', unit: 'peak MMR' },
+  { value: 'games', label: 'Games played', unit: 'games' },
+  { value: 'wins', label: 'Wins', unit: 'wins' }
 ];
 
 const METRIC_LABELS: Readonly<Record<RatedLeaderboardMetric, string>> = Object.fromEntries(
   METRIC_OPTIONS.map(option => [option.value, option.label])
+) as Record<RatedLeaderboardMetric, string>;
+
+const METRIC_UNITS: Readonly<Record<RatedLeaderboardMetric, string>> = Object.fromEntries(
+  METRIC_OPTIONS.map(option => [option.value, option.unit])
 ) as Record<RatedLeaderboardMetric, string>;
 
 const LEADERBOARD_PAGE_SIZE = 25;
@@ -58,7 +70,7 @@ const LEADERBOARD_PAGE_SIZE = 25;
 @Component({
   selector: 'app-rated-battleground-page',
   templateUrl: './rated-battleground-page.component.html',
-  styleUrls: ['./rated-battleground-page.component.scss'],
+  styleUrls: ['./rated-battleground-page.component.scss', './rated-battleground-page.component.phone.scss'],
   imports: [
     FilterDropdownComponent,
     RatedBattlegroundPlayerHistoryComponent,
@@ -79,6 +91,7 @@ export class RatedBattlegroundPageComponent implements OnInit {
   private readonly replaceUrl = injectReplaceUrl();
 
   readonly matches = signal<RatedBattlegroundMatch[]>([]);
+  readonly newMatches = signal<RatedNewMatches | undefined>(undefined);
   readonly isLoading = signal(true);
   readonly loadError = signal<string | undefined>(undefined);
   readonly selectedMap = signal('all');
@@ -99,13 +112,20 @@ export class RatedBattlegroundPageComponent implements OnInit {
     return this.matches().filter(match => selectedMap === 'all' || match.mapname === selectedMap);
   });
   readonly analytics = computed(() => buildRatedBattlegroundAnalytics(this.filteredMatches()));
-  readonly rankedPlayers = computed(() => {
-    const metric = this.selectedMetric();
-    return this.analytics().players
-      .sort((left, right) => metricValue(right, metric) - metricValue(left, metric)
-        || right.wins - left.wins
-        || left.name.localeCompare(right.name));
+  readonly rankedPlayers = computed(() => rankRatedPlayers(this.analytics().players, this.selectedMetric()));
+  private readonly previousMatches = computed(() => matchesBeforeScan(this.filteredMatches(), this.newMatches()));
+  private readonly changes = computed(() => {
+    const previous = this.previousMatches();
+    return previous
+      ? ratedPlayerChanges(this.rankedPlayers(), previous, this.selectedMetric())
+      : new Map<string, ScanChange>();
   });
+  readonly hasChanges = computed(() => this.changes().size > 0);
+  readonly changesSince = computed(() => {
+    const since = this.hasChanges() ? this.newMatches()?.since : undefined;
+    return since ? formatUnixDateTime(Date.parse(since) / 1000) : undefined;
+  });
+  readonly newGamesInView = computed(() => this.filteredMatches().length - (this.previousMatches()?.length ?? 0));
   readonly leaderboardTotalPages = computed(() => pageCount(this.rankedPlayers().length, LEADERBOARD_PAGE_SIZE));
   readonly currentLeaderboardPage = computed(() => Math.min(this.leaderboardPage(), this.leaderboardTotalPages()));
   readonly paginatedPlayers = computed(() =>
@@ -228,10 +248,25 @@ export class RatedBattlegroundPageComponent implements OnInit {
     if (metric === 'rating') {
       return `${value > 0 ? '+' : ''}${value.toLocaleString()}`;
     }
-    if (metric === 'damage' || metric === 'healing') {
-      return formatCompact(value);
-    }
-    return Math.round(value).toLocaleString();
+    return formatMetricAmount(value, metric);
+  }
+
+  change(player: RatedPlayerSummary): ScanChange | undefined {
+    return this.changes().get(player.key);
+  }
+
+  rankChangeLabel(change: number): string {
+    return rankChangeLabel(change, `since ${this.changesSince()}`);
+  }
+
+  metricChange(change: number): string {
+    return formatMetricChange(change, this.selectedMetric());
+  }
+
+  metricChangeLabel(change: number): string {
+    const metric = this.selectedMetric();
+    return valueChangeLabel(change, METRIC_UNITS[metric], `since ${this.changesSince()}`, magnitude =>
+      formatMetricAmount(magnitude, metric));
   }
 
   teamName(team: RatedTeamSummary): string {
@@ -241,9 +276,10 @@ export class RatedBattlegroundPageComponent implements OnInit {
   private loadMatches(): void {
     this.isLoading.set(true);
     this.loadError.set(undefined);
-    this.service.getMatches().subscribe({
-      next: matches => {
+    forkJoin({ matches: this.service.getMatches(), newMatches: this.service.getNewMatches() }).subscribe({
+      next: ({ matches, newMatches }) => {
         this.matches.set(matches);
+        this.newMatches.set(newMatches);
         this.selectedMatchId.set(matches.at(-1)?.matchid);
         this.isLoading.set(false);
       },

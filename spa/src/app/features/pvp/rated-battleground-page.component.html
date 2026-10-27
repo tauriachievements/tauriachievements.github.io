@@ -157,8 +157,16 @@
           </div>
         </header>
 
+        @if (changesSince(); as since) {
+          <p class="changes-note">
+            Since the scan of {{ since }}: {{ newGamesInView() }} new rated {{ newGamesInView() === 1 ? 'game' : 'games' }}.
+            Beside a rank, the places a player climbed (▲) or fell (▼); beside the {{ metricLabel().toLowerCase() }},
+            what those games added. <span class="rank-new">New</span> marks a player those games brought onto the list.
+          </p>
+        }
+
         <div class="table-scroll">
-          <table class="leaderboard-table">
+          <table class="leaderboard-table" [class.with-changes]="hasChanges()">
             <thead>
               <tr>
                 <th scope="col">#</th>
@@ -183,7 +191,19 @@
                   (keydown.space)="$event.preventDefault(); openPlayerHistory(player)"
                   >
                   <td class="rank-cell">
-                    <span [class.top-rank]="playerRank(index) <= 3">{{ playerRank(index) }}</span>
+                    <span class="rank-line">
+                      <span class="rank-badge" [class.top-rank]="playerRank(index) <= 3">{{ playerRank(index) }}</span>
+                      @if (change(player); as moved) {
+                        @if (moved.rank) {
+                          <span
+                            class="rank-move"
+                            [class.up]="moved.rank > 0"
+                            [title]="rankChangeLabel(moved.rank)"><span aria-hidden="true"><span class="move-arrow">{{ moved.rank > 0 ? '▲' : '▼' }}</span>{{ moved.rank > 0 ? moved.rank : -moved.rank }}</span><span class="visually-hidden">, {{ rankChangeLabel(moved.rank) }}</span></span>
+                        } @else if (moved.isNew) {
+                          <span class="rank-new" [title]="'New since ' + changesSince()">new</span>
+                        }
+                      }
+                    </span>
                   </td>
                   <td class="player-td">
                     <div class="player-cell">
@@ -206,7 +226,15 @@
                   <td class="phone-hidden">{{ player.winRate | percent:'1.0-0' }}</td>
                   <td class="phone-hidden">{{ player.averageMmr | number:'1.0-0' }} / <strong>{{ player.peakMmr | number }}</strong></td>
                   <td class="metric-cell" [class.metric-cell--negative]="selectedMetric() === 'rating' && player.netRatingChange < 0">
-                    {{ playerMetric(player) }}
+                    <span class="metric-line">
+                      <span class="metric-value">{{ playerMetric(player) }}</span>
+                      @if (change(player)?.value; as valueChange) {
+                        <span
+                          class="value-change"
+                          [class.up]="valueChange > 0"
+                          [title]="metricChangeLabel(valueChange)"><span aria-hidden="true">{{ metricChange(valueChange) }}</span><span class="visually-hidden">, {{ metricChangeLabel(valueChange) }}</span></span>
+                      }
+                    </span>
                   </td>
                 </tr>
               }

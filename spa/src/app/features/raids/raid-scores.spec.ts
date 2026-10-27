@@ -307,16 +307,16 @@ describe('scoreCharacters', () => {
         [kill(1, 2, [[character('A'), fire, 100], [character('B'), fire, 50]]), newKill]
       ];
       expect([...changesWithout(kills, newKill, 2)]).toEqual([
-        ['tauri/B', { rank: 1, score: 6620 - 4878, isNew: false }],
-        ['tauri/A', { rank: -1, score: 5226 - MAX_SCORE, isNew: false }]
+        ['tauri/B', { rank: 1, value: 6620 - 4878, isNew: false }],
+        ['tauri/A', { rank: -1, value: 5226 - MAX_SCORE, isNew: false }]
       ]);
     });
 
     it("marks a character new to the ranking and leaves out one who didn't move", () => {
       const changes = changesWithout(bossKills, bossKills[3][0]);
       expect(changes.has('tauri/Best')).toBe(false);
-      expect(changes.get('tauri/Example')).toEqual({ rank: 0, score: 2090 - 2787, isNew: false });
-      expect(changes.get('tauri/Tank')).toEqual({ rank: 0, score: 0, isNew: true });
+      expect(changes.get('tauri/Example')).toEqual({ rank: 0, value: 2090 - 2787, isNew: false });
+      expect(changes.get('tauri/Tank')).toEqual({ rank: 0, value: 0, isNew: true });
     });
   });
 });

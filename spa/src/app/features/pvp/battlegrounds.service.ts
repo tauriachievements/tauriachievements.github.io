@@ -5,6 +5,8 @@ import { DataFileService } from '../../core/data-file.service';
 
 export interface BattlegroundCollectorState {
   lastScanUtc?: string;
+  newRatedMatchesSince?: string | null;
+  newRatedMatchIds?: number[] | null;
 }
 
 @Injectable({ providedIn: 'root' })

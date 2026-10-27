@@ -262,8 +262,6 @@ $difficulty-colors: (
   &.negative { border-color: rgba(255, 154, 154, .34); background: rgba(255, 154, 154, .12); color: #ff9a9a; }
 }
 
-@mixin new-tag { color: $gold; font-size: .66rem; font-weight: 800; letter-spacing: .04em; text-transform: uppercase; }
-
 @mixin invalid-tag {
   display: inline-block;
   flex: none;
