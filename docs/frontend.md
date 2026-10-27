@@ -124,8 +124,9 @@ difficulty, the page number. Defaults are left out of it.
   parameters the page doesn't name. Each page keeps one `writeUrl()` that names every
   parameter it owns. Read parameters with the shared parsers: `parseInteger`, `parsePage`
   (`url-state.ts`), `parseRole`, `parseClassId` (`wow.ts`), `parseSpecName` (`wow-specs.ts`).
-- The ladder, Compare, Arena and Rare Achievements pages still write their filters with
-  `router.navigate`, so some changes add a history entry and every change scrolls to the top.
+- The ladder, Compare and Rare Achievements pages, and the Arena page's bracket switch, still
+  write their filters with `router.navigate`, so some changes add a history entry and every
+  change scrolls to the top.
 - **Real navigation** is only for a change the Back button should undo. For example, on the
   Talent Analytics page, opening a spec's card navigates, while difficulty, boss, role and class
   use `replaceState`. On a spec's page, picking a role or a class, or pressing Reset, navigates
@@ -136,7 +137,7 @@ difficulty, the page number. Defaults are left out of it.
   router last opened, such as the page's own header link after a switch changed the URL. A page
   that its own link should reset reads its parameters through `injectQueryParamMap()`
   (`url-state.ts`), which hands over the route's parameters after every navigation. Raid
-  Statistics, Tier List and Talent Analytics do this.
+  Statistics, Tier List, Talent Analytics, Realm Stats and Arena do this.
 
 The query parameters each page reads:
 
@@ -146,7 +147,7 @@ The query parameters each page reads:
 | `/compare` | `a`, `b`: `Realm:Name` |
 | `/rare-achievements` | `achievement`, `realm`, `class`, `search` |
 | Rare Items (unlisted) | `class`, `season` (a season key from `elite-pvp-items.json`: `malevolent`), `item` (a rare item's id) or `weapons` (a season key), `realm` (`evermoon`, `tauri`, `wod`), `page`. `item` and `weapons` replace `season`; a season the class has no pieces in, or an unknown item, is dropped |
-| `/arena` | `bracket`: `2v2` (default) or `3v3` |
+| `/arena` | `bracket`: `2v2` (default) or `3v3`; `games`: the minimum rated games, `50` (default), `45`, `40`, `35` or `30` ([scoring.md](scoring.md#arena-titles)) |
 | `/rated-battleground` | `view`: `players` (default) or `matches`; `page` (the players view) |
 | `/mythic-plus` | `view` (`runs`, `players`), `sort` (`best`, `latest`), `period` (`season`, `week`), `dungeon`, `realm`, `class`, `spec`, `role`, `page`, `character` (`Name-Realm`: the runs view shows only theirs, the players view picks out their row), `compare` (`Name-Realm,…`: opens compare mode with those picks) |
 | `/stats` | `realm` (`evermoon`, `tauri`, `wod`; all realms by default), `level` (`100`, `90`, `80`, `all`; 110 by default) |

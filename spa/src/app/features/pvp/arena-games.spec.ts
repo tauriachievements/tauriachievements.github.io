@@ -2,13 +2,16 @@ import { describe, expect, it } from 'vitest';
 import {
   ARENA_TITLES,
   ArenaPlayer,
+  MIN_GAMES_FILTER_OPTIONS,
   arenaRatingChanges,
+  arenaUrlParams,
   formatTitleShare,
   getArenaLadderFile,
   getArenaSpec,
   getTitle,
   getTitleCutoffs,
   parseArenaBracket,
+  parseMinGames,
   sortArenaRows,
   toArenaRows
 } from './arena-games';
@@ -48,6 +51,33 @@ describe('parseArenaBracket', () => {
   });
 });
 
+describe('parseMinGames', () => {
+  it('reads an offered minimum and falls back to 50', () => {
+    expect(parseMinGames('30')).toBe(30);
+    expect(parseMinGames(45)).toBe(45);
+    expect(parseMinGames('20')).toBe(50);
+    expect(parseMinGames('forty')).toBe(50);
+    expect(parseMinGames(null)).toBe(50);
+  });
+
+  it('offers 50 down to 30 games in steps of 5', () => {
+    expect(MIN_GAMES_FILTER_OPTIONS.map(option => [option.value, option.label])).toEqual([
+      [50, '50+ games'],
+      [45, '45+ games'],
+      [40, '40+ games'],
+      [35, '35+ games'],
+      [30, '30+ games']
+    ]);
+  });
+});
+
+describe('arenaUrlParams', () => {
+  it('leaves the defaults out of the URL', () => {
+    expect(arenaUrlParams('2v2', 50)).toEqual({ bracket: null, games: null });
+    expect(arenaUrlParams('3v3', 35)).toEqual({ bracket: '3v3', games: '35' });
+  });
+});
+
 describe('getArenaSpec', () => {
   it('names the spec of the latest game with its icon', () => {
     const spec = getArenaSpec({ class: 11, spec: 105 });
@@ -71,6 +101,19 @@ describe('toArenaRows', () => {
 
     expect(rows.map(row => [row.name, row.losses, row.winRate])).toEqual([['Fifty', 25, 0.5], ['Sixty', 15, 0.75]]);
     expect(rows[0].lastSpec?.name).toBe('Arms');
+  });
+
+  it('lets a lower minimum bring more players into the cutoffs', () => {
+    const players = [
+      player('Top', 40, 20, 2100),
+      player('Second', 30, 20, 2000),
+      player('ThirtyFive', 20, 15, 1900),
+      player('Thirty', 15, 15, 1800)
+    ];
+    const titles = [{ name: 'Gladiator', slug: 'gladiator', topPerMille: 500 }];
+
+    expect(getTitleCutoffs(toArenaRows(players, 50), titles)[0]).toMatchObject({ places: 1, rating: 2100 });
+    expect(getTitleCutoffs(toArenaRows(players, 30), titles)[0]).toMatchObject({ places: 2, rating: 2000 });
   });
 });
 

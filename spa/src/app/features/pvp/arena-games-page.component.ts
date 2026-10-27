@@ -11,27 +11,33 @@ import {
   ArenaLadderFile,
   ArenaPlayerRow,
   ArenaSortKey,
+  DEFAULT_MIN_GAMES,
+  MIN_GAMES_FILTER_OPTIONS,
   REWARD_MIN_WINS,
   SortDirection,
   TitleCutoff,
   arenaPlayerKey,
   arenaRatingChanges,
+  arenaUrlParams,
   formatTitleShare,
   getArenaLadderFile,
   getTitle,
   getTitleCutoffs,
   parseArenaBracket,
+  parseMinGames,
   sortArenaRows,
   toArenaRows
 } from './arena-games';
 import { GlideDirective } from '../../shared/motion/glide.directive';
 import { DataFileService } from '../../core/data-file.service';
+import { injectQueryParamMap, injectReplaceUrl } from '../../core/url-state';
 import { getClassColor } from '../../game/class-colors';
 import { setPageHeader } from '../../core/page-header';
+import { FilterDropdownComponent } from '../../shared/filter-dropdown.component';
+import { FilterDropdownCoordinatorService } from '../../shared/filter-dropdown-coordinator.service';
+import { FilterDropdownValue } from '../../shared/filter-dropdown.types';
 import { SkeletonComponent } from '../../shared/skeleton.component';
 import { ScanChange, rankChangeLabel, signedChange, valueChangeLabel } from '../../shared/scan-change';
-
-const MIN_GAMES = 50;
 
 interface SortColumn {
   readonly key: ArenaSortKey;
@@ -51,7 +57,16 @@ const SORT_COLUMNS: readonly SortColumn[] = [
   selector: 'app-arena-games-page',
   templateUrl: './arena-games-page.component.html',
   styleUrls: ['./arena-games-page.component.scss'],
-  imports: [GlideDirective, DatePipe, DecimalPipe, NgTemplateOutlet, PercentPipe, SkeletonComponent],
+  imports: [
+    GlideDirective,
+    DatePipe,
+    DecimalPipe,
+    FilterDropdownComponent,
+    NgTemplateOutlet,
+    PercentPipe,
+    SkeletonComponent
+  ],
+  providers: [FilterDropdownCoordinatorService],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class ArenaGamesPageComponent implements OnInit {
@@ -59,12 +74,16 @@ export class ArenaGamesPageComponent implements OnInit {
   private readonly destroyRef = inject(DestroyRef);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
+  private readonly replaceUrl = injectReplaceUrl();
+  private readonly queryParamMap = injectQueryParamMap();
   private loading?: Subscription;
 
-  readonly minGames = MIN_GAMES;
   readonly minWins = REWARD_MIN_WINS;
+  readonly minGamesOptions = MIN_GAMES_FILTER_OPTIONS;
+  readonly minGamesWidthLabels = MIN_GAMES_FILTER_OPTIONS.map(option => option.label);
   readonly sortColumns = SORT_COLUMNS;
   readonly brackets = ARENA_BRACKETS;
+  readonly minGames = signal(DEFAULT_MIN_GAMES);
   readonly bracket = signal<ArenaBracket | undefined>(undefined);
   readonly dataset = signal<ArenaLadderFile | undefined>(undefined);
   readonly isLoading = signal(true);
@@ -72,7 +91,7 @@ export class ArenaGamesPageComponent implements OnInit {
   readonly sortKey = signal<ArenaSortKey>('rating');
   readonly sortDirection = signal<SortDirection>('desc');
 
-  private readonly rows = computed(() => toArenaRows(this.dataset()?.players ?? [], MIN_GAMES));
+  private readonly rows = computed(() => toArenaRows(this.dataset()?.players ?? [], this.minGames()));
   readonly players = computed(() => sortArenaRows(this.rows(), this.sortKey(), this.sortDirection()));
   readonly eligibleCount = computed(() => this.rows().filter(row => row.wins >= REWARD_MIN_WINS).length);
   readonly cutoffs = computed(() => getTitleCutoffs(this.rows(), ARENA_TITLES[this.bracket() ?? '2v2']));
@@ -112,7 +131,7 @@ export class ArenaGamesPageComponent implements OnInit {
   });
   private readonly changes = computed(() => {
     const dataset = this.dataset();
-    return dataset ? arenaRatingChanges(dataset, MIN_GAMES) : new Map<string, ScanChange>();
+    return dataset ? arenaRatingChanges(dataset, this.minGames()) : new Map<string, ScanChange>();
   });
   readonly hasChanges = computed(() => this.changes().size > 0);
   readonly changesSince = computed(() => this.hasChanges() ? this.dataset()?.previousGeneratedAt : undefined);
@@ -134,9 +153,10 @@ export class ArenaGamesPageComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.route.queryParamMap
+    this.queryParamMap
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe(params => {
+        this.minGames.set(parseMinGames(params.get('games')));
         const bracket = parseArenaBracket(params.get('bracket'));
         if (bracket !== this.bracket()) {
           this.bracket.set(bracket);
@@ -148,10 +168,15 @@ export class ArenaGamesPageComponent implements OnInit {
   selectBracket(bracket: ArenaBracket): void {
     void this.router.navigate([], {
       relativeTo: this.route,
-      queryParams: { bracket: bracket === '2v2' ? null : bracket },
+      queryParams: arenaUrlParams(bracket, this.minGames()),
       queryParamsHandling: 'merge',
       replaceUrl: true
     });
+  }
+
+  setMinGames(value: FilterDropdownValue): void {
+    this.minGames.set(parseMinGames(value ?? null));
+    this.replaceUrl(arenaUrlParams(this.bracket() ?? '2v2', this.minGames()), { merge: true });
   }
 
   retryLoad(): void {

@@ -391,7 +391,10 @@ explains it together.
 
 - **Code:** `ARENA_TITLES`, `getTitleCutoffs` and `getTitle` in
   `spa/src/app/features/pvp/arena-games.ts`. The page lists characters with 50 or more rated
-  games this season (`MIN_GAMES`). A season reward needs 50 wins (`REWARD_MIN_WINS`).
+  games this season (`DEFAULT_MIN_GAMES`). A season reward needs 50 wins (`REWARD_MIN_WINS`).
+- **A lower bar, to compare:** the games dropdown (`MIN_GAMES_OPTIONS`: 50, 45, 40, 35, 30;
+  `?games=`) lowers the minimum. The listed players, the title cutoffs, the holders and the
+  changes since the last scan all follow it. The 50 wins a reward needs stay as they are.
 - Each title covers a cumulative "top X%" of the listed players by rating:
   - 2v2: Gladiator 0.6%, Duelist 3%, Rival 10%, Challenger 35%;
   - 3v3: Season Gladiator 0.5%, Gladiator 3%, Duelist 10%, Rival 35%, Challenger 45%.
@@ -412,10 +415,11 @@ explains it together.
   `scanChanges` in `spa/src/app/shared/scan-change.ts`; the previous values come from the
   exporter ([data-pipeline.md](data-pipeline.md#arena-ladder-files)).
 - The previous ranking is the table's own ranking worked out on each player's previous rating
-  and games: the players who had `MIN_GAMES` (50) or more then, by rating, then more games,
-  then the name. A player's rank change is their place then minus their place now (▲ climbed,
-  ▼ fell); the rating change is the rating now minus the rating then.
-- **New** is a player in today's list who wasn't in that one: under 50 games then, or not on
+  and games: the players who had the page's minimum games (50 unless lowered) or more then, by
+  rating, then more games, then the name. A player's rank change is their place then minus
+  their place now (▲ climbed, ▼ fell); the rating change is the rating now minus the rating
+  then.
+- **New** is a player in today's list who wasn't in that one: under the minimum then, or not on
   the ladder at all (also a character the ladder moved to a new GUID). New players show "new"
   and no rating change.
 - A character on the previous list that has left the ladder (deleted, or moved to a new GUID)

@@ -1,4 +1,5 @@
 import { specById } from '../../game/wow-specs';
+import { FilterDropdownOption, FilterDropdownValue } from '../../shared/filter-dropdown.types';
 import { ScanChange, scanChanges } from '../../shared/scan-change';
 
 export type ArenaBracket = '2v2' | '3v3';
@@ -6,6 +7,25 @@ export const ARENA_BRACKETS: readonly ArenaBracket[] = ['2v2', '3v3'];
 
 export function parseArenaBracket(value: string | null): ArenaBracket {
   return ARENA_BRACKETS.find(bracket => bracket === value) ?? '2v2';
+}
+
+export const MIN_GAMES_OPTIONS = [50, 45, 40, 35, 30] as const;
+export const DEFAULT_MIN_GAMES = 50;
+
+export const MIN_GAMES_FILTER_OPTIONS: ReadonlyArray<FilterDropdownOption> = MIN_GAMES_OPTIONS.map(games => ({
+  value: games,
+  label: `${games}+ games`
+}));
+
+export function parseMinGames(value: FilterDropdownValue | null): number {
+  return MIN_GAMES_OPTIONS.find(games => String(games) === String(value)) ?? DEFAULT_MIN_GAMES;
+}
+
+export function arenaUrlParams(bracket: ArenaBracket, minGames: number): { bracket: string | null; games: string | null } {
+  return {
+    bracket: bracket === '2v2' ? null : bracket,
+    games: minGames === DEFAULT_MIN_GAMES ? null : String(minGames)
+  };
 }
 
 export function getArenaLadderFile(bracket: ArenaBracket): string {
