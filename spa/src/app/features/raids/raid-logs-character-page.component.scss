@@ -77,7 +77,6 @@
 .class-switch img { width: 16px; height: 16px; border-radius: 3px; }
 .class-switch { flex-wrap: wrap; margin-top: 6px; }
 .class-switch .earlier { color: $raid-muted; font-weight: 500; }
-.class-name { font-weight: 600; }
 
 .boss-cell { display: inline-flex; align-items: center; gap: 10px; }
 .boss-cell img { @include boss-portrait(30px); }
@@ -87,10 +86,6 @@ td a.boss-cell:hover .strong { text-decoration: underline; }
 .rank-cell { white-space: nowrap; }
 tr.alive td { color: $raid-muted; }
 td a.log-link { color: $gold; font-size: .8rem; font-weight: 600; }
-.leaderboard-link { color: $gold; font-weight: 600; text-decoration: none; }
-.leaderboard-link:hover { text-decoration: underline; }
-.leaderboard-link:focus-visible { outline: 2px solid $gold; outline-offset: 2px; }
-.list-note { margin: 0; color: $raid-muted; font-size: .8rem; }
 
 .progress-cell { width: 220px; }
 .progress-cell app-raid-kill-chart { width: 200px; }

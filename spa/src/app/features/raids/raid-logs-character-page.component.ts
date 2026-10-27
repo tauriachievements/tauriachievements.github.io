@@ -22,7 +22,6 @@ import {
   raidLogLink
 } from './raid-display';
 import {
-  MAX_SCORE,
   RaidMetric,
   RankedScore,
   bossBest,
@@ -303,7 +302,6 @@ export class RaidLogsCharacterPageComponent {
     return character && !character.former ? getArmoryUrl(character.name, character.realm) : undefined;
   });
 
-  readonly maxScore = MAX_SCORE;
   readonly logLink = raidLogLink;
   readonly bossLink = raidBossLink;
   readonly guildLink = raidGuildLink;

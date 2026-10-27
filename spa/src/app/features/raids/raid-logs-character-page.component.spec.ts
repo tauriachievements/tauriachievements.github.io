@@ -395,7 +395,7 @@ describe('RaidLogsCharacterPageComponent comparison', () => {
     expect(summaryTile(element, 'DPS score')).toEqual({ value: '2729', note: '#3 of 4 on the leaderboard' });
     expect(summaryTile(element, 'Best damage rank')).toEqual({ value: '#2', note: 'Nythendra, of 4' });
     expect(element.querySelector('th[title]')?.getAttribute('title')).toBe('The best kill against the best anyone did on the boss');
-    expect(element.querySelector('.list-note')?.textContent).toContain("Rank among every character's best kill of the boss");
+    expect(element.querySelector('.list-note')).toBeNull();
   });
 
   it('compares with the same class when picked, keeping the all-player score', async () => {
@@ -419,9 +419,7 @@ describe('RaidLogsCharacterPageComponent comparison', () => {
       'The best kill against the best any Mage did on the boss',
       "Among every Mage's best kill of the boss"
     ]);
-    const note = element.querySelector('.list-note')?.textContent?.replace(/\s+/g, ' ');
-    expect(note).toContain('"Of best" and Rank compare with Mages only');
-    expect(note).toContain('The DPS score above still compares each boss with the best of all players');
+    expect(element.querySelector('.list-note')).toBeNull();
     expect(bossHref(element)).toBe('/raid-logs/boss/nythendra?difficulty=mythic&tab=dps&class=8');
 
     compareWith(harness, element, 'All players');
@@ -498,8 +496,7 @@ describe('RaidLogsCharacterPageComponent spec comparison', () => {
       'The best kill against the best any Fire Mage did on the boss',
       "Among every Fire Mage's best kill of the boss"
     ]);
-    expect(element.querySelector('.list-note')?.textContent?.replace(/\s+/g, ' ')).toContain(
-      '"Of best" and Rank compare with Fire Mages only: every Mage\'s best kill of the boss as Fire on this difficulty, this character\'s too.');
+    expect(element.querySelector('.list-note')).toBeNull();
     expect(bossHref(element)).toBe('/raid-logs/boss/nythendra?difficulty=mythic&tab=dps&class=8&spec=63');
 
     compareWith(harness, element, 'Frost');

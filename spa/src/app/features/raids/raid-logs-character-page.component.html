@@ -206,17 +206,6 @@
             </tbody>
           </table>
         </div>
-        <p class="list-note">
-          @if (comparison() === 'class') {
-            "Of best" and Rank compare with <span class="class-name" [style.color]="classColor(current.classId)">{{ comparedPlural() }}</span> only: every {{ ownClass() }}'s best kill of the boss@if (comparedSpec(); as spec) { as {{ spec.name }}} on this difficulty@if (comparedSpec()) {, this character's too}.
-          } @else {Rank among every character's best kill of the boss on this difficulty.}
-          {{ metric() === 'hps' ? 'Only healing specs are ranked by healing.' : 'Healing specs are ranked under Healing.' }}
-          Latest vs PR compares the latest kill that counts with the best kill before it.
-          @if (comparison() === 'class') {
-            The {{ metric() === 'hps' ? 'HPS' : 'DPS' }} score above still compares each boss with the best of all players, out of {{ maxScore }}:
-          } @else {The score averages "Of best" over the bosses, out of {{ maxScore }}:}
-          <a class="leaderboard-link" routerLink="/raid-logs/leaderboard" [queryParams]="{ difficulty: data.difficulty.slug, metric: metric() === 'hps' ? 'hps' : null }">see the leaderboard <span aria-hidden="true">›</span></a>
-        </p>
       </section>
     }
 
