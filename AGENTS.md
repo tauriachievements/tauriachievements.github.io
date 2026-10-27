@@ -18,7 +18,12 @@ this file, so Claude Code reads it at the start of every session.
    - works on phones: `npm run test:layout` passes at 320, 360, 390 and 412 px;
    - is the right fix, not the quick one. If the right fix is bigger, say so and let the owner
      decide.
-3. **Ask before architectural decisions.** Stop, present the options with a recommendation, and
+3. **Write the test first.** New pure logic and every bug fix start with a test
+   ([docs/testing.md](docs/testing.md)). Write it, run it and see it fail on its assertion,
+   write the least code that makes it pass, then refactor with the tests green. A bug fix's
+   first test reproduces the bug. Styles, motion and copy are checked with the visual and phone
+   layout checks instead.
+4. **Ask before architectural decisions.** Stop, present the options with a recommendation, and
    let the owner choose, even when one option looks obvious. That covers:
    - a new dependency, or a new shared component, service, directive or SCSS partial;
    - a new data file, a new Players.csv column, or any change to a data file's format;
@@ -28,13 +33,13 @@ this file, so Claude Code reads it at the start of every session.
    - departing from a pattern these docs describe.
 
    Don't ask about the mechanical steps of an approach that's already agreed.
-4. **State the product choices you make.** When a request leaves a choice open (a threshold, a
+5. **State the product choices you make.** When a request leaves a choice open (a threshold, a
    counting rule, a default), pick one, say which in your reply, and list it under
    "Choices to confirm" in the PR.
-5. **Build shared things once.** When a second page needs something, move it into the shared
+6. **Build shared things once.** When a second page needs something, move it into the shared
    file and reuse it there (see the building blocks in [docs/frontend.md](docs/frontend.md) and
    `Tauri.Core` in [docs/data-pipeline.md](docs/data-pipeline.md)). Don't copy it.
-6. **Leave the docs true.** When a change makes a doc wrong or incomplete, update that doc in
+7. **Leave the docs true.** When a change makes a doc wrong or incomplete, update that doc in
    the same PR: a rule in its topic doc, a new shared building block in
    [docs/frontend.md](docs/frontend.md), a trap that cost time under "Gotchas" below. If no doc
    covers it yet, add it where the next person will look. Write down what is true now, not
@@ -76,6 +81,8 @@ There is no root package manager; each half has its own toolchain.
   endpoint's quirks.
 - [docs/scoring.md](docs/scoring.md): every ranking and score rule, where it lives, and which
   test pins it.
+- [docs/testing.md](docs/testing.md): the test-first loop, what starts with a test, how to run
+  one test file, and how to reproduce a layout bug.
 - How-to guides: [add a page](docs/guides/howto-add-page.md),
   [add a guild page](docs/guides/howto-add-guild-page.md),
   [add an exporter or data file](docs/guides/howto-add-exporter.md).
@@ -90,6 +97,9 @@ There is no root package manager; each half has its own toolchain.
   `node --test` over `scripts/*.test.js`. For one run without watch mode:
   `npx ng test --watch=false` and `npm run test:scripts`. Bare `npx vitest` is not the runner
   and fails.
+- One test file, for the test-first loop: `npx ng test --watch=false --include <path>` (a spec,
+  the file it tests, or a folder) or `node --test scripts/<name>.test.js`
+  ([docs/testing.md](docs/testing.md#running-one-test-file)).
 - `npm run build`: the production build. Always use `npm run build`, never plain `ng build`:
   the `prebuild` step generates data files the app needs.
 - `npm run test:visual:baseline`, then `npm run test:visual` after a change: Playwright
@@ -104,7 +114,8 @@ There is no root package manager; each half has its own toolchain.
 ### Backend (from `api/`)
 
 - `dotnet tool restore`, then `dotnet build AchievementLadder.sln` and
-  `dotnet test AchievementLadder.sln`.
+  `dotnet test AchievementLadder.sln`. One test class:
+  `dotnet test AchievementLadder.sln --filter "FullyQualifiedName~<Name>Tests"`.
 - `dotnet csharpier check .` must pass (CI enforces it). `dotnet csharpier format .` fixes it.
 - Credentials: copy `AchievementLadder/appsettings.example.json` to
   `AchievementLadder/appsettings.json` (git-ignored; every job reads it), or set
@@ -136,7 +147,8 @@ There is no root package manager; each half has its own toolchain.
   ([docs/frontend.md](docs/frontend.md#where-things-go)).
 - Pure logic lives in `<feature>.ts` with `<feature>.spec.ts` beside it, for example
   `arena-games.ts` next to `arena-games-page.component.ts`. Components stay thin. Most tests
-  cover the pure functions.
+  cover the pure functions, and the spec is written before the function
+  ([docs/testing.md](docs/testing.md)).
 - A page that loads data shows a skeleton shaped like it while it loads (`[skeleton]` on
   `app-load-state`, or `app-skeleton`), not a spinner on an empty screen
   ([docs/frontend.md](docs/frontend.md#loading-skeletons)).
@@ -152,7 +164,8 @@ There is no root package manager; each half has its own toolchain.
   only through `CharacterScanner`.
 - An exporter publishes everything or nothing, and refuses to publish when its output shrinks
   suspiciously (see [docs/data-pipeline.md](docs/data-pipeline.md)).
-- Tests use xUnit with a fake `ITauriApiClient`. They never call the live API.
+- Tests use xUnit with a fake `ITauriApiClient`, are written before the code they test, and
+  never call the live API.
 
 ### Git, PRs and issues
 
@@ -160,8 +173,9 @@ There is no root package manager; each half has its own toolchain.
   the number when there is no issue).
 - Commit messages: a conventional prefix (`feat:`, `fix:`, `chore:`, `perf:`, `refactor:`,
   `style:`, `docs:`), an optional scope (`feat(raid-logs):`), then a plain sentence.
-- PR body: `Closes #N`, why the change exists, what changed (tables for numbers), a test plan,
-  the docs it updated (or "no doc change"), and "Choices to confirm". PRs are squash-merged.
+- PR body: `Closes #N`, why the change exists, what changed (tables for numbers), a test plan
+  that names the tests written first and seen failing, the docs it updated (or "no doc
+  change"), and "Choices to confirm". PRs are squash-merged.
 - Push to `origin` (`tauriachievements/tauriachievements.github.io`). The `hugoredinho` remote
   is a fork that refuses pushes.
 - Issues: a conventional-prefix title, then `## Description` and `## Suggested fix`, with
