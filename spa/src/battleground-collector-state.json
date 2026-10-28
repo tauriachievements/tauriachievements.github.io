@@ -1,9 +1,13 @@
 {
-  "nextMatchId": 161024,
+  "nextMatchId": 161301,
   "apiRealm": "[EN] Evermoon",
   "displayRealm": "Evermoon",
-  "lastScanUtc": "2026-10-26T23:10:45.0973895+00:00",
+  "lastScanUtc": "2026-10-27T23:16:37.2562453+00:00",
   "lastStopReason": "Response did not contain complete battleground details.",
   "lastAddedCount": 174,
-  "lastAddedMatchId": 161022
+  "lastAddedMatchId": 161300,
+  "newRatedMatchesSince": "2026-10-26T23:10:45.0973895+00:00",
+  "newRatedMatchIds": [
+    161024
+  ]
 }
