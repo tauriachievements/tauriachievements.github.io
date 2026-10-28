@@ -13,7 +13,6 @@ import {
   MythicPlusRun,
   PlayerScore,
   exportedAt,
-  memberNameMatches,
   rankPlayers,
   runIncludesCharacter,
   scoreColor,
@@ -22,7 +21,7 @@ import {
 } from './mythic-plus';
 import { affixWeeks, countTicks, dungeonTimers, isTimed, weekIndexAt } from './mythic-plus-activity';
 import { COMPARE_LIMIT, compareParam, parseCompareParam, seriesColors } from './mythic-plus-compare';
-import { characterParam, findCharacters, formatTopPercent, scopeRank, scoreOverTime } from './mythic-plus-profile';
+import { characterParam, findCharacters, formatTopPercent, scopeRank, scoreOverTime, searchCharacters } from './mythic-plus-profile';
 import { MemberView, RunView, toMemberView, toRunView } from './mythic-plus-views';
 import { ScrollToEndDirective } from '../../shared/motion/scroll-to-end.directive';
 import { MythicPlusDataService, mythicPlusLoadError } from './mythic-plus-data.service';
@@ -369,16 +368,10 @@ export class MythicPlusComparePageComponent implements OnInit {
   });
 
   readonly searchQuery = signal('');
-  readonly searchResults = computed(() => {
-    const query = this.searchQuery().trim();
-    const picked = new Set(this.players().map(player => player.key));
-    return query
-      ? this.ranking()
-        .filter(player => !picked.has(player.key) && memberNameMatches(player.member, query))
-        .slice(0, SEARCH_RESULT_COUNT)
-        .map(player => ({ key: player.key, member: toMemberView(player.member), score: player.score }))
-      : [];
-  });
+  readonly searchResults = computed(() => searchCharacters(this.ranking(), this.searchQuery(), {
+    limit: SEARCH_RESULT_COUNT,
+    exclude: this.players().map(player => player.key)
+  }));
 
   readonly upgradeStars = upgradeStars;
 

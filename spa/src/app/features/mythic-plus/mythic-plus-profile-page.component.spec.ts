@@ -97,6 +97,25 @@ async function open(url: string, dataFiles = new FakeDataFiles()) {
   return { harness, page, element: harness.routeNativeElement as HTMLElement };
 }
 
+const searchBox = (element: HTMLElement) =>
+  element.querySelector('app-mythic-plus-character-search input') as HTMLInputElement;
+
+const suggestions = (element: HTMLElement) =>
+  [...element.querySelectorAll('app-mythic-plus-character-search .suggestion-name')].map(name => name.textContent);
+
+function typeInSearch(harness: RouterTestingHarness, element: HTMLElement, text: string): void {
+  const input = searchBox(element);
+  input.value = text;
+  input.dispatchEvent(new Event('input'));
+  harness.detectChanges();
+}
+
+async function pressInSearch(harness: RouterTestingHarness, element: HTMLElement, key: string): Promise<void> {
+  searchBox(element).dispatchEvent(new KeyboardEvent('keydown', { key }));
+  await harness.fixture.whenStable();
+  harness.detectChanges();
+}
+
 describe('MythicPlusProfilePageComponent', () => {
   beforeEach(() => {
     vi.spyOn(console, 'error').mockImplementation(() => undefined);
@@ -291,6 +310,67 @@ describe('MythicPlusProfilePageComponent', () => {
     page.searchQuery.set('heal');
     harness.detectChanges();
     expect([...element.querySelectorAll('.result-name')].map(name => name.textContent)).toEqual(['Healer']);
+  });
+
+  it('suggests characters from the header search as you type, names that start with it first', async () => {
+    const { harness, element } = await open('/mythic-plus/character/evermoon/Progtrix');
+
+    typeInSearch(harness, element, 'l');
+    expect(suggestions(element)).toEqual(['Lili', 'LILI', 'Healer']);
+    expect([...element.querySelectorAll('app-mythic-plus-character-search li a')].map(link => link.getAttribute('href'))).toEqual([
+      '/mythic-plus/character/evermoon/Lili',
+      '/mythic-plus/character/evermoon/LILI',
+      '/mythic-plus/character/tauri/Healer'
+    ]);
+
+    typeInSearch(harness, element, 'zz');
+    expect(suggestions(element)).toEqual([]);
+    expect(element.querySelector('app-mythic-plus-character-search')?.textContent).toContain('No player by that name.');
+  });
+
+  it('opens the top suggestion on Enter and empties the header search', async () => {
+    const { harness, page, element } = await open('/mythic-plus/character/evermoon/Progtrix');
+
+    typeInSearch(harness, element, 'l');
+    await pressInSearch(harness, element, 'Enter');
+
+    expect(page.player()?.key).toBe('Lili|Evermoon');
+    expect(TestBed.inject(Location).path()).toBe('/mythic-plus/character/evermoon/Lili');
+    expect(searchBox(element).value).toBe('');
+    expect(suggestions(element)).toEqual([]);
+  });
+
+  it('opens a clicked suggestion and empties the header search', async () => {
+    const { harness, page, element } = await open('/mythic-plus/character/evermoon/Progtrix');
+
+    typeInSearch(harness, element, 'heal');
+    (element.querySelector('app-mythic-plus-character-search li a') as HTMLAnchorElement).click();
+    await harness.fixture.whenStable();
+    harness.detectChanges();
+
+    expect(page.player()?.key).toBe('Healer|Tauri');
+    expect(searchBox(element).value).toBe('');
+  });
+
+  it('clears the header search on Escape', async () => {
+    const { harness, element } = await open('/mythic-plus/character/evermoon/Progtrix');
+
+    typeInSearch(harness, element, 'l');
+    await pressInSearch(harness, element, 'Escape');
+
+    expect(searchBox(element).value).toBe('');
+    expect(suggestions(element)).toEqual([]);
+  });
+
+  it('empties the header search when another character opens', async () => {
+    const { harness, element } = await open('/mythic-plus/character/evermoon/Progtrix');
+
+    typeInSearch(harness, element, 'heal');
+    await harness.navigateByUrl('/mythic-plus/character/tauri/Healer', MythicPlusProfilePageComponent);
+    harness.detectChanges();
+
+    expect(searchBox(element).value).toBe('');
+    expect(suggestions(element)).toEqual([]);
   });
 
   it('follows a teammate link on the same page', async () => {

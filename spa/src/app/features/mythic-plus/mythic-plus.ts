@@ -406,7 +406,7 @@ export function sortRoster<T extends Pick<MythicPlusMember, 'role'>>(roster: rea
 
 const foldedNames = new WeakMap<object, string>();
 
-function foldedMemberName(member: Pick<MythicPlusMember, 'name'>): string {
+export function foldedMemberName(member: Pick<MythicPlusMember, 'name'>): string {
   let folded = foldedNames.get(member);
   if (folded === undefined) {
     folded = foldName(member.name);
@@ -416,6 +416,6 @@ function foldedMemberName(member: Pick<MythicPlusMember, 'name'>): string {
   return folded;
 }
 
-function foldName(value: string): string {
+export function foldName(value: string): string {
   return value.normalize('NFD').replace(/\p{M}/gu, '').toLocaleLowerCase();
 }
