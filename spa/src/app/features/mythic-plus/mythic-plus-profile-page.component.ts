@@ -22,7 +22,6 @@ import {
   characterKey,
   exportedAt,
   keystoneUpgrades,
-  memberNameMatches,
   rankPlayers,
   rankRuns,
   runIncludesCharacter,
@@ -33,6 +32,7 @@ import {
 } from './mythic-plus';
 import { affixWeeks, localDay } from './mythic-plus-activity';
 import {
+  CharacterLink,
   ScopeRank,
   characterParam,
   findCharacters,
@@ -47,8 +47,11 @@ import {
   scoreChangeLabel,
   scoreChart,
   scoreOverTime,
-  specsPlayed
+  searchCharacters,
+  specsPlayed,
+  toCharacterLink
 } from './mythic-plus-profile';
+import { MythicPlusCharacterSearchComponent } from './mythic-plus-character-search.component';
 import { compareParam } from './mythic-plus-compare';
 import { guildLadderLink, guildOf, inGuild } from './mythic-plus-guild';
 import { MythicPlusRunsListComponent } from './mythic-plus-runs-list.component';
@@ -78,6 +81,7 @@ import { mythicPlusProfileLink } from '../../core/page-links';
 
 const TEAMMATE_COUNT = 8;
 const SEARCH_RESULT_COUNT = 20;
+const COMPARE_RESULT_COUNT = 8;
 
 interface RankTile {
   scope: string;
@@ -108,12 +112,6 @@ interface TeammateView {
   upgrades: number;
 }
 
-interface CharacterLink {
-  key: string;
-  member: MemberView;
-  score: number;
-}
-
 @Component({
   selector: 'app-mythic-plus-profile-page',
   imports: [
@@ -121,6 +119,7 @@ interface CharacterLink {
     TapTooltipDirective,
     ScrollToEndDirective,
     MythicPlusRunsListComponent,
+    MythicPlusCharacterSearchComponent,
     CountUpDirective,
     RevealDirective,
     SpotlightDirective,
@@ -171,7 +170,7 @@ export class MythicPlusProfilePageComponent implements OnInit {
     const matches = this.matches();
     return matches.length === 1 ? matches[0] : undefined;
   });
-  private readonly key = computed(() => this.player()?.key);
+  readonly key = computed(() => this.player()?.key);
   readonly member = computed(() => {
     const player = this.player();
     return player && toMemberView(player.member);
@@ -397,27 +396,14 @@ export class MythicPlusProfilePageComponent implements OnInit {
   });
 
   readonly searchQuery = linkedSignal(() => this.urlName());
-  readonly searchResults = computed<CharacterLink[]>(() => {
-    const query = this.searchQuery().trim();
-    return query
-      ? this.ranking()
-        .filter(player => memberNameMatches(player.member, query))
-        .slice(0, SEARCH_RESULT_COUNT)
-        .map(toCharacterLink)
-      : [];
-  });
+  readonly searchResults = computed(() =>
+    searchCharacters(this.ranking(), this.searchQuery(), { limit: SEARCH_RESULT_COUNT }));
 
   readonly compareOpen = linkedSignal<string | undefined, boolean>({ source: this.key, computation: () => false });
   readonly compareQuery = linkedSignal<string | undefined, string>({ source: this.key, computation: () => '' });
-  readonly compareResults = computed<CharacterLink[]>(() => {
-    const query = this.compareQuery().trim();
+  readonly compareResults = computed(() => {
     const key = this.key();
-    return query
-      ? this.ranking()
-        .filter(player => player.key !== key && memberNameMatches(player.member, query))
-        .slice(0, 8)
-        .map(toCharacterLink)
-      : [];
+    return searchCharacters(this.ranking(), this.compareQuery(), { limit: COMPARE_RESULT_COUNT, exclude: key ? [key] : [] });
   });
   readonly comparePickParams = computed<Params>(() => {
     const member = this.player()?.member;
@@ -513,8 +499,4 @@ export class MythicPlusProfilePageComponent implements OnInit {
         }
       });
   }
-}
-
-function toCharacterLink(player: PlayerScore): CharacterLink {
-  return { key: player.key, member: toMemberView(player.member), score: player.score };
 }

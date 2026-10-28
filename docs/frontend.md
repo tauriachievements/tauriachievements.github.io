@@ -164,6 +164,16 @@ On the Mythic+ leaderboard and guild ladder, a `spec` counts only when it belong
 hold one. Name searches ignore case and accents (`nameMatches`, `memberNameMatches`: `sosa`
 finds Sósa), while a picked character matches name and realm exactly.
 
+The Mythic+ boxes that suggest characters as you type all call `searchCharacters`
+(`mythic-plus-profile.ts`): names that start with the query come first, then names that contain
+it, each group in ranking order, up to a limit and without the characters it excludes. They are
+the character page's header search (`app-mythic-plus-character-search`, 8 suggestions that open
+the character's page), its Compare box (8, without the character shown), its search on the
+"No Mythic+ runs this season" page (20), and the compare page's "Add a player…" (8, without
+the characters picked). In the header search, Enter opens the top suggestion, Escape clears the
+box, and a pick empties it. The leaderboard and guild ladder searches filter their tables
+instead.
+
 ## Loading data
 
 - Every data file loads through `DataFileService` ([data-pipeline.md](data-pipeline.md)):
@@ -572,7 +582,8 @@ and point the server at its output: `DIST_DIR=<dir>/spa/dist/tauri-achievements/
 npm run test:visual:baseline`. Add `-- -g <name>` to capture only some pages.
 
 An entry in `e2e/visual-pages.ts` is a URL, optionally with `clicks` (selectors clicked in
-order before the screenshots, for menus, dropdowns and dialogs), `only` (one viewport), and
+order before the screenshots, for menus, dropdowns and dialogs), `fill` (a selector and the text
+typed into it after the clicks, for a search box's suggestions), `only` (one viewport), and
 `fail` or `hold` (regular expressions for data paths that answer 500, or never answer), which
 show a page's error and loading states.
 

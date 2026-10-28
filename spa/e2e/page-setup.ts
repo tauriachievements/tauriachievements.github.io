@@ -109,4 +109,9 @@ export async function openPage(page: Page, visualPage: VisualPage): Promise<void
     await page.waitForTimeout(400);
     await settle(page);
   }
+  if (visualPage.fill) {
+    await page.locator(visualPage.fill.selector).fill(visualPage.fill.value);
+    await page.waitForTimeout(400);
+    await settle(page);
+  }
 }
