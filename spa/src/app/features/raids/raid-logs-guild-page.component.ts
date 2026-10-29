@@ -6,7 +6,7 @@ import { getGuildArmoryUrl } from '../../game/armory';
 import { RaidDifficultySwitchComponent } from './raid-difficulty-switch.component';
 import { RaidBoss, RaidDifficulty, RaidGuild, RaidKill, RaidLogsIndex } from './raid-logs.types';
 import { defaultDifficulty, guildKey, logKey } from './raid-logs';
-import { fastestKills, guildProgression, latestKills } from './raid-progression';
+import { ProgressKill, fastestKills, guildProgression, latestKills } from './raid-progression';
 import { formatAgo, formatFightTime, raidBossLink, raidLogLink } from './raid-display';
 import { RaidLogsDataService } from './raid-logs-data.service';
 import { injectReplaceUrl } from '../../core/url-state';
@@ -97,7 +97,7 @@ export class RaidLogsGuildPageComponent {
 
     const ranking = guildProgression(index.kills, difficulty.id, index.bosses.length);
     const key = guildKey(guild);
-    const row = ranking.find(entry => guildKey(entry.guild) === key);
+    const row = ranking.find(entry => entry.key === key);
     return row && { row, of: ranking.length };
   });
 
@@ -126,7 +126,7 @@ export class RaidLogsGuildPageComponent {
     const progress = this.progress();
     const kills = this.kills();
     const bossCount = this.index()?.bosses.length ?? 0;
-    const lastFirst = progress?.row.firsts.reduce<RaidKill | undefined>(
+    const lastFirst = progress?.row.firsts.reduce<ProgressKill | undefined>(
       (latest, kill) => kill && (!latest || kill.killedAt > latest.killedAt) ? kill : latest, undefined);
     return [
       {

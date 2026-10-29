@@ -16,15 +16,22 @@
 .filter-group { display: inline-grid; grid-auto-columns: 1fr; grid-auto-flow: column; gap: 10px; }
 .filter-reset { justify-content: center; }
 
+.groups-switch,
 .period-switch {
   @include segmented-switch;
-  margin-left: auto;
 
   button { justify-content: center; white-space: nowrap; }
 }
 
+.groups-switch { margin-left: auto; }
+
+$pickup-silver: #b9c3d0;
+
 .guild-name { display: inline-flex; align-items: center; gap: 8px; }
-tr.cleared .guild-name .strong { color: $gold; }
+tr.cleared:not(.pickup) .guild-name .strong { color: $gold; }
+tr.pickup .guild-name .strong { color: $pickup-silver; font-weight: 400; }
+tr.pickup .guild-name { vertical-align: middle; }
+.pickup-icon { width: 14px; height: 14px; flex: none; margin: 0 -3px; fill: $pickup-silver; }
 .guild-new { @include new-tag; }
 
 .progress { display: inline-flex; align-items: center; gap: 10px; }
@@ -51,7 +58,9 @@ tr.cleared .guild-name .strong { color: $gold; }
   .filters { width: 100%; }
   .filters app-raid-difficulty-switch { flex-basis: 100%; }
   .filter-group { display: flex; width: 100%; }
-  .period-switch { flex: 1 1 100%; }
+  .groups-switch,
+  .period-switch { flex: 1 1 auto; margin-left: 0; }
+  .groups-switch button,
   .period-switch button { flex: 1 1 0; }
   .filter-slot { min-width: 0; flex: 1 1 0; }
   .filter-reset:disabled { display: none; }

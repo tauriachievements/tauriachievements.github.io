@@ -319,12 +319,27 @@ decision: ask first.** When a rule does change, change its tests first and see t
 
 ## Raid guild progression and kill speed
 
-- **Code:** `guildProgression`, `filterProgression`, `progressionChanges`, `fastestKills` and
-  `speedRank` in `spa/src/app/features/raids/raid-progression.ts`.
+- **Code:** `guildProgression`, `pickupGroups`, `filterProgression`, `progressionChanges`,
+  `fastestKills` and `speedRank` in `spa/src/app/features/raids/raid-progression.ts`.
 - Guilds rank by most bosses down on the difficulty, then by who got there first (their latest
-  first kill). Pickup groups and guilds the API couldn't name don't take part. A guild is its
-  name on its realm, so one recreated under the same name keeps its row. A faction or realm
-  filter ranks the remaining guilds among themselves.
+  first kill). A guild is its name on its realm, so one recreated under the same name keeps its
+  row. Only kills the API credits to a guild count for it, so a guild run with several outsiders
+  usually counts for no guild
+  ([tauri-api.md](tauri-api.md#raid-logs-raid-rank-encounter-raid-log)). A faction or realm
+  filter ranks the remaining rows among themselves.
+- **Guilds and All groups** (`?groups=all`): by default only guilds take part. All groups adds
+  every pickup group, ranked among the guilds by the same rule: a kill with no guild, or with a
+  guild the API couldn't name, is a pickup kill. A pickup group is the pickup kills of one raid
+  week (the This week reset below) that share at least half the players of the smaller raid,
+  chained: a kill that shares half its players with any kill of the group joins it. So the same
+  people raiding again the next week are a new row, and a pickup group never takes a guild's
+  name, even when most of its players are in one guild. A group is named after its first kill,
+  plays on the realm most of its players play on, and has the faction of most of its kills;
+  those two are what the realm and faction filters read. It shows as "Pickup group" in plain
+  silver, never bold or gold, with a group icon in place of the faction square, so it stands
+  apart from the guilds; its 7/7 shows in the progress column. Its link opens the kill that reached its progress, where its players are
+  listed. The page reads the members from the difficulty's boss files, so it loads them only
+  when All groups is on. Reset goes back to Guilds.
 - **This week** (`?period=week`, `raidWeekStart` in `raid-logs.ts`) ranks only the kills since
   the latest weekly raid reset: Wednesday 09:00 on the server clock, Europe/Budapest, so 07:00
   UTC in summer time and 08:00 UTC in winter time. The week is the reader's current one, from
@@ -339,13 +354,14 @@ decision: ask first.** When a rule does change, change its tests first and see t
 - **Changes since the last scan:** the difficulty's progression worked out again without the
   kills that scan didn't have (`newLogs`), compared with today's. A guild that wasn't on the list
   then is tagged "new"; one that was gets "+N" for the bosses it has down now and didn't then.
-  Either way, the squares of those bosses are outlined. Another kill of a boss the guild already
+  Either way, the squares of those bosses are outlined. Guilds only: a pickup group never shows
+  "new", "+N" or outlined squares. Another kill of a boss the guild already
   had changes nothing, and filters don't change what counts. Both sides use today's guild names,
   so a guild the exporter has only just named isn't new because of that.
 - Fastest kills: the shortest fight first; the earlier kill wins a tie. A log's speed rank is
   its place among the boss's kills on that difficulty.
 - **Tests:** `raid-progression.spec.ts`, `raidWeekStart` in `raid-logs.spec.ts`, and the This
-  week cases in `raid-logs-progression-page.component.spec.ts`.
+  week, All groups and pages cases in `raid-logs-progression-page.component.spec.ts`.
 
 ## Invalid raid logs
 

@@ -5,7 +5,7 @@ import { provideRouter } from '@angular/router';
 import { RouterTestingHarness } from '@angular/router/testing';
 import { Observable, of } from 'rxjs';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { RaidLogsIndexFile } from './raid-logs.types';
+import { RaidBossFile, RaidLogsIndexFile, RaidMemberEntry } from './raid-logs.types';
 import { RaidLogsProgressionPageComponent } from './raid-logs-progression-page.component';
 import { DataFileService } from '../../core/data-file.service';
 
@@ -36,27 +36,32 @@ const indexFile: RaidLogsIndexFile = {
 };
 
 class FakeDataFiles {
-  constructor(private readonly file: RaidLogsIndexFile) {}
+  readonly requested: string[] = [];
 
-  fetchJson<T>(): Observable<T> {
-    return of(this.file as T);
+  constructor(private readonly file: RaidLogsIndexFile, private readonly bossFiles: Record<string, RaidBossFile> = {}) {}
+
+  fetchJson<T>(path: string): Observable<T> {
+    this.requested.push(path);
+    const name = path.split('/').pop()!;
+    return of((name === 'index.json' ? this.file : this.bossFiles[name]) as T);
   }
 
   refresh(): void {}
 }
 
-async function open(file: RaidLogsIndexFile, url = '/raid-logs/guilds') {
+async function open(file: RaidLogsIndexFile, url = '/raid-logs/guilds', bossFiles: Record<string, RaidBossFile> = {}) {
+  const dataFiles = new FakeDataFiles(file, bossFiles);
   TestBed.configureTestingModule({
     providers: [
       provideRouter([{ path: 'raid-logs/guilds', component: RaidLogsProgressionPageComponent }]),
       provideLocationMocks(),
-      { provide: DataFileService, useValue: new FakeDataFiles(file) }
+      { provide: DataFileService, useValue: dataFiles }
     ]
   });
   const harness = await RouterTestingHarness.create();
   await harness.navigateByUrl(url, RaidLogsProgressionPageComponent);
   harness.detectChanges();
-  return { harness, element: harness.routeNativeElement as HTMLElement, location: TestBed.inject(Location) };
+  return { harness, element: harness.routeNativeElement as HTMLElement, location: TestBed.inject(Location), dataFiles };
 }
 
 function rows(element: HTMLElement) {
@@ -197,5 +202,155 @@ describe('RaidLogsProgressionPageComponent This week', () => {
     expect(pressedPeriod(element)).toEqual(['This week']);
     expect(progressRows(element)).toEqual([]);
     expect(element.querySelector('.empty-note')?.textContent?.trim()).toBe('No guild has a kill on Mythic this week yet.');
+  });
+});
+
+const raiders = (prefix: string, realm: string) => Array.from({ length: 10 }, (_, n): [string, string, number, number, number, string] =>
+  [`${prefix}${n}`, realm, 8, 1, 0, '']);
+const members = (from: number): RaidMemberEntry[] => Array.from({ length: 10 }, (_, n) => [from + n, 0, 870, 1, 0, 0, 0, 0, 0, 0]);
+
+const pickupFile: RaidLogsIndexFile = {
+  ...indexFile,
+  guilds: [['Miracle', 'Evermoon', 1, 1]],
+  logs: [
+    ['Tauri', 10, 0, 16, seconds('2026-10-22T19:00:00Z'), 100_000, 0, 1, 0, 0, 20],
+    ['Tauri', 20, 0, 16, seconds('2026-10-22T19:30:00Z'), 100_000, -1, 1, 0, 0, 10],
+    ['Tauri', 21, 1, 16, seconds('2026-10-22T20:30:00Z'), 100_000, -1, 1, 0, 0, 10],
+    ['Tauri', 22, 0, 16, seconds('2026-10-23T19:00:00Z'), 100_000, -1, 0, 0, 0, 10]
+  ],
+  newLogs: [['Tauri', 21], ['Tauri', 22]]
+};
+
+const pickupBossFiles: Record<string, RaidBossFile> = {
+  'nythendra-mythic.json': {
+    version: 3,
+    boss: 'nythendra',
+    difficulty: 'mythic',
+    guilds: [['Miracle', 'Evermoon', 1, 1]],
+    players: [...raiders('a', 'Evermoon'), ...raiders('b', 'Tauri'), ...raiders('m', 'Evermoon')],
+    logs: [
+      ['Tauri', 10, seconds('2026-10-22T19:00:00Z'), 100_000, 0, 1, 0, 0, 0, members(20), []],
+      ['Tauri', 20, seconds('2026-10-22T19:30:00Z'), 100_000, -1, 1, 0, 0, 0, members(0), []],
+      ['Tauri', 22, seconds('2026-10-23T19:00:00Z'), 100_000, -1, 0, 0, 0, 0, members(10), []]
+    ]
+  },
+  'ilgynoth-mythic.json': {
+    version: 3,
+    boss: 'ilgynoth',
+    difficulty: 'mythic',
+    guilds: [],
+    players: raiders('a', 'Evermoon'),
+    logs: [['Tauri', 21, seconds('2026-10-22T20:30:00Z'), 100_000, -1, 1, 0, 0, 0, members(0), []]]
+  }
+};
+
+function groupsButton(element: HTMLElement, label: 'Guilds' | 'All groups') {
+  return [...element.querySelectorAll<HTMLButtonElement>('.groups-switch button')].find(button => button.textContent?.trim() === label);
+}
+
+function pressedGroups(element: HTMLElement) {
+  return [...element.querySelectorAll('.groups-switch button[aria-pressed="true"]')].map(button => button.textContent?.trim());
+}
+
+const fetchedFiles = (dataFiles: FakeDataFiles) => dataFiles.requested.map(path => path.split('/').pop());
+
+describe('RaidLogsProgressionPageComponent All groups', () => {
+  it('ranks every pickup group beside the guilds, read from the boss files only once All groups is on', async () => {
+    const { harness, element, location, dataFiles } = await open(pickupFile, '/raid-logs/guilds', pickupBossFiles);
+    expect(pressedGroups(element)).toEqual(['Guilds']);
+    expect(progressRows(element)).toEqual([['1', 'Miracle', '1/3', '1']]);
+    expect(fetchedFiles(dataFiles)).toEqual(['index.json']);
+
+    groupsButton(element, 'All groups')?.click();
+    harness.detectChanges();
+    expect(pressedGroups(element)).toEqual(['All groups']);
+    expect(location.path()).toBe('/raid-logs/guilds?difficulty=mythic&groups=all');
+    expect(fetchedFiles(dataFiles)).toEqual(['index.json', 'nythendra-mythic.json', 'ilgynoth-mythic.json']);
+    expect(progressRows(element)).toEqual([
+      ['1', 'Pickup group', '2/3', '2'],
+      ['2', 'Miracle', '1/3', '1'],
+      ['3', 'Pickup group', '1/3', '1']
+    ]);
+    expect(rows(element)).toEqual([
+      ['Pickup group', '2/3', '', '', 0],
+      ['Miracle', '1/3', '', '', 0],
+      ['Pickup group', '1/3', '', '', 0]
+    ]);
+    expect(element.querySelectorAll('tbody tr.pickup .pickup-icon').length).toBe(2);
+    expect(element.querySelectorAll('tbody tr.pickup .faction').length).toBe(0);
+    expect(element.querySelectorAll('tbody tr:not(.pickup) .faction').length).toBe(1);
+    expect([...element.querySelectorAll('tbody .guild-name')].map(link => link.getAttribute('href'))).toEqual([
+      '/raid-logs/log/tauri/21',
+      '/raid-logs/guild/evermoon/Miracle?difficulty=mythic',
+      '/raid-logs/log/tauri/22'
+    ]);
+
+    groupsButton(element, 'Guilds')?.click();
+    harness.detectChanges();
+    expect(location.path()).toBe('/raid-logs/guilds?difficulty=mythic');
+    expect(progressRows(element)).toEqual([['1', 'Miracle', '1/3', '1']]);
+  });
+
+  it('filters the pickup groups by the realm most of their players play on and the faction of most of their kills', async () => {
+    const { element } = await open(pickupFile, '/raid-logs/guilds?groups=all&realm=tauri', pickupBossFiles);
+    expect(pressedGroups(element)).toEqual(['All groups']);
+    expect(progressRows(element)).toEqual([['1', 'Pickup group', '1/3', '1']]);
+
+    TestBed.resetTestingModule();
+    const none = await open(pickupFile, '/raid-logs/guilds?groups=all&faction=horde&realm=tauri', pickupBossFiles);
+    expect(progressRows(none.element)).toEqual([]);
+    expect(none.element.querySelector('.empty-note')?.textContent?.trim()).toBe('No group with these filters has a kill on Mythic yet.');
+  });
+
+  it('goes back to Guilds when Reset clears the filters', async () => {
+    const { harness, element, location } = await open(pickupFile, '/raid-logs/guilds?groups=all', pickupBossFiles);
+    const reset = element.querySelector<HTMLButtonElement>('.filter-reset');
+    expect(reset?.disabled).toBe(false);
+
+    reset?.click();
+    harness.detectChanges();
+    expect(pressedGroups(element)).toEqual(['Guilds']);
+    expect(location.path()).toBe('/raid-logs/guilds?difficulty=mythic');
+    expect(reset?.disabled).toBe(true);
+  });
+});
+
+describe('RaidLogsProgressionPageComponent pages', () => {
+  const manyGuilds: RaidLogsIndexFile = {
+    ...indexFile,
+    previousGeneratedAt: undefined,
+    newLogs: undefined,
+    guilds: Array.from({ length: 55 }, (_, n) => [`Guild ${n + 1}`, 'Evermoon', 1, n + 1]),
+    logs: Array.from({ length: 55 }, (_, n) => ['Tauri', 100 + n, 0, 16, 1_000 + n, 100_000, n, 1, 0, 0, 20])
+  };
+
+  function pagerButton(element: HTMLElement, label: string) {
+    return [...element.querySelectorAll<HTMLButtonElement>('.pager button')].find(button => button.textContent?.includes(label));
+  }
+
+  it('shows 50 rows a page and keeps the page in the URL', async () => {
+    const { harness, element, location } = await open(manyGuilds);
+    const section = element.querySelector<HTMLElement>('section.section');
+    if (section) {
+      section.scrollIntoView = vi.fn();
+    }
+    expect(progressRows(element).length).toBe(50);
+    expect(element.querySelector('.pager-status')?.textContent?.trim()).toBe('Page 1 of 2 · 55 guilds');
+
+    pagerButton(element, 'Next')?.click();
+    harness.detectChanges();
+    expect(location.path()).toBe('/raid-logs/guilds?difficulty=mythic&page=2');
+    expect(progressRows(element).map(([rank, guild]) => `${rank} ${guild}`))
+      .toEqual(['51 Guild 51', '52 Guild 52', '53 Guild 53', '54 Guild 54', '55 Guild 55']);
+  });
+
+  it('opens on the page in the URL, and goes back to the first page when Reset clears the filters', async () => {
+    const { harness, element, location } = await open(manyGuilds, '/raid-logs/guilds?faction=horde&page=2');
+    expect(progressRows(element)[0]).toEqual(['51', 'Guild 51', '1/3', '1']);
+
+    element.querySelector<HTMLButtonElement>('.filter-reset')?.click();
+    harness.detectChanges();
+    expect(location.path()).toBe('/raid-logs/guilds?difficulty=mythic');
+    expect(progressRows(element)[0]).toEqual(['1', 'Guild 1', '1/3', '1']);
   });
 });

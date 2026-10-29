@@ -4,7 +4,7 @@
   <app-load-state [loading]="isLoading()" [error]="loadError()" [skeleton]="['toolbar:3', 'rows:15']" loadingText="Reading the logs..." (retry)="loadData()" />
 
   @if (!isLoading() && !loadError() && difficulty(); as current) {
-    <section class="section" aria-label="Guild progression">
+    <section class="section" aria-label="Guild progression" #progressionSection>
       <header class="section-header">
         <div class="filters">
           <app-raid-difficulty-switch
@@ -17,7 +17,7 @@
               type="button"
               class="filter-reset"
               [disabled]="!hasFilters()"
-              aria-label="Reset the period, faction and realm filters"
+              aria-label="Reset the groups, period, faction and realm filters"
               (click)="resetFilters()">
               Reset
             </button>
@@ -46,6 +46,19 @@
                 (selectionChange)="setRealmFilter($event)" />
             </div>
           </div>
+          <div class="view-switch groups-switch" role="group" aria-label="Show the guilds only or every group" appGlide>
+            <button
+              type="button"
+              [class.active]="groups() === 'guilds'"
+              [attr.aria-pressed]="groups() === 'guilds'"
+              (click)="setGroups('guilds')">Guilds</button>
+            <button
+              type="button"
+              [class.active]="groups() === 'all'"
+              [attr.aria-pressed]="groups() === 'all'"
+              [title]="allGroupsTitle"
+              (click)="setGroups('all')">All groups</button>
+          </div>
           <div class="view-switch period-switch" role="group" aria-label="Show the whole season or this week" appGlide>
             <button
               type="button"
@@ -62,61 +75,87 @@
         </div>
       </header>
 
-      @if (shownProgression().length) {
-        <div class="table-scroll">
-          <table>
-            <thead>
-              <tr>
-                <th class="rank" scope="col">#</th>
-                <th scope="col">Guild</th>
-                <th scope="col">Progress</th>
-                <th scope="col" class="phone-hidden">Reached</th>
-                <th scope="col" class="num">Kills</th>
-              </tr>
-            </thead>
-            <tbody>
-              @for (row of shownProgression(); track guildKey(row.guild)) {
-                @let moved = change(row);
-                <tr [class.cleared]="row.killed === row.firsts.length">
-                  <td class="rank">{{ row.rank }}</td>
-                  <td class="phone-fluid">
-                    <a class="guild-name" [routerLink]="guildLink(row.guild)" [queryParams]="{ difficulty: current.slug }">
-                      <span class="faction" [class]="'faction-' + row.guild.faction" aria-hidden="true"></span>
-                      <span class="strong">{{ row.guild.name }}</span>
-                      @if (moved?.isNew) {
-                        <span class="guild-new" [title]="newLabel(current.name)">new</span>
-                      }
-                      <span class="muted phone-hidden">{{ row.guild.realm }}</span>
-                    </a>
-                  </td>
-                  <td>
-                    <span class="progress">
-                      <span class="progress-count difficulty-text" [class]="current.slug">{{ row.killed }}/{{ row.firsts.length }}</span>
-                      <span class="pips" aria-hidden="true">
-                        @for (boss of pipBosses(); track boss) {
-                          @let fresh = !!moved && moved.bosses.has(boss.index);
-                          <span
-                            class="pip"
-                            [class.down]="!!row.firsts[boss.index]"
-                            [class.fresh]="fresh"
-                            [class]="current.slug"
-                            [title]="pipTitle(boss, row.firsts[boss.index], fresh)"></span>
+      <app-load-state [loading]="pickupsLoading()" [error]="pickupsError()" [skeleton]="rowsSkeleton" loadingText="Reading the pickup groups..." (retry)="loadPickups()" />
+
+      @if (pickupsReady()) {
+        @if (total()) {
+          <div class="table-scroll">
+            <table>
+              <thead>
+                <tr>
+                  <th class="rank" scope="col">#</th>
+                  <th scope="col">{{ groups() === 'all' ? 'Guild or group' : 'Guild' }}</th>
+                  <th scope="col">Progress</th>
+                  <th scope="col" class="phone-hidden">Reached</th>
+                  <th scope="col" class="num">Kills</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (row of pageRows(); track row.key) {
+                  @let moved = change(row);
+                  <tr [class.cleared]="row.killed === row.firsts.length" [class.pickup]="!row.guild">
+                    <td class="rank">{{ row.rank }}</td>
+                    <td class="phone-fluid">
+                      <a
+                        class="guild-name"
+                        [routerLink]="row.guild ? guildLink(row.guild) : pickupLink(row)"
+                        [queryParams]="row.guild ? { difficulty: current.slug } : null"
+                        [attr.title]="row.guild ? null : pickupTitle(row)">
+                        @if (row.guild) {
+                          <span class="faction" [class]="'faction-' + row.faction" aria-hidden="true"></span>
+                        } @else {
+                          <svg class="pickup-icon" viewBox="0 0 16 16" aria-hidden="true" focusable="false">
+                            <circle cx="6" cy="5" r="2.6" />
+                            <path d="M1.4 13.6c0-2.7 2-4.6 4.6-4.6s4.6 1.9 4.6 4.6z" />
+                            <circle cx="11.2" cy="5.6" r="2.1" />
+                            <path d="M10.4 9.2c2.4 0 4.2 1.8 4.2 4.4h-3.1c0-1.7-.4-3.2-1.1-4.4z" />
+                          </svg>
+                        }
+                        <span class="strong">{{ row.guild?.name ?? 'Pickup group' }}</span>
+                        @if (moved?.isNew) {
+                          <span class="guild-new" [title]="newLabel(current.name)">new</span>
+                        }
+                        <span class="muted phone-hidden">{{ row.realm }}</span>
+                      </a>
+                    </td>
+                    <td>
+                      <span class="progress">
+                        <span class="progress-count difficulty-text" [class]="current.slug">{{ row.killed }}/{{ row.firsts.length }}</span>
+                        <span class="pips" aria-hidden="true">
+                          @for (boss of pipBosses(); track boss) {
+                            @let fresh = !!moved && moved.bosses.has(boss.index);
+                            <span
+                              class="pip"
+                              [class.down]="!!row.firsts[boss.index]"
+                              [class.fresh]="fresh"
+                              [class]="current.slug"
+                              [title]="pipTitle(boss, row.firsts[boss.index], fresh)"></span>
+                          }
+                        </span>
+                        @if (moved && !moved.isNew) {
+                          <span class="progress-gain positive" [title]="gainLabel(moved)"><span aria-hidden="true">+{{ moved.bosses.size }}</span><span class="visually-hidden">{{ gainLabel(moved) }}</span></span>
                         }
                       </span>
-                      @if (moved && !moved.isNew) {
-                        <span class="progress-gain positive" [title]="gainLabel(moved)"><span aria-hidden="true">+{{ moved.bosses.size }}</span><span class="visually-hidden">{{ gainLabel(moved) }}</span></span>
-                      }
-                    </span>
-                  </td>
-                  <td class="phone-hidden muted">{{ row.progressedAt | date:'d MMM, HH:mm' }}</td>
-                  <td class="num">{{ row.kills | number }}</td>
-                </tr>
-              }
-            </tbody>
-          </table>
-        </div>
-      } @else {
-        <p class="empty-note">{{ progression().length ? 'No guild with these filters has a kill on ' : 'No guild has a kill on ' }}{{ current.name }}{{ period() === 'week' ? ' this week' : '' }} yet.</p>
+                    </td>
+                    <td class="phone-hidden muted">{{ row.progressedAt | date:'d MMM, HH:mm' }}</td>
+                    <td class="num">{{ row.kills | number }}</td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+
+          @if (pages() > 1) {
+            <app-pager
+              [page]="currentPage()"
+              [pages]="pages()"
+              [count]="(total() | number) + ' ' + rowNoun() + 's'"
+              [scrollTarget]="progressionSection"
+              (pageChange)="goToPage($event)" />
+          }
+        } @else {
+          <p class="empty-note">{{ progression().length ? 'No ' + rowNoun() + ' with these filters has a kill on ' : 'No ' + rowNoun() + ' has a kill on ' }}{{ current.name }}{{ period() === 'week' ? ' this week' : '' }} yet.</p>
+        }
       }
     </section>
   }
