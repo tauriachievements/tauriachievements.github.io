@@ -277,6 +277,8 @@ describe('RaidLogsProgressionPageComponent All groups', () => {
       ['Pickup group', '1/3', '', '', 0]
     ]);
     expect(element.querySelectorAll('tbody tr.pickup .pickup-icon').length).toBe(2);
+    expect(element.querySelectorAll('tbody tr.pickup .faction').length).toBe(0);
+    expect(element.querySelectorAll('tbody tr:not(.pickup) .faction').length).toBe(1);
     expect([...element.querySelectorAll('tbody .guild-name')].map(link => link.getAttribute('href'))).toEqual([
       '/raid-logs/log/tauri/21',
       '/raid-logs/guild/evermoon/Miracle?difficulty=mythic',

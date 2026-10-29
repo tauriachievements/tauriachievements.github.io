@@ -101,8 +101,9 @@
                         [routerLink]="row.guild ? guildLink(row.guild) : pickupLink(row)"
                         [queryParams]="row.guild ? { difficulty: current.slug } : null"
                         [attr.title]="row.guild ? null : pickupTitle(row)">
-                        <span class="faction" [class]="'faction-' + row.faction" aria-hidden="true"></span>
-                        @if (!row.guild) {
+                        @if (row.guild) {
+                          <span class="faction" [class]="'faction-' + row.faction" aria-hidden="true"></span>
+                        } @else {
                           <svg class="pickup-icon" viewBox="0 0 16 16" aria-hidden="true" focusable="false">
                             <circle cx="6" cy="5" r="2.6" />
                             <path d="M1.4 13.6c0-2.7 2-4.6 4.6-4.6s4.6 1.9 4.6 4.6z" />

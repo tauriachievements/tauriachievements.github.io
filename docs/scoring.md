@@ -336,8 +336,8 @@ decision: ask first.** When a rule does change, change its tests first and see t
   name, even when most of its players are in one guild. A group is named after its first kill,
   plays on the realm most of its players play on, and has the faction of most of its kills;
   those two are what the realm and faction filters read. It shows as "Pickup group" in plain
-  silver with a group icon, never bold or gold, so it stands apart from the guilds; its 7/7
-  shows in the progress column. Its link opens the kill that reached its progress, where its players are
+  silver, never bold or gold, with a group icon in place of the faction square, so it stands
+  apart from the guilds; its 7/7 shows in the progress column. Its link opens the kill that reached its progress, where its players are
   listed. The page reads the members from the difficulty's boss files, so it loads them only
   when All groups is on. Reset goes back to Guilds.
 - **This week** (`?period=week`, `raidWeekStart` in `raid-logs.ts`) ranks only the kills since
