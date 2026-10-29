@@ -17,7 +17,7 @@
               type="button"
               class="filter-reset"
               [disabled]="!hasFilters()"
-              aria-label="Reset faction and realm filters"
+              aria-label="Reset the period, faction and realm filters"
               (click)="resetFilters()">
               Reset
             </button>
@@ -45,6 +45,19 @@
                 [highlightWhenSelected]="true"
                 (selectionChange)="setRealmFilter($event)" />
             </div>
+          </div>
+          <div class="view-switch period-switch" role="group" aria-label="Show the whole season or this week" appGlide>
+            <button
+              type="button"
+              [class.active]="period() === 'season'"
+              [attr.aria-pressed]="period() === 'season'"
+              (click)="setPeriod('season')">Season</button>
+            <button
+              type="button"
+              [class.active]="period() === 'week'"
+              [attr.aria-pressed]="period() === 'week'"
+              [title]="weekTitle"
+              (click)="setPeriod('week')">This week</button>
           </div>
         </div>
       </header>
@@ -103,7 +116,7 @@
           </table>
         </div>
       } @else {
-        <p class="empty-note">{{ progression().length ? 'No guild with these filters has a kill on ' + current.name + ' yet.' : 'No guild has a kill on ' + current.name + ' yet.' }}</p>
+        <p class="empty-note">{{ progression().length ? 'No guild with these filters has a kill on ' : 'No guild has a kill on ' }}{{ current.name }}{{ period() === 'week' ? ' this week' : '' }} yet.</p>
       }
     </section>
   }

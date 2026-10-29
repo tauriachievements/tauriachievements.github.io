@@ -270,6 +270,35 @@ export function defaultDifficulty(difficulties: readonly RaidDifficulty[]): Raid
   return [...difficulties].reverse().find(difficulty => difficulty.kills > 0) ?? difficulties[0];
 }
 
+const SERVER_CLOCK = new Intl.DateTimeFormat('en-GB', {
+  timeZone: 'Europe/Budapest',
+  year: 'numeric',
+  month: 'numeric',
+  day: 'numeric',
+  hour: 'numeric',
+  minute: 'numeric',
+  second: 'numeric',
+  hourCycle: 'h23'
+});
+
+const RAID_WEEK_MS = 7 * 24 * 60 * 60 * 1000;
+
+const FIRST_RAID_RESET = Date.UTC(1970, 0, 7, 9);
+
+function serverClockOffset(at: number): number {
+  const parts = SERVER_CLOCK.formatToParts(at);
+  const part = (type: Intl.DateTimeFormatPartTypes) => Number(parts.find(found => found.type === type)?.value);
+  const wholeSecond = Math.floor(at / 1000) * 1000;
+  return Date.UTC(part('year'), part('month') - 1, part('day'), part('hour'), part('minute'), part('second')) - wholeSecond;
+}
+
+export function raidWeekStart(at: number): number {
+  const offset = serverClockOffset(at);
+  const weeks = Math.floor((at + offset - FIRST_RAID_RESET) / RAID_WEEK_MS);
+  const resetOnServerClock = FIRST_RAID_RESET + weeks * RAID_WEEK_MS;
+  return resetOnServerClock - serverClockOffset(resetOnServerClock - offset);
+}
+
 export function guildKey(guild: Pick<RaidGuild, 'name' | 'realm'>): string {
   return `${realmSlug(guild.realm)}/${guild.name}`;
 }

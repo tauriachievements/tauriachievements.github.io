@@ -8,13 +8,16 @@ import { FilterDropdownOption, FilterDropdownValue } from '../../shared/filter-d
 import { RaidDifficultySwitchComponent } from './raid-difficulty-switch.component';
 import { GuildProgress, ProgressChange, filterProgression, guildProgression, progressionChanges } from './raid-progression';
 import { RaidBoss, RaidKill, RaidLogsIndex } from './raid-logs.types';
-import { bossesInKillOrder, defaultDifficulty, guildKey, logKey } from './raid-logs';
+import { bossesInKillOrder, defaultDifficulty, guildKey, logKey, raidWeekStart } from './raid-logs';
 import { raidGuildLink } from './raid-display';
 import { RaidLogsDataService } from './raid-logs-data.service';
 import { REALM_FILTER_OPTIONS, parseRealmSlug } from '../../game/wow';
 import { injectReplaceUrl } from '../../core/url-state';
 import { LoadStateComponent } from '../../shared/load-state.component';
 import { setPageHeader } from '../../core/page-header';
+import { GlideDirective } from '../../shared/motion/glide.directive';
+
+type ProgressionPeriod = 'season' | 'week';
 
 const FACTIONS: ReadonlyArray<{ slug: string; id: number; label: string }> = [
   { slug: 'horde', id: 1, label: 'Horde' },
@@ -23,7 +26,7 @@ const FACTIONS: ReadonlyArray<{ slug: string; id: number; label: string }> = [
 
 @Component({
   selector: 'app-raid-logs-progression-page',
-  imports: [RouterLink, RaidDifficultySwitchComponent, FilterDropdownComponent, DatePipe, DecimalPipe, LoadStateComponent],
+  imports: [RouterLink, RaidDifficultySwitchComponent, FilterDropdownComponent, DatePipe, DecimalPipe, LoadStateComponent, GlideDirective],
   templateUrl: './raid-logs-progression-page.component.html',
   styleUrl: './raid-logs-progression-page.component.scss',
   providers: [FilterDropdownCoordinatorService],
@@ -47,7 +50,11 @@ export class RaidLogsProgressionPageComponent implements OnInit {
   private readonly requestedDifficulty = signal(this.query.get('difficulty') ?? this.data.lastDifficulty());
   readonly factionFilter = signal(FACTIONS.find(faction => faction.slug === this.query.get('faction'))?.slug);
   readonly realmFilter = signal(parseRealmSlug(this.query.get('realm')));
-  readonly hasFilters = computed(() => this.factionFilter() !== undefined || this.realmFilter() !== undefined);
+  readonly period = signal<ProgressionPeriod>(this.query.get('period') === 'week' ? 'week' : 'season');
+  private readonly weekStart = raidWeekStart(Date.now());
+  readonly weekTitle = `Show only the kills since the raid reset on ${formatDate(this.weekStart, 'EEE d MMM, HH:mm', this.locale)}`;
+  readonly hasFilters = computed(() =>
+    this.factionFilter() !== undefined || this.realmFilter() !== undefined || this.period() === 'week');
 
   readonly factionOptions: ReadonlyArray<FilterDropdownOption> = [
     { value: undefined, label: 'All factions' },
@@ -67,7 +74,8 @@ export class RaidLogsProgressionPageComponent implements OnInit {
 
   private readonly difficultyKills = computed(() => {
     const difficulty = this.difficulty();
-    return (this.index()?.kills ?? []).filter(kill => kill.difficulty === difficulty);
+    const since = this.period() === 'week' ? this.weekStart : -Infinity;
+    return (this.index()?.kills ?? []).filter(kill => kill.difficulty === difficulty && kill.killedAt >= since);
   });
 
   readonly progression = computed<GuildProgress[]>(() =>
@@ -75,7 +83,7 @@ export class RaidLogsProgressionPageComponent implements OnInit {
 
   private readonly changes = computed(() => {
     const newLogs = this.index()?.newLogs;
-    if (!newLogs?.size) {
+    if (!newLogs?.size || this.period() === 'week') {
       return new Map<string, ProgressChange>();
     }
     const previousKills = this.difficultyKills().filter(kill => !newLogs.has(logKey(kill)));
@@ -132,9 +140,19 @@ export class RaidLogsProgressionPageComponent implements OnInit {
     this.writeUrl();
   }
 
+  setPeriod(period: ProgressionPeriod): void {
+    if (period === this.period()) {
+      return;
+    }
+
+    this.period.set(period);
+    this.writeUrl();
+  }
+
   resetFilters(): void {
     this.factionFilter.set(undefined);
     this.realmFilter.set(undefined);
+    this.period.set('season');
     this.writeUrl();
   }
 
@@ -173,7 +191,8 @@ export class RaidLogsProgressionPageComponent implements OnInit {
     this.replaceUrl({
       difficulty: this.difficulty()?.slug ?? null,
       faction: this.factionFilter() ?? null,
-      realm: this.realmFilter() ?? null
+      realm: this.realmFilter() ?? null,
+      period: this.period() === 'week' ? 'week' : null
     });
   }
 }

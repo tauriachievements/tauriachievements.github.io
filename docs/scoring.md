@@ -325,6 +325,15 @@ decision: ask first.** When a rule does change, change its tests first and see t
   first kill). Pickup groups and guilds the API couldn't name don't take part. A guild is its
   name on its realm, so one recreated under the same name keeps its row. A faction or realm
   filter ranks the remaining guilds among themselves.
+- **This week** (`?period=week`, `raidWeekStart` in `raid-logs.ts`) ranks only the kills since
+  the latest weekly raid reset: Wednesday 09:00 on the server clock, Europe/Budapest, so 07:00
+  UTC in summer time and 08:00 UTC in winter time. The week is the reader's current one, from
+  their clock, not the week of the last scan, so right after a reset it stays empty until the
+  next scan. The reset time matches the logs: on every Wednesday since the season started the
+  kills stop by about 08:00 server time and start again after 09:40. The ranking rules and
+  filters work the same on the week's kills, and Reset goes back to the season. Changes since
+  the last scan show only on the season: the week shows no "new" tags, "+N" or outlined
+  squares, as on the Mythic+ pages.
 - The progress squares show the bosses in the order raiders kill them, not the Dungeon
   Journal's order the files use.
 - **Changes since the last scan:** the difficulty's progression worked out again without the
@@ -335,7 +344,8 @@ decision: ask first.** When a rule does change, change its tests first and see t
   so a guild the exporter has only just named isn't new because of that.
 - Fastest kills: the shortest fight first; the earlier kill wins a tie. A log's speed rank is
   its place among the boss's kills on that difficulty.
-- **Tests:** `raid-progression.spec.ts`.
+- **Tests:** `raid-progression.spec.ts`, `raidWeekStart` in `raid-logs.spec.ts`, and the This
+  week cases in `raid-logs-progression-page.component.spec.ts`.
 
 ## Invalid raid logs
 

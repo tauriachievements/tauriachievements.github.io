@@ -101,6 +101,7 @@ export const VISUAL_PAGES: readonly VisualPage[] = [
   { name: 'state-rare-items-weapons', path: '/k7m2q9v4x8p3n6z?weapons=warmongering' },
   { name: 'state-rare-items-other-menu', path: '/k7m2q9v4x8p3n6z', clicks: ['#rareItemsOtherTrigger'] },
   { name: 'state-raid-log-pickup', path: '/raid-logs/log/tauri/1329435' },
+  { name: 'state-raid-logs-guilds-week', path: '/raid-logs/guilds?period=week' },
   { name: 'state-raid-logs-character-class', path: '/raid-logs/character/evermoon/Gankuh?difficulty=mythic&metric=dps&compare=class' },
   { name: 'state-raid-logs-character-predict', path: '/raid-logs/character/evermoon/Gankuh?difficulty=mythic&metric=dps&predict=1', clicks: ['button.detail-toggle >> nth=0'] },
   { name: 'state-raid-logs-stats-performance', path: '/raid-logs/stats?view=performance&role=healer' },

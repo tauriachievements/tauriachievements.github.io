@@ -11,10 +11,17 @@
 
 .raid-page { @include raid-page; }
 
-.filters { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
+.filters { display: flex; flex: 1 1 auto; flex-wrap: wrap; align-items: center; gap: 10px; }
 
 .filter-group { display: inline-grid; grid-auto-columns: 1fr; grid-auto-flow: column; gap: 10px; }
 .filter-reset { justify-content: center; }
+
+.period-switch {
+  @include segmented-switch;
+  margin-left: auto;
+
+  button { justify-content: center; white-space: nowrap; }
+}
 
 .guild-name { display: inline-flex; align-items: center; gap: 8px; }
 tr.cleared .guild-name .strong { color: $gold; }
@@ -44,6 +51,8 @@ tr.cleared .guild-name .strong { color: $gold; }
   .filters { width: 100%; }
   .filters app-raid-difficulty-switch { flex-basis: 100%; }
   .filter-group { display: flex; width: 100%; }
+  .period-switch { flex: 1 1 100%; }
+  .period-switch button { flex: 1 1 0; }
   .filter-slot { min-width: 0; flex: 1 1 0; }
   .filter-reset:disabled { display: none; }
   .pips { display: none; }

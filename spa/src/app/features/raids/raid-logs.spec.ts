@@ -9,7 +9,8 @@ import {
   memberTalents,
   bossShortName,
   bossesInKillOrder,
-  defaultDifficulty
+  defaultDifficulty,
+  raidWeekStart
 } from './raid-logs';
 import { indexFile, index, nythendra, mythic, bossFile, kills } from './raid-logs.fixture';
 
@@ -182,5 +183,23 @@ describe('defaultDifficulty', () => {
   it('opens on the hardest difficulty with a kill', () => {
     expect(defaultDifficulty(index.difficulties)?.slug).toBe('mythic');
     expect(defaultDifficulty(index.difficulties.map(difficulty => ({ ...difficulty, kills: difficulty.id === 15 ? 1 : 0 })))?.slug).toBe('heroic');
+  });
+});
+
+describe('raidWeekStart', () => {
+  const weekStart = (at: string) => new Date(raidWeekStart(Date.parse(at))).toISOString();
+
+  it('starts the raid week at the Wednesday reset, 09:00 on the Budapest server clock', () => {
+    expect(weekStart('2026-10-29T12:00:00.000Z')).toBe('2026-10-28T08:00:00.000Z');
+    expect(weekStart('2026-11-04T07:59:59.999Z')).toBe('2026-10-28T08:00:00.000Z');
+    expect(weekStart('2026-11-04T08:00:00.000Z')).toBe('2026-11-04T08:00:00.000Z');
+  });
+
+  it('keeps the reset at 09:00 server time across the clock changes', () => {
+    expect(weekStart('2026-10-22T12:00:00.000Z')).toBe('2026-10-21T07:00:00.000Z');
+    expect(weekStart('2026-10-26T12:00:00.000Z')).toBe('2026-10-21T07:00:00.000Z');
+    expect(weekStart('2026-10-28T07:30:00.000Z')).toBe('2026-10-21T07:00:00.000Z');
+    expect(weekStart('2026-03-31T12:00:00.000Z')).toBe('2026-03-25T08:00:00.000Z');
+    expect(weekStart('2026-04-01T07:00:00.000Z')).toBe('2026-04-01T07:00:00.000Z');
   });
 });
