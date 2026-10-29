@@ -36,7 +36,7 @@ A file's name says what it is:
 |---|---|
 | `<name>-page.component.{ts,html,scss}` | a routed page |
 | `<name>.component.*` | a child or shared component |
-| `<feature>.ts` + `<feature>.spec.ts` | pure logic: types, parsing, ranking, formatting (e.g. `mythic-plus.ts`, `raid-scores.ts`, `arena-games.ts`). A big area splits it by job: the Raids keep the file formats in `raid-logs.types.ts`, decoding in `raid-logs.ts`, scores in `raid-scores.ts`, guild progression in `raid-progression.ts` and display helpers in `raid-display.ts`, with their test fixtures in `raid-logs.fixture.ts` |
+| `<feature>.ts` + `<feature>.spec.ts` | pure logic: types, parsing, ranking, formatting (e.g. `mythic-plus.ts`, `raid-scores.ts`, `arena-games.ts`). A big area splits it by job: the Raids keep the file formats in `raid-logs.types.ts`, decoding in `raid-logs.ts`, scores in `raid-scores.ts`, guild progression in `raid-progression.ts`, a character's kills of a boss over time in `raid-kill-history.ts` and display helpers in `raid-display.ts`, with their test fixtures in `raid-logs.fixture.ts` |
 | `<feature>-views.ts` | pure functions that turn the logic's results into what a page shows: rows, tiles, labels, insight text (`mythic-plus-views.ts`, `raid-talents-views.ts`) |
 | `<name>.directive.ts` | an attribute directive (`app` prefix: `[appReveal]`) |
 | `<name>.service.ts` | data loading shared by several pages |
@@ -70,7 +70,8 @@ be served from the site itself: a picture from another origin (the `legion-stati
 the canvas, and the export then fails.
 
 Keep components thin. A ranking, filter, count or empty-state message goes into the pure
-`<feature>.ts`, where a spec can pin it down without a TestBed. When a page's loading has more
+`<feature>.ts`, where a spec, written first ([testing.md](testing.md)), can pin it down without
+a TestBed. When a page's loading has more
 to it than one request (several files, retries, recovering from a newer export), it goes into
 the page's store. The component keeps the URL, the filters and the event handlers.
 
@@ -162,6 +163,16 @@ On the Mythic+ leaderboard and guild ladder, a `spec` counts only when it belong
 `class` in the same URL. A `Name-Realm` value splits on its last hyphen: character names can't
 hold one. Name searches ignore case and accents (`nameMatches`, `memberNameMatches`: `sosa`
 finds Sósa), while a picked character matches name and realm exactly.
+
+The Mythic+ boxes that suggest characters as you type all call `searchCharacters`
+(`mythic-plus-profile.ts`): names that start with the query come first, then names that contain
+it, each group in ranking order, up to a limit and without the characters it excludes. They are
+the character page's header search (`app-mythic-plus-character-search`, 8 suggestions that open
+the character's page), its Compare box (8, without the character shown), its search on the
+"No Mythic+ runs this season" page (20), and the compare page's "Add a player…" (8, without
+the characters picked). In the header search, Enter opens the top suggestion, Escape clears the
+box, and a pick empties it. The leaderboard and guild ladder searches filter their tables
+instead.
 
 ## Loading data
 
@@ -498,6 +509,20 @@ Every chart is HTML and CSS; the app carries no chart library. A grid too dense 
 a phone, like the Realm Stats race and class grid, shows only its shading there, and a readout
 under it gives the numbers of the square last pointed at or tapped, so it needs no tooltips.
 
+A line chart gives each point an equal grid column and draws only the line in an inline SVG:
+a `polyline` in a `0 0 <points> 100` viewBox, stretched with `preserveAspectRatio="none"` and
+kept 2 px wide with `vector-effect="non-scaling-stroke"`. The points, labels and tooltips are
+HTML placed at the same percentages, so they keep their size. The Mythic+ score chart and the
+raid character page's kill chart (`app-raid-kill-chart`) work this way. In the kill chart each
+column is the link to its kill's log. A mouse gets a tooltip, while a tap opens the log, as the
+talent icons do. The same component, with `compact`, draws the small progress line in each boss
+row, without links. With `predict`, `killChart` adds one more column for the predicted next kill
+([scoring.md](scoring.md)): a hollow dot, a dashed line from the latest kill and a "Next" tick,
+with the grid sized by `columns`, not by the number of kills. The full chart also draws the
+dotted trend line the prediction sits on; the compact one leaves it out, as 30 px is too short
+for two lines. A click anywhere on a boss row opens its chart, as on the Mythic+ runs list:
+the `tr` toggles, and the links and the toggle button inside it stop the click from reaching it.
+
 ## Styles
 
 - `styles.scss` holds the few global rules: the tokens, the iOS zoom rule, `.tap-area`, the
@@ -557,7 +582,8 @@ and point the server at its output: `DIST_DIR=<dir>/spa/dist/tauri-achievements/
 npm run test:visual:baseline`. Add `-- -g <name>` to capture only some pages.
 
 An entry in `e2e/visual-pages.ts` is a URL, optionally with `clicks` (selectors clicked in
-order before the screenshots, for menus, dropdowns and dialogs), `only` (one viewport), and
+order before the screenshots, for menus, dropdowns and dialogs), `fill` (a selector and the text
+typed into it after the clicks, for a search box's suggestions), `only` (one viewport), and
 `fail` or `hold` (regular expressions for data paths that answer 500, or never answer), which
 show a page's error and loading states.
 

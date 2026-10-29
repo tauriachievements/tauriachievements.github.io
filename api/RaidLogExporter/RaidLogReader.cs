@@ -3,28 +3,17 @@ using Tauri.Core.Infrastructure;
 
 namespace RaidLogExporter;
 
-/// <param name="Logs">Every kill listed, once each.</param>
-/// <param name="Failures">One line per ranking that could not be read.</param>
 public sealed record RaidRankings(
     IReadOnlyList<ListedRaidLog> Logs,
     IReadOnlyList<string> Failures
 );
 
-/// <param name="Logs">The details of every log that could be read and matched its listing.</param>
-/// <param name="Failures">One line per log the API did not answer for.</param>
-/// <param name="Mismatched">Logs whose details describe a different kill than the ranking listed.</param>
 public sealed record RaidLogDetails(
     IReadOnlyList<RaidLog> Logs,
     IReadOnlyList<string> Failures,
     IReadOnlyList<RaidLogKey> Mismatched
 );
 
-/// <summary>
-/// Lists every kill of the tracked raid through <c>raid-rank-encounter</c> (one request per realm,
-/// boss and difficulty, each listing all of that boss's kills) and reads kills' details through
-/// <c>raid-log</c>. The rankings are complete: on 2026-10-12 every one of the 540 Emerald
-/// Nightmare kills in the realm's last 20,000 <c>raid-last</c> logs was in them.
-/// </summary>
 public sealed class RaidLogReader(ITauriApiClient apiClient)
 {
     private const string RankingEndpoint = "raid-rank-encounter";
@@ -82,7 +71,6 @@ public sealed class RaidLogReader(ITauriApiClient apiClient)
                         var log in RaidLogResponseParser.ParseRanking(response, request.ApiRealm)
                     )
                     {
-                        // The ranking for one boss and difficulty only ever lists that kill.
                         if (
                             log.EncounterId == request.Boss.EncounterId
                             && log.DifficultyId == request.Difficulty.Id

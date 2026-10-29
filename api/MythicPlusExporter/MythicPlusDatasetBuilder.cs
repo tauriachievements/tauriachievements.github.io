@@ -34,12 +34,6 @@ public sealed record MythicPlusDataset(
     public int RunCount => Dungeons.Sum(dungeon => dungeon.Runs.Count);
 }
 
-/// <summary>
-/// Merges the leaderboards of every realm group into one season dataset: removes runs that
-/// appear on more than one leaderboard, scores and ranks each dungeon, and collects the
-/// players, specs and affixes the runs reference. Dungeons nobody has run yet are left out,
-/// so a map the server lists but has not opened does not show up as an empty tile.
-/// </summary>
 public static class MythicPlusDatasetBuilder
 {
     public static MythicPlusDataset Build(
@@ -94,8 +88,6 @@ public static class MythicPlusDatasetBuilder
             .SelectMany(scored => scored.Run.Members)
             .ToList();
 
-        // A character's details are a snapshot taken when the leaderboard was read, so every
-        // run reports the same guild and race; the first one seen is as good as any.
         var players = members
             .DistinctBy(member => (member.Realm, member.Name))
             .Select(member => new MythicPlusPlayer(
@@ -136,7 +128,6 @@ public static class MythicPlusDatasetBuilder
         );
     }
 
-    /// <summary>Highest score first, then the faster clear, then the earlier finish.</summary>
     private static int CompareRanked(ScoredRun left, ScoredRun right)
     {
         var byScore = right.Score.CompareTo(left.Score);

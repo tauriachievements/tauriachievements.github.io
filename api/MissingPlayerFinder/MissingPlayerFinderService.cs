@@ -383,8 +383,6 @@ public sealed class MissingPlayerFinderService(
             return CharacterBackfillResult.Skipped();
         }
 
-        // A character already in Players.csv only needs its rare achievements refreshed,
-        // which the achievements response alone answers.
         var scanResult = await CharacterScanner.ScanAsync(
             apiClient,
             target.Character.Name,

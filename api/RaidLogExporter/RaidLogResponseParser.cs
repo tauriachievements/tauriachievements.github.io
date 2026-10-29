@@ -4,7 +4,6 @@ using Tauri.Core.Helpers;
 
 namespace RaidLogExporter;
 
-/// <summary>Maps the API's <c>raid-rank-encounter</c> and <c>raid-log</c> answers to records.</summary>
 public static class RaidLogResponseParser
 {
     public static IReadOnlyList<ListedRaidLog> ParseRanking(JsonElement response, string apiRealm)
@@ -33,10 +32,6 @@ public static class RaidLogResponseParser
         ];
     }
 
-    /// <summary>
-    /// Reads a log's details, or returns null when they do not describe the listed kill (another
-    /// raid, boss or difficulty, or nobody in it).
-    /// </summary>
     public static RaidLog? ParseLog(JsonElement response, ListedRaidLog listed)
     {
         if (
@@ -81,13 +76,6 @@ public static class RaidLogResponseParser
         );
     }
 
-    /// <summary>
-    /// Where a member plays. A member with an armory link is on the realm the link names. Legion
-    /// raids of Evermoon and Tauri characters are all logged on Tauri's API, and there the
-    /// Evermoon characters come without a link (<c>valid_player: false</c>): checked against the
-    /// Mythic+ player list on 2026-10-12, 98,869 of those members were Evermoon characters and
-    /// 169 matched a Tauri name. Elsewhere a member without a link plays on the log's realm.
-    /// </summary>
     public static string MemberRealm(string link, string logRealm)
     {
         var linkedRealm = ReadLinkRealm(link);
@@ -137,11 +125,6 @@ public static class RaidLogResponseParser
         );
     }
 
-    /// <summary>
-    /// The columns of <c>"Za!1212212"</c>: Blizzard's talent calculator code, a class and a spec
-    /// letter, then the column picked on each tier from 0, or <c>.</c> for none. The spec is the
-    /// member's own, so only the columns are kept. Anything else reads as no talents.
-    /// </summary>
     public static string ParseTalents(string code)
     {
         var columns = code[(code.IndexOf('!') + 1)..].Trim();
@@ -152,7 +135,6 @@ public static class RaidLogResponseParser
             : "";
     }
 
-    /// <summary><c>trinket_0</c> and <c>trinket_1</c>; an empty slot has no item id.</summary>
     private static IReadOnlyList<RaidTrinket> ParseTrinkets(JsonElement member)
     {
         var trinkets = new List<RaidTrinket>(2);
@@ -181,13 +163,6 @@ public static class RaidLogResponseParser
         return trinkets;
     }
 
-    /// <summary>
-    /// The guild the server credits with the kill; a pickup group has guild id 0. The API looks a
-    /// guild's name and faction up on the log's own realm, so it only gets them right for a guild
-    /// of that realm. An Evermoon guild on a Tauri log comes back with whatever Tauri guild has the
-    /// same id (Competence Optional, Evermoon guild 7440, as Tauri's "Knights Of Paradise"), or
-    /// with none. Such a guild keeps its id and realm here, without a name, and its members' side.
-    /// </summary>
     private static RaidGuild? ParseGuild(
         JsonElement response,
         string logRealm,
@@ -262,7 +237,6 @@ public static class RaidLogResponseParser
         return result;
     }
 
-    /// <summary>Links look like <c>r=[HU] Tauri WoW Server&amp;amp;n=Name</c>, HTML-escaped.</summary>
     private static string? ReadLinkRealm(string link)
     {
         if (string.IsNullOrWhiteSpace(link))

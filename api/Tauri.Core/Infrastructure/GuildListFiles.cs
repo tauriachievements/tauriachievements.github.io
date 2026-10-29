@@ -3,15 +3,8 @@ using Tauri.Core.Helpers;
 
 namespace Tauri.Core.Infrastructure;
 
-/// <param name="Realm">An API realm name ("[EN] Evermoon") or a display name ("Evermoon").</param>
-/// <param name="Guild">Empty when the character has no guild.</param>
 public sealed record SeenCharacter(string Name, string Realm, string Guild);
 
-/// <summary>
-/// Grows the scan inputs from characters seen elsewhere (battlegrounds, Mythic+ runs): new
-/// guild names go to the realm's guild list, guildless characters to guildless-characters.txt.
-/// Both files are only appended to, and names already listed (ignoring case) are skipped.
-/// </summary>
 public static class GuildListFiles
 {
     private static readonly UTF8Encoding Utf8NoBom = new(encoderShouldEmitUTF8Identifier: false);
@@ -37,7 +30,6 @@ public static class GuildListFiles
             "guildless-characters.txt"
         );
 
-    /// <returns>The number of guild names added across all realm files.</returns>
     public static int AddNewGuilds(string guildsDirectory, IEnumerable<SeenCharacter> characters)
     {
         Console.WriteLine();
@@ -116,11 +108,6 @@ public static class GuildListFiles
         return addedCount;
     }
 
-    /// <summary>
-    /// Lines are written as <c>Name-[EN] Evermoon</c> (the API realm name), whichever realm
-    /// spelling the source used, so the same character is never listed twice.
-    /// </summary>
-    /// <returns>The number of characters added.</returns>
     public static int AddNewGuildlessCharacters(
         string guildlessCharactersPath,
         IEnumerable<SeenCharacter> characters

@@ -8,7 +8,7 @@ import {
   computeBattlegroundStats,
   decodeBattlegroundSnapshot,
   formatDuration,
-  getCompletedBattlegroundDateBounds
+  getBattlegroundDateBounds
 } from './battleground-stats';
 import { BattlegroundCollectorState, BattlegroundsService } from './battlegrounds.service';
 import { FilterDropdownCoordinatorService } from '../../shared/filter-dropdown-coordinator.service';
@@ -56,7 +56,7 @@ export class BattlegroundPageComponent implements OnInit {
   readonly selectedBattlegroundName = signal<string | undefined>(undefined);
   readonly lastEdited = signal<Date | undefined>(undefined);
 
-  readonly dateBounds = computed(() => getCompletedBattlegroundDateBounds(this.battlegrounds()));
+  readonly dateBounds = computed(() => getBattlegroundDateBounds(this.battlegrounds()));
   readonly hasData = computed(() => this.battlegrounds().length > 0);
   readonly showLoading = computed(() => this.isLoading() && !this.hasData());
   readonly showError = computed(() => !this.isLoading() && !!this.loadError() && !this.hasData());

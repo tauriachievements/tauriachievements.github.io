@@ -18,8 +18,9 @@ A new route, its URL parameters and its place in the navigation are architectura
 In the folder of the page's menu section, `spa/src/app/features/<area>/`:
 
 - `<name>-page.component.ts`, `.html`, `.scss`: the page.
-- `<name>.ts` with `<name>.spec.ts`: everything the page computes (filters, ranking, counts,
-  formatting), as pure functions with tests.
+- `<name>.spec.ts`, then `<name>.ts`: everything the page computes (filters, ranking, counts,
+  formatting), as pure functions. Each function's spec comes first and is seen failing before
+  the function is written ([testing.md](../testing.md)).
 
 ## 2. The component
 
@@ -75,12 +76,13 @@ Never put a dot in a path or parameter: `404.html` won't redirect it.
 
 ## 4. The navigation
 
-Add the page to its section in `core/nav-sections.ts` (`label`, optional short `tab`, `icon`,
-`path`; `includes` lists the deep routes that should highlight it). Then raise the page count
-in both specs that pin it (23 today):
+First raise the page count in both specs that pin it (23 today), and see them fail:
 
 - `nav-sections.spec.ts`: `expect(paths).toHaveLength(…)`
 - `update-bar.component.spec.ts`: `.site-drawer-page` count
+
+Then add the page to its section in `core/nav-sections.ts` (`label`, optional short `tab`,
+`icon`, `path`; `includes` lists the deep routes that should highlight it), and the specs pass.
 
 Unlisted pages (guild pages, Rare Items) get a route but no nav entry.
 

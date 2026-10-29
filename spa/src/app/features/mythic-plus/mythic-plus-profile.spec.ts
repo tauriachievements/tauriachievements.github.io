@@ -15,6 +15,7 @@ import {
   scoreChangeLabel,
   scoreChart,
   scoreOverTime,
+  searchCharacters,
   specsPlayed
 } from './mythic-plus-profile';
 
@@ -77,6 +78,49 @@ describe('findCharacters', () => {
   it('finds no one on another realm or for a partial name', () => {
     expect(findCharacters(characters, 'wod', 'Progtrix')).toEqual([]);
     expect(findCharacters(characters, 'evermoon', 'Prog')).toEqual([]);
+  });
+});
+
+describe('searchCharacters', () => {
+  const ranking = rankPlayers([
+    run('nl', 300, [member('Maxyl')]),
+    run('nl', 250, [member('Xyhop', { class: 4, spec: 'Outlaw' })]),
+    run('nl', 200, [member('Pyxis')]),
+    run('nl', 150, [member('Xyra', { realm: 'Tauri' })]),
+    run('nl', 100, [member('Sósa')])
+  ]);
+  const names = (results: { member: { name: string } }[]) => results.map(result => result.member.name);
+
+  it('lists names that start with the query before names that contain it, each in ranking order', () => {
+    expect(names(searchCharacters(ranking, 'xy', { limit: 8 }))).toEqual(['Xyhop', 'Xyra', 'Maxyl']);
+  });
+
+  it('stops at the limit, prefix matches first', () => {
+    expect(names(searchCharacters(ranking, 'xy', { limit: 2 }))).toEqual(['Xyhop', 'Xyra']);
+    expect(names(searchCharacters(ranking, 'x', { limit: 3 }))).toEqual(['Xyhop', 'Xyra', 'Maxyl']);
+  });
+
+  it('leaves out the excluded characters', () => {
+    expect(names(searchCharacters(ranking, 'xy', { limit: 8, exclude: ['Xyhop|Evermoon'] }))).toEqual(['Xyra', 'Maxyl']);
+  });
+
+  it('ignores case, accents and the spaces around the query', () => {
+    expect(names(searchCharacters(ranking, ' SOSA ', { limit: 8 }))).toEqual(['Sósa']);
+    expect(names(searchCharacters(ranking, 'sós', { limit: 8 }))).toEqual(['Sósa']);
+  });
+
+  it('finds no one for a blank query or a name nobody has', () => {
+    expect(searchCharacters(ranking, '  ', { limit: 8 })).toEqual([]);
+    expect(searchCharacters(ranking, 'qq', { limit: 8 })).toEqual([]);
+  });
+
+  it('gives each result its key, its member view and its score', () => {
+    const [xyhop] = searchCharacters(ranking, 'xyhop', { limit: 8 });
+    expect(xyhop.key).toBe('Xyhop|Evermoon');
+    expect(xyhop.score).toBe(ranking[1].score);
+    expect(xyhop.member.realm).toBe('Evermoon');
+    expect(xyhop.member.className).toBe('Rogue');
+    expect(xyhop.member.profileLink).toEqual(['/mythic-plus', 'character', 'evermoon', 'Xyhop']);
   });
 });
 

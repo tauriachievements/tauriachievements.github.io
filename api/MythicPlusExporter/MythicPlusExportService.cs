@@ -16,22 +16,12 @@ internal sealed record PreviousMythicPlusSnapshot(
     IReadOnlyDictionary<(string Realm, string Name), MythicPlusStanding> Standings
 );
 
-/// <summary>
-/// Reads every challenge map's leaderboard for each realm group and publishes the
-/// /mythic-plus data files. Evermoon and Tauri share one leaderboard, so asking either realm
-/// returns both; WoD keeps its own. Nothing is written unless every leaderboard was read,
-/// so a flaky API never publishes a partial season.
-/// </summary>
 public sealed class MythicPlusExportService(
     string outputDirectory,
     ITauriApiClient apiClient,
     TimeProvider? timeProvider = null
 )
 {
-    /// <summary>
-    /// Leaderboards only grow during a season, so fewer runs than last time means the API
-    /// returned a partial answer. A small allowance covers runs the server itself removed.
-    /// </summary>
     private const double MaxShrinkFraction = 0.02;
 
     private readonly ChallengeLeaderboardReader _reader = new(apiClient);
@@ -48,7 +38,6 @@ public sealed class MythicPlusExportService(
             options.Realms,
             cancellationToken
         );
-        // Every run in the files was on the leaderboards by now, so this is how current they are.
         var scannedAt = _timeProvider.GetUtcNow();
 
         if (leaderboards.Failures.Count > 0)
@@ -123,8 +112,6 @@ public sealed class MythicPlusExportService(
             var players = ReadPlayerKeys(root);
             var standings = ReadStandings(root, players);
 
-            // Migration path for the index format from before compact standings existed. This
-            // reads the old dungeon files once; every later scan uses `standings` from index.json.
             if (standings.Count == 0 && players.Count > 0)
             {
                 standings = ReadLegacyStandings(root, players);

@@ -35,16 +35,10 @@ public sealed record ChallengeRun(
     IReadOnlyList<ChallengeMember> Members
 );
 
-/// <summary>
-/// Maps the <c>challenge-index</c> and <c>challenge-leaderboard</c> responses. The API pads
-/// the affix list with id 0 for slots a key is too low to have, and returns <c>{}</c> as
-/// playerinfo for characters it no longer knows; both are dropped.
-/// </summary>
 public static class ChallengeResponseParser
 {
     private const string DefaultDataUrlPrefix = "legion-";
 
-    /// <summary>Legion affix slots unlock at +4, +7 and +10, and the API lists them in slot order.</summary>
     private static readonly int[] AffixSlotLevels = [4, 7, 10];
 
     private static readonly string[] RoleNames = ["tank", "healer", "dps"];
@@ -205,7 +199,6 @@ public static class ChallengeResponseParser
         return members;
     }
 
-    // Keyed objects ({"197": {...}}) and arrays both occur in this API.
     private static IEnumerable<JsonElement> EnumerateItems(JsonElement element) =>
         element.ValueKind == JsonValueKind.Array
             ? element.EnumerateArray()

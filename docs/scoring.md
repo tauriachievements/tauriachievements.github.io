@@ -2,8 +2,8 @@
 
 Every number the site ranks by follows a rule the owner chose. Some deliberately reproduce
 another site's numbers, and players compare them. **Changing any rule here is an architectural
-decision: ask first.** When a rule does change, update its code, its tests and the page that
-explains it together.
+decision: ask first.** When a rule does change, change its tests first and see them fail
+([testing.md](testing.md)), then its code and the page that explains it, in the same PR.
 
 ## Achievement ladder
 
@@ -84,6 +84,9 @@ explains it together.
 
 - **Code:** `rankMatchingCharacters` in
   `spa/src/app/features/achievements/rare-achievement-matches.ts`.
+- Heroic: Nefarian and Heroic: Maloriak count as rare only for a character who earned both on
+  3 May 2015. The character scan applies this (`RareScanCatalog.RareAchievementDateRequirements`,
+  through `CharacterScanner`).
 - One achievement: newest first. A group ("All Gladiator Titles", "All Gladiator Mounts", "All
   Rated Battleground Titles") lists each character once, dated by their latest achievement in
   the group.
@@ -265,7 +268,35 @@ explains it together.
   as that spec has no rank. The dropdown lists the specs the metric ranks, and a picked spec
   the other metric doesn't rank is dropped on switching. The score tile always compares with
   all players.
-- **Tests:** `raid-scores.spec.ts`, `raid-logs-character-page.component.spec.ts`.
+- **Character page, kills over time** (`killHistory`, `killChart` and `recordChange` in
+  `raid-kill-history.ts`): each boss row lists the character's kills of the boss that count for
+  the metric, oldest first, and with a spec picked to compare with, only the kills as that spec.
+  The best kill is the highest, the earlier on a tie, as on the boss rankings.
+  - **Latest vs PR** compares the latest kill with the best kill before it, so a new PR shows
+    how far it beat the old one instead of 0%. The change is rounded to a whole percent; under
+    half a percent keeps its arrow ("▲ <1%"). The column shows the change and the latest kill's
+    date, without a "New PR" tag. With one kill there is nothing to compare yet ("First kill").
+  - The character page leaves invalid kills out entirely, as if the character hadn't killed the
+    boss that day: they're not in the boss rows, the charts, Latest vs PR or the latest kills.
+  - Every kill gets an equal column, whatever the time between kills. The chart's top line is the
+    best anyone did on the boss (with a comparison picked, the best of that class or spec), and
+    each dot is coloured like "Of best".
+  - Every boss row starts closed; a click anywhere on a row opens its chart, except on the boss's
+    name, which links to the boss page. One boss opens at a time, and which one isn't in the URL.
+  - **Prediction** (`?predict=1`, off by default) adds one column after the latest kill to every
+    chart: the next kill on the least-squares line through the last 6 kills (all of them when
+    fewer), floored at 0. It needs 3 kills, and uses the same kills as the chart, so it follows
+    Damage/Healing and the spec compared with. An open boss's chart also draws that line, from
+    the first kill it fits to the prediction, and its note gives the predicted kill. The other
+    columns, Latest vs PR included, stay as they are, so the toggle never moves them. The owner
+    chose the trend line over polynomial interpolation after a backtest on the mythic data (Oct
+    2026, 1,055 player-boss histories, the latest kill predicted from the earlier ones): the trend
+    line missed by 16% at the median and went below 0 or past twice the last kill 2% of the time;
+    a polynomial through every kill missed by 54% and went wild 28% of the time. Simply repeating
+    the last kill missed by 13%, so week-to-week noise is that large and the page shows the
+    prediction as "≈".
+- **Tests:** `raid-scores.spec.ts`, `raid-kill-history.spec.ts`,
+  `raid-logs-character-page.component.spec.ts`.
 
 ## Raid boss rankings
 
@@ -317,9 +348,9 @@ explains it together.
   list, Talent Analytics, or the spec and race charts. The whole kill is out, not only the
   players who abused something.
 - It's still listed, tagged "Invalid" with the reason on hover, in the lists of latest kills:
-  the overview's, a boss's Latest tab (without a number), a guild's kill history and a
-  character's latest kills. Its log page opens with the reason, and the fight time says "Not
-  ranked".
+  the overview's, a boss's Latest tab (without a number) and a guild's kill history. The
+  character page leaves it out altogether, its latest kills and kill charts included. Its log
+  page opens with the reason, and the fight time says "Not ranked".
 - `/raid-logs/invalid` lists every invalid log of every difficulty, latest first, with its
   reason. It has no menu entry: the "List of invalid logs" button on `/raid-logs`, shown only
   while there are any, links to it.

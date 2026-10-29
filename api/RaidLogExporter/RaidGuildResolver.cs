@@ -5,13 +5,6 @@ using Tauri.Core.Infrastructure;
 
 namespace RaidLogExporter;
 
-/// <summary>
-/// Names the guilds the API could not (see <see cref="RaidLogResponseParser"/>): Evermoon
-/// guilds credited on Tauri logs. The likely name is the current guild most of that guild's
-/// raiders are in, from the ladder's Players.csv. A name counts only once <c>guild-info</c> on
-/// the guild's own realm answers with the same guild id, which also gives its real faction.
-/// A guild no candidate confirms stays unnamed and is tried again next run.
-/// </summary>
 public sealed class RaidGuildResolver(
     ITauriApiClient apiClient,
     PlayerGuildDirectory guildDirectory
@@ -34,8 +27,6 @@ public sealed class RaidGuildResolver(
 
         foreach (var group in groups)
         {
-            // A name is either the API's for a guild of the log's realm, or one confirmed by an
-            // earlier run; the latest kill has the current one.
             var named = group
                 .Where(log => log.Guild!.Name.Length > 0)
                 .MaxBy(log => log.KilledAt)
@@ -95,10 +86,6 @@ public sealed class RaidGuildResolver(
         ];
     }
 
-    /// <summary>
-    /// The guilds the guild's raiders are in now, most common first. Only raiders of the guild's
-    /// realm count; Players.csv knows their current guild, a log only the guild of linked members.
-    /// </summary>
     public IReadOnlyList<string> Candidates(string realm, IEnumerable<RaidLog> logs) =>
         [
             .. logs.SelectMany(log => log.Members)

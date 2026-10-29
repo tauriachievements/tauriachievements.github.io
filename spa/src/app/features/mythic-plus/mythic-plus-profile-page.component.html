@@ -1,7 +1,12 @@
 <main class="profile-page">
-  <a class="back-link" routerLink="/mythic-plus">
-    <span aria-hidden="true">‹</span> Back to the M+ Leaderboard
-  </a>
+  <div class="profile-top">
+    <a class="back-link" routerLink="/mythic-plus">
+      <span aria-hidden="true">‹</span> Back to the M+ Leaderboard
+    </a>
+    @if (!loadError()) {
+      <app-mythic-plus-character-search [ranking]="ranking()" [character]="key()" />
+    }
+  </div>
 
   <app-load-state [loading]="isLoading()" [error]="loadError()" [skeleton]="['hero', 'tiles:6', 'tiles:6', 'cards:2']" loadingText="Charging the keystones..." (retry)="loadData()" />
 

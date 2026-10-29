@@ -7,10 +7,13 @@ import {
   MythicPlusRun,
   PlayerScore,
   characterKey,
+  foldName,
+  foldedMemberName,
   hasScanChanges,
   isBetterRun,
   samePlace
 } from './mythic-plus';
+import { MemberView, toMemberView } from './mythic-plus-views';
 import { realmSlug } from '../../game/wow';
 
 type Character = Pick<MythicPlusMember, 'name' | 'realm'>;
@@ -38,6 +41,45 @@ export function findCharacters<T extends Character>(candidates: readonly T[], re
 
   const folded = foldCase(name);
   return onRealm.filter(candidate => foldCase(candidate.name) === folded);
+}
+
+export interface CharacterLink {
+  key: string;
+  member: MemberView;
+  score: number;
+}
+
+export function searchCharacters(
+  ranking: readonly PlayerScore[],
+  query: string,
+  { limit, exclude = [] }: { limit: number; exclude?: readonly string[] }
+): CharacterLink[] {
+  const needle = foldName(query.trim());
+  if (!needle) {
+    return [];
+  }
+
+  const excluded = new Set(exclude);
+  const starts: PlayerScore[] = [];
+  const contains: PlayerScore[] = [];
+  for (const player of ranking) {
+    if (starts.length >= limit) {
+      break;
+    }
+
+    const at = excluded.has(player.key) ? -1 : foldedMemberName(player.member).indexOf(needle);
+    if (at === 0) {
+      starts.push(player);
+    } else if (at > 0 && contains.length < limit) {
+      contains.push(player);
+    }
+  }
+
+  return [...starts, ...contains].slice(0, limit).map(toCharacterLink);
+}
+
+export function toCharacterLink(player: PlayerScore): CharacterLink {
+  return { key: player.key, member: toMemberView(player.member), score: player.score };
 }
 
 export interface ScopeRank {

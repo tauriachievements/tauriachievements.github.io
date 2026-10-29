@@ -6,9 +6,6 @@ using Tauri.Core.Infrastructure;
 
 namespace RaidLogGuildAndCharScan;
 
-/// <param name="RaiderCount">Distinct characters in the raid log export.</param>
-/// <param name="NotFoundCount">Raiders the API no longer knows (renamed, deleted, moved away).</param>
-/// <param name="Failures">Raiders whose character sheet could not be read this time.</param>
 public sealed record RaidLogGuildAndCharScanResult(
     int RaiderCount,
     int NotFoundCount,
@@ -17,14 +14,6 @@ public sealed record RaidLogGuildAndCharScanResult(
     IReadOnlyList<string> Failures
 );
 
-/// <summary>
-/// Feeds every character who has an Emerald Nightmare kill in the raid log export into the scan
-/// inputs: their guilds go to the realm guild lists, characters without a guild to
-/// guildless-characters.txt. Logs only name the guild of members with an armory link, so
-/// Evermoon raiders come without one; every raider's current guild is read from their character
-/// sheet instead. Both files are only appended to, so a sheet that fails to load just means
-/// one name fewer today.
-/// </summary>
 public sealed class RaidLogGuildAndCharScanService(
     string raidLogDirectory,
     string guildsDirectory,
@@ -133,10 +122,6 @@ public sealed class RaidLogGuildAndCharScanService(
         );
     }
 
-    /// <summary>
-    /// A guildless character's sheet has an empty <c>guildName</c>. A sheet without the field
-    /// says nothing, so it must not make the character guildless.
-    /// </summary>
     private static bool TryReadGuildName(JsonElement response, out string guild)
     {
         if (

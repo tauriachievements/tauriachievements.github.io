@@ -5,11 +5,9 @@ namespace RaidLogExporter;
 
 public interface IRaidItemSource
 {
-    /// <summary>The item's name, quality and icon, or null when they could not be read.</summary>
     Task<RaidItem?> LoadAsync(int itemId, CancellationToken cancellationToken);
 }
 
-/// <summary>Reads item names, qualities and icons from TauriShoot's <c>?item=&lt;id&gt;&amp;xml</c>.</summary>
 public sealed class TauriShootItemSource : IRaidItemSource, IDisposable
 {
     private const string BaseUrl = "https://legion-shoot.tauri.hu/";

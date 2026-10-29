@@ -1,9 +1,5 @@
 namespace MythicPlusExporter;
 
-/// <summary>
-/// One character's overall season standing. <see cref="RankChange"/> is positive when the
-/// character climbed and negative when they fell.
-/// </summary>
 public sealed record MythicPlusStanding(
     string Name,
     string Realm,
@@ -13,11 +9,6 @@ public sealed record MythicPlusStanding(
     int? RankChange = null
 );
 
-/// <summary>
-/// Builds the compact standings written into index.json. This is one linear pass over the run
-/// rosters; the exporter does the comparison once so every browser does not need the previous
-/// run files as well as the current ones.
-/// </summary>
 public static class MythicPlusStandings
 {
     public static IReadOnlyList<MythicPlusStanding> Build(MythicPlusDataset dataset)
@@ -51,13 +42,6 @@ public static class MythicPlusStandings
         );
     }
 
-    /// <summary>
-    /// Ranks players by score, highest first, then by the total clear time of their best runs,
-    /// fastest first (matching rankPlayers() in the browser), then by <c>name|realm</c>. Only the
-    /// same score and the same total time share a rank, and the places they take are skipped:
-    /// 1, 1, 1, 4 (playerRanks() in the browser). The result is aligned with
-    /// <paramref name="players"/>.
-    /// </summary>
     internal static IReadOnlyList<MythicPlusStanding> Rank(
         IReadOnlyList<(string Realm, string Name)> players,
         IReadOnlyList<double> scores,
@@ -123,13 +107,9 @@ public static class MythicPlusStandings
     internal static double RoundScore(double score)
     {
         var rounded = Math.Round(score, 1, MidpointRounding.AwayFromZero);
-        return rounded == 0 ? 0 : rounded; // Do not serialize negative zero.
+        return rounded == 0 ? 0 : rounded;
     }
 
-    /// <summary>
-    /// Each player's best run per dungeon, added up: the highest score, and on the same score
-    /// the fastest clear (isBetterRun() in the browser), so its time counts towards the total.
-    /// </summary>
     internal sealed class BestRuns(int playerCount)
     {
         private readonly double[] _dungeonScores = new double[playerCount];

@@ -213,10 +213,6 @@ public sealed class GuildCharacterExportServiceTests : IDisposable
             TauriApiResponseResult.GuildNotFoundErrorCode
         );
 
-    /// <summary>
-    /// Serves queued responses per guild name; the last response repeats once the queue is
-    /// down to it, and unknown guilds fail as if the request timed out.
-    /// </summary>
     private sealed class FakeGuildApiClient(
         IReadOnlyDictionary<string, Queue<TauriApiResponseResult>> responses
     ) : ITauriApiClient

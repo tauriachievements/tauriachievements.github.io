@@ -26,10 +26,6 @@ public sealed class RaidLogExportService(
     TimeProvider? timeProvider = null
 )
 {
-    /// <summary>
-    /// Kills only accumulate, so fewer than last time means the API answered in part. A small
-    /// allowance covers logs the server itself removed.
-    /// </summary>
     private const double MaxShrinkFraction = 0.02;
 
     private const int MaxParallelItems = 8;
@@ -185,12 +181,6 @@ public sealed class RaidLogExportService(
         return (tooltips, new RaidTooltipLookup(spellIds.Count, tooltips.Count, missing.Count));
     }
 
-    /// <summary>
-    /// The kills the last export did not have, which the leaderboard's rank and score changes
-    /// come from; measured against its boss files, so --full changes nothing here. A run that
-    /// finds no new kill moved no score, so it keeps the last export's changes, and running
-    /// twice in a row doesn't wipe them.
-    /// </summary>
     private static RaidScanChanges? ScanChanges(PreviousRaidExport previous, RaidDataset dataset)
     {
         if (previous.GeneratedAt is not { } previousGeneratedAt || previous.Logs.Count == 0)
@@ -205,10 +195,6 @@ public sealed class RaidLogExportService(
         return added.Count > 0 ? new RaidScanChanges(previousGeneratedAt, added) : previous.Changes;
     }
 
-    /// <summary>
-    /// Looks up the items no earlier run named. One that cannot be read is left out and tried
-    /// again next run; the page shows its id meanwhile.
-    /// </summary>
     private async Task<IReadOnlyDictionary<int, RaidItem>> LoadItemsAsync(
         IReadOnlyList<RaidLog> logs,
         IReadOnlyDictionary<int, RaidItem> known,

@@ -4,6 +4,7 @@ export interface VisualPage {
   readonly name: string;
   readonly path: string;
   readonly clicks?: readonly string[];
+  readonly fill?: { readonly selector: string; readonly value: string };
   readonly only?: ViewportName;
   readonly fail?: readonly string[];
   readonly hold?: readonly string[];
@@ -80,6 +81,16 @@ export const VISUAL_PAGES: readonly VisualPage[] = [
   { name: 'state-mythic-plus-filters-open', path: '/mythic-plus?view=players', clicks: ['.mobile-filter-toggle'], only: 'phone' },
   { name: 'state-mythic-plus-guild-week', path: '/mythic-plus/guild/evermoon/Miracle?period=week&role=healer' },
   { name: 'state-mythic-plus-records-dungeon', path: '/mythic-plus/records?dungeon=brh' },
+  {
+    name: 'state-mythic-plus-character-search',
+    path: '/mythic-plus/character/evermoon/Pashao',
+    fill: { selector: 'app-mythic-plus-character-search input', value: 'm' }
+  },
+  {
+    name: 'state-mythic-plus-character-search-none',
+    path: '/mythic-plus/character/evermoon/Pashao',
+    fill: { selector: 'app-mythic-plus-character-search input', value: 'zzqx' }
+  },
   { name: 'state-battleground-starts', path: '/battleground', clicks: ['.bg-count-row >> nth=0'] },
   { name: 'state-rated-battleground-history', path: '/rated-battleground', clicks: ['.player-history-trigger >> nth=0'] },
   { name: 'state-arena-min-games', path: '/arena?bracket=3v3&games=30' },
@@ -91,6 +102,7 @@ export const VISUAL_PAGES: readonly VisualPage[] = [
   { name: 'state-rare-items-other-menu', path: '/k7m2q9v4x8p3n6z', clicks: ['#rareItemsOtherTrigger'] },
   { name: 'state-raid-log-pickup', path: '/raid-logs/log/tauri/1329435' },
   { name: 'state-raid-logs-character-class', path: '/raid-logs/character/evermoon/Gankuh?difficulty=mythic&metric=dps&compare=class' },
+  { name: 'state-raid-logs-character-predict', path: '/raid-logs/character/evermoon/Gankuh?difficulty=mythic&metric=dps&predict=1', clicks: ['button.detail-toggle >> nth=0'] },
   { name: 'state-raid-logs-stats-performance', path: '/raid-logs/stats?view=performance&role=healer' },
   { name: 'state-raid-logs-boss-hps-class', path: '/raid-logs/boss/xavius?difficulty=mythic&tab=hps&class=5' },
   { name: 'state-raid-logs-boss-ranged', path: '/raid-logs/boss/xavius?difficulty=mythic&tab=ranged' },
