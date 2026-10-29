@@ -8,7 +8,7 @@ import { FilterDropdownOption, FilterDropdownValue } from '../../shared/filter-d
 import { RaidDifficultySwitchComponent } from './raid-difficulty-switch.component';
 import { GuildProgress, ProgressChange, filterProgression, guildProgression, progressionChanges } from './raid-progression';
 import { RaidBoss, RaidKill, RaidLogsIndex } from './raid-logs.types';
-import { bossesInKillOrder, defaultDifficulty, guildKey, logKey } from './raid-logs';
+import { bossesInKillOrder, defaultDifficulty, guildKey, logKey, raidWeekStart } from './raid-logs';
 import { raidGuildLink } from './raid-display';
 import { RaidLogsDataService } from './raid-logs-data.service';
 import { REALM_FILTER_OPTIONS, parseRealmSlug } from '../../game/wow';
@@ -47,6 +47,9 @@ export class RaidLogsProgressionPageComponent implements OnInit {
   private readonly requestedDifficulty = signal(this.query.get('difficulty') ?? this.data.lastDifficulty());
   readonly factionFilter = signal(FACTIONS.find(faction => faction.slug === this.query.get('faction'))?.slug);
   readonly realmFilter = signal(parseRealmSlug(this.query.get('realm')));
+  readonly thisWeek = signal(this.query.get('period') === 'week');
+  private readonly weekStart = raidWeekStart(Date.now());
+  readonly weekTitle = `Show only the kills since the raid reset on ${formatDate(this.weekStart, 'EEE d MMM, HH:mm', this.locale)}`;
   readonly hasFilters = computed(() => this.factionFilter() !== undefined || this.realmFilter() !== undefined);
 
   readonly factionOptions: ReadonlyArray<FilterDropdownOption> = [
@@ -67,7 +70,8 @@ export class RaidLogsProgressionPageComponent implements OnInit {
 
   private readonly difficultyKills = computed(() => {
     const difficulty = this.difficulty();
-    return (this.index()?.kills ?? []).filter(kill => kill.difficulty === difficulty);
+    const since = this.thisWeek() ? this.weekStart : -Infinity;
+    return (this.index()?.kills ?? []).filter(kill => kill.difficulty === difficulty && kill.killedAt >= since);
   });
 
   readonly progression = computed<GuildProgress[]>(() =>
@@ -132,6 +136,11 @@ export class RaidLogsProgressionPageComponent implements OnInit {
     this.writeUrl();
   }
 
+  toggleThisWeek(): void {
+    this.thisWeek.update(thisWeek => !thisWeek);
+    this.writeUrl();
+  }
+
   resetFilters(): void {
     this.factionFilter.set(undefined);
     this.realmFilter.set(undefined);
@@ -173,7 +182,8 @@ export class RaidLogsProgressionPageComponent implements OnInit {
     this.replaceUrl({
       difficulty: this.difficulty()?.slug ?? null,
       faction: this.factionFilter() ?? null,
-      realm: this.realmFilter() ?? null
+      realm: this.realmFilter() ?? null,
+      period: this.thisWeek() ? 'week' : null
     });
   }
 }
