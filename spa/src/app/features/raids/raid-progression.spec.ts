@@ -173,17 +173,16 @@ describe('progressionChanges', () => {
     ]);
   });
 
-  it('follows a pickup group by its first kill', () => {
+  it('gives a pickup group no change, new or not', () => {
     const players = raiders('a', 10);
     const before = [pickupKill(60, 0, '2026-10-22T19:00:00Z', players)];
     const latest = [pickupKill(61, 1, '2026-10-22T20:00:00Z', players), pickupKill(62, 0, '2026-10-23T19:00:00Z', raiders('b', 10))];
-    const progression = (kills: RaidKillDetails[]) => guildProgression([], 16, index.bosses.length, pickupGroups(kills));
+    const progression = (kills: RaidKillDetails[]) => guildProgression(index.kills, 16, index.bosses.length, pickupGroups(kills));
 
-    const changes = progressionChanges(progression([...before, ...latest]), progression(before));
+    const changes = progressionChanges(progression([...before, ...latest]), guildProgression(index.kills.slice(0, 1), 16, index.bosses.length));
 
     expect([...changes].map(([key, change]) => [key, change.isNew, [...change.bosses]])).toEqual([
-      ['pickup/tauri/60', false, [1]],
-      ['pickup/tauri/62', true, [0]]
+      ['tauri/Outlaws', true, [0]]
     ]);
   });
 

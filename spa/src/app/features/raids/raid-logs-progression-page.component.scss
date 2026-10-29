@@ -25,9 +25,12 @@
 
 .groups-switch { margin-left: auto; }
 
+$pickup-silver: #b9c3d0;
+
 .guild-name { display: inline-flex; align-items: center; gap: 8px; }
-tr.cleared .guild-name .strong { color: $gold; }
-.guild-name .pickup { font-style: italic; }
+tr.cleared:not(.pickup) .guild-name .strong { color: $gold; }
+tr.pickup .guild-name .strong { color: $pickup-silver; font-weight: 400; }
+.pickup-icon { width: 15px; height: 15px; flex: none; margin-left: -2px; fill: $pickup-silver; }
 .guild-new { @include new-tag; }
 
 .progress { display: inline-flex; align-items: center; gap: 10px; }

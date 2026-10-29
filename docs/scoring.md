@@ -333,10 +333,11 @@ decision: ask first.** When a rule does change, change its tests first and see t
   week (the This week reset below) that share at least half the players of the smaller raid,
   chained: a kill that shares half its players with any kill of the group joins it. So the same
   people raiding again the next week are a new row, and a pickup group never takes a guild's
-  name, even when most of its players are in one guild. A group is named after its first kill
-  (it keeps its row, and its changes, when it kills more), plays on the realm most of its players
-  play on, and has the faction of most of its kills; those two are what the realm and faction
-  filters read. Its link opens the kill that reached its progress, where its players are
+  name, even when most of its players are in one guild. A group is named after its first kill,
+  plays on the realm most of its players play on, and has the faction of most of its kills;
+  those two are what the realm and faction filters read. It shows as "Pickup group" in plain
+  silver with a group icon, never bold or gold, so it stands apart from the guilds; its 7/7
+  shows in the progress column. Its link opens the kill that reached its progress, where its players are
   listed. The page reads the members from the difficulty's boss files, so it loads them only
   when All groups is on. Reset goes back to Guilds.
 - **This week** (`?period=week`, `raidWeekStart` in `raid-logs.ts`) ranks only the kills since
@@ -351,10 +352,10 @@ decision: ask first.** When a rule does change, change its tests first and see t
 - The progress squares show the bosses in the order raiders kill them, not the Dungeon
   Journal's order the files use.
 - **Changes since the last scan:** the difficulty's progression worked out again without the
-  kills that scan didn't have (`newLogs`), compared with today's, pickup groups included. A guild
-  or group that wasn't on the list then is tagged "new"; one that was gets "+N" for the bosses it
-  has down now and didn't then.
-  Either way, the squares of those bosses are outlined. Another kill of a boss the guild already
+  kills that scan didn't have (`newLogs`), compared with today's. A guild that wasn't on the list
+  then is tagged "new"; one that was gets "+N" for the bosses it has down now and didn't then.
+  Either way, the squares of those bosses are outlined. Guilds only: a pickup group never shows
+  "new", "+N" or outlined squares. Another kill of a boss the guild already
   had changes nothing, and filters don't change what counts. Both sides use today's guild names,
   so a guild the exporter has only just named isn't new because of that.
 - Fastest kills: the shortest fight first; the earlier kill wins a tie. A log's speed rank is

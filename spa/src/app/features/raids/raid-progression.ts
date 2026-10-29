@@ -181,7 +181,7 @@ export function progressionChanges(
   const before = new Map(previous.map(row => [row.key, row]));
   const changes = new Map<string, ProgressChange>();
 
-  for (const row of current) {
+  for (const row of current.filter(entry => entry.guild)) {
     const earlier = before.get(row.key);
     const bosses = new Set(row.firsts.flatMap((kill, boss) => kill && !earlier?.firsts[boss] ? [boss] : []));
     if (bosses.size) {

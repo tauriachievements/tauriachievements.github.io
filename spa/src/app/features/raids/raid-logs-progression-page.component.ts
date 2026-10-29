@@ -125,12 +125,8 @@ export class RaidLogsProgressionPageComponent implements OnInit {
     if (!newLogs?.size || this.period() === 'week') {
       return new Map<string, ProgressChange>();
     }
-    const before = (kill: ProgressKill) => !newLogs.has(logKey(kill));
-    const previous = guildProgression(
-      this.difficultyKills().filter(before),
-      this.difficulty()?.id ?? 0,
-      this.index()?.bosses.length ?? 0,
-      pickupGroups(this.pickupKills().filter(before)));
+    const previousKills = this.difficultyKills().filter(kill => !newLogs.has(logKey(kill)));
+    const previous = guildProgression(previousKills, this.difficulty()?.id ?? 0, this.index()?.bosses.length ?? 0);
     return progressionChanges(this.progression(), previous);
   });
 

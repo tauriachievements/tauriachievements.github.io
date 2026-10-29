@@ -93,7 +93,7 @@
               <tbody>
                 @for (row of pageRows(); track row.key) {
                   @let moved = change(row);
-                  <tr [class.cleared]="row.killed === row.firsts.length">
+                  <tr [class.cleared]="row.killed === row.firsts.length" [class.pickup]="!row.guild">
                     <td class="rank">{{ row.rank }}</td>
                     <td class="phone-fluid">
                       <a
@@ -102,7 +102,15 @@
                         [queryParams]="row.guild ? { difficulty: current.slug } : null"
                         [attr.title]="row.guild ? null : pickupTitle(row)">
                         <span class="faction" [class]="'faction-' + row.faction" aria-hidden="true"></span>
-                        <span class="strong" [class.pickup]="!row.guild">{{ row.guild?.name ?? 'Pickup group' }}</span>
+                        @if (!row.guild) {
+                          <svg class="pickup-icon" viewBox="0 0 16 16" aria-hidden="true" focusable="false">
+                            <circle cx="6" cy="5" r="2.6" />
+                            <path d="M1.4 13.6c0-2.7 2-4.6 4.6-4.6s4.6 1.9 4.6 4.6z" />
+                            <circle cx="11.2" cy="5.6" r="2.1" />
+                            <path d="M10.4 9.2c2.4 0 4.2 1.8 4.2 4.4h-3.1c0-1.7-.4-3.2-1.1-4.4z" />
+                          </svg>
+                        }
+                        <span class="strong">{{ row.guild?.name ?? 'Pickup group' }}</span>
                         @if (moved?.isNew) {
                           <span class="guild-new" [title]="newLabel(current.name)">new</span>
                         }
