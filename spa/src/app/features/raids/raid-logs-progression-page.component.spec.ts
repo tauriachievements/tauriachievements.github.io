@@ -110,8 +110,12 @@ const weekFile: RaidLogsIndexFile = {
   ]
 };
 
-function weekToggle(element: HTMLElement) {
-  return element.querySelector<HTMLButtonElement>('.week-switch button');
+function periodButton(element: HTMLElement, label: 'Season' | 'This week') {
+  return [...element.querySelectorAll<HTMLButtonElement>('.period-switch button')].find(button => button.textContent?.trim() === label);
+}
+
+function pressedPeriod(element: HTMLElement) {
+  return [...element.querySelectorAll('.period-switch button[aria-pressed="true"]')].map(button => button.textContent?.trim());
 }
 
 function progressRows(element: HTMLElement) {
@@ -131,37 +135,66 @@ describe('RaidLogsProgressionPageComponent This week', () => {
 
   afterEach(() => vi.useRealTimers());
 
-  it('ranks only the kills since the Wednesday reset while This week is on, and keeps it in the URL', async () => {
+  it('ranks only the kills since the Wednesday reset on This week, and keeps the period in the URL', async () => {
     const { harness, element, location } = await open(weekFile);
-    expect(weekToggle(element)?.textContent?.trim()).toBe('This week');
-    expect(weekToggle(element)?.getAttribute('aria-pressed')).toBe('false');
-    expect(weekToggle(element)?.title).toMatch(/^Show only the kills since the raid reset on Wed 28 Oct, \d\d:00$/);
+    expect(pressedPeriod(element)).toEqual(['Season']);
+    expect(periodButton(element, 'This week')?.title).toMatch(/^Show only the kills since the raid reset on Wed 28 Oct, \d\d:00$/);
     expect(progressRows(element)).toEqual([
       ['1', 'Miracle', '2/3', '3'],
       ['2', 'Outlaws', '2/3', '2'],
       ['3', 'Newcomers', '1/3', '1']
     ]);
 
-    weekToggle(element)?.click();
+    periodButton(element, 'This week')?.click();
     harness.detectChanges();
-    expect(weekToggle(element)?.getAttribute('aria-pressed')).toBe('true');
+    expect(pressedPeriod(element)).toEqual(['This week']);
     expect(location.path()).toBe('/raid-logs/guilds?difficulty=mythic&period=week');
     expect(progressRows(element)).toEqual([
       ['1', 'Outlaws', '2/3', '2'],
       ['2', 'Miracle', '1/3', '1']
     ]);
 
-    weekToggle(element)?.click();
+    periodButton(element, 'Season')?.click();
     harness.detectChanges();
+    expect(pressedPeriod(element)).toEqual(['Season']);
     expect(location.path()).toBe('/raid-logs/guilds?difficulty=mythic');
     expect(progressRows(element).length).toBe(3);
+  });
+
+  it('shows no change since the last scan on This week', async () => {
+    const { harness, element } = await open({ ...weekFile, previousGeneratedAt: '2026-10-28T18:00:00Z', newLogs: [['Tauri', 14], ['Tauri', 15]] });
+    expect(rows(element)).toEqual([
+      ['Miracle', '2/3', '', '', 0],
+      ['Outlaws', '2/3', '', '+1', 1],
+      ['Newcomers', '1/3', '', '', 0]
+    ]);
+
+    periodButton(element, 'This week')?.click();
+    harness.detectChanges();
+    expect(rows(element)).toEqual([
+      ['Outlaws', '2/3', '', '', 0],
+      ['Miracle', '1/3', '', '', 0]
+    ]);
+  });
+
+  it('goes back to the season when Reset clears the filters', async () => {
+    const { harness, element, location } = await open(weekFile, '/raid-logs/guilds?period=week');
+    const reset = element.querySelector<HTMLButtonElement>('.filter-reset');
+    expect(reset?.disabled).toBe(false);
+
+    reset?.click();
+    harness.detectChanges();
+    expect(pressedPeriod(element)).toEqual(['Season']);
+    expect(location.path()).toBe('/raid-logs/guilds?difficulty=mythic');
+    expect(progressRows(element).length).toBe(3);
+    expect(reset?.disabled).toBe(true);
   });
 
   it('opens on this week from the URL, and says so when nobody has killed a boss since the reset', async () => {
     vi.setSystemTime(new Date('2026-11-05T12:00:00Z'));
     const { element } = await open(weekFile, '/raid-logs/guilds?period=week');
 
-    expect(weekToggle(element)?.getAttribute('aria-pressed')).toBe('true');
+    expect(pressedPeriod(element)).toEqual(['This week']);
     expect(progressRows(element)).toEqual([]);
     expect(element.querySelector('.empty-note')?.textContent?.trim()).toBe('No guild has a kill on Mythic this week yet.');
   });

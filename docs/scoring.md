@@ -330,8 +330,10 @@ decision: ask first.** When a rule does change, change its tests first and see t
   UTC in summer time and 08:00 UTC in winter time. The week is the reader's current one, from
   their clock, not the week of the last scan, so right after a reset it stays empty until the
   next scan. The reset time matches the logs: on every Wednesday since the season started the
-  kills stop by about 08:00 server time and start again after 09:40. The ranking rules,
-  filters and changes since the last scan work the same on the week's kills.
+  kills stop by about 08:00 server time and start again after 09:40. The ranking rules and
+  filters work the same on the week's kills, and Reset goes back to the season. Changes since
+  the last scan show only on the season: the week shows no "new" tags, "+N" or outlined
+  squares, as on the Mythic+ pages.
 - The progress squares show the bosses in the order raiders kill them, not the Dungeon
   Journal's order the files use.
 - **Changes since the last scan:** the difficulty's progression worked out again without the
