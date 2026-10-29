@@ -111,11 +111,6 @@
   }
 }
 
-.site-nav-icon {
-  font-size: 0.95rem;
-  line-height: 1;
-}
-
 .site-nav-new {
   padding: 1px 5px;
   border: 1px solid rgba(251, 146, 60, 0.48);
@@ -163,9 +158,8 @@
 
 .site-nav-page {
   display: grid;
-  grid-template-columns: 22px minmax(0, 1fr);
+  grid-template-columns: minmax(0, 1fr);
   align-items: center;
-  gap: 10px;
   min-height: 44px;
   padding: 8px 14px;
   border: 0;
@@ -193,15 +187,6 @@
 
 .site-nav-pages li:last-child .site-nav-page {
   border-bottom: 0;
-}
-
-.site-nav-page-icon {
-  display: grid;
-  place-items: center;
-  width: 22px;
-  height: 22px;
-  font-size: 1.05rem;
-  line-height: 1;
 }
 
 .site-nav-page-label {
@@ -375,9 +360,8 @@
 
 .site-drawer-page {
   display: grid;
-  grid-template-columns: 22px minmax(0, 1fr);
+  grid-template-columns: minmax(0, 1fr);
   align-items: center;
-  gap: 12px;
   min-height: 48px;
   padding: 8px 14px 8px 11px;
   border-left: 3px solid transparent;

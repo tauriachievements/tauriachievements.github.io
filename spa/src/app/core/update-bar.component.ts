@@ -34,7 +34,7 @@ export class UpdateBarComponent {
   protected readonly dropdownWidths = new Map(
     NAV_SECTIONS.map((section) => {
       const longestLabel = Math.max(...section.pages.map((page) => Array.from(page.label).length));
-      return [section.id, `calc(60px + ${Math.ceil(longestLabel * 1.2)}ch)`] as const;
+      return [section.id, `calc(28px + ${Math.ceil(longestLabel * 1.2)}ch)`] as const;
     })
   );
   protected readonly openSectionId = signal<string | null>(null);
