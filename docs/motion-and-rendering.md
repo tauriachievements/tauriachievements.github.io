@@ -60,6 +60,13 @@ touching motion or layering.
   stroke doesn't scale with the chart, so a dash draw comes out uneven. The Score / Gap switch
   morphs a line through the CSS `d` property, which can transition; browsers without it keep
   the `d` attribute and jump.
+- **Addon page screenshots** rotate on their own. The fill in the active tab
+  (`.showcase-progress`) is the clock: its `animationend` shows the next screenshot, every
+  `SCREENSHOT_ROTATE_MS` (7 s). It pauses while the shown screenshot is still downloading, a
+  mouse is over the showcase or less than half of it is on screen, and stops for good once the
+  reader picks or focuses a tab. Under reduced
+  motion it never starts. The fill grows by `width`, not a transform, so the tab label keeps
+  LCD text (see the layer gotcha below).
 - **Reduced motion:** wrap animation in the `motion-safe` mixin
   (`@media (prefers-reduced-motion: no-preference)`). The directives check
   `prefersReducedMotion()` and do nothing when it's on. View transitions are switched off

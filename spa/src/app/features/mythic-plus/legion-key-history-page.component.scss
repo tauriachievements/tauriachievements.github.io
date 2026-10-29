@@ -171,6 +171,9 @@ $mono: ui-monospace, 'Cascadia Mono', 'SF Mono', Consolas, Menlo, monospace;
 }
 
 .showcase-tab {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
   padding: 6px 14px;
   border: 1px solid $line;
   border-radius: 999px;
@@ -193,6 +196,14 @@ $mono: ui-monospace, 'Cascadia Mono', 'SF Mono', Consolas, Menlo, monospace;
     outline: 2px solid $gold;
     outline-offset: 2px;
   }
+}
+
+.showcase-progress {
+  position: absolute;
+  z-index: -1;
+  inset: 0 auto 0 0;
+  width: 100%;
+  background: rgba($gold, .16);
 }
 
 .showcase-frame {
@@ -409,6 +420,8 @@ $mono: ui-monospace, 'Cascadia Mono', 'SF Mono', Consolas, Menlo, monospace;
   .hero .download { --boot-delay: 240ms; }
   .download-note { --boot-delay: 300ms; }
   .showcase { animation: mp-materialize 800ms var(--ease-out) 360ms backwards; }
+  .showcase-progress { animation: mp-bar-grow-wide linear; }
+  .showcase-progress.is-paused { animation-play-state: paused; }
 
   .kicker-dot { animation: mp-dot-pop 500ms var(--ease-spring) 300ms backwards, mp-ping 2s ease-out 900ms infinite; }
 

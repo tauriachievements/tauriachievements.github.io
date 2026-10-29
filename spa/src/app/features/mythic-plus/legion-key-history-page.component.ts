@@ -1,5 +1,15 @@
 import { NgTemplateOutlet } from '@angular/common';
-import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  DestroyRef,
+  ElementRef,
+  afterNextRender,
+  computed,
+  inject,
+  signal,
+  viewChild
+} from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { prefersReducedMotion } from '../../shared/motion/motion';
 import { ScrollRiseDirective } from '../../shared/motion/scroll-rise.directive';
@@ -9,6 +19,9 @@ export const LEGION_KEY_HISTORY_DOWNLOAD_URL =
   'https://github.com/bez-wow/legionkeyhistory/releases/latest/download/LegionKeyHistory.zip';
 
 const REPO_URL = 'https://github.com/bez-wow/legionkeyhistory';
+
+const SCREENSHOT_ROTATE_MS = 7000;
+const SHOWCASE_ON_SCREEN_RATIO = .5;
 
 interface Screenshot {
   readonly label: string;
@@ -94,6 +107,51 @@ export class LegionKeyHistoryPageComponent {
   protected readonly screenshots = SCREENSHOTS;
   protected readonly features = FEATURES;
   protected readonly shown = signal(SCREENSHOTS[0]);
+  protected readonly rotateMs = SCREENSHOT_ROTATE_MS;
+  protected readonly rotating = signal(!prefersReducedMotion());
+  private readonly onScreen = signal(typeof IntersectionObserver === 'undefined');
+  private readonly mouseOver = signal(false);
+  private readonly downloaded = signal<ReadonlySet<Screenshot>>(new Set());
+  protected readonly paused = computed(
+    () => !this.onScreen() || this.mouseOver() || !this.downloaded().has(this.shown())
+  );
+  private readonly showcase = viewChild.required<ElementRef<HTMLElement>>('showcase');
+
+  constructor() {
+    if (!this.rotating() || typeof IntersectionObserver === 'undefined') {
+      return;
+    }
+
+    const destroyRef = inject(DestroyRef);
+    afterNextRender(() => {
+      const observer = new IntersectionObserver(
+        entries => this.onScreen.set(entries[entries.length - 1].intersectionRatio >= SHOWCASE_ON_SCREEN_RATIO),
+        { threshold: SHOWCASE_ON_SCREEN_RATIO }
+      );
+      observer.observe(this.showcase().nativeElement);
+      destroyRef.onDestroy(() => observer.disconnect());
+    });
+  }
+
+  protected pick(shot: Screenshot): void {
+    this.rotating.set(false);
+    this.shown.set(shot);
+  }
+
+  protected showNext(): void {
+    const next = (SCREENSHOTS.indexOf(this.shown()) + 1) % SCREENSHOTS.length;
+    this.shown.set(SCREENSHOTS[next]);
+  }
+
+  protected markDownloaded(shot: Screenshot): void {
+    this.downloaded.update(downloaded => new Set(downloaded).add(shot));
+  }
+
+  protected trackMouse(event: PointerEvent, over: boolean): void {
+    if (event.pointerType === 'mouse') {
+      this.mouseOver.set(over);
+    }
+  }
 
   protected showSetup(setup: HTMLElement): void {
     setup.scrollIntoView({ behavior: prefersReducedMotion() ? 'auto' : 'smooth', block: 'start' });

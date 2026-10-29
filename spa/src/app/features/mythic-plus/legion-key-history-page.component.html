@@ -14,16 +14,29 @@
     </p>
   </section>
 
-  <section class="showcase" aria-label="Screenshots">
-    <div class="showcase-tabs">
+  <section
+    class="showcase"
+    #showcase
+    aria-label="Screenshots"
+    (pointerenter)="trackMouse($event, true)"
+    (pointerleave)="trackMouse($event, false)">
+    <div class="showcase-tabs" (focusin)="rotating.set(false)">
       @for (shot of screenshots; track shot) {
         <button
           type="button"
           class="showcase-tab"
           [class.is-active]="shot === shown()"
           [attr.aria-pressed]="shot === shown()"
-          (click)="shown.set(shot)">
+          (click)="pick(shot)">
           {{ shot.label }}
+          @if (rotating() && shot === shown()) {
+            <span
+              class="showcase-progress"
+              [class.is-paused]="paused()"
+              [style.animation-duration.ms]="rotateMs"
+              (animationend)="showNext()"
+              aria-hidden="true"></span>
+          }
         </button>
       }
     </div>
@@ -40,7 +53,8 @@
           [attr.aria-hidden]="shot === shown() ? null : 'true'"
           [attr.loading]="first ? null : 'lazy'"
           [attr.fetchpriority]="first ? 'high' : null"
-          decoding="async" />
+          decoding="async"
+          (load)="markDownloaded(shot)" />
       }
     </div>
   </section>
