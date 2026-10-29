@@ -8,7 +8,7 @@ compact recent example to copy from.
 A new route, its URL parameters and its place in the navigation are architectural decisions
 (see [AGENTS.md](../../AGENTS.md)). Before writing code, agree with the owner:
 
-- the path, and which nav section the page belongs to (label, icon);
+- the path, and which nav section the page belongs to (label);
 - the URL parameters and their defaults (defaults stay out of the URL);
 - the data it reads. A new data file or format is a separate decision; see
   [howto-add-exporter.md](howto-add-exporter.md).
@@ -82,7 +82,8 @@ First raise the page count in both specs that pin it (23 today), and see them fa
 - `update-bar.component.spec.ts`: `.site-drawer-page` count
 
 Then add the page to its section in `core/nav-sections.ts` (`label`, optional short `tab`,
-`icon`, `path`; `includes` lists the deep routes that should highlight it), and the specs pass.
+`path`; `includes` lists the deep routes that should highlight it), and the specs pass. Nav
+labels are plain text with no emoji or icon; `update-bar.component.spec.ts` fails on one.
 
 Unlisted pages (guild pages, Rare Items) get a route but no nav entry.
 

@@ -11,9 +11,6 @@
       <svg class="site-menu-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
         <path d="M4 6h16M4 12h16M4 18h16" />
       </svg>
-      @if (location(); as here) {
-        <span class="site-nav-icon" aria-hidden="true">{{ here.page.icon }}</span>
-      }
       <span class="site-menu-label">{{ menuText() }}</span>
     </button>
 
@@ -54,7 +51,6 @@
                 [attr.aria-controls]="'nav-panel-' + section.id"
                 (click)="toggleSection(section)"
                 (pointerenter)="onTriggerPointerEnter(section, $event)">
-                <span class="site-nav-icon" aria-hidden="true">{{ section.icon }}</span>
                 <span>{{ section.label }}</span>
                 @if (section.isNew) {
                   <span class="site-nav-new">New</span>
@@ -76,7 +72,6 @@
                         [routerLink]="page.path"
                         [queryParams]="page.queryParams"
                         (click)="closeMenu()">
-                        <span class="site-nav-page-icon" aria-hidden="true">{{ page.icon }}</span>
                         <span class="site-nav-page-label">{{ page.label }}</span>
                       </a>
                     </li>
@@ -90,7 +85,6 @@
                 [queryParams]="section.pages[0].queryParams"
                 [attr.aria-current]="location()?.section === section ? 'page' : null"
                 (click)="closeMenu()">
-                <span class="site-nav-icon" aria-hidden="true">{{ section.icon }}</span>
                 <span>{{ section.label }}</span>
               </a>
             }
@@ -145,7 +139,6 @@
         <section class="site-drawer-section">
           @if (section.pages.length > 1) {
             <h2 class="site-drawer-heading">
-              <span aria-hidden="true">{{ section.icon }}</span>
               <span>{{ section.label }}</span>
               @if (section.isNew) {
                 <span class="site-nav-new">New</span>
@@ -162,7 +155,6 @@
                   [routerLink]="page.path"
                   [queryParams]="page.queryParams"
                   (click)="closeDrawer()">
-                  <span class="site-nav-page-icon" aria-hidden="true">{{ page.icon }}</span>
                   <span class="site-drawer-page-label">
                     {{ page.label }}
                     @if (page.tag) {

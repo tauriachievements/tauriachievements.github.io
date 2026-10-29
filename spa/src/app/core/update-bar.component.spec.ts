@@ -105,6 +105,15 @@ describe('UpdateBarComponent drawer', () => {
     expect(current[0].textContent).toContain('Statistics');
   });
 
+  it('names every section and page in plain text, without emoji', async () => {
+    const fixture = await render('/mythic-plus/stats');
+    const drawer = openDrawer(fixture);
+    const emoji = /\p{Extended_Pictographic}/u;
+
+    expect(query(fixture, '.site-bar').textContent).not.toMatch(emoji);
+    expect(drawer.textContent).not.toMatch(emoji);
+  });
+
   it('shows a page tag beside its name', async () => {
     const fixture = await render('/');
     const drawer = openDrawer(fixture);
