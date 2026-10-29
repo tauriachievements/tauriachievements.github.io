@@ -107,6 +107,16 @@ response first.
   guild id. Confirmed names are cached in the boss files; a guild no candidate confirms stays
   unnamed and is tried again next run. A pickup group has `guildid` 0. Code:
   `RaidGuildResolver`.
+- **A guild run with outsiders gets no guild.** The rule isn't documented. Observed 2026-10-29,
+  counting each player's guild in Players.csv (so their guild today):
+
+  | Difficulty | Kills | With no guild | of them, half or more of one guild | of them, 80% or more | Credited kills: median share of the guild |
+  | --- | ---: | ---: | ---: | ---: | ---: |
+  | Normal | 4,870 | 2,856 | 667 | 7 | 86% |
+  | Heroic | 4,775 | 2,077 | 837 | 18 | 86% |
+  | Mythic | 623 | 142 | 109 | 7 | 95% |
+
+  The site keeps the API's credit ([scoring.md](scoring.md#raid-guild-progression-and-kill-speed)).
 - **Genders are wrong.** The raid API reports almost everyone as male. The build corrects the
   leaderboard's race icons from Players.csv (`scripts/generate-raid-genders.js` writes
   `raid-genders.json`).
