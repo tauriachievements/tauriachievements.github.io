@@ -33,28 +33,13 @@ if errorlevel 1 goto :ScanFailed
 call :ScanGuild "Evermoon" "Highly Regarded"
 if errorlevel 1 goto :ScanFailed
 
-call :ScanGuild "Evermoon" "Témérité"
-if errorlevel 1 goto :ScanFailed
-
-call :ScanGuild "Evermoon" "Impact"
-if errorlevel 1 goto :ScanFailed
-
 call :ScanGuild "Evermoon" "Impaired"
-if errorlevel 1 goto :ScanFailed
-
-call :ScanGuild "Evermoon" "Entropy"
-if errorlevel 1 goto :ScanFailed
-
-call :ScanGuild "Evermoon" "acoustic"
 if errorlevel 1 goto :ScanFailed
 
 call :ScanGuild "Tauri" "Outlaws"
 if errorlevel 1 goto :ScanFailed
 
 call :ScanGuild "Evermoon" "Miracle"
-if errorlevel 1 goto :ScanFailed
-
-call :ScanGuild "Evermoon" "Rycerze Ortalionu"
 if errorlevel 1 goto :ScanFailed
 
 if %GUILD_COUNT% equ 0 (

@@ -64,13 +64,9 @@ export const GUILD_PAGES = [
   { key: 'endless', hash: 'f8c2a91d', name: 'Endless', realm: 'Evermoon' },
   { key: 'competence-optional', hash: 'a47d9c2e', name: 'Competence Optional', realm: 'Evermoon' },
   { key: 'miracle', hash: '6e2d8f14', name: 'Miracle', realm: 'Evermoon' },
-  { key: 'entropy', hash: '3e8f1a62', name: 'Entropy', realm: 'Evermoon' },
   { key: 'outlaws', hash: '34c1426b', name: 'Outlaws', realm: 'Tauri' },
   { key: 'impaired', hash: 'c18e7b42', name: 'Impaired', realm: 'Evermoon' },
-  { key: 'impact', hash: '94fd2a61', name: 'Impact', realm: 'Evermoon' },
-  { key: 'highly-regarded', hash: 'd74a9e3c', name: 'Highly Regarded', realm: 'Evermoon' },
-  { key: 'temerite', hash: 'b93e7a41', name: 'Témérité', realm: 'Evermoon' },
-  { key: 'rycerze-ortalionu', hash: 'c1ee200b', name: 'Rycerze Ortalionu', realm: 'Evermoon' }
+  { key: 'highly-regarded', hash: 'd74a9e3c', name: 'Highly Regarded', realm: 'Evermoon' }
 ] as const satisfies readonly GuildPage[];
 
 export function guildPagePath(page: GuildPage): string {
