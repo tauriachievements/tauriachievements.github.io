@@ -18,9 +18,9 @@ response first.
   realm ids in raid responses (`rid`, `guildrid`) are 9 = Evermoon, 11 = WoD and 12 = Tauri.
   Code: `RaidCatalog`.
 - Methods in use: `character-sheet`, `character-achievements`, `character-itemappearances`,
-  `character-artifact`, `character-reputation`, `character-minimal-data`, `guild-info`,
-  `achievement-firsts`, `challenge-index`, `challenge-leaderboard`, `raid-rank-encounter`,
-  `raid-log`, `pvp-match`, `arena-ladder`.
+  `character-artifact`, `character-minimal-data`, `guild-info`, `achievement-firsts`,
+  `challenge-index`, `challenge-leaderboard`, `raid-rank-encounter`, `raid-log`, `pvp-match`,
+  `arena-ladder`.
 
 ## Errors
 
@@ -38,8 +38,11 @@ response first.
 
 - `character-sheet`: a guildless character has `guildName: ""`. Code:
   `RaidLogGuildAndCharScanService`.
+- `character-sheet` `level` is the character's level. GuildAnalysisExporter keeps only level 110
+  characters, and leaves out one whose sheet doesn't load in that run. Code:
+  `GuildAnalysisExporter/GuildMemberExportService`.
 - `character-artifact` returns every artifact the character owns (main-hand piece only, one per
-  spec). Code: `Guildkukker/GuildMemberExportService`.
+  spec). Code: `GuildAnalysisExporter/GuildMemberExportService`.
   - **Traits** = the sum of `purchasedrank` over `artifacts[].artifact.artifactpowers`, for the
     artifact with the highest sum. The free first trait (`isfirstbonus`) and relic ranks don't
     count.

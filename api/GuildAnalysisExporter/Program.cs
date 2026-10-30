@@ -1,7 +1,7 @@
 using Tauri.Core.Configuration;
 using Tauri.Core.Infrastructure;
 
-namespace Guildkukker;
+namespace GuildAnalysisExporter;
 
 internal static class Program
 {
@@ -22,7 +22,7 @@ internal static class Program
 
         var projectRoot = ProjectPaths.FindProjectRoot(
             AppContext.BaseDirectory,
-            "Guildkukker.csproj"
+            "GuildAnalysisExporter.csproj"
         );
         var solutionRoot = ProjectPaths.FindSolutionRoot(projectRoot);
         var settingsPath = ResolveSettingsPath(projectRoot, solutionRoot);
@@ -52,8 +52,6 @@ internal static class Program
 
             Console.WriteLine($"Scanned {result.ScannedPlayerCount} guild players.");
             Console.WriteLine($"Exported {result.PlayerCount} level 110 players.");
-            Console.WriteLine($"Nightfallen reputations found: {result.ReputationCount}");
-            Console.WriteLine($"Missing reputation data: {result.MissingReputationCount}");
             Console.WriteLine($"JSON file: {result.OutputPath}");
             return 0;
         }
@@ -72,9 +70,11 @@ internal static class Program
     private static void PrintUsage()
     {
         Console.WriteLine(
-            "Usage: dotnet run --project Guildkukker -- <realm> <guild> [--output-directory <folder>]"
+            "Usage: dotnet run --project GuildAnalysisExporter -- <realm> <guild> [--output-directory <folder>]"
         );
-        Console.WriteLine("Example: dotnet run --project Guildkukker -- Evermoon Endless");
+        Console.WriteLine(
+            "Example: dotnet run --project GuildAnalysisExporter -- Evermoon Endless"
+        );
     }
 
     private static bool TryParseArguments(
@@ -143,7 +143,7 @@ internal static class Program
         }
 
         throw new FileNotFoundException(
-            "Could not find appsettings.json in either AchievementLadder or Guildkukker.",
+            "Could not find appsettings.json in either AchievementLadder or GuildAnalysisExporter.",
             sharedSettingsPath
         );
     }

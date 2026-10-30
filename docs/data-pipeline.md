@@ -25,7 +25,7 @@ Tauri API ──► api/ console apps ──► spa/src/ data files ──► co
 | `arena-ladder-2v2.json`, `arena-ladder-3v3.json` | `ArenaLadderExporter` | `sync data` | Arena page |
 | `mythic-plus-data/` | `MythicPlusExporter` | `sync data`, or `sync mythic plus data` from `Run-MythicPlus.cmd` | `/mythic-plus/*` |
 | `raid-log-data/` | `RaidLogExporter` | `sync data`, or `sync raid logs data` from `Run-RaidLogs.cmd` | `/raid-logs/*` |
-| `guild-analysis/<key>.json` | `Guildkukker` through `api/guild-analysis.cmd` | `sync guilds statistics` | the hidden guild pages |
+| `guild-analysis/<key>.json` | `GuildAnalysisExporter` through `api/guild-analysis.cmd` | `sync guilds statistics` | the hidden guild pages |
 | `EmeraldNightmare.json`, `RealmFirstAchievements.json`, `ap-chest-looters.json` | edited by hand | `chore:` / `feat:` | Race to Emerald Nightmare, Realm First History, Hall of Fame |
 
 The scan inputs live under `api/AchievementLadder/Data/`. `BattlegroundCollector` (from the
@@ -422,8 +422,8 @@ tables, so they don't. The page code has its own guard for a code deploy
   page URLs.
 - MythicPlusExporter and RaidLogExporter write names unescaped (`UnsafeRelaxedJsonEscaping`):
   many character and guild names are Cyrillic or accented.
-- Guildkukker's `guild-analysis/` file names drop accents ("Témérité" becomes "Temerite"), so
-  their URLs never need encoding.
+- GuildAnalysisExporter's `guild-analysis/` file names drop accents ("Témérité" becomes
+  "Temerite"), so their URLs never need encoding.
 - MythicPlusExporter, RaidLogExporter and ArenaLadderExporter write LF. The root
   `.gitattributes` keeps their files LF on checkout, so `core.autocrlf` doesn't warn on every
   commit. A new exporter that writes LF needs a line there too.

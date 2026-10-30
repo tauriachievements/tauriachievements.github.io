@@ -1,7 +1,7 @@
 using System.Collections.Concurrent;
 using Tauri.Core.Infrastructure;
 
-namespace Guildkukker;
+namespace GuildAnalysisExporter;
 
 public sealed class TauriShootItemClient : IDisposable
 {

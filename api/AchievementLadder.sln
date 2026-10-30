@@ -17,7 +17,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BattlegroundCollector", "Ba
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tauri.Core", "Tauri.Core\Tauri.Core.csproj", "{CA38320E-6A8B-4694-89A0-1963C8E97FE3}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Guildkukker", "Guildkukker\Guildkukker.csproj", "{34A67387-6F49-4C0E-890F-F283D090316E}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GuildAnalysisExporter", "GuildAnalysisExporter\GuildAnalysisExporter.csproj", "{34A67387-6F49-4C0E-890F-F283D090316E}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tauri.Core.Tests", "tests\Tauri.Core.Tests\Tauri.Core.Tests.csproj", "{A17C658D-5943-4E31-8D0E-8C0CBAA5EBA1}"
 EndProject
