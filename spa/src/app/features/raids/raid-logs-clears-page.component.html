@@ -1,0 +1,154 @@
+<main class="raid-page">
+  <h1 class="visually-hidden">Fastest full clears, {{ index()?.raid?.name ?? 'The Emerald Nightmare' }}</h1>
+
+  <app-load-state [loading]="isLoading()" [error]="loadError()" [skeleton]="['toolbar:3', 'rows:15']" loadingText="Reading the logs..." (retry)="loadData()" />
+
+  @if (!isLoading() && !loadError() && difficulty(); as current) {
+    <section class="section" aria-label="Fastest full clears" #clearsSection>
+      <header class="section-header">
+        <div class="filters">
+          <app-raid-difficulty-switch
+            [difficulties]="index()!.difficulties"
+            [selected]="current.slug"
+            label="Show the clears on difficulty"
+            (selectedChange)="setDifficulty($event)" />
+          <div class="filter-group">
+            <button
+              type="button"
+              class="filter-reset"
+              [disabled]="!hasFilters()"
+              aria-label="Reset the groups, faction and realm filters"
+              (click)="resetFilters()">
+              Reset
+            </button>
+            <div class="filter-slot">
+              <app-filter-dropdown
+                dropdownId="raidClearsFaction"
+                triggerId="raidClearsFactionTrigger"
+                ariaLabel="Filter by faction"
+                [options]="factionOptions"
+                [widthLabels]="factionWidthLabels"
+                [selectedValue]="factionFilter()"
+                [compact]="true"
+                [highlightWhenSelected]="true"
+                (selectionChange)="setFactionFilter($event)" />
+            </div>
+            <div class="filter-slot">
+              <app-filter-dropdown
+                dropdownId="raidClearsRealm"
+                triggerId="raidClearsRealmTrigger"
+                ariaLabel="Filter by realm"
+                [options]="realmOptions"
+                [widthLabels]="realmWidthLabels"
+                [selectedValue]="realmFilter()"
+                [compact]="true"
+                [highlightWhenSelected]="true"
+                (selectionChange)="setRealmFilter($event)" />
+            </div>
+          </div>
+          <div class="view-switch groups-switch" role="group" aria-label="Show the guilds only or every group" appGlide>
+            <button
+              type="button"
+              [class.active]="groups() === 'guilds'"
+              [attr.aria-pressed]="groups() === 'guilds'"
+              (click)="setGroups('guilds')">Guilds</button>
+            <button
+              type="button"
+              [class.active]="groups() === 'all'"
+              [attr.aria-pressed]="groups() === 'all'"
+              [title]="allGroupsTitle"
+              (click)="setGroups('all')">All groups</button>
+          </div>
+        </div>
+      </header>
+
+      @if (total()) {
+        <div class="table-scroll">
+          <table>
+            <thead>
+              <tr>
+                <th class="rank" scope="col">#</th>
+                <th scope="col">{{ groups() === 'all' ? 'Guild or group' : 'Guild' }}</th>
+                <th scope="col" class="phone-hidden route-head">Bosses</th>
+                <th scope="col" class="num">Clear time</th>
+                <th scope="col" class="num phone-hidden">Wipes</th>
+                <th scope="col" class="phone-hidden">Date</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (row of pageRows(); track row.key) {
+                <tr [class.pickup]="!row.guild">
+                  <td class="rank">{{ row.rank }}</td>
+                  <td class="phone-fluid">
+                    @if (row.guild; as guild) {
+                      <a class="guild-name" [routerLink]="guildLink(guild)" [queryParams]="{ difficulty: current.slug }">
+                        <span class="faction" [class]="'faction-' + row.faction" aria-hidden="true"></span>
+                        <span class="strong">{{ guild.name }}</span>
+                        <span class="muted phone-hidden">{{ row.realm }}</span>
+                      </a>
+                    } @else {
+                      <a class="guild-name" [routerLink]="logLink(row.last)" title="See who played: opens the clear's last kill">
+                        <app-raid-pickup-icon />
+                        <span class="strong">Pickup group</span>
+                        <span class="muted phone-hidden">{{ row.realm }}</span>
+                      </a>
+                    }
+                  </td>
+                  <td class="phone-hidden route-cell">
+                    <ng-container *ngTemplateOutlet="route; context: { $implicit: row, links: true }" />
+                  </td>
+                  <td class="num">
+                    <a class="clear-time" [routerLink]="logLink(row.last)" [title]="'Open the ' + row.last.boss.shortName + ' kill that finished the clear'">{{ formatFightTime(row.clearMs) }}</a>
+                  </td>
+                  <td class="num phone-hidden">{{ row.wipes | number }}</td>
+                  <td class="phone-hidden muted">{{ row.endedAt | date:'d MMM, HH:mm' }}</td>
+                </tr>
+                <tr class="phone-detail-row">
+                  <td class="rank"></td>
+                  <td colspan="5">
+                    <span class="phone-detail">
+                      <ng-container *ngTemplateOutlet="route; context: { $implicit: row, links: false }" />
+                      <span class="muted">{{ row.endedAt | date:'d MMM' }} · {{ row.wipes | number }} {{ row.wipes === 1 ? 'wipe' : 'wipes' }}</span>
+                    </span>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+
+        @if (pages() > 1) {
+          <app-pager
+            [page]="currentPage()"
+            [pages]="pages()"
+            [count]="(total() | number) + ' ' + rowNoun() + 's'"
+            [scrollTarget]="clearsSection"
+            (pageChange)="goToPage($event)" />
+        }
+
+        <p class="clears-note">{{ note() }}</p>
+      } @else {
+        <p class="empty-note">No {{ groups() === 'all' ? 'group' : 'guild' }}{{ factionFilter() || realmFilter() ? ' with these filters' : '' }} has cleared {{ current.name }} yet.</p>
+      }
+    </section>
+  }
+</main>
+
+<ng-template #route let-row let-links="links">
+  <span class="route" [class]="row.difficulty.slug">
+    @for (split of row.splits; track split.kill.logId) {
+      @if (links) {
+        <a
+          class="route-fight"
+          tabindex="-1"
+          [routerLink]="logLink(split.kill)"
+          [style.left.%]="split.start"
+          [style.width.%]="split.width"
+          [title]="splitLabel(split, row)"
+          [attr.aria-label]="splitLabel(split, row)"></a>
+      } @else {
+        <span class="route-fight" [style.left.%]="split.start" [style.width.%]="split.width"></span>
+      }
+    }
+  </span>
+</ng-template>

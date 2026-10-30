@@ -7,6 +7,7 @@ import { FilterDropdownComponent } from '../../shared/filter-dropdown.component'
 import { FilterDropdownCoordinatorService } from '../../shared/filter-dropdown-coordinator.service';
 import { FilterDropdownOption, FilterDropdownValue } from '../../shared/filter-dropdown.types';
 import { RaidDifficultySwitchComponent } from './raid-difficulty-switch.component';
+import { RaidPickupIconComponent } from './raid-pickup-icon.component';
 import {
   GuildProgress,
   ProgressChange,
@@ -18,7 +19,7 @@ import {
 } from './raid-progression';
 import { RaidBoss, RaidDifficulty, RaidKillDetails, RaidLogsIndex } from './raid-logs.types';
 import { bossesInKillOrder, defaultDifficulty, logKey, raidWeekStart } from './raid-logs';
-import { RAID_PAGE_SIZE, raidGuildLink, raidLogLink } from './raid-display';
+import { FACTION_FILTERS, RAID_PAGE_SIZE, raidGuildLink, raidLogLink } from './raid-display';
 import { RaidLogsDataService } from './raid-logs-data.service';
 import { REALM_FILTER_OPTIONS, parseRealmSlug } from '../../game/wow';
 import { injectReplaceUrl, parsePage } from '../../core/url-state';
@@ -32,11 +33,6 @@ import { GlideDirective } from '../../shared/motion/glide.directive';
 type ProgressionPeriod = 'season' | 'week';
 type ProgressionGroups = 'guilds' | 'all';
 
-const FACTIONS: ReadonlyArray<{ slug: string; id: number; label: string }> = [
-  { slug: 'horde', id: 1, label: 'Horde' },
-  { slug: 'alliance', id: 0, label: 'Alliance' }
-];
-
 const ROWS_SKELETON: readonly SkeletonBlock[] = ['rows:15'];
 
 interface LoadedPickups {
@@ -46,7 +42,7 @@ interface LoadedPickups {
 
 @Component({
   selector: 'app-raid-logs-progression-page',
-  imports: [RouterLink, RaidDifficultySwitchComponent, FilterDropdownComponent, DatePipe, DecimalPipe, LoadStateComponent, GlideDirective, PagerComponent],
+  imports: [RouterLink, RaidDifficultySwitchComponent, RaidPickupIconComponent, FilterDropdownComponent, DatePipe, DecimalPipe, LoadStateComponent, GlideDirective, PagerComponent],
   templateUrl: './raid-logs-progression-page.component.html',
   styleUrl: './raid-logs-progression-page.component.scss',
   providers: [FilterDropdownCoordinatorService],
@@ -67,7 +63,7 @@ export class RaidLogsProgressionPageComponent implements OnInit {
 
   private readonly query = this.route.snapshot.queryParamMap;
   private readonly requestedDifficulty = signal(this.query.get('difficulty') ?? this.data.lastDifficulty());
-  readonly factionFilter = signal(FACTIONS.find(faction => faction.slug === this.query.get('faction'))?.slug);
+  readonly factionFilter = signal(FACTION_FILTERS.find(faction => faction.slug === this.query.get('faction'))?.slug);
   readonly realmFilter = signal(parseRealmSlug(this.query.get('realm')));
   readonly period = signal<ProgressionPeriod>(this.query.get('period') === 'week' ? 'week' : 'season');
   readonly groups = signal<ProgressionGroups>(this.query.get('groups') === 'all' ? 'all' : 'guilds');
@@ -79,7 +75,7 @@ export class RaidLogsProgressionPageComponent implements OnInit {
 
   readonly factionOptions: ReadonlyArray<FilterDropdownOption> = [
     { value: undefined, label: 'All factions' },
-    ...FACTIONS.map(faction => ({ value: faction.slug, label: faction.label }))
+    ...FACTION_FILTERS.map(faction => ({ value: faction.slug, label: faction.label }))
   ];
   readonly realmOptions = REALM_FILTER_OPTIONS;
   readonly factionWidthLabels = this.factionOptions.map(option => option.label);
@@ -136,7 +132,7 @@ export class RaidLogsProgressionPageComponent implements OnInit {
   });
 
   readonly shownProgression = computed(() => filterProgression(this.progression(), {
-    faction: FACTIONS.find(faction => faction.slug === this.factionFilter())?.id,
+    faction: FACTION_FILTERS.find(faction => faction.slug === this.factionFilter())?.id,
     realm: this.realmFilter()
   }));
 

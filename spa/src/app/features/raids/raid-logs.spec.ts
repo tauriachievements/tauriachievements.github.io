@@ -13,6 +13,7 @@ import {
   raidWeekStart
 } from './raid-logs';
 import { indexFile, index, nythendra, mythic, bossFile, kills } from './raid-logs.fixture';
+import { RaidClearEntry } from './raid-logs.types';
 
 describe('bossShortName', () => {
   it('cuts the name at its first comma, except for the bosses with a shorter name of their own', () => {
@@ -54,6 +55,23 @@ describe('decodeIndex', () => {
     expect(flagged.invalidLogs.get('tauri/11')).toBe('Invalid log, bug abusing');
     expect(index.invalidKills).toEqual([]);
     expect(index.kills.every(kill => kill.invalid === undefined)).toBe(true);
+  });
+
+  it('joins each full clear to its kills, and leaves out a clear with an invalid or unknown kill', () => {
+    const clears: RaidClearEntry[] = [
+      ['Tauri', 15, 'Tauri', [12, 1]],
+      ['Tauri', 16, 'Evermoon', [10, 1]],
+      ['Tauri', 16, 'Evermoon', [10, 89]]
+    ];
+
+    const decoded = decodeIndex({ ...indexFile, clears });
+    expect(decoded.clears.map(clear => [clear.realm, clear.difficulty.slug, clear.kills.map(kill => kill.logId)]))
+      .toEqual([['Tauri', 'heroic', [12, 13]], ['Evermoon', 'mythic', [10, 11]]]);
+    expect(decoded.clears[1].kills[0]).toBe(decoded.kills[0]);
+
+    const flagged = decodeIndex({ ...indexFile, clears, invalidLogs: [['Tauri', 11, 'Invalid log, bug abusing']] });
+    expect(flagged.clears.map(clear => clear.kills.map(kill => kill.logId))).toEqual([[12, 13]]);
+    expect(index.clears).toEqual([]);
   });
 
   it('gives specs the Legion spec icons', () => {

@@ -90,7 +90,7 @@ export function pickupGroups(kills: readonly RaidKillDetails[]): PickupGroup[] {
     });
 }
 
-function mostCommon<T>(values: readonly T[]): T | undefined {
+export function mostCommon<T>(values: readonly T[]): T | undefined {
   const counts = new Map<T, number>();
   for (const value of values) {
     counts.set(value, (counts.get(value) ?? 0) + 1);

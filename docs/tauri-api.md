@@ -101,6 +101,15 @@ response first.
   guildless in it. The exporter takes each character's current guild from Players.csv
   (`PlayerGuildDirectory`).
 - Observed 2026-10-12: LFR has no logs on any realm. LFR-only raiders therefore never appear.
+- **One raid run, one instance.** `raid-log` has an `instance_uid`; every kill made in the same
+  raid instance carries the same one, and a different run has a different one. Checked
+  2026-10-30: all 10,495 Emerald Nightmare logs have one, no instance has the same boss twice,
+  and 1,247 of 1,738 instances have all seven bosses down. A Mythic instance can stay open the
+  whole lockout week, so the kills of one instance can be days apart. Code:
+  `RaidLogResponseParser`, `RaidLogDatasetBuilder.Clears`.
+- **`killtime` is the moment of the kill**, so a fight was pulled at `killtime` minus
+  `fight_time`. Checked 2026-10-30 on the 7,482 pairs of back-to-back kills inside full clears:
+  none starts before the kill before it ended, while one would if `killtime` were the pull.
 - The API's `encounter_order` is not the Encounter Journal order (it puts Ursoc second).
   `RaidCatalog.Bosses` holds the real order. Code: `RaidCatalog`.
 - **Guild names are wrong for Evermoon guilds.** On a Tauri log, an Evermoon guild

@@ -191,7 +191,8 @@ public static class RaidLogFileReader
                         .EnumerateArray()
                         .Select(member => ReadMember(member, players, trinkets)),
                 ],
-                [.. log[10].EnumerateArray().Select(item => item.GetInt32())]
+                [.. log[10].EnumerateArray().Select(item => item.GetInt32())],
+                log.GetArrayLength() > 11 ? log[11].GetInt64() : 0
             );
         }
     }

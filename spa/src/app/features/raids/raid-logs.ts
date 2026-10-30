@@ -23,7 +23,9 @@ import {
   RaidCharacterClasses,
   RaidMember,
   RaidKillDetails,
-  RaidLogsIndex
+  RaidLogsIndex,
+  RaidClearEntry,
+  RaidFullClear
 } from './raid-logs.types';
 
 export const RAID_LOGS_DATA_DIR = 'raid-log-data';
@@ -129,11 +131,31 @@ export function decodeIndex(file: RaidLogsIndexFile): RaidLogsIndex {
     kills,
     invalidKills,
     invalidLogs,
+    clears: decodeClears(file.clears ?? [], kills, difficultiesById),
     items: new Map(file.items.map(([id, name, quality, icon]) => [id, { id, name, quality, icon }])),
     top,
     formerCharacters: new Map((file.formerCharacters ?? []).map(([name, realm, classId, formerClassIds]) =>
       [characterKey({ name, realm }), { classId, formerClassIds }]))
   };
+}
+
+function decodeClears(
+  entries: readonly RaidClearEntry[],
+  kills: readonly RaidKill[],
+  difficultiesById: ReadonlyMap<number, RaidDifficulty>
+): RaidFullClear[] {
+  const killsByLog = new Map(kills.map(kill => [logKey(kill), kill]));
+  return entries.flatMap(([logRealm, difficultyId, realm, logIdSteps]) => {
+    const difficulty = difficultiesById.get(difficultyId);
+    let logId = 0;
+    const clearKills = logIdSteps.map(step => {
+      logId += step;
+      return killsByLog.get(logKey({ realm: logRealm, logId }));
+    });
+    return difficulty && clearKills.every((kill): kill is RaidKill => kill !== undefined)
+      ? [{ realm, difficulty, kills: clearKills }]
+      : [];
+  });
 }
 
 export function formerCharactersOf(

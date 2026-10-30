@@ -186,7 +186,8 @@ public sealed class RaidLogGuildAndCharScanServiceTests
             0,
             0,
             members,
-            []
+            [],
+            0
         );
 
     private static RaidLogMember Raider(string name, string realm, string guild = "") =>

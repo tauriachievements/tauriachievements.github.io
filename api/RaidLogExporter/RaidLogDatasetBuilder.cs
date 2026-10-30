@@ -43,7 +43,8 @@ public sealed record RaidDataset(
     IReadOnlyList<RaidGuild> Guilds,
     IReadOnlyList<RaidItem> Items,
     IReadOnlyList<RaidFormerCharacters> FormerCharacters,
-    IReadOnlyList<InvalidRaidLog> InvalidLogs
+    IReadOnlyList<InvalidRaidLog> InvalidLogs,
+    IReadOnlyList<RaidClear> Clears
 );
 
 public static class RaidLogDatasetBuilder
@@ -88,9 +89,39 @@ public static class RaidLogDatasetBuilder
                 .. ordered
                     .Where(log => invalidLogs.Contains(log.Key))
                     .Select(log => new InvalidRaidLog(log.Key, invalidLogs.Reason(log.Key)!)),
-            ]
+            ],
+            Clears(ordered)
         );
     }
+
+    private static List<RaidClear> Clears(IEnumerable<RaidLog> oldestFirst) =>
+        [
+            .. oldestFirst
+                .Where(log => log.InstanceId != 0)
+                .GroupBy(log => (log.Key.Realm, log.DifficultyId, log.InstanceId))
+                .Where(instance =>
+                    instance.Count() == RaidCatalog.Bosses.Count
+                    && instance.Select(log => log.EncounterId).Distinct().Count()
+                        == RaidCatalog.Bosses.Count
+                )
+                .Select(instance => new RaidClear(
+                    instance.Key.Realm,
+                    instance.Key.DifficultyId,
+                    PlayersRealm(instance),
+                    [.. instance]
+                ))
+                .OrderBy(clear => clear.Logs[^1].KilledAt)
+                .ThenBy(clear => clear.Realm, StringComparer.Ordinal)
+                .ThenBy(clear => clear.Logs[^1].Key.LogId),
+        ];
+
+    private static string PlayersRealm(IEnumerable<RaidLog> logs) =>
+        logs.SelectMany(log => log.Members)
+            .DistinctBy(member => (member.Realm, member.Name))
+            .GroupBy(member => member.Realm)
+            .OrderByDescending(realm => realm.Count())
+            .First()
+            .Key;
 
     public static double PerSecond(long amount, long fightMilliseconds) =>
         fightMilliseconds > 0 ? amount * 1000.0 / fightMilliseconds : 0;

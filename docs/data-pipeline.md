@@ -154,20 +154,28 @@ appearance, so a new kill is a few added lines in git.
   added since it as `newLogs` (`[realm, logId]`), measured against its boss files, so `--full`
   doesn't change them. A run that finds no new kill keeps the last export's `newLogs` and
   `previousGeneratedAt`, so running twice in a row doesn't wipe the day's changes. The invalid logs
-  ([below](#invalid-raid-logs)) as `invalidLogs` (`[realm, logId, reason]`). `guilds` as `[name, realm, faction, guildId]`
-  (an empty name for a guild that couldn't be named), each name with a former character (below)
-  as `formerCharacters` (`[name, realm, classNow, [earlierClass, ...]]`, latest first), each boss
-  and difficulty's best DPS and HPS as `[name, realm, class, spec, perSecond, logRealm, logId]`
+  ([below](#invalid-raid-logs)) as `invalidLogs` (`[realm, logId, reason]`). The full clears as
+  `clears`: `[logRealm, difficultyId, realm, [logId, step, ...]]`, one per raid instance with a
+  kill of every boss, in the order the clears ended. The log ids are the instance's kills in the
+  order they died: the first id, then each next one as its difference from the one before, a
+  few digits instead of seven, since every raid page loads the index. `realm` is the realm most
+  of the clear's players play on, which a pickup clear shows
+  ([scoring.md](scoring.md#raid-fastest-full-clears)). `guilds` as
+  `[name, realm, faction, guildId]` (an empty name for a guild that couldn't be named), each
+  name with a former character (below) as `formerCharacters`
+  (`[name, realm, classNow, [earlierClass, ...]]`, latest first), each boss and difficulty's
+  best DPS and HPS as `[name, realm, class, spec, perSecond, logRealm, logId]`
   (the earlier kill on a tie, invalid logs left out), and the loot's `items` as
   `[id, name, quality, icon]`.
 - `<boss>-<difficulty>.json`: that boss's kills on that difficulty, oldest first, as
-  `[realm, logId, killedAtUnix, fightMs, guild, faction, wipes, deaths, resurrects, members, [itemId, ...]]`,
+  `[realm, logId, killedAtUnix, fightMs, guild, faction, wipes, deaths, resurrects, members, [itemId, ...], instanceId]`,
   each member `[player, spec, ilvl, damage, healing, absorbs, overhealing, damageTaken, interrupts, dispels, talents, [trinket, ...]]`.
-  `talents` holds a character per tier, top to bottom: the column picked (`0` to `2` from the
-  left) or `.` for an empty tier, and is empty when the log has none. The file has its own
-  `guilds` (as in the index), `players` (`[name, realm, class, race, gender, guild]`, below) and
-  `trinkets` (`[id, itemLevel, name, quality, icon]`) tables. A boss file needs nothing from the
-  index, so a page that loaded the index before a deploy can still read a newer boss file. A
+  `instanceId` is the API's `instance_uid`: the kills of one raid instance share it, which is
+  how the exporter finds the full clears. `talents` holds a character per tier, top to bottom:
+  the column picked (`0` to `2` from the left) or `.` for an empty tier, and is empty when the
+  log has none. The file has its own `guilds` (as in the index), `players`
+  (`[name, realm, class, race, gender, guild]`, below) and `trinkets`
+  (`[id, itemLevel, name, quality, icon]`) tables. A boss file needs nothing from the index, so a page that loaded the index before a deploy can still read a newer boss file. A
   difficulty without kills has no file.
 - `talents.json`: each spec's talent choices as `[specId, [[[spellId, name, icon], ...], ...]]`,
   tiers top to bottom and choices left to right (null where TauriShoot has none).

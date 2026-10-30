@@ -69,6 +69,7 @@ export const NAV_SECTIONS: readonly NavSection[] = [
         path: '/raid-logs/guilds',
         includes: ['/raid-logs/guild']
       },
+      { label: 'Fastest Clears', tab: 'Clears', path: '/raid-logs/clears' },
       {
         label: 'Raid Statistics',
         tab: 'Statistics',

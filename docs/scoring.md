@@ -363,6 +363,36 @@ decision: ask first.** When a rule does change, change its tests first and see t
 - **Tests:** `raid-progression.spec.ts`, `raidWeekStart` in `raid-logs.spec.ts`, and the This
   week, All groups and pages cases in `raid-logs-progression-page.component.spec.ts`.
 
+## Raid fastest full clears
+
+- **Code:** `RaidLogDatasetBuilder.Clears` in RaidLogExporter finds the clears; `clearRun`,
+  `rankClears`, `clearSplits` and `clearEndedBy` in `spa/src/app/features/raids/raid-clears.ts`
+  time and rank them; `/raid-logs/clears` shows them.
+- **A full clear** is one raid instance (the API's `instance_uid`,
+  [tauri-api.md](tauri-api.md#raid-logs-raid-rank-encounter-raid-log)) with a kill of every boss
+  on one difficulty. A raid finished in a second instance doesn't count. An instance kept open
+  over several nights does, with all the time in between.
+- **Clear time** runs from the pull of the first boss killed (its kill time minus its fight time)
+  to the last boss's kill. Wipes before the first kill aren't in it: the API gives no time for a
+  wipe. The wipes column adds up each kill's wipes.
+- **A guild's clear** is one where the API credits the same named guild with every kill, as
+  guild progression counts only credited kills. Otherwise it's a pickup clear, even when some
+  kills are the guild's. Checked 2026-10-30: 26 Normal, 45 Heroic and 2 Mythic clears were
+  credited to a guild on some kills only, and no clear mixed two guilds.
+- **Guilds** ranks each guild once, by its fastest clear; **All groups** (`?groups=all`) adds
+  every pickup clear as its own row. The faster clear ranks first, then the one that ended
+  earlier. Faction and realm filters rank the rows left again. A guild's realm and faction are
+  the guild's; a pickup clear plays on the realm most of its players play on (worked out by the
+  exporter) and has the faction of most of its kills.
+- A clear with an invalid log ([below](#invalid-raid-logs)) doesn't count.
+- The clear time links to the last boss's log, and each block of the bosses strip, placed by
+  its pull and its fight time, links to that boss's log. A log that finished a clear shows
+  "Finished a full clear in …", linking to the clears of its difficulty (with All groups for a
+  pickup clear).
+- **Tests:** `raid-clears.spec.ts`, the clears case in `raid-logs.spec.ts`, and
+  `ExportAsync_ListsEachInstanceWithEveryBossDownAsAClear` and
+  `ParseLog_ReadsTheInstanceTheKillWasIn` in `RaidLogExportServiceTests`.
+
 ## Invalid raid logs
 
 - **Code:** the hand-kept list `api/AchievementLadder/Data/invalid-raid-logs.txt`, read by
@@ -370,7 +400,7 @@ decision: ask first.** When a rule does change, change its tests first and see t
   `decodeIndex` (`raid-logs.ts`) and `RaidLogsDataService` on the site.
 - A listed log counts nowhere, for any of its players: not in the leaderboard scores or the best
   on a boss they're measured against, the boss rankings, the fastest kills and speed ranks, the
-  overview's best DPS and HPS, guild progression, the kill counts, spec performance, the tier
+  fastest full clears, the overview's best DPS and HPS, guild progression, the kill counts, spec performance, the tier
   list, Talent Analytics, or the spec and race charts. The whole kill is out, not only the
   players who abused something.
 - It's still listed, tagged "Invalid" with the reason on hover, in the lists of latest kills:

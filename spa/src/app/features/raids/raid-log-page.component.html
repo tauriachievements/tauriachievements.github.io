@@ -33,6 +33,11 @@
           <time [attr.datetime]="current.killedAt | date:'yyyy-MM-ddTHH:mm:ss'">{{ current.killedAt | date:'EEEE d MMMM y, HH:mm' }}</time>
           · {{ current.guild?.realm || current.realm }} · log {{ current.logId }}
         </p>
+        @if (finishedClear(); as clear) {
+          <a class="clear-chip" routerLink="/raid-logs/clears" [queryParams]="{ difficulty: clear.difficulty.slug, groups: clear.guild ? null : 'all' }">
+            Finished a full clear in <strong>{{ formatFightTime(clear.clearMs) }}</strong> <span aria-hidden="true">›</span>
+          </a>
+        }
       </div>
       <ul class="composition" aria-label="Group">
         @for (role of composition(); track role) {

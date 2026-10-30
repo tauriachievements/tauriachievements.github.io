@@ -7,7 +7,7 @@ namespace RaidLogExporter;
 
 public static class RaidLogFileWriter
 {
-    public const int FormatVersion = 3;
+    public const int FormatVersion = 4;
     public const string IndexFileName = "index.json";
     public const string TalentsFileName = "talents.json";
     public const string TalentTooltipsFileName = "talent-tooltips.json";
@@ -245,6 +245,31 @@ public static class RaidLogFileWriter
         }
         writer.WriteEndArray();
 
+        writer.WriteStartArray("clears");
+        foreach (var clear in dataset.Clears)
+        {
+            line.WriteTo(
+                writer,
+                item =>
+                {
+                    item.WriteStartArray();
+                    item.WriteStringValue(clear.Realm);
+                    item.WriteNumberValue(clear.DifficultyId);
+                    item.WriteStringValue(clear.PlayersRealm);
+                    item.WriteStartArray();
+                    var previousLogId = 0;
+                    foreach (var log in clear.Logs)
+                    {
+                        item.WriteNumberValue(log.Key.LogId - previousLogId);
+                        previousLogId = log.Key.LogId;
+                    }
+                    item.WriteEndArray();
+                    item.WriteEndArray();
+                }
+            );
+        }
+        writer.WriteEndArray();
+
         writer.WriteStartArray("top");
 
         foreach (var encounter in dataset.Encounters.Where(encounter => encounter.Logs.Count > 0))
@@ -413,6 +438,7 @@ public static class RaidLogFileWriter
                     }
                     item.WriteEndArray();
 
+                    item.WriteNumberValue(log.InstanceId);
                     item.WriteEndArray();
                 }
             );
