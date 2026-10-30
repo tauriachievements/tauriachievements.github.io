@@ -228,7 +228,7 @@ export interface SpecPlayed {
   runs: number;
 }
 
-export function specsPlayed(runs: readonly MythicPlusRun[], key: string, first?: string): SpecPlayed[] {
+export function specsPlayed(runs: readonly MythicPlusRun[], key: string): SpecPlayed[] {
   const specs = new Map<string, SpecPlayed>();
   for (const run of runs) {
     const member = run.roster.find(entry => characterKey(entry) === key);
@@ -245,8 +245,7 @@ export function specsPlayed(runs: readonly MythicPlusRun[], key: string, first?:
   }
 
   return [...specs.values()].sort((a, b) =>
-    Number(b.spec === first) - Number(a.spec === first)
-    || b.runs - a.runs
+    b.runs - a.runs
     || (a.spec < b.spec ? -1 : a.spec > b.spec ? 1 : 0));
 }
 

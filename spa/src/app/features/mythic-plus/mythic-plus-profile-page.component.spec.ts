@@ -55,9 +55,9 @@ const runs: Record<string, MythicPlusRunEntry[]> = {
   cos: []
 };
 
-const fileFor = (path: string, tables = index.tables): MythicPlusDungeonFile => {
+const fileFor = (path: string, tables = index.tables, servedRuns = runs): MythicPlusDungeonFile => {
   const dungeon = path.replace(/^.*\//, '').replace('.json', '');
-  return { version: 1, dungeon, tables, runs: runs[dungeon] };
+  return { version: 1, dungeon, tables, runs: servedRuns[dungeon] };
 };
 
 class FakeDataFiles {
@@ -65,7 +65,8 @@ class FakeDataFiles {
   constructor(
     private staleTables?: string,
     private readonly staysStale = false,
-    private readonly servedIndex = index
+    private readonly servedIndex = index,
+    private readonly servedRuns = runs
   ) {}
 
   getJson<T>(): Observable<T> {
@@ -73,7 +74,7 @@ class FakeDataFiles {
   }
 
   fetchJson<T>(path: string): Observable<T> {
-    return of(fileFor(path, this.staleTables ?? this.servedIndex.tables) as T);
+    return of(fileFor(path, this.staleTables ?? this.servedIndex.tables, this.servedRuns) as T);
   }
 
   refresh(): void {
@@ -195,6 +196,22 @@ describe('MythicPlusProfilePageComponent', () => {
     expect(element.querySelector('.profile-score-value')?.classList).not.toContain('score-gained');
     expect(element.querySelector('.scan-score-tooltip')).toBeNull();
     expect(element.querySelectorAll('.profile-rank-change')).toHaveLength(1);
+  });
+
+  it('lists the specs by runs played, most first, even when the best run was in another spec', async () => {
+    const mostlyHealing: Record<string, MythicPlusRunEntry[]> = {
+      nl: [[15, 1500000, unix('2026-09-17T18:00:00Z'), 150, [], [[0, 0]]]],
+      dht: [
+        [10, 1500000, unix('2026-09-19T18:00:00Z'), 100, [], [[0, 4]]],
+        [11, 1500000, unix('2026-09-20T18:00:00Z'), 105, [], [[0, 4]]]
+      ],
+      cos: []
+    };
+    const { element } = await open('/mythic-plus/character/evermoon/Progtrix', new FakeDataFiles(undefined, false, index, mostlyHealing));
+
+    expect([...element.querySelectorAll('.spec-pill')]
+      .map(pill => [...pill.querySelectorAll(':scope > span:not(.spec-icon)')].map(span => span.textContent?.trim())))
+      .toEqual([['All', '3 runs'], ['Mistweaver', '2 runs'], ['Windwalker', '1 run']]);
   });
 
   it('shows the profile in one spec when its pill is clicked, and in every spec again', async () => {

@@ -212,7 +212,7 @@ export class MythicPlusProfilePageComponent implements OnInit {
   readonly specs = computed(() => {
     const player = this.player();
     return player
-      ? specsPlayed(this.runs(), player.key, player.member.spec)
+      ? specsPlayed(this.runs(), player.key)
         .map(played => ({ ...played, icon: specIconFor(played.class, played.spec) }))
       : [];
   });
