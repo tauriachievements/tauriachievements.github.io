@@ -124,11 +124,12 @@ export function donationIcon(currency: DonationCurrency): string {
 
 export function formatDonation({ amount, currency }: Donation): string {
   if (currency === 'eur' || currency === 'usd') {
-    return amount.toLocaleString('en-US', {
-      style: 'currency',
-      currency: currency.toUpperCase(),
-      minimumFractionDigits: Number.isInteger(amount) ? 0 : 2
+    const fractionDigits = Number.isInteger(amount) ? 0 : 2;
+    const money = amount.toLocaleString('en-US', {
+      minimumFractionDigits: fractionDigits,
+      maximumFractionDigits: fractionDigits
     });
+    return currency === 'eur' ? `${money} €` : `$${money}`;
   }
 
   const count = amount.toLocaleString('en-US');

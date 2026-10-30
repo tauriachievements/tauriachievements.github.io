@@ -2,10 +2,15 @@ import { describe, expect, it } from 'vitest';
 import { formatDonation, quoteSpans } from './support';
 
 describe('formatDonation', () => {
-  it('writes money with its symbol, and cents only when there are some', () => {
-    expect(formatDonation({ names: [{ name: 'A' }], amount: 50, currency: 'eur' })).toBe('€50');
+  it('writes euros as the number, then the euro sign, and cents only when there are some', () => {
+    expect(formatDonation({ names: [{ name: 'A' }], amount: 50, currency: 'eur' })).toBe('50 €');
+    expect(formatDonation({ names: [{ name: 'A' }], amount: 1500, currency: 'eur' })).toBe('1,500 €');
+    expect(formatDonation({ names: [{ name: 'A' }], amount: 12.5, currency: 'eur' })).toBe('12.50 €');
+  });
+
+  it('writes dollars with the sign first, and cents only when there are some', () => {
     expect(formatDonation({ names: [{ name: 'A' }], amount: 12.5, currency: 'usd' })).toBe('$12.50');
-    expect(formatDonation({ names: [{ name: 'A' }], amount: 1500, currency: 'eur' })).toBe('€1,500');
+    expect(formatDonation({ names: [{ name: 'A' }], amount: 20, currency: 'usd' })).toBe('$20');
   });
 
   it('writes in-game currency as a grouped count and its name', () => {
