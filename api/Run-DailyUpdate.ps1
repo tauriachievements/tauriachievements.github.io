@@ -1,9 +1,10 @@
-<#
+﻿<#
 .SYNOPSIS
     Runs the full daily Tauri Achievements data update and publishes it to GitHub.
 
 .DESCRIPTION
-    Builds the solution once, then runs each job in order and stops at the first failure:
+    Builds the solution once, then runs each job in order and stops at the first failure
+    (GuildAnalysis only warns):
       MythicPlus       MythicPlusExporter       -> spa/src/mythic-plus-data (the /mythic-plus leaderboards)
       RaidLogs         RaidLogExporter          -> spa/src/raid-log-data (the /raid-logs pages)
       MythicPlusNames  MythicPlusGuildAndCharScan -> new guilds, guildless characters from M+ runs
@@ -14,6 +15,7 @@
       GuildCharacters  GuildCharacterExporter   -> GuildCharacters.txt (retries and prunes dead guilds)
       Ladder           AchievementLadder        -> Players.csv and the rare exports
       MissingPlayers   MissingPlayerFinder      -> backfills skipped characters in rounds
+      GuildAnalysis    GuildAnalysisExporter    -> spa/src/guild-analysis (the guild pages, one scan per guild)
       Publish          one "sync data" commit with every data file, then push
 
     Before publishing it compares the Players.csv row count with the last commit and refuses
@@ -28,7 +30,7 @@
     .\Run-DailyUpdate.ps1 -NoPush             # commit locally, push yourself
 #>
 param(
-    [ValidateSet('MythicPlus', 'RaidLogs', 'MythicPlusNames', 'RaidLogNames', 'RealmFirst', 'Battlegrounds', 'ArenaLadder', 'GuildCharacters', 'Ladder', 'MissingPlayers', 'Publish')]
+    [ValidateSet('MythicPlus', 'RaidLogs', 'MythicPlusNames', 'RaidLogNames', 'RealmFirst', 'Battlegrounds', 'ArenaLadder', 'GuildCharacters', 'Ladder', 'MissingPlayers', 'GuildAnalysis', 'Publish')]
     [string]$From = 'MythicPlus',
 
     [switch]$NoPush,
@@ -46,6 +48,20 @@ $logDir = Join-Path $workDir 'logs'
 New-Item -ItemType Directory -Force $logDir | Out-Null
 $logPath = Join-Path $logDir ('daily-update_{0:yyyy-MM-dd_HHmm}.log' -f (Get-Date))
 $playersCsvRepoPath = 'spa/src/Players.csv'
+$guildAnalysisRepoPath = 'spa/src/guild-analysis'
+
+$guildAnalysisGuilds = @(
+    @{ Realm = 'Evermoon'; Name = 'Competence Optional' },
+    @{ Realm = 'Evermoon'; Name = 'Miracle' },
+    @{ Realm = 'Tauri'; Name = 'Outlaws' },
+    @{ Realm = 'Evermoon'; Name = 'Endless' },
+    @{ Realm = 'Evermoon'; Name = 'Impaired' },
+    @{ Realm = 'Evermoon'; Name = 'deeznuts' },
+    @{ Realm = 'Evermoon'; Name = 'NFA' },
+    @{ Realm = 'Evermoon'; Name = 'Vistustan' },
+    @{ Realm = 'Evermoon'; Name = 'Skill Issue' },
+    @{ Realm = 'Evermoon'; Name = 'Highly Regarded' }
+)
 
 $steps = @(
     @{ Name = 'MythicPlus'; Project = 'MythicPlusExporter' },
@@ -57,11 +73,10 @@ $steps = @(
     @{ Name = 'ArenaLadder'; Project = 'ArenaLadderExporter' },
     @{ Name = 'GuildCharacters'; Project = 'GuildCharacterExporter' },
     @{ Name = 'Ladder'; Project = 'AchievementLadder' },
-    @{ Name = 'MissingPlayers'; Project = 'MissingPlayerFinder' }
+    @{ Name = 'MissingPlayers'; Project = 'MissingPlayerFinder' },
+    @{ Name = 'GuildAnalysis'; Project = 'GuildAnalysisExporter'; Guilds = $guildAnalysisGuilds }
 )
 
-# Everything a run changes that belongs in the repo. The frontend build reads the spa files;
-# the api files are inputs for the next run.
 $publishPaths = @(
     'spa/src/lastUpdated.txt',
     'spa/src/Players.csv',
@@ -74,6 +89,7 @@ $publishPaths = @(
     'spa/src/arena-ladder-3v3.json',
     'spa/src/mythic-plus-data',
     'spa/src/raid-log-data',
+    $guildAnalysisRepoPath,
     'api/AchievementLadder/Data/Guilds/tauri-guilds.txt',
     'api/AchievementLadder/Data/Guilds/evermoon-guilds.txt',
     'api/AchievementLadder/Data/Guilds/wod-guilds.txt',
@@ -113,9 +129,6 @@ function Get-LineCount([string]$Path) {
     return $count
 }
 
-# Clicking inside a classic console window with QuickEdit on starts a text selection that
-# freezes every program writing to that window until Esc is pressed. Turn QuickEdit off for
-# this window so a stray click cannot stall a run that takes hours.
 function Disable-ConsoleQuickEdit {
     try {
         Add-Type -Namespace DailyUpdate -Name ConsoleMode -MemberDefinition @'
@@ -133,7 +146,6 @@ function Disable-ConsoleQuickEdit {
         }
     }
     catch {
-        # Not a classic console (e.g. Windows Terminal or redirected input): nothing to do.
     }
 }
 
@@ -144,8 +156,6 @@ function Format-Duration([TimeSpan]$Duration) {
 Disable-ConsoleQuickEdit
 $runStopwatch = [System.Diagnostics.Stopwatch]::StartNew()
 Write-Log "Daily update started (from step: $From). Log: $logPath"
-
-# --- Pre-flight: fail in the first minute, not after a 10-hour scan ---------------------
 
 $branch = (& git -C $repoRoot rev-parse --abbrev-ref HEAD).Trim()
 if ($branch -ne 'main') {
@@ -160,18 +170,15 @@ if (-not $NoPush) {
     }
 }
 
-# cmd does the redirect so the 200k-line blob is written as raw bytes, not re-encoded by PowerShell.
 $baselineTempPath = Join-Path $workDir 'Players.baseline.csv'
 cmd /c "git -C `"$repoRoot`" show HEAD:$playersCsvRepoPath > `"$baselineTempPath`" 2>nul"
 $baselineRows = if ($LASTEXITCODE -eq 0) { Get-LineCount $baselineTempPath } else { 0 }
 Remove-Item $baselineTempPath -Force -ErrorAction SilentlyContinue
 Write-Log "Players.csv rows in last commit: $baselineRows"
 
-# --- Build once, then run the jobs ------------------------------------------------------
-
 $stepNames = @($steps | ForEach-Object { $_.Name }) + 'Publish'
 $startIndex = 0
-while ($stepNames[$startIndex] -ne $From) { $startIndex++ }   # -ne is case-insensitive
+while ($stepNames[$startIndex] -ne $From) { $startIndex++ }
 
 if ($startIndex -lt $steps.Count) {
     Write-Log 'Building solution (Release)...'
@@ -186,6 +193,31 @@ for ($i = $startIndex; $i -lt $steps.Count; $i++) {
     Write-Log "=== [$($i + 1)/$($steps.Count)] $($step.Name): $($step.Project) ==="
     $stepStopwatch = [System.Diagnostics.Stopwatch]::StartNew()
 
+    if ($step.Guilds) {
+        $outputDirectory = Join-Path $repoRoot $guildAnalysisRepoPath
+        $failedGuilds = @()
+        foreach ($guild in $step.Guilds) {
+            $guildLabel = "$($guild.Realm) - $($guild.Name)"
+            Write-Log "Scanning $guildLabel"
+            & dotnet run --project (Join-Path $apiRoot $step.Project) -c Release --no-build -- $guild.Realm $guild.Name --output-directory $outputDirectory
+            $exitCode = $LASTEXITCODE
+            if ($exitCode -ne 0) {
+                $failedGuilds += $guildLabel
+                Write-Log "$guildLabel failed with exit code $exitCode; its page keeps the last scan." 'Yellow'
+            }
+        }
+
+        $elapsed = Format-Duration $stepStopwatch.Elapsed
+        if ($failedGuilds.Count -gt 0) {
+            Write-Log ("$($step.Name) finished in $elapsed with $($failedGuilds.Count) of $($step.Guilds.Count) guild(s) failed: " +
+                "$($failedGuilds -join ', '). Publishing the rest; rescan with: .\Run-DailyUpdate.ps1 -From $($step.Name)") 'Yellow'
+        }
+        else {
+            Write-Log "$($step.Name) finished in $elapsed." 'Green'
+        }
+        continue
+    }
+
     & dotnet run --project (Join-Path $apiRoot $step.Project) -c Release --no-build
     $exitCode = $LASTEXITCODE
 
@@ -195,8 +227,6 @@ for ($i = $startIndex; $i -lt $steps.Count; $i++) {
     }
     Write-Log "$($step.Name) finished in $elapsed." 'Green'
 }
-
-# --- Sanity gate ------------------------------------------------------------------------
 
 $currentRows = Get-LineCount (Join-Path $repoRoot $playersCsvRepoPath)
 Write-Log "Players.csv rows now: $currentRows (last commit: $baselineRows)"
@@ -214,8 +244,6 @@ $missingGuilds = Get-LineCount (Join-Path $workDir 'MissingGuildsToScan.txt')
 $missingPlayers = Get-LineCount (Join-Path $workDir 'MissingPlayersToScan.txt')
 Write-Log "Left for next run: $missingGuilds guild(s), $missingPlayers character(s) (in api/.work)."
 
-# --- Publish ----------------------------------------------------------------------------
-
 $existingPublishPaths = @($publishPaths | Where-Object { Test-Path (Join-Path $repoRoot $_) })
 Invoke-Git add -- @existingPublishPaths
 
@@ -224,8 +252,6 @@ if ($LASTEXITCODE -eq 0) {
     Write-Log 'No data changes to publish.' 'Yellow'
 }
 else {
-    # --only commits just these paths, so unrelated staged work never rides along.
-    # The message must stay "sync data": the Discord notification workflow matches on it.
     Invoke-Git commit --quiet --only -m 'sync data' -- @existingPublishPaths
     Write-Log "Committed 'sync data'." 'Green'
 

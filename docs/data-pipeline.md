@@ -25,7 +25,7 @@ Tauri API ──► api/ console apps ──► spa/src/ data files ──► co
 | `arena-ladder-2v2.json`, `arena-ladder-3v3.json` | `ArenaLadderExporter` | `sync data` | Arena page |
 | `mythic-plus-data/` | `MythicPlusExporter` | `sync data`, or `sync mythic plus data` from `Run-MythicPlus.cmd` | `/mythic-plus/*` |
 | `raid-log-data/` | `RaidLogExporter` | `sync data`, or `sync raid logs data` from `Run-RaidLogs.cmd` | `/raid-logs/*` |
-| `guild-analysis/<key>.json` | `GuildAnalysisExporter` through `api/guild-analysis.cmd` | `sync guilds statistics` | the hidden guild pages |
+| `guild-analysis/<key>.json` | `GuildAnalysisExporter`, once per guild in the daily update | `sync data` | the hidden guild pages |
 | `EmeraldNightmare.json`, `RealmFirstAchievements.json`, `ap-chest-looters.json` | edited by hand | `chore:` / `feat:` | Race to Emerald Nightmare, Realm First History, Hall of Fame |
 
 The scan inputs live under `api/AchievementLadder/Data/`. `BattlegroundCollector` (from the
@@ -56,15 +56,28 @@ steps in order. The step names are the values `-From` accepts.
 8. `GuildCharacters`: GuildCharacterExporter
 9. `Ladder`: AchievementLadder
 10. `MissingPlayers`: MissingPlayerFinder
-11. `Publish`: one `sync data` commit of the paths in `$publishPaths`, then a push
+11. `GuildAnalysis`: GuildAnalysisExporter, once for each guild in `$guildAnalysisGuilds`
+12. `Publish`: one `sync data` commit of the paths in `$publishPaths`, then a push
 
-If every step succeeded and `-NoPush` wasn't given, the `.cmd` then calls
-`api/guild-analysis.cmd`, which scans every guild page and makes its own
-`sync guilds statistics` commit and push.
+So a night's run is one commit and one Pages deploy, the guild pages included.
 
+- Before the build it checks that you're on `main` and, unless `-NoPush` is given, level with
+  `origin/main`, so a push that would be rejected fails in the first minute, not after the
+  scan.
 - `-From <Step>` resumes after a failure, `-NoPush` commits without pushing, and
   `-MaxShrinkPercent` (default 2) sets the shrink gate.
-- The commit message must stay exactly `sync data`: `discord-on-push.yml` matches on it.
+- The commit message must stay exactly `sync data`: `discord-on-push.yml` matches on it. The
+  commit uses `git commit --only` on the publish paths, so unrelated staged work never rides
+  along.
+- `GuildAnalysis` is the one step that doesn't stop the run. A guild whose scan fails is named
+  in the log and keeps its last file (the exporter writes through `AtomicFile`), and the rest
+  of the night's data still goes out. `-From GuildAnalysis` scans every guild again and
+  publishes, as `sync data` like any run.
+- The script turns off the console's QuickEdit mode: in a classic console window a stray click
+  starts a text selection that freezes every program writing to the window until Esc is
+  pressed.
+- The Players.csv baseline for the shrink gate comes from `git show` redirected by `cmd`, so
+  the file is written as raw bytes, not re-encoded by PowerShell.
 - Retry queues (`MissingGuildsToScan.txt`, `MissingPlayersToScan.txt`) and run logs live in the
   git-ignored `api/.work/`.
 - `MythicPlusNames` and `RaidLogNames` don't fail over a leaderboard or character sheet that

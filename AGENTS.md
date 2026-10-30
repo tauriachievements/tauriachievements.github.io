@@ -181,8 +181,8 @@ There is no root package manager; each half has its own toolchain.
   is a fork that refuses pushes.
 - Issues: a conventional-prefix title, then `## Description` and `## Suggested fix`, with
   measurements in tables.
-- Data commits (`sync data`, `sync mythic plus data`, `sync raid logs data`,
-  `sync guilds statistics`) come from the scripts, on `main`. Never hand-edit or hand-merge a
+- Data commits (`sync data`, `sync mythic plus data`, `sync raid logs data`) come from the
+  scripts, on `main`. Never hand-edit or hand-merge a
   generated data file: rerun its job. A feature branch commits refreshed data only when it
   changes that data's format.
 
