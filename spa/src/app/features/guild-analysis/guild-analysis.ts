@@ -55,26 +55,26 @@ export interface GuildAnalysisMetadata {
 
 export interface GuildPage {
   readonly key: string;
-  readonly hash: string;
+  readonly guid: string;
   readonly name: string;
   readonly realm: Realm;
 }
 
 export const GUILD_PAGES = [
-  { key: 'endless', hash: 'f8c2a91d', name: 'Endless', realm: 'Evermoon' },
-  { key: 'competence-optional', hash: 'a47d9c2e', name: 'Competence Optional', realm: 'Evermoon' },
-  { key: 'miracle', hash: '6e2d8f14', name: 'Miracle', realm: 'Evermoon' },
-  { key: 'entropy', hash: '3e8f1a62', name: 'Entropy', realm: 'Evermoon' },
-  { key: 'outlaws', hash: '34c1426b', name: 'Outlaws', realm: 'Tauri' },
-  { key: 'impaired', hash: 'c18e7b42', name: 'Impaired', realm: 'Evermoon' },
-  { key: 'impact', hash: '94fd2a61', name: 'Impact', realm: 'Evermoon' },
-  { key: 'highly-regarded', hash: 'd74a9e3c', name: 'Highly Regarded', realm: 'Evermoon' },
-  { key: 'temerite', hash: 'b93e7a41', name: 'Témérité', realm: 'Evermoon' },
-  { key: 'rycerze-ortalionu', hash: 'c1ee200b', name: 'Rycerze Ortalionu', realm: 'Evermoon' }
+  { key: 'competence-optional', guid: '8bd3132c-72d6-432c-a160-e009a1e50155', name: 'Competence Optional', realm: 'Evermoon' },
+  { key: 'miracle', guid: 'aee35fc2-cca6-47c7-aa26-6bf331a7bc95', name: 'Miracle', realm: 'Evermoon' },
+  { key: 'outlaws', guid: '1c92f10c-2108-4fe9-b506-080f9661f551', name: 'Outlaws', realm: 'Tauri' },
+  { key: 'endless', guid: '9f4c446e-5fef-4265-b4c6-2fc5d61e5e59', name: 'Endless', realm: 'Evermoon' },
+  { key: 'impaired', guid: '581a1b07-e519-4e36-8b01-187af33367df', name: 'Impaired', realm: 'Evermoon' },
+  { key: 'deeznuts', guid: '7bed7be7-549a-448f-a9c4-aa43f5afd060', name: 'deeznuts', realm: 'Evermoon' },
+  { key: 'nfa', guid: '91f07e78-ec10-4161-99f9-3b5d01673524', name: 'NFA', realm: 'Evermoon' },
+  { key: 'vistustan', guid: '8ecce8ca-c670-4d06-ab01-06861c3d3ec2', name: 'Vistustan', realm: 'Evermoon' },
+  { key: 'skill-issue', guid: '3f7fe216-b578-47c4-b22b-ddf7c9e4e834', name: 'Skill Issue', realm: 'Evermoon' },
+  { key: 'highly-regarded', guid: 'cedd1db9-e352-4c11-8f6f-e85937723121', name: 'Highly Regarded', realm: 'Evermoon' }
 ] as const satisfies readonly GuildPage[];
 
 export function guildPagePath(page: GuildPage): string {
-  return `${page.key}-${page.hash}`;
+  return `${page.key}-${page.guid}`;
 }
 
 export const guildAnalysisResolver: ResolveFn<GuildAnalysis | null> = (route): Observable<GuildAnalysis | null> => {
