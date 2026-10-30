@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   REALM_FILTER_OPTIONS,
   ROLE_FILTERS,
+  ROLE_FILTER_ICONS,
   ROLE_FILTER_LABELS,
   RoleFilter,
   matchesRoleFilter,
@@ -45,6 +46,18 @@ describe('ROLE_FILTERS', () => {
     expect(ROLE_FILTERS.map(role => [role, ROLE_FILTER_LABELS[role]])).toEqual([
       ['tank', 'Tank'], ['healer', 'Healer'], ['dps', 'DPS'], ['melee', 'Melee DPS'], ['ranged', 'Ranged DPS']
     ]);
+  });
+});
+
+describe('ROLE_FILTER_ICONS', () => {
+  const glyphColour = (role: RoleFilter) => decodeURIComponent(ROLE_FILTER_ICONS[role]).match(/fill="(#[0-9a-f]{6})"/)?.[1];
+
+  it('draws each role as an SVG in its colour, and Melee and Ranged DPS with the DPS sword', () => {
+    expect(ROLE_FILTERS.every(role => ROLE_FILTER_ICONS[role].startsWith('data:image/svg+xml,'))).toBe(true);
+    expect(ROLE_FILTERS.map(glyphColour)).toEqual(['#6ea8ff', '#3ecf5e', '#e5484d', '#e5484d', '#e5484d']);
+    expect(ROLE_FILTER_ICONS.melee).toBe(ROLE_FILTER_ICONS.dps);
+    expect(ROLE_FILTER_ICONS.ranged).toBe(ROLE_FILTER_ICONS.dps);
+    expect(new Set(ROLE_FILTERS.map(role => ROLE_FILTER_ICONS[role])).size).toBe(3);
   });
 });
 

@@ -66,6 +66,26 @@ export const ROLE_FILTER_LABELS: Readonly<Record<RoleFilter, string>> = {
   tank: 'Tank', healer: 'Healer', dps: 'DPS', melee: 'Melee DPS', ranged: 'Ranged DPS'
 };
 
+const ROLE_GLYPHS: Readonly<Record<Role, { path: string; color: string }>> = {
+  tank: { path: 'M12 2 4 5v6.1c0 5 3.4 9.6 8 10.9 4.6-1.3 8-5.9 8-10.9V5l-8-3z', color: '#6ea8ff' },
+  healer: { path: 'M9.5 3h5v6.5H21v5h-6.5V21h-5v-6.5H3v-5h6.5z', color: '#3ecf5e' },
+  dps: {
+    path: 'M21 3l-7.5 1.6-7.8 7.8-1.9-1.9-1.4 1.4 2.6 2.6-2.4 2.4a1.5 1.5 0 1 0 2.1 2.1l2.4-2.4 2.6 2.6 1.4-1.4-1.9-1.9 7.8-7.8z',
+    color: '#e5484d'
+  }
+};
+
+function roleIcon(role: Role): string {
+  const { path, color } = ROLE_GLYPHS[role];
+  return 'data:image/svg+xml,' + encodeURIComponent(
+    `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path fill="${color}" d="${path}"/></svg>`
+  );
+}
+
+export const ROLE_FILTER_ICONS: Readonly<Record<RoleFilter, string>> = {
+  tank: roleIcon('tank'), healer: roleIcon('healer'), dps: roleIcon('dps'), melee: roleIcon('dps'), ranged: roleIcon('dps')
+};
+
 export function parseRoleFilter(value: string | null | undefined): RoleFilter | undefined {
   return ROLE_FILTERS.find(role => role === value);
 }

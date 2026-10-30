@@ -227,6 +227,14 @@
   background: transparent;
 }
 
+.dropdown.round-icons .option-icon {
+  flex: none;
+  padding: 4px;
+  border-color: #555;
+  border-radius: 50%;
+  background: #0c0c0c;
+}
+
 @media (max-width: 640px) {
   .filter-select {
     font-size: 0.9rem;

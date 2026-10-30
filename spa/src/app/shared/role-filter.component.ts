@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, computed, input, output } from '@angular/core';
-import { ROLE_FILTER_LABELS, ROLE_FILTERS, RoleFilter, parseRoleFilter } from '../game/wow';
+import { ROLE_FILTER_ICONS, ROLE_FILTER_LABELS, ROLE_FILTERS, RoleFilter, parseRoleFilter } from '../game/wow';
 import { FilterDropdownComponent } from './filter-dropdown.component';
 import { FilterDropdownOption, FilterDropdownValue } from './filter-dropdown.types';
 
@@ -16,6 +16,8 @@ const ALL_ROLES_LABEL = 'All roles';
       [options]="options()"
       [selectedValue]="selected()"
       [compact]="true"
+      [showIcons]="true"
+      [roundIcons]="true"
       [highlightWhenSelected]="includeAll()"
       [widthLabels]="widthLabels"
       (selectionChange)="select($event)" />
@@ -35,7 +37,7 @@ export class RoleFilterComponent {
 
   readonly options = computed<FilterDropdownOption[]>(() => [
     ...(this.includeAll() ? [{ value: undefined, label: ALL_ROLES_LABEL }] : []),
-    ...this.roles().map(role => ({ value: role, label: ROLE_FILTER_LABELS[role] }))
+    ...this.roles().map(role => ({ value: role, label: ROLE_FILTER_LABELS[role], icon: ROLE_FILTER_ICONS[role] }))
   ]);
 
   select(value: FilterDropdownValue): void {

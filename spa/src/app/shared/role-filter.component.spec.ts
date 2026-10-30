@@ -1,6 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 import { describe, expect, it } from 'vitest';
-import { RoleFilter } from '../game/wow';
+import { ROLE_FILTER_ICONS, RoleFilter } from '../game/wow';
 import { FilterDropdownCoordinatorService } from './filter-dropdown-coordinator.service';
 import { RoleFilterComponent } from './role-filter.component';
 
@@ -34,6 +34,23 @@ describe('RoleFilterComponent', () => {
 
     expect(options()).toEqual(['All roles', 'Tank', 'Healer', 'DPS', 'Melee DPS', 'Ranged DPS']);
     expect(shown()).toBe('Melee DPS');
+  });
+
+  it('shows each role\'s icon beside it, the DPS sword for Melee and Ranged DPS, and none for "All roles"', async () => {
+    const { element } = await renderRoleFilter({ selected: 'ranged' });
+    const optionIcons = [...element.querySelectorAll('.dropdown-option')]
+      .map((option) => option.querySelector('img.option-icon')?.getAttribute('src'));
+
+    expect(optionIcons).toEqual([
+      undefined,
+      ROLE_FILTER_ICONS.tank,
+      ROLE_FILTER_ICONS.healer,
+      ROLE_FILTER_ICONS.dps,
+      ROLE_FILTER_ICONS.dps,
+      ROLE_FILTER_ICONS.dps
+    ]);
+    expect(element.querySelector('.trigger-current img.option-icon')?.getAttribute('src')).toBe(ROLE_FILTER_ICONS.dps);
+    expect(element.querySelector('.dropdown.round-icons')).not.toBeNull();
   });
 
   it('shows "All roles" while no role is picked', async () => {
