@@ -50,7 +50,7 @@ workflow and its output contract.
 | `MythicPlusGuildAndCharScan` | Adds the guilds and guildless characters seen on the Mythic+ leaderboards to the scan inputs. |
 | `RaidLogExporter` | Exports every Emerald Nightmare boss kill with per-player damage, healing, talents, trinkets and loot for the `/raid-logs` pages, reading only kills the last export lacks, plus every spec's talent tiers and each talent's tooltip from TauriShoot. |
 | `RaidLogGuildAndCharScan` | Looks up the current guild of everyone with an Emerald Nightmare kill and adds new guilds and guildless characters to the scan inputs. |
-| `Guildkukker` | Generates ranked guild reports with reputation, artifact, and item-level data. |
+| `GuildAnalysisExporter` | Generates ranked guild reports with reputation, artifact, and item-level data. |
 | `EndlessGuildExporter` | Produces a formatted Excel guild roster. |
 
 ## Processing model
@@ -112,7 +112,7 @@ concurrency, timeouts, and retry behavior; see
 | Export the Mythic+ leaderboards | `dotnet run --project MythicPlusExporter` |
 | Collect guilds and guildless characters from Mythic+ runs | `dotnet run --project MythicPlusGuildAndCharScan` |
 | Collect guilds and guildless characters from Emerald Nightmare raiders | `dotnet run --project RaidLogGuildAndCharScan` |
-| Export a ranked guild report | `dotnet run --project Guildkukker -- Evermoon Endless` |
+| Export a ranked guild report | `dotnet run --project GuildAnalysisExporter -- Evermoon Endless` |
 | Export the Endless workbook | `dotnet run --project EndlessGuildExporter` |
 
 Commands with additional options expose usage through `--help` or document their arguments

@@ -231,5 +231,7 @@ There is no root package manager; each half has its own toolchain.
   as a regression.
 - Windows: `core.autocrlf=true`, and working files mix CRLF and LF, so exact-string
   replacements in the shell are fragile; use an EOL-tolerant edit. In Git Bash, `node -e '…'`
-  strips backslashes (write scripts to files), and `/route` arguments get path-converted (set
-  `MSYS_NO_PATHCONV=1`). A stopped `ng serve` can leave node holding the port; kill it by PID.
+  strips backslashes (write scripts to files), `sed -i` saves a CRLF working file as LF (run
+  `unix2dos` on it after; a `.cmd` with LF endings can miss its `call :label` targets), and
+  `/route` arguments get path-converted (set `MSYS_NO_PATHCONV=1`). A stopped `ng serve` can
+  leave node holding the port; kill it by PID.

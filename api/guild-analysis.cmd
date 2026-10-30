@@ -2,14 +2,13 @@
 chcp 65001 >nul
 setlocal EnableExtensions DisableDelayedExpansion
 
-rem This file lives in api\, next to the Guildkukker project; the repo root is one level up.
 for %%I in ("%~dp0..") do set "GIT_REPO=%%~fI"
-set "GUILDKUKKER_PROJECT=%~dp0Guildkukker"
+set "GUILD_ANALYSIS_PROJECT=%~dp0GuildAnalysisExporter"
 set "OUTPUT_DIR=%GIT_REPO%\spa\src\guild-analysis"
 
-if not exist "%GUILDKUKKER_PROJECT%\Guildkukker.csproj" (
-    echo Guildkukker project not found:
-    echo %GUILDKUKKER_PROJECT%
+if not exist "%GUILD_ANALYSIS_PROJECT%\GuildAnalysisExporter.csproj" (
+    echo GuildAnalysisExporter project not found:
+    echo %GUILD_ANALYSIS_PROJECT%
     pause
     exit /b 1
 )
@@ -122,10 +121,10 @@ echo ============================================================
 echo Scanning %REALM% - %GUILD%
 echo ============================================================
 
-dotnet run --project "%GUILDKUKKER_PROJECT%" -- "%REALM%" "%GUILD%" --output-directory "%OUTPUT_DIR%"
+dotnet run --project "%GUILD_ANALYSIS_PROJECT%" -- "%REALM%" "%GUILD%" --output-directory "%OUTPUT_DIR%"
 if errorlevel 1 (
     echo.
-    echo Guildkukker failed for %REALM% - %GUILD%.
+    echo GuildAnalysisExporter failed for %REALM% - %GUILD%.
     exit /b 1
 )
 

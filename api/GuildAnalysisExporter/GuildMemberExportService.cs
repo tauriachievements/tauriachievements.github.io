@@ -4,7 +4,7 @@ using System.Text.Json;
 using Tauri.Core.Dtos;
 using Tauri.Core.Infrastructure;
 
-namespace Guildkukker;
+namespace GuildAnalysisExporter;
 
 public sealed class GuildMemberExportService(
     string outputDirectory,

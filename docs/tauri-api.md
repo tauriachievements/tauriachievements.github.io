@@ -39,7 +39,7 @@ response first.
 - `character-sheet`: a guildless character has `guildName: ""`. Code:
   `RaidLogGuildAndCharScanService`.
 - `character-artifact` returns every artifact the character owns (main-hand piece only, one per
-  spec). Code: `Guildkukker/GuildMemberExportService`.
+  spec). Code: `GuildAnalysisExporter/GuildMemberExportService`.
   - **Traits** = the sum of `purchasedrank` over `artifacts[].artifact.artifactpowers`, for the
     artifact with the highest sum. The free first trait (`isfirstbonus`) and relic ranks don't
     count.
