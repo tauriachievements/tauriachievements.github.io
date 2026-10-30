@@ -26,9 +26,10 @@ architecture discussion.
    anything else, or on a GUID another guild already has. Nothing else in the app changes: the
    route comes from the table.
 3. **`spa/e2e/visual-pages.ts`:** add the page, so the visual check covers it.
-4. **`api/guild-analysis.cmd`:** add `call :ScanGuild "<Realm>" "<Guild Name>"` with its
-   `if errorlevel 1 goto :ScanFailed` line, so the daily update keeps the page fresh. The realm
-   is `Evermoon`, `Tauri` or `WoD`.
+4. **`$guildAnalysisGuilds` in `api/Run-DailyUpdate.ps1`:** add
+   `@{ Realm = '<Realm>'; Name = '<Guild Name>' }`, so the daily update keeps the page fresh.
+   The realm is `Evermoon`, `Tauri` or `WoD`. The script is saved as UTF-8 with a BOM, which
+   Windows PowerShell needs to read an accented guild name; keep it that way.
 5. **Scan it once by hand** (from `api/`):
 
    ```powershell
