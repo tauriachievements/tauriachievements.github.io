@@ -341,36 +341,14 @@ $mono: ui-monospace, 'Cascadia Mono', 'SF Mono', Consolas, Menlo, monospace;
 .setup-steps {
   display: grid;
   gap: 14px;
-  width: fit-content;
   max-width: 500px;
   margin: 0 auto 24px;
   list-style: none;
-  counter-reset: setup-step;
-  text-align: left;
 }
 
 .setup-step {
-  display: flex;
-  align-items: center;
-  gap: 14px;
   color: #c9ccd4;
-  counter-increment: setup-step;
-
-  &::before {
-    content: counter(setup-step);
-    display: grid;
-    flex-shrink: 0;
-    place-items: center;
-    width: 30px;
-    height: 30px;
-    border: 1px solid rgba($gold, .45);
-    border-radius: 50%;
-    background: rgba($gold, .1);
-    color: $gold-soft;
-    font-family: $mono;
-    font-size: .85rem;
-    font-weight: 700;
-  }
+  text-wrap: balance;
 
   strong { color: #fff; }
 }
@@ -483,9 +461,4 @@ $mono: ui-monospace, 'Cascadia Mono', 'SF Mono', Consolas, Menlo, monospace;
   .closing h2 { font-size: 1.35rem; }
   .feature-list { grid-template-columns: minmax(0, 1fr); }
   .closing { padding: 28px 16px 24px; }
-}
-
-@media (max-width: shared.$narrow-phone-breakpoint) {
-  .setup-step { gap: 10px; }
-  .setup-step .download { padding: 0 18px; }
 }
