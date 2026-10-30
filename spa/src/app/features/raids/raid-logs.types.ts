@@ -56,6 +56,8 @@ export interface RaidTopEntry {
 
 export type RaidItemEntry = [id: number, name: string, quality: number, icon: string];
 
+export type RaidClearEntry = [logRealm: string, difficulty: number, realm: string, logIdSteps: number[]];
+
 export interface RaidLogsIndexFile {
   version: number;
   generatedAt: string;
@@ -69,6 +71,7 @@ export interface RaidLogsIndexFile {
   logs: RaidIndexLogEntry[];
   newLogs?: Array<[realm: string, logId: number]>;
   invalidLogs?: Array<[realm: string, logId: number, reason: string]>;
+  clears?: RaidClearEntry[];
   top: RaidTopEntry[];
   items: RaidItemEntry[];
 }
@@ -216,6 +219,12 @@ export interface RaidKill {
   invalid?: string;
 }
 
+export interface RaidFullClear {
+  realm: string;
+  difficulty: RaidDifficulty;
+  kills: RaidKill[];
+}
+
 export interface RaidCharacter {
   name: string;
   realm: string;
@@ -260,6 +269,7 @@ export interface RaidLogsIndex {
   kills: RaidKill[];
   invalidKills: RaidKill[];
   invalidLogs: ReadonlyMap<string, string>;
+  clears: RaidFullClear[];
   items: ReadonlyMap<number, RaidItem>;
 
   top: ReadonlyMap<string, { dps?: RaidPerformer; hps?: RaidPerformer }>;

@@ -34,6 +34,7 @@ describe('findNavLocation', () => {
   it('keeps a sibling route out of a shorter page path', () => {
     expect(locate('/raid-logs/leaderboard')).toBe('Raids / Character Rankings');
     expect(locate('/raid-logs/guilds?difficulty=heroic')).toBe('Raids / Guild Progression');
+    expect(locate('/raid-logs/clears?difficulty=heroic')).toBe('Raids / Fastest Clears');
     expect(locate('/raid-logs/stats')).toBe('Raids / Raid Statistics');
     expect(locate('/raid-logs/tier-list?difficulty=normal')).toBe('Raids / Tier List');
     expect(locate('/mythic-plus/records')).toBe('Mythic+ / Records');
@@ -50,6 +51,6 @@ describe('findNavLocation', () => {
     const paths = NAV_SECTIONS.flatMap((section) => section.pages.map((page) => page.path));
 
     expect(new Set(paths).size).toBe(paths.length);
-    expect(paths).toHaveLength(23);
+    expect(paths).toHaveLength(24);
   });
 });

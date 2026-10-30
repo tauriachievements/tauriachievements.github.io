@@ -12,6 +12,11 @@ export const RAIDS_ROUTES: Routes = [
       .then(module => module.RaidLogsProgressionPageComponent)
   },
   {
+    path: 'raid-logs/clears',
+    loadComponent: () => import('./raid-logs-clears-page.component')
+      .then(module => module.RaidLogsClearsPageComponent)
+  },
+  {
     path: 'raid-logs/stats',
     loadComponent: () => import('./raid-logs-stats-page.component')
       .then(module => module.RaidLogsStatsPageComponent)

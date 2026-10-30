@@ -21,6 +21,7 @@ import {
 import { RaidItem, RaidKill, RaidKillDetails, RaidLogsIndex, RaidMember } from './raid-logs.types';
 import { characterKey } from './raid-logs';
 import { speedRank } from './raid-progression';
+import { clearEndedBy } from './raid-clears';
 import { RevealDirective } from '../../shared/motion/reveal.directive';
 import { RaidLogsDataService } from './raid-logs-data.service';
 import { Role } from '../../game/wow';
@@ -66,6 +67,7 @@ interface SummaryTile {
 })
 export class RaidLogPageComponent {
   readonly characterKey = characterKey;
+  readonly formatFightTime = formatFightTime;
 
   private readonly data = inject(RaidLogsDataService);
   private readonly destroyRef = inject(DestroyRef);
@@ -81,6 +83,11 @@ export class RaidLogPageComponent {
   readonly loadError = signal<string | undefined>(undefined);
   readonly metric = signal<LogMetric>('damage');
   readonly lastEdited = computed(() => this.index()?.generatedAt);
+  readonly finishedClear = computed(() => {
+    const kill = this.kill();
+    const index = this.index();
+    return kill && index ? clearEndedBy(index.clears, kill) : undefined;
+  });
 
   readonly rows = computed<MemberRow[]>(() => {
     const kill = this.kill();

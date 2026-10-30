@@ -1,0 +1,72 @@
+@use './raid-logs-shared' as *;
+
+:host { display: block; width: 100%; }
+
+@include visually-hidden;
+@include sections;
+@include raid-table;
+@include faction-marks;
+@include filter-reset;
+
+.raid-page { @include raid-page; }
+.table-scroll { @include phone-detail-rows; }
+
+.filters { display: flex; flex: 1 1 auto; flex-wrap: wrap; align-items: center; gap: 10px; }
+
+.filter-group { display: inline-grid; grid-auto-columns: 1fr; grid-auto-flow: column; gap: 10px; }
+.filter-reset { justify-content: center; }
+
+.groups-switch {
+  @include segmented-switch;
+  margin-left: auto;
+
+  button { justify-content: center; white-space: nowrap; }
+}
+
+.guild-name { display: inline-flex; align-items: center; gap: 8px; }
+tr.pickup .guild-name .strong { color: $pickup-silver; font-weight: 400; }
+tr.pickup .guild-name { vertical-align: middle; }
+
+.clear-time { color: $gold; font-weight: 700; }
+
+.route-head,
+.route-cell { width: 40%; min-width: 220px; }
+
+.route {
+  position: relative;
+  display: block;
+  height: 10px;
+  overflow: hidden;
+  border-radius: 3px;
+  background: #262626;
+}
+
+.route-fight {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  min-width: 2px;
+  border-radius: 2px;
+}
+
+@each $slug, $color in $difficulty-colors {
+  .route.#{$slug} .route-fight { background: rgba($color, .85); }
+}
+
+a.route-fight:hover { filter: brightness(1.35); }
+
+.phone-detail { display: flex; flex-direction: column; gap: 5px; }
+.phone-detail .route { height: 4px; }
+
+.clears-note { margin: 0; color: $raid-muted; font-size: .8rem; }
+
+@media (max-width: 640px) {
+  .raid-page { padding-top: 32px; }
+  .filters { width: 100%; }
+  .filters app-raid-difficulty-switch { flex-basis: 100%; }
+  .filter-group { display: flex; width: 100%; }
+  .groups-switch { flex: 1 1 auto; margin-left: 0; }
+  .groups-switch button { flex: 1 1 0; }
+  .filter-slot { min-width: 0; flex: 1 1 0; }
+  .filter-reset:disabled { display: none; }
+}

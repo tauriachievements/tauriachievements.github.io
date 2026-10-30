@@ -111,6 +111,22 @@ public sealed class RaidLogExportServiceTests
     }
 
     [Fact]
+    public void ParseLog_ReadsTheInstanceTheKillWasIn()
+    {
+        var listed = new ListedRaidLog(new RaidLogKey("Tauri", 7), Tauri, Xavius, Mythic);
+        var response = Parse(
+            InInstance(
+                3_377_699_722_142_392,
+                LogJson(7, Xavius, Mythic, 1, 300_000, null, [], Member("A", "", 1, 71))
+            )
+        );
+
+        var log = RaidLogResponseParser.ParseLog(response, listed);
+
+        Assert.Equal(3_377_699_722_142_392, log!.InstanceId);
+    }
+
+    [Fact]
     public void ParseLog_RejectsDetailsOfAnotherKill()
     {
         var listed = new ListedRaidLog(new RaidLogKey("Tauri", 7), Tauri, Xavius, Mythic);
@@ -1215,6 +1231,93 @@ public sealed class RaidLogExportServiceTests
     }
 
     [Fact]
+    public async Task ExportAsync_ListsEachInstanceWithEveryBossDownAsAClear()
+    {
+        var outputDirectory = CreateTempDirectory();
+        try
+        {
+            var api = new FakeRaidApiClient();
+            var killOrder = new[] { 1853, 1841, 1854, 1876, 1873, 1877, 1864 };
+            void Kill(
+                long instance,
+                int logId,
+                int encounter,
+                int difficulty,
+                params string[] members
+            )
+            {
+                var key = (Tauri, encounter, difficulty);
+                api.Rankings[key] = [.. api.Rankings.GetValueOrDefault(key) ?? [], logId];
+                api.Logs[(Tauri, logId)] = InInstance(
+                    instance,
+                    LogJson(
+                        logId,
+                        encounter,
+                        difficulty,
+                        1_790_000_000 + logId * 600,
+                        120_000,
+                        null,
+                        [],
+                        members
+                    )
+                );
+            }
+
+            string[] evermoonRaid =
+            [
+                Member("Mage", "", 8, 63),
+                Member("Priest", "", 5, 256),
+                Member("Warrior", "r=[HU] Tauri WoW Server&amp;n=Warrior", 1, 71),
+            ];
+            string[] tauriRaid =
+            [
+                Member("Hunter", "r=[HU] Tauri WoW Server&amp;n=Hunter", 3, 254),
+                Member("Rogue", "r=[HU] Tauri WoW Server&amp;n=Rogue", 4, 259),
+                Member("Druid", "", 11, 105),
+            ];
+            for (var boss = 0; boss < killOrder.Length; boss++)
+            {
+                Kill(900, 100 + boss, killOrder[boss], Mythic, evermoonRaid);
+                Kill(902, 10 + boss, killOrder[boss], Heroic, tauriRaid);
+                if (killOrder[boss] != Xavius)
+                {
+                    Kill(901, 200 + boss, killOrder[boss], Mythic, evermoonRaid);
+                }
+            }
+
+            await Service(outputDirectory, api, PlayerGuildDirectory.Empty)
+                .ExportAsync(Options(), CancellationToken.None);
+            var rerun = await Service(outputDirectory, api, PlayerGuildDirectory.Empty)
+                .ExportAsync(Options(), CancellationToken.None);
+
+            Assert.Equal(0, rerun.ReadLogCount);
+            var index = Parse(File.ReadAllText(Path.Combine(outputDirectory, "index.json")));
+            Assert.Equal(
+                [
+                    "Tauri 15 Tauri 10,1,1,1,1,1,1",
+                    "Tauri 16 Evermoon 100,1,1,1,1,1,1",
+                ],
+                index
+                    .GetProperty("clears")
+                    .EnumerateArray()
+                    .Select(clear =>
+                        $"{clear[0].GetString()} {clear[1].GetInt32()} {clear[2].GetString()} "
+                        + string.Join(",", clear[3].EnumerateArray().Select(id => id.GetInt32()))
+                    )
+            );
+            var ursoc = Parse(File.ReadAllText(Path.Combine(outputDirectory, "ursoc-mythic.json")));
+            Assert.Equal(
+                [900L, 901L],
+                ursoc.GetProperty("logs").EnumerateArray().Select(log => log[11].GetInt64())
+            );
+        }
+        finally
+        {
+            Directory.Delete(outputDirectory, recursive: true);
+        }
+    }
+
+    [Fact]
     public void InvalidRaidLogs_ReadsTheRealmLogIdAndReasonOfEachLine()
     {
         var invalidLogs = InvalidRaidLogs.Parse([
@@ -1377,6 +1480,9 @@ public sealed class RaidLogExportServiceTests
             }
             """;
     }
+
+    private static string InInstance(long instanceId, string logJson) =>
+        logJson.Replace("\"map_id\": 1520", $"\"instance_uid\": {instanceId}, \"map_id\": 1520");
 
     private static string Member(
         string name,

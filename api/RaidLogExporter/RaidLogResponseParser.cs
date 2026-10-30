@@ -72,7 +72,8 @@ public static class RaidLogResponseParser
             ReadInt(response, "deaths_fight"),
             ReadInt(response, "resurrects_fight"),
             members,
-            ParseItems(response)
+            ParseItems(response),
+            ReadLong(response, "instance_uid")
         );
     }
 

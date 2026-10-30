@@ -55,7 +55,15 @@ public sealed record RaidLog(
     int Deaths,
     int Resurrects,
     IReadOnlyList<RaidLogMember> Members,
-    IReadOnlyList<int> Items
+    IReadOnlyList<int> Items,
+    long InstanceId
+);
+
+public sealed record RaidClear(
+    string Realm,
+    int DifficultyId,
+    string PlayersRealm,
+    IReadOnlyList<RaidLog> Logs
 );
 
 public sealed record RaidScanChanges(
