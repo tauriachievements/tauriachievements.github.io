@@ -50,6 +50,18 @@ describe('memberFilter', () => {
     expect(include?.(member('Maja', { role: 'tank' }))).toBe(false);
     expect(memberFilter({ spec: 'Brewmaster' })).toBeUndefined();
   });
+
+  it('matches melee and ranged on the spec the member played', () => {
+    const windwalker = member('Pretz', { range: 'melee' });
+    const fire = member('Maja', { class: 8, spec: 'Fire', range: 'ranged' });
+    const brewmaster = member('Brew', { spec: 'Brewmaster', role: 'tank' });
+    const matches = (role: 'melee' | 'ranged' | 'dps') =>
+      [windwalker, fire, brewmaster].map(entry => memberFilter({ role })?.(entry));
+
+    expect(matches('melee')).toEqual([true, false, false]);
+    expect(matches('ranged')).toEqual([false, true, false]);
+    expect(matches('dps')).toEqual([true, true, false]);
+  });
 });
 
 describe('runsInScope', () => {
@@ -130,6 +142,9 @@ describe('emptyLeaderboardMessage', () => {
       .toBe('No Brewmaster Monk on Tauri has a run yet.');
     expect(emptyLeaderboardMessage({ ...players, role: 'dps', dungeon: cos })).toBe('No DPS player has a run in Court of Stars yet.');
     expect(emptyLeaderboardMessage({ ...players, role: 'healer' })).toBe('No healer has a run yet.');
+    expect(emptyLeaderboardMessage({ ...players, role: 'melee' })).toBe('No melee DPS player has a run yet.');
+    expect(emptyLeaderboardMessage({ ...players, role: 'ranged', realmName: 'Tauri' }))
+      .toBe('No ranged DPS player on Tauri has a run yet.');
   });
 
   it('falls back to the period and the dungeon', () => {

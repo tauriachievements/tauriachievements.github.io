@@ -46,11 +46,18 @@ describe('rankCharacters', () => {
   });
 
   it('ranks only ranged or melee damage specs by range, so a tank is in neither', () => {
-    expect(rankCharacters(kills, 'dps', { range: 'ranged' }).map(entry => [entry.rank, entry.member.character.name])).toEqual([
+    expect(rankCharacters(kills, 'dps', { role: 'ranged' }).map(entry => [entry.rank, entry.member.character.name])).toEqual([
       [1, 'Kael'],
       [2, 'Sósa']
     ]);
-    expect(rankCharacters(kills, 'dps', { range: 'melee' })).toEqual([]);
+    expect(rankCharacters(kills, 'dps', { role: 'melee' })).toEqual([]);
+  });
+
+  it('ranks the tanks alone, or the damage specs without the tanks', () => {
+    expect(rankCharacters(kills, 'dps', { role: 'tank' }).map(entry => [entry.rank, entry.member.character.name])).toEqual([
+      [1, 'Light']
+    ]);
+    expect(rankCharacters(kills, 'dps', { role: 'dps' }).map(entry => entry.member.character.name)).toEqual(['Kael', 'Sósa']);
   });
 });
 
@@ -63,10 +70,12 @@ describe('rankedSpecs', () => {
     expect(rankedSpecs(index.specs, undefined, 'dps')).toEqual([]);
   });
 
-  it('keeps only the specs of the range when one is given', () => {
+  it('keeps only the specs of the role when one is given', () => {
     expect(rankedSpecs(index.specs, 8, 'dps', 'ranged').map(spec => spec.name)).toEqual(['Fire', 'Frost']);
     expect(rankedSpecs(index.specs, 8, 'dps', 'melee')).toEqual([]);
     expect(rankedSpecs(index.specs, 2, 'dps', 'melee')).toEqual([]);
+    expect(rankedSpecs(index.specs, 2, 'dps', 'tank').map(spec => spec.name)).toEqual(['Protection']);
+    expect(rankedSpecs(index.specs, 2, 'dps', 'dps')).toEqual([]);
   });
 });
 
@@ -90,6 +99,9 @@ describe('rankedClassOptions', () => {
     expect(labels(rankedClassOptions(allSpecs, 'dps', 'melee'))).toEqual([
       'All classes', 'Death Knight', 'Demon Hunter', 'Druid', 'Hunter', 'Monk', 'Paladin', 'Rogue', 'Shaman', 'Warrior'
     ]);
+    expect(labels(rankedClassOptions(allSpecs, 'dps', 'tank'))).toEqual([
+      'All classes', 'Death Knight', 'Demon Hunter', 'Druid', 'Monk', 'Paladin', 'Warrior'
+    ]);
   });
 });
 
@@ -108,6 +120,7 @@ describe('fitClassAndSpec', () => {
     expect(fitClassAndSpec(allSpecs, { classId: 3, specId: 253 }, 'dps', 'melee')).toEqual({ classId: 3, specId: 255 });
     expect(fitClassAndSpec(allSpecs, { classId: 5, specId: 257 }, 'dps')).toEqual({ classId: 5, specId: 258 });
     expect(fitClassAndSpec(allSpecs, { classId: 7 }, 'dps', 'ranged')).toEqual({ classId: 7, specId: 262 });
+    expect(fitClassAndSpec(allSpecs, { classId: 2, specId: 70 }, 'dps', 'tank')).toEqual({ classId: 2, specId: 66 });
   });
 
   it('drops a spec without a class', () => {
@@ -273,6 +286,19 @@ describe('scoreCharacters', () => {
         ['Mage', Math.round((MAX_SCORE + 1916) / 2)]
       ]);
       expect(everyone.characterCount).toBe(4);
+    });
+
+    it('limits the spec performance to the melee or the ranged damage specs', () => {
+      const scores = scoresBySpec(bosses, bossKills);
+      const ranged = specPerformance(scores, 'ranged');
+      expect(ranged.classes[0].specs.map(spec => [spec.spec, spec.count])).toEqual([['Fire', 2], ['Frost', 1], ['Arcane', 0]]);
+      expect(ranged.classes.flatMap(group => group.specs).every(spec => spec.range === 'ranged')).toBe(true);
+      expect(ranged.characterCount).toBe(2);
+
+      const melee = specPerformance(scores, 'melee');
+      expect(melee.characterCount).toBe(0);
+      expect(melee.classes.map(group => group.className)).toContain('Rogue');
+      expect(melee.classes.map(group => group.className)).not.toContain('Mage');
     });
 
     it('averages the best scores only, or all of them when there are fewer', () => {

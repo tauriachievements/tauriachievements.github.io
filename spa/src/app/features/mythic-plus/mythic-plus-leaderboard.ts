@@ -1,5 +1,5 @@
 import { FilterDropdownOption } from '../../shared/filter-dropdown.types';
-import { CLASS_NAMES, Role, realmSlug } from '../../game/wow';
+import { CLASS_NAMES, RoleFilter, matchesRoleFilter, realmSlug } from '../../game/wow';
 import {
   MythicPlusDungeon,
   MythicPlusIndex,
@@ -33,7 +33,7 @@ export interface MemberFilters {
   realm?: string;
   classId?: number;
   spec?: string;
-  role?: Role;
+  role?: RoleFilter;
 }
 
 export interface EmptyLeaderboard {
@@ -45,7 +45,7 @@ export interface EmptyLeaderboard {
   classId?: number;
   spec?: string;
   realmName?: string;
-  role?: Role;
+  role?: RoleFilter;
 }
 
 export function realmFilterOptions(players: readonly MythicPlusPlayerEntry[]): FilterDropdownOption[] {
@@ -67,7 +67,19 @@ export function memberFilter({ realm, classId, spec, role }: MemberFilters): ((m
 
   return member => (realm === undefined || realmSlug(member.realm) === realm)
     && (classId === undefined || (member.class === classId && (spec === undefined || member.spec === spec)))
-    && (role === undefined || member.role === role);
+    && matchesRoleFilter(member, role);
+}
+
+const ROLE_PLAYER_NOUNS: Readonly<Record<RoleFilter, string>> = {
+  tank: 'tank',
+  healer: 'healer',
+  dps: 'DPS player',
+  melee: 'melee DPS player',
+  ranged: 'ranged DPS player'
+};
+
+export function rolePlayerNoun(role: RoleFilter): string {
+  return ROLE_PLAYER_NOUNS[role];
 }
 
 export function runsInScope(
@@ -136,7 +148,7 @@ export function emptyLeaderboardMessage(state: EmptyLeaderboard): string {
   }
 
   if (view === 'players' && (classId !== undefined || realmName || role)) {
-    const who = role ? (role === 'dps' ? 'DPS player' : role)
+    const who = role ? rolePlayerNoun(role)
       : classId === undefined ? 'player' : [state.spec, CLASS_NAMES[classId]].filter(Boolean).join(' ');
     return `No ${who}${realmName ? ` on ${realmName}` : ''} has a run${dungeon ? ` in ${dungeon.name}` : ''} yet.`;
   }

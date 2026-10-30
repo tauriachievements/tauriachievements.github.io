@@ -29,6 +29,7 @@ export class FilterDropdownComponent {
   readonly selectedLabel = input('');
   readonly selectedIcon = input<string>();
   readonly showIcons = input(false);
+  readonly roundIcons = input(false);
   readonly highlightWhenSelected = input(false);
   readonly compact = input(false);
   readonly disabled = input(false);

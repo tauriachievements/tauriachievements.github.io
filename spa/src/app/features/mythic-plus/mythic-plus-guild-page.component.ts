@@ -22,10 +22,8 @@ import { MobileFilterToggleComponent } from '../../shared/mobile-filter-toggle.c
 import {
   MythicPlusAffix,
   MythicPlusIndex,
-  MythicPlusMember,
   MythicPlusRun,
   MythicPlusStandingEntry,
-  ROLE_LABELS,
   characterKey,
   currentAffixWeek,
   exportedAt,
@@ -46,6 +44,7 @@ import {
   inGuild,
   previousOverallRank
 } from './mythic-plus-guild';
+import { memberFilter, rolePlayerNoun } from './mythic-plus-leaderboard';
 import { MythicPlusPlayersListComponent } from './mythic-plus-players-list.component';
 import {
   characterParam,
@@ -63,7 +62,8 @@ import {
 } from './mythic-plus-views';
 import { MythicPlusWeekAffixesComponent } from './mythic-plus-week-affixes.component';
 import { MythicPlusDataService, mythicPlusLoadError } from './mythic-plus-data.service';
-import { CLASS_FILTER_OPTIONS, CLASS_NAMES, parseClassId, parseRole, Role, realmSlug } from '../../game/wow';
+import { CLASS_FILTER_OPTIONS, CLASS_NAMES, RoleFilter, parseClassId, parseRoleFilter, realmSlug } from '../../game/wow';
+import { RoleFilterComponent } from '../../shared/role-filter.component';
 import { LEGION_SPECS, parseSpecName } from '../../game/wow-specs';
 import { injectReplaceUrl } from '../../core/url-state';
 import { LoadStateComponent } from '../../shared/load-state.component';
@@ -89,6 +89,7 @@ const TOP_OVERALL = 100;
     MythicPlusPlayersListComponent,
     MythicPlusWeekAffixesComponent,
     FilterDropdownComponent,
+    RoleFilterComponent,
     MobileFilterToggleComponent,
     GlideDirective,
     DecimalPipe,
@@ -122,15 +123,12 @@ export class MythicPlusGuildPageComponent implements OnInit {
   private readonly query = this.route.snapshot.queryParamMap;
   readonly period = signal<LadderPeriod>(this.query.get('period') === 'week' ? 'week' : 'season');
   readonly selectedDungeonId = signal<string | undefined>(this.query.get('dungeon') ?? undefined);
-  readonly roleFilter = signal<Role | undefined>(parseRole(this.query.get('role')));
+  readonly roleFilter = signal<RoleFilter | undefined>(parseRoleFilter(this.query.get('role')));
   readonly classFilter = signal<number | undefined>(this.roleFilter() ? undefined : parseClassId(this.query.get('class')));
   readonly specFilter = signal<string | undefined>(parseSpecName(this.classFilter(), this.query.get('spec')));
   readonly search = signal('');
   private readonly highlightParam = signal(parseCharacterParam(this.query.get('character')));
   private readonly limit = signal(this.pageSize());
-
-  readonly roles: readonly Role[] = ['tank', 'healer', 'dps'];
-  readonly roleLabels = ROLE_LABELS;
 
   readonly classOptions = CLASS_FILTER_OPTIONS;
 
@@ -213,13 +211,7 @@ export class MythicPlusGuildPageComponent implements OnInit {
     const dungeon = this.selectedDungeon();
     const runs = this.allRuns().filter(run =>
       (!dungeon || run.dungeon === dungeon.id) && (since === undefined || Date.parse(run.completedAt) >= since));
-    const role = this.roleFilter();
-    const classId = this.classFilter();
-    const spec = this.specFilter();
-    const include = role === undefined && classId === undefined
-      ? undefined
-      : (member: MythicPlusMember) => (role === undefined || member.role === role)
-        && (classId === undefined || (member.class === classId && (spec === undefined || member.spec === spec)));
+    const include = memberFilter({ classId: this.classFilter(), spec: this.specFilter(), role: this.roleFilter() });
     return rankPlayers(runs, include);
   });
 
@@ -355,7 +347,7 @@ export class MythicPlusGuildPageComponent implements OnInit {
 
     const classId = this.classFilter();
     const role = this.roleFilter();
-    const who = role ? (role === 'dps' ? 'DPS player' : role)
+    const who = role ? rolePlayerNoun(role)
       : classId === undefined ? 'member' : [this.specFilter(), CLASS_NAMES[classId]].filter(Boolean).join(' ');
     return `No ${who} of ${guild} has a run${where || ' yet'}.`;
   });
@@ -400,8 +392,8 @@ export class MythicPlusGuildPageComponent implements OnInit {
     this.resetRows();
   }
 
-  setRole(role: Role): void {
-    if (role === this.roleFilter()) {
+  setRole(role: RoleFilter | undefined): void {
+    if (!role || role === this.roleFilter()) {
       return;
     }
     this.roleFilter.set(role);

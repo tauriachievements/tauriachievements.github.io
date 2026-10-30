@@ -20,7 +20,6 @@ import {
 import { getArmoryUrl } from '../../game/armory';
 import { getClassIconPath } from '../../game/classIconHelper';
 import {
-  CombatRole,
   SortColumn,
   SortDirection,
   countClasses,
@@ -38,6 +37,9 @@ import {
 import { getRaceIconPath } from '../../game/raceIconHelper';
 import { ArtifactSpecTraits, artifactSpecTraits } from './guild-artifact-specs';
 import { FilterDropdownComponent } from '../../shared/filter-dropdown.component';
+import { RoleFilterComponent } from '../../shared/role-filter.component';
+import { ROLE_FILTER_LABELS, RoleFilter, parseRoleFilter } from '../../game/wow';
+import { injectReplaceUrl } from '../../core/url-state';
 import { FilterDropdownCoordinatorService } from '../../shared/filter-dropdown-coordinator.service';
 import { FilterDropdownOption, FilterDropdownValue } from '../../shared/filter-dropdown.types';
 import { getClassColor } from '../../game/class-colors';
@@ -52,6 +54,7 @@ const MOBILE_ROSTER_PAGE_SIZE = 25;
   selector: 'app-guild-analysis-page',
   imports: [
     FilterDropdownComponent,
+    RoleFilterComponent,
     MobileFilterToggleComponent,
     TapTooltipDirective,
     DecimalPipe
@@ -64,7 +67,9 @@ const MOBILE_ROSTER_PAGE_SIZE = 25;
 export class GuildAnalysisPageComponent {
   private activeLegendaryTooltip: HTMLElement | null = null;
 
-  private readonly routeData = inject(ActivatedRoute).snapshot.data;
+  private readonly route = inject(ActivatedRoute).snapshot;
+  private readonly routeData = this.route.data;
+  private readonly replaceUrl = injectReplaceUrl();
   private readonly guild = this.routeData['guild'] as GuildPage;
   private readonly loadedAnalysis = this.routeData['analysis'] as GuildAnalysis | null | undefined;
   private readonly analysis: GuildAnalysis = this.loadedAnalysis ?? { timestamp: '', players: [] };
@@ -94,20 +99,13 @@ export class GuildAnalysisPageComponent {
   readonly getClassIconPath = getClassIconPath;
   readonly selectedClassId = signal<number | null>(null);
   readonly selectedGuildRank = signal('');
-  readonly selectedCombatRole = signal<CombatRole | ''>('');
+  readonly selectedRole = signal<RoleFilter | undefined>(parseRoleFilter(this.route.queryParamMap.get('role')));
   readonly filtersOpen = signal(false);
   readonly classBreakdownOpen = signal(false);
   readonly guildRanks = guildRankNames(this.sourcePlayers, this.analysis.ranks ?? []);
   readonly guildRankFilterOptions: ReadonlyArray<FilterDropdownOption<string | undefined>> = [
     { value: undefined, label: 'All ranks' },
     ...this.guildRanks.map((rank) => ({ value: rank, label: rank }))
-  ];
-  readonly combatRoleFilterOptions: ReadonlyArray<FilterDropdownOption<string | undefined>> = [
-    { value: undefined, label: 'All combat roles' },
-    { value: 'Tank', label: 'Tank' },
-    { value: 'Heal', label: 'Heal' },
-    { value: 'Ranged', label: 'Ranged' },
-    { value: 'Melee', label: 'Melee' }
   ];
 
   readonly classCounts = countClasses(this.sourcePlayers);
@@ -158,8 +156,9 @@ export class GuildAnalysisPageComponent {
     if (classEntry) {
       labels.push(classEntry.name);
     }
-    if (this.selectedCombatRole()) {
-      labels.push(this.selectedCombatRole());
+    const role = this.selectedRole();
+    if (role) {
+      labels.push(ROLE_FILTER_LABELS[role]);
     }
     return labels;
   }
@@ -283,22 +282,20 @@ export class GuildAnalysisPageComponent {
     this.applySort();
   }
 
-  selectCombatRole(role: FilterDropdownValue): void {
-    this.selectedCombatRole.set(
-      role === 'Tank' || role === 'Heal' || role === 'Ranged' || role === 'Melee'
-        ? role
-        : ''
-    );
+  selectRole(role: RoleFilter | undefined): void {
+    this.selectedRole.set(role);
     this.applySort();
+    this.writeUrl();
   }
 
   resetFilters(): void {
     this.selectedClassId.set(null);
     this.selectedGuildRank.set('');
-    this.selectedCombatRole.set('');
+    this.selectedRole.set(undefined);
     this.sortColumn.set('artifactTraits');
     this.sortDirection.set('desc');
     this.applySort();
+    this.writeUrl();
   }
 
   showMorePlayers(): void {
@@ -313,10 +310,14 @@ export class GuildAnalysisPageComponent {
     this.mobileRosterLimit.set(MOBILE_ROSTER_PAGE_SIZE);
     this.players.set(rosterRows(
       this.sourcePlayers,
-      { classId: this.selectedClassId(), guildRank: this.selectedGuildRank(), combatRole: this.selectedCombatRole() },
+      { classId: this.selectedClassId(), guildRank: this.selectedGuildRank(), role: this.selectedRole() },
       this.sortColumn(),
       this.sortDirection(),
       this.guildRankOrderByName
     ));
+  }
+
+  private writeUrl(): void {
+    this.replaceUrl({ role: this.selectedRole() ?? null });
   }
 }

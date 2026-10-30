@@ -1,8 +1,6 @@
 import { formatClock } from '../../shared/time-format';
-import { parseRole, realmSlug, Role } from '../../game/wow';
+import { parseRoleFilter, realmSlug, Role, RoleFilter } from '../../game/wow';
 import { RaidBoss, RaidGuild, RaidKill, RaidCharacter } from './raid-logs.types';
-
-export type RoleFilter = Role | 'all';
 
 export const FACTION_NAMES: Readonly<Record<number, string>> = { 0: 'Alliance', 1: 'Horde' };
 
@@ -43,8 +41,25 @@ export function spellUrl(spellId: number): string {
   return `https://legion-shoot.tauri.hu/?spell=${spellId}`;
 }
 
-export function parseRoleFilter(value: string | null | undefined): RoleFilter {
-  return parseRole(value) ?? 'all';
+export type BossTab = 'dps' | 'hps' | 'fastest' | 'latest';
+
+const BOSS_TABS: readonly BossTab[] = ['dps', 'hps', 'fastest', 'latest'];
+
+export const BOSS_DAMAGE_ROLES: readonly RoleFilter[] = ['tank', 'dps', 'melee', 'ranged'];
+
+export interface BossView {
+  tab: BossTab;
+  role?: RoleFilter;
+}
+
+export function parseBossView(tab: string | null, role: string | null): BossView {
+  if (tab === 'ranged' || tab === 'melee') {
+    return { tab: 'dps', role: tab };
+  }
+
+  const parsedTab = BOSS_TABS.find(entry => entry === tab) ?? 'dps';
+  const parsedRole = parseRoleFilter(role);
+  return { tab: parsedTab, role: parsedTab === 'dps' && parsedRole && BOSS_DAMAGE_ROLES.includes(parsedRole) ? parsedRole : undefined };
 }
 
 export function raidLogLink(kill: Pick<RaidKill, 'realm' | 'logId'>): Array<string | number> {

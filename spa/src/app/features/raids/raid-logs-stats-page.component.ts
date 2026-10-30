@@ -4,11 +4,11 @@ import { ParamMap } from '@angular/router';
 import { RaceBySpecComponent } from '../../shared/spec-charts/race-by-spec.component';
 import { RaceSample } from '../../shared/spec-charts/race-popularity';
 import { RaidDifficulty, RaidKillDetails, RaidLogsIndex } from './raid-logs.types';
-import { RoleFilter, parseRoleFilter } from './raid-display';
 import { defaultDifficulty } from './raid-logs';
 import { ChartView, RaidSpecPopularityChartComponent, parseChartView } from './raid-spec-popularity-chart.component';
 import { RaidLogsDataService } from './raid-logs-data.service';
-import { Role } from '../../game/wow';
+import { Role, RoleFilter, parseRoleFilter } from '../../game/wow';
+import { FilterDropdownCoordinatorService } from '../../shared/filter-dropdown-coordinator.service';
 import { injectQueryParamMap, injectReplaceUrl } from '../../core/url-state';
 import { LoadStateComponent } from '../../shared/load-state.component';
 import { setPageHeader } from '../../core/page-header';
@@ -18,6 +18,7 @@ import { setPageHeader } from '../../core/page-header';
   imports: [RaidSpecPopularityChartComponent, RaceBySpecComponent, LoadStateComponent],
   templateUrl: './raid-logs-stats-page.component.html',
   styleUrl: './raid-logs-stats-page.component.scss',
+  providers: [FilterDropdownCoordinatorService],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class RaidLogsStatsPageComponent implements OnInit {
@@ -46,7 +47,7 @@ export class RaidLogsStatsPageComponent implements OnInit {
 
   private readonly requestedDifficulty = signal(this.data.lastDifficulty());
   readonly chartView = signal<ChartView>('popularity');
-  readonly chartRole = signal<RoleFilter>('all');
+  readonly chartRole = signal<RoleFilter | undefined>(undefined);
 
   readonly difficulty = computed(() => {
     const difficulties = this.index()?.difficulties ?? [];
@@ -108,7 +109,7 @@ export class RaidLogsStatsPageComponent implements OnInit {
     this.writeUrl();
   }
 
-  setChartRole(role: RoleFilter): void {
+  setChartRole(role: RoleFilter | undefined): void {
     this.chartRole.set(role);
     this.writeUrl();
   }
@@ -172,7 +173,7 @@ export class RaidLogsStatsPageComponent implements OnInit {
     this.replaceUrl({
       difficulty: this.difficulty()?.slug ?? null,
       view: this.chartView() === 'popularity' ? null : this.chartView(),
-      role: this.chartRole() === 'all' ? null : this.chartRole()
+      role: this.chartRole() ?? null
     });
   }
 }

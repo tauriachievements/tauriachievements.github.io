@@ -3,6 +3,8 @@ import { describe, expect, it } from 'vitest';
 import { MAX_SCORE } from './raid-scores';
 import { RaidBoss, RaidDifficulty, RaidKillDetails, RaidMember, RaidSpec } from './raid-logs.types';
 import { RaidSpecPopularityChartComponent, parseChartView } from './raid-spec-popularity-chart.component';
+import { RoleFilter } from '../../game/wow';
+import { FilterDropdownCoordinatorService } from '../../shared/filter-dropdown-coordinator.service';
 
 const DIFFICULTIES: RaidDifficulty[] = [
   { id: 14, slug: 'normal', name: 'Normal', shortName: 'N', kills: 2 },
@@ -11,8 +13,8 @@ const DIFFICULTIES: RaidDifficulty[] = [
 ];
 
 const RESTORATION: RaidSpec = { id: 105, classId: 11, name: 'Restoration', role: 'healer' };
-const FIRE: RaidSpec = { id: 63, classId: 8, name: 'Fire', role: 'dps' };
-const FROST: RaidSpec = { id: 64, classId: 8, name: 'Frost', role: 'dps' };
+const FIRE: RaidSpec = { id: 63, classId: 8, name: 'Fire', role: 'dps', range: 'ranged' };
+const FROST: RaidSpec = { id: 64, classId: 8, name: 'Frost', role: 'dps', range: 'ranged' };
 const BOSS: RaidBoss = { id: 1, slug: 'boss', name: 'Boss', shortName: 'Boss', index: 0, portrait: '' };
 
 function member(name: string, spec: RaidSpec, dps = 0): RaidMember {
@@ -53,7 +55,7 @@ function kill(logId: number, members: RaidMember[]): RaidKillDetails {
 
 describe('RaidSpecPopularityChartComponent', () => {
   it('counts one player slot for every member appearance in a raid kill', async () => {
-    await TestBed.configureTestingModule({ imports: [RaidSpecPopularityChartComponent] }).compileComponents();
+    await TestBed.configureTestingModule({ imports: [RaidSpecPopularityChartComponent], providers: [FilterDropdownCoordinatorService] }).compileComponents();
     const fixture = TestBed.createComponent(RaidSpecPopularityChartComponent);
     fixture.componentRef.setInput('difficulties', DIFFICULTIES);
     fixture.componentRef.setInput('selectedDifficulty', 'normal');
@@ -72,7 +74,7 @@ describe('RaidSpecPopularityChartComponent', () => {
   });
 
   it('offers Normal, HC and Mythic and emits the selected difficulty', async () => {
-    await TestBed.configureTestingModule({ imports: [RaidSpecPopularityChartComponent] }).compileComponents();
+    await TestBed.configureTestingModule({ imports: [RaidSpecPopularityChartComponent], providers: [FilterDropdownCoordinatorService] }).compileComponents();
     const fixture = TestBed.createComponent(RaidSpecPopularityChartComponent);
     fixture.componentRef.setInput('difficulties', DIFFICULTIES);
     fixture.componentRef.setInput('selectedDifficulty', 'normal');
@@ -89,7 +91,7 @@ describe('RaidSpecPopularityChartComponent', () => {
   });
 
   it('filters player slots by role', async () => {
-    await TestBed.configureTestingModule({ imports: [RaidSpecPopularityChartComponent] }).compileComponents();
+    await TestBed.configureTestingModule({ imports: [RaidSpecPopularityChartComponent], providers: [FilterDropdownCoordinatorService] }).compileComponents();
     const fixture = TestBed.createComponent(RaidSpecPopularityChartComponent);
     fixture.componentRef.setInput('difficulties', DIFFICULTIES);
     fixture.componentRef.setInput('selectedDifficulty', 'normal');
@@ -109,10 +111,17 @@ describe('RaidSpecPopularityChartComponent', () => {
 
     chart.role.set('dps');
     expect(chart.popularity().total).toBe(1);
+
+    chart.role.set('ranged');
+    expect(chart.popularity().total).toBe(1);
+    expect(chart.subtitle()).toContain('Ranged DPS');
+
+    chart.role.set('melee');
+    expect(chart.popularity().total).toBe(0);
   });
 
   it('switches to Performance, which ranks specs by their leaderboard scores', async () => {
-    await TestBed.configureTestingModule({ imports: [RaidSpecPopularityChartComponent] }).compileComponents();
+    await TestBed.configureTestingModule({ imports: [RaidSpecPopularityChartComponent], providers: [FilterDropdownCoordinatorService] }).compileComponents();
     const fixture = TestBed.createComponent(RaidSpecPopularityChartComponent);
     fixture.componentRef.setInput('difficulties', DIFFICULTIES);
     fixture.componentRef.setInput('selectedDifficulty', 'normal');
@@ -148,7 +157,7 @@ describe('RaidSpecPopularityChartComponent', () => {
   });
 
   it('opens on the view and role it is given, and reports a click on either', async () => {
-    await TestBed.configureTestingModule({ imports: [RaidSpecPopularityChartComponent] }).compileComponents();
+    await TestBed.configureTestingModule({ imports: [RaidSpecPopularityChartComponent], providers: [FilterDropdownCoordinatorService] }).compileComponents();
     const fixture = TestBed.createComponent(RaidSpecPopularityChartComponent);
     fixture.componentRef.setInput('difficulties', DIFFICULTIES);
     fixture.componentRef.setInput('selectedDifficulty', 'mythic');
@@ -156,19 +165,21 @@ describe('RaidSpecPopularityChartComponent', () => {
     fixture.componentRef.setInput('view', 'performance');
     fixture.componentRef.setInput('role', 'healer');
     const views: string[] = [];
-    const roles: string[] = [];
+    const roles: Array<RoleFilter | undefined> = [];
     fixture.componentInstance.view.subscribe(view => views.push(view));
     fixture.componentInstance.role.subscribe(role => roles.push(role));
     fixture.detectChanges();
     const element = fixture.nativeElement as HTMLElement;
 
     const active = [...element.querySelectorAll('.segmented button.active')].map(button => button.textContent?.trim());
-    expect(active).toEqual(['Performance', 'Mythic', 'Healer']);
+    expect(active).toEqual(['Performance', 'Mythic']);
+    expect(element.querySelector('.role-slot .trigger-current')?.textContent?.trim()).toBe('Healer');
 
     element.querySelector<HTMLButtonElement>('.view-filter button')!.click();
-    [...element.querySelectorAll<HTMLButtonElement>('.role-filter button')].at(-1)!.click();
+    [...element.querySelectorAll<HTMLButtonElement>('.role-slot .dropdown-option')]
+      .find(option => option.textContent?.trim() === 'Ranged DPS')!.click();
     expect(views).toEqual(['popularity']);
-    expect(roles).toEqual(['dps']);
+    expect(roles).toEqual(['ranged']);
   });
 });
 

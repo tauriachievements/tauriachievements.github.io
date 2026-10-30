@@ -1,5 +1,5 @@
 import { getClassColor } from '../../game/class-colors';
-import { CLASS_NAMES, Role } from '../../game/wow';
+import { CLASS_NAMES, DamageRange, Role, RoleFilter, matchesRoleFilter } from '../../game/wow';
 import { LEGION_SPECS, SpecDefinition, specFor } from '../../game/wow-specs';
 
 const specKey = (classId: number, spec: string): string => `${classId}:${spec}`;
@@ -10,10 +10,11 @@ interface PopularityMember {
   class: number;
   spec: string;
   role: Role;
+  range?: DamageRange;
 }
 
 export interface SpecPopularityOptions {
-  role?: Role;
+  role?: RoleFilter;
   uniqueCharacters?: boolean;
 }
 
@@ -48,7 +49,7 @@ export function specPopularity(
 
   for (const run of runs) {
     for (const member of run.roster) {
-      if (options.role && member.role !== options.role) {
+      if (!matchesRoleFilter(member, options.role)) {
         continue;
       }
 
@@ -65,14 +66,14 @@ export function specPopularity(
       total++;
 
       if (!specFor(member.class, member.spec) && !unlistedSpecs.has(key)) {
-        unlistedSpecs.set(key, { classId: member.class, spec: member.spec, role: member.role });
+        unlistedSpecs.set(key, { classId: member.class, spec: member.spec, role: member.role, range: member.range });
       }
     }
   }
 
   const groups = new Map<number, ClassShare>();
   for (const definition of [...LEGION_SPECS, ...unlistedSpecs.values()]) {
-    if (options.role && definition.role !== options.role) {
+    if (!matchesRoleFilter(definition, options.role)) {
       continue;
     }
 

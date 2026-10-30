@@ -239,23 +239,6 @@ a.summary-note {
   }
 }
 
-.role-switch button { display: inline-flex; align-items: center; gap: 6px; }
-
-.role-icon {
-  display: grid;
-  place-items: center;
-  width: 18px;
-  height: 18px;
-  border: 1px solid #555;
-  border-radius: 50%;
-  background: #0c0c0c;
-
-  svg { width: 10px; height: 10px; fill: currentColor; }
-  &.tank { color: #6ea8ff; }
-  &.healer { color: #3ecf5e; }
-  &.dps { color: #e5484d; }
-}
-
 .ladder-filters {
   display: flex;
   flex-wrap: wrap;
@@ -391,9 +374,8 @@ a.summary-note {
     .dungeon-tile-all { width: 30px; height: 30px; }
   }
 
-  .toolbar .view-switch, .role-switch { flex: 1 1 100%; }
-  .toolbar .view-switch button, .role-switch button { flex: 1 1 0; }
-  .role-switch button { justify-content: center; }
+  .toolbar .view-switch { flex: 1 1 100%; }
+  .toolbar .view-switch button { flex: 1 1 0; }
 
   .player-search { flex: 1 1 0; min-width: 140px; margin-left: 0; order: -1; }
   .player-search input { width: 100%; }

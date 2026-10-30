@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
+import { RoleFilter } from '../../game/wow';
 import { GuildAnalysisPlayer } from './guild-analysis';
 import {
   RosterFilters,
-  combatRole,
   countClasses,
   defaultSortDirection,
   guildRankNames,
@@ -30,7 +30,7 @@ function player(name: string, overrides: Partial<GuildAnalysisPlayer> = {}): Gui
   };
 }
 
-const allPlayers: RosterFilters = { classId: null, guildRank: '', combatRole: '' };
+const allPlayers: RosterFilters = { classId: null, guildRank: '' };
 
 describe('sorting choices', () => {
   it('knows the sortable columns and sorts names and ranks A to Z, numbers high to low', () => {
@@ -73,16 +73,6 @@ describe('guildRankNames', () => {
   });
 });
 
-describe('combatRole', () => {
-  it('reads the role from the class and specialization', () => {
-    expect(combatRole(player('A', { class: 11, specialization: 'Balance' }))).toBe('Ranged');
-    expect(combatRole(player('B', { class: 10, specialization: 'Mistweaver' }))).toBe('Heal');
-    expect(combatRole(player('C', { class: 6, specialization: 'Blood' }))).toBe('Tank');
-    expect(combatRole(player('D', { class: 3, specialization: 'Survival' }))).toBe('Melee');
-    expect(combatRole(player('E', { class: 8, specialization: ' ' }))).toBeUndefined();
-  });
-});
-
 describe('rosterRows', () => {
   const roster = [
     player('Bob', { class: 8, specialization: 'Fire', artifactTraits: 40, guildRankName: 'Raider', artifactKnowledge: null }),
@@ -98,10 +88,27 @@ describe('rosterRows', () => {
     expect(names(rosterRows(roster, allPlayers, 'guildRankName', 'asc', order))).toEqual(['Ann', 'Bob', 'Cid']);
   });
 
-  it('filters by class, rank ignoring case, and combat role', () => {
+  it('filters by class, rank ignoring case, and role', () => {
     expect(names(rosterRows(roster, { ...allPlayers, classId: 8 }, 'name', 'asc', order))).toEqual(['Bob', 'Cid']);
     expect(names(rosterRows(roster, { ...allPlayers, guildRank: 'RAIDER' }, 'name', 'asc', order))).toEqual(['Bob', 'Cid']);
-    expect(names(rosterRows(roster, { ...allPlayers, combatRole: 'Tank' }, 'name', 'asc', order))).toEqual(['Ann']);
+    expect(names(rosterRows(roster, { ...allPlayers, role: 'tank' }, 'name', 'asc', order))).toEqual(['Ann']);
+  });
+
+  it('reads the role from the class and specialization, melee or ranged for a damage spec', () => {
+    const mixed = [
+      player('Bal', { class: 11, specialization: 'Balance' }),
+      player('Mist', { class: 10, specialization: 'Mistweaver' }),
+      player('Blood', { class: 6, specialization: 'Blood' }),
+      player('Surv', { class: 3, specialization: 'Survival ' }),
+      player('None', { class: 8, specialization: ' ' })
+    ];
+    const byRole = (role: RoleFilter) => names(rosterRows(mixed, { ...allPlayers, role }, 'name', 'asc', order));
+
+    expect(byRole('ranged')).toEqual(['Bal']);
+    expect(byRole('melee')).toEqual(['Surv']);
+    expect(byRole('dps')).toEqual(['Bal', 'Surv']);
+    expect(byRole('healer')).toEqual(['Mist']);
+    expect(byRole('tank')).toEqual(['Blood']);
   });
 });
 

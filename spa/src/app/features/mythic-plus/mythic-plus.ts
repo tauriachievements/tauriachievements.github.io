@@ -1,4 +1,5 @@
-import { Role } from '../../game/wow';
+import { DamageRange, Role } from '../../game/wow';
+import { specFor } from '../../game/wow-specs';
 import { formatClock } from '../../shared/time-format';
 
 export interface MythicPlusSeason {
@@ -36,6 +37,7 @@ export interface MythicPlusMember {
   gender: number;
   spec: string;
   role: Role;
+  range?: DamageRange;
 }
 
 export interface MythicPlusRun {
@@ -130,7 +132,10 @@ export function createRunDecoder(
       }
 
       const [name, realm, guild, classId, race, gender] = player;
-      decoded = { name, realm, guild: guild || undefined, class: classId, race, gender, spec: spec.name, role: spec.role };
+      decoded = {
+        name, realm, guild: guild || undefined, class: classId, race, gender,
+        spec: spec.name, role: spec.role, range: specFor(spec.class, spec.name)?.range
+      };
       members.set(key, decoded);
     }
 
