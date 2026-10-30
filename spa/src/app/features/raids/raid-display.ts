@@ -1,6 +1,8 @@
 import { formatClock } from '../../shared/time-format';
+import { SearchSuggestion, foldName } from '../../shared/search-suggestions';
 import { parseRoleFilter, realmSlug, Role, RoleFilter } from '../../game/wow';
 import { RaidBoss, RaidGuild, RaidKill, RaidCharacter } from './raid-logs.types';
+import { RankedGuild } from './raid-progression';
 
 export const FACTION_NAMES: Readonly<Record<number, string>> = { 0: 'Alliance', 1: 'Horde' };
 
@@ -8,6 +10,8 @@ export const FACTION_FILTERS: ReadonlyArray<{ slug: string; id: number; label: s
   { slug: 'horde', id: 1, label: 'Horde' },
   { slug: 'alliance', id: 0, label: 'Alliance' }
 ];
+
+export const FACTION_COLORS: Readonly<Record<number, string>> = { 0: '#3b78d8', 1: '#c8322e' };
 
 
 export const ROLE_NAMES: Readonly<Record<Role, string>> = { tank: 'Tank', healer: 'Healer', dps: 'Damage' };
@@ -74,6 +78,20 @@ export function raidGuildLink(guild: Pick<RaidGuild, 'name' | 'realm'>): string[
   return ['/raid-logs', 'guild', realmSlug(guild.realm), guild.name];
 }
 
+export function guildSuggestion(row: RankedGuild, difficulty: string): SearchSuggestion {
+  return {
+    key: row.key,
+    link: raidGuildLink(row.guild),
+    queryParams: { difficulty },
+    name: row.guild.name,
+    mark: FACTION_COLORS[row.faction],
+    detail: row.realm,
+    rank: row.rank,
+    value: `${row.killed}/${row.firsts.length}`,
+    valueColor: DIFFICULTY_COLORS[difficulty]
+  };
+}
+
 export function raidCharacterLink(character: Pick<RaidCharacter, 'name' | 'realm'>): string[] {
   return ['/raid-logs', 'character', realmSlug(character.realm), character.name];
 }
@@ -125,12 +143,8 @@ export function formatAgo(at: number, now: number): string {
 }
 
 export function nameMatches(name: string, query: string): boolean {
-  const wanted = foldText(query.trim());
-  return !wanted || foldText(name).includes(wanted);
-}
-
-function foldText(value: string): string {
-  return value.normalize('NFD').replace(/\p{M}/gu, '').toLocaleLowerCase();
+  const wanted = foldName(query.trim());
+  return !wanted || foldName(name).includes(wanted);
 }
 
 export const RAID_PAGE_SIZE = 50;

@@ -1,3 +1,4 @@
+import { formatNumber } from '@angular/common';
 import { AffixWeekSpan, countTicks, dungeonTimers, isTimed, localDay, weekIndexAt } from './mythic-plus-activity';
 import {
   MythicPlusAffix,
@@ -7,7 +8,6 @@ import {
   MythicPlusRun,
   PlayerScore,
   characterKey,
-  foldName,
   foldedMemberName,
   hasScanChanges,
   isBetterRun,
@@ -15,6 +15,7 @@ import {
 } from './mythic-plus';
 import { MemberView, toMemberView } from './mythic-plus-views';
 import { realmSlug } from '../../game/wow';
+import { SearchSuggestion, searchByName } from '../../shared/search-suggestions';
 
 type Character = Pick<MythicPlusMember, 'name' | 'realm'>;
 
@@ -54,32 +55,26 @@ export function searchCharacters(
   query: string,
   { limit, exclude = [] }: { limit: number; exclude?: readonly string[] }
 ): CharacterLink[] {
-  const needle = foldName(query.trim());
-  if (!needle) {
-    return [];
-  }
-
   const excluded = new Set(exclude);
-  const starts: PlayerScore[] = [];
-  const contains: PlayerScore[] = [];
-  for (const player of ranking) {
-    if (starts.length >= limit) {
-      break;
-    }
-
-    const at = excluded.has(player.key) ? -1 : foldedMemberName(player.member).indexOf(needle);
-    if (at === 0) {
-      starts.push(player);
-    } else if (at > 0 && contains.length < limit) {
-      contains.push(player);
-    }
-  }
-
-  return [...starts, ...contains].slice(0, limit).map(toCharacterLink);
+  return searchByName(ranking, query, limit, player => excluded.has(player.key) ? undefined : foldedMemberName(player.member))
+    .map(toCharacterLink);
 }
 
 export function toCharacterLink(player: PlayerScore): CharacterLink {
   return { key: player.key, member: toMemberView(player.member), score: player.score };
+}
+
+export function characterSuggestion({ key, member, score }: CharacterLink, locale: string): SearchSuggestion {
+  return {
+    key,
+    link: member.profileLink,
+    name: member.name,
+    color: member.color,
+    icon: member.classIcon,
+    iconLabel: member.className,
+    detail: member.realm,
+    value: formatNumber(score, locale, '1.1-1')
+  };
 }
 
 export interface ScopeRank {

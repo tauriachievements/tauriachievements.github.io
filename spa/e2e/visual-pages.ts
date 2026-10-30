@@ -97,6 +97,16 @@ export const VISUAL_PAGES: readonly VisualPage[] = [
     path: '/mythic-plus/character/evermoon/Pashao',
     fill: { selector: 'app-mythic-plus-character-search input', value: 'zzqx' }
   },
+  {
+    name: 'state-raid-logs-guilds-search',
+    path: '/raid-logs/guilds',
+    fill: { selector: '.guild-search input', value: 'm' }
+  },
+  {
+    name: 'state-raid-logs-guilds-search-none',
+    path: '/raid-logs/guilds',
+    fill: { selector: '.guild-search input', value: 'zzqx' }
+  },
   { name: 'state-battleground-starts', path: '/battleground', clicks: ['.bg-count-row >> nth=0'] },
   { name: 'state-rated-battleground-history', path: '/rated-battleground', clicks: ['.player-history-trigger >> nth=0'] },
   { name: 'state-arena-min-games', path: '/arena?bracket=3v3&games=30', wide: true },

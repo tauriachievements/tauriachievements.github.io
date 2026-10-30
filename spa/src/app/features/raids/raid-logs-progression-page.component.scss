@@ -23,7 +23,7 @@
   button { justify-content: center; white-space: nowrap; }
 }
 
-.groups-switch { margin-left: auto; }
+.guild-search { --search-suggestions-width: 360px; flex: 1 1 160px; }
 
 .guild-name { display: inline-flex; align-items: center; gap: 8px; }
 tr.cleared:not(.pickup) .guild-name .strong { color: $gold; }
@@ -56,10 +56,11 @@ tr.pickup .guild-name { vertical-align: middle; }
   .filters app-raid-difficulty-switch { flex-basis: 100%; }
   .filter-group { display: flex; width: 100%; }
   .groups-switch,
-  .period-switch { flex: 1 1 auto; margin-left: 0; }
+  .period-switch { flex: 1 1 auto; }
   .groups-switch button,
   .period-switch button { flex: 1 1 0; }
   .filter-slot { min-width: 0; flex: 1 1 0; }
+  .guild-search { --search-suggestions-width: 0px; flex-basis: 100%; }
   .filter-reset:disabled { display: none; }
   .pips { display: none; }
   .progress { flex-wrap: wrap; gap: 3px 6px; }

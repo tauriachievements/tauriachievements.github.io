@@ -7,6 +7,7 @@ import {
   guildProgression,
   pickupGroups,
   progressionChanges,
+  searchGuilds,
   speedRank
 } from './raid-progression';
 import { RaidCharacter, RaidGuild, RaidKill, RaidKillDetails } from './raid-logs.types';
@@ -152,6 +153,49 @@ describe('filterProgression', () => {
     expect(shown({ faction: 1, realm: 'wod' })).toEqual(['1 D']);
     expect(shown({ faction: 0, realm: 'wod' })).toEqual([]);
     expect(rows.map(row => row.rank)).toEqual([1, 2, 3, 4, 5]);
+  });
+});
+
+describe('searchGuilds', () => {
+  const rows: GuildProgress[] = ['Miracle', '', 'Impact', 'Prime Impulse', 'Impaired', 'Cara Máxima'].map((name, position) => ({
+    rank: position + 1,
+    key: name ? `Evermoon/${name}` : `pickup/${position}`,
+    guild: name ? { name, realm: 'Evermoon', faction: 1, id: position } : undefined,
+    realm: 'Evermoon',
+    faction: 1,
+    firsts: [],
+    killed: 0,
+    progressedAt: 0,
+    kills: 1
+  }));
+  const found = (query: string, limit = 8) => searchGuilds(rows, query, limit).map(row => `${row.rank} ${row.guild.name}`);
+
+  it('lists the guilds whose name starts with the query before those that contain it, each in rank order', () => {
+    expect(found('imp')).toEqual(['3 Impact', '5 Impaired', '4 Prime Impulse']);
+  });
+
+  it('keeps the rank each guild has in the list it searches, pickup groups counted', () => {
+    expect(found('miracle')).toEqual(['1 Miracle']);
+    expect(found('cara')).toEqual(['6 Cara Máxima']);
+  });
+
+  it('leaves out the pickup groups, which have no name', () => {
+    expect(found('pickup')).toEqual([]);
+    expect(found('group')).toEqual([]);
+  });
+
+  it('ignores case, accents and the spaces around the query', () => {
+    expect(found(' MAXIMA ')).toEqual(['6 Cara Máxima']);
+    expect(found('máx')).toEqual(['6 Cara Máxima']);
+  });
+
+  it('stops at the limit, prefix matches first', () => {
+    expect(found('imp', 2)).toEqual(['3 Impact', '5 Impaired']);
+  });
+
+  it('finds nothing for a blank query or a name no guild has', () => {
+    expect(found('  ')).toEqual([]);
+    expect(found('zzqx')).toEqual([]);
   });
 });
 

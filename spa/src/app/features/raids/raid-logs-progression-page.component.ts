@@ -15,11 +15,12 @@ import {
   filterProgression,
   guildProgression,
   pickupGroups,
-  progressionChanges
+  progressionChanges,
+  searchGuilds
 } from './raid-progression';
 import { RaidBoss, RaidDifficulty, RaidKillDetails, RaidLogsIndex } from './raid-logs.types';
 import { bossesInKillOrder, defaultDifficulty, logKey, raidWeekStart } from './raid-logs';
-import { FACTION_FILTERS, RAID_PAGE_SIZE, raidGuildLink, raidLogLink } from './raid-display';
+import { FACTION_FILTERS, RAID_PAGE_SIZE, guildSuggestion, raidGuildLink, raidLogLink } from './raid-display';
 import { RaidLogsDataService } from './raid-logs-data.service';
 import { REALM_FILTER_OPTIONS, parseRealmSlug } from '../../game/wow';
 import { injectReplaceUrl, parsePage } from '../../core/url-state';
@@ -29,11 +30,13 @@ import { pageCount, pageSlice } from '../../shared/pager';
 import { SkeletonBlock } from '../../shared/skeleton';
 import { setPageHeader } from '../../core/page-header';
 import { GlideDirective } from '../../shared/motion/glide.directive';
+import { SearchSuggestionsComponent } from '../../shared/search-suggestions.component';
 
 type ProgressionPeriod = 'season' | 'week';
 type ProgressionGroups = 'guilds' | 'all';
 
 const ROWS_SKELETON: readonly SkeletonBlock[] = ['rows:15'];
+const GUILD_SUGGESTION_COUNT = 8;
 
 interface LoadedPickups {
   difficulty: RaidDifficulty;
@@ -42,7 +45,7 @@ interface LoadedPickups {
 
 @Component({
   selector: 'app-raid-logs-progression-page',
-  imports: [RouterLink, RaidDifficultySwitchComponent, RaidPickupIconComponent, FilterDropdownComponent, DatePipe, DecimalPipe, LoadStateComponent, GlideDirective, PagerComponent],
+  imports: [RouterLink, RaidDifficultySwitchComponent, RaidPickupIconComponent, FilterDropdownComponent, DatePipe, DecimalPipe, LoadStateComponent, GlideDirective, PagerComponent, SearchSuggestionsComponent],
   templateUrl: './raid-logs-progression-page.component.html',
   styleUrl: './raid-logs-progression-page.component.scss',
   providers: [FilterDropdownCoordinatorService],
@@ -141,6 +144,14 @@ export class RaidLogsProgressionPageComponent implements OnInit {
   readonly currentPage = computed(() => Math.min(this.page(), this.pages()));
   readonly pageRows = computed(() => pageSlice(this.shownProgression(), this.currentPage(), RAID_PAGE_SIZE));
   readonly rowNoun = computed(() => this.groups() === 'all' ? 'group' : 'guild');
+
+  readonly guildQuery = signal('');
+  readonly guildSuggestions = computed(() => {
+    const difficulty = this.difficulty();
+    return difficulty
+      ? searchGuilds(this.shownProgression(), this.guildQuery(), GUILD_SUGGESTION_COUNT).map(row => guildSuggestion(row, difficulty.slug))
+      : [];
+  });
 
   readonly allGroupsTitle = 'Also rank the pickup groups: the kills of one raid week that share at least half their players';
   readonly guildLink = raidGuildLink;
