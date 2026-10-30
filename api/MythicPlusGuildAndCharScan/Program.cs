@@ -63,7 +63,7 @@ internal static class Program
                 apiClient
             );
 
-            Console.WriteLine($"Reading Mythic+ leaderboards for {string.Join(", ", realms)}...");
+            Console.WriteLine("Reading the Mythic+ leaderboards...");
             var result = await scanner.ScanAsync(realms, cancellationTokenSource.Token);
 
             Console.WriteLine();
