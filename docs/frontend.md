@@ -59,6 +59,12 @@ style it was upscaled 4× with [Real-ESRGAN](https://github.com/xinntao/Real-ESR
 `realesrgan-x4plus-anime` model, given 10% more contrast and 25% more colour, then resized like
 the rest.
 
+`ap-chest-looters/maw-of-souls.webp` and `eye-of-azshara.webp` are the AP Chest Looters page's
+backdrops: the two dungeons' art at 1672 × 941, saved as WebP at quality 85 (about 110 and
+130 kB). A CSS background in a lazy page only starts downloading once the page renders, so the
+backdrop is as late as its file is large; keep it small. At the page's 3 px blur under its dark
+shade, the visual check finds no difference between quality 85 and a lossless copy.
+
 "Download Tier List Image", at the end of the Tier List page's difficulty row, saves the three
 lists as one PNG, laid out like the page: DPS across the top, Heal and Tank side by side below.
 The PNG is drawn on a `<canvas>` from the lists' data (`raid-tier-list-image.ts`: `imageLayout`
