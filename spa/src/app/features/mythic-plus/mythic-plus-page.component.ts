@@ -38,6 +38,7 @@ import {
   PlayerRow,
   RunRow,
   bestRunCells,
+  scoreGains,
   toMemberView,
   toRunView
 } from './mythic-plus-views';
@@ -317,11 +318,16 @@ export class MythicPlusPageComponent implements OnInit {
     const dungeons = this.playerDungeons();
     const showChanges = this.showStandingChanges();
     const changes = this.standingChanges();
-    const previousScan = this.index()?.previousGeneratedAt;
+    const changeOf = (key: string) => showChanges ? changes.get(key) : undefined;
+    const shown = pageSlice(this.filteredPlayers(), this.currentPage(), this.pageSize());
+    const gains = scoreGains(
+      this.dungeonRuns(),
+      shown.filter(({ player }) => (changeOf(player.key)?.score ?? 0) > 0).map(({ player }) => player.member),
+      this.index()?.previousGeneratedAt);
 
     const playerColor = this.playerColor();
-    return pageSlice(this.filteredPlayers(), this.currentPage(), this.pageSize()).map(({ player, rank }) => {
-      const change = showChanges ? changes.get(player.key) : undefined;
+    return shown.map(({ player, rank }) => {
+      const change = changeOf(player.key);
       return {
         key: player.key,
         rank,
@@ -330,7 +336,7 @@ export class MythicPlusPageComponent implements OnInit {
         color: playerColor(player.score),
         change,
         newSinceLastScan: showChanges && !change,
-        bests: bestRunCells(player.bestRuns, dungeons, change && change.score > 0 ? previousScan : undefined)
+        bests: bestRunCells(player.bestRuns, dungeons, gains.get(player.key))
       };
     });
   });

@@ -106,9 +106,11 @@ describe('MythicPlusPageComponent data from two exports', () => {
     const raised = exportOf('eeeeeeeeeeee', [['Exkeito', 'Evermoon', '', 11, 4, 0]]);
     raised.index.previousGeneratedAt = '2026-10-06T09:00:00Z';
     raised.index.standings = [[196, 1, 4.5, 2]];
+    raised.cos.runs.push([17, 1500000, Date.parse('2026-10-05T11:00:00Z') / 1000, 180, [], [[0, 0]]]);
     const page = createPage(new FakeDataFiles(raised.index, raised));
 
     expect(page.pagedPlayers()[0].bests.map(best => best?.raisedScore)).toEqual([true]);
+    expect(page.pagedPlayers()[0].bests[0]?.previousBest).toEqual({ keyLevel: 17, timed: true, score: 180 });
 
     page.selectDungeon('cos');
     expect(page.pagedPlayers()[0].bests.map(best => best?.raisedScore)).toEqual([false]);

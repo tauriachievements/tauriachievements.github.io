@@ -196,6 +196,9 @@ decision: ask first.** When a rule does change, change its tests first and see t
 - **Keys that raised the score:** on a row whose score went up, each best key finished after
   the previous scan (`previousGeneratedAt`) shows green and bold (`bestRunCells` in
   `mythic-plus-views.ts`). A row without a score gain, a new character's included, marks none.
+  The key's tooltip names the best key it replaced: the character's best run in that dungeon
+  finished by the previous scan, or "first key in this dungeon". `scoreGains` finds those runs
+  only for the gaining rows the page shows, in one pass over the season's runs.
   The exporter stamps a scan when it has finished reading, so a key finished during the previous
   scan, after its dungeon was read, raises the score without being marked.
 - **Compare page** (`/mythic-plus/compare`): in each row the highest value is best (the lowest

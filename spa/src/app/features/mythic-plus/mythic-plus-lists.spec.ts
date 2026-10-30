@@ -291,7 +291,9 @@ describe('MythicPlusPlayersListComponent', () => {
     }
   });
 
-  it('marks the keys that raised the score in tables and cards, and says so to screen readers', () => {
+  it('marks the keys that raised the score in tables and cards, naming the best key each replaced', () => {
+    const thirdDungeon: MythicPlusDungeon = { ...dungeon, id: 'nl', shortName: 'NL', name: "Neltharion's Lair" };
+    const fourthDungeon: MythicPlusDungeon = { ...dungeon, id: 'dht', shortName: 'DHT', name: 'Darkheart Thicket' };
     for (const cards of [true, false]) {
       const fixture = TestBed.createComponent(MythicPlusPlayersListComponent);
       const row = playerRow('Alpha');
@@ -299,19 +301,30 @@ describe('MythicPlusPlayersListComponent', () => {
       fixture.componentRef.setInput('rows', [{
         ...row,
         change: { score: 12.3, rank: 4 },
-        bests: [{ ...best, keyLevel: 21, raisedScore: true }, { ...best, dungeon: otherDungeon, keyLevel: 18 }]
+        bests: [
+          { ...best, keyLevel: 21, raisedScore: true, previousBest: { keyLevel: 20, timed: true, score: 140.2 } },
+          { ...best, dungeon: otherDungeon, keyLevel: 18, raisedScore: true },
+          { ...best, dungeon: thirdDungeon, keyLevel: 17, raisedScore: true, previousBest: { keyLevel: 17, timed: false, score: 95 } },
+          { ...best, dungeon: fourthDungeon, keyLevel: 16 }
+        ]
       }]);
-      fixture.componentRef.setInput('dungeons', [dungeon, otherDungeon]);
+      fixture.componentRef.setInput('dungeons', [dungeon, otherDungeon, thirdDungeon, fourthDungeon]);
       fixture.componentRef.setInput('cards', cards);
       fixture.detectChanges();
 
       const raised: HTMLElement[] = [...fixture.nativeElement.querySelectorAll('.raised-score')];
-      expect(raised).toHaveLength(1);
+      const labels = [
+        'raised the score since the last scan, previous best +20 (140.2)',
+        'raised the score since the last scan, first key in this dungeon',
+        'raised the score since the last scan, previous best +17 over time (95.0)'
+      ];
+      expect(raised.map(node => node.getAttribute('title'))).toEqual(cards ? labels : [
+        `Black Rook Hold +21 · 150.0 · ${labels[0]}`,
+        `Court of Stars +18 · 150.0 · ${labels[1]}`,
+        `Neltharion's Lair +17 · 150.0 · ${labels[2]}`
+      ]);
       expect(raised[0].textContent).toContain('+21');
-      expect(raised[0].querySelector('.visually-hidden')?.textContent).toContain('raised the score since the last scan');
-      if (!cards) {
-        expect(raised[0].getAttribute('title')).toBe('Black Rook Hold +21 · 150.0 · raised the score since the last scan');
-      }
+      expect(raised[0].querySelector('.visually-hidden')?.textContent).toBe(`, ${labels[0]}`);
     }
   });
 

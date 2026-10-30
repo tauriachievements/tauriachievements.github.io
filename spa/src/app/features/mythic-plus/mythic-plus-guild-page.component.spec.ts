@@ -51,7 +51,8 @@ const runs: Record<string, MythicPlusRunEntry[]> = {
   ],
   dht: [
     [15, 1500000, unix('2026-10-14T18:00:00Z'), 150, [], [[1, 1], [2, 2]]],
-    [12, 1600000, unix('2026-10-13T18:00:00Z'), 120, [], [[0, 4], [4, 3]]]
+    [12, 1600000, unix('2026-10-13T18:00:00Z'), 120, [], [[0, 4], [4, 3]]],
+    [13, 1700000, unix('2026-10-09T18:00:00Z'), 130, [], [[1, 1]]]
   ]
 };
 
@@ -150,6 +151,7 @@ describe('MythicPlusGuildPageComponent', () => {
       ['Newbie', [undefined, false]]
     ]);
     expect(element.querySelectorAll('.player-row td.raised-score')).toHaveLength(1);
+    expect(page.rows()[0].bests[1]?.previousBest).toEqual({ keyLevel: 13, timed: true, score: 130 });
   });
 
   it('ranks one role, renumbering the guild and the overall ranks and hiding the movement', async () => {

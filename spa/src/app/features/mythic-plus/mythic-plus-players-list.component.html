@@ -77,7 +77,8 @@
                     <span
                       class="best-chip"
                       [class.over-time]="!best.timed"
-                      [class.raised-score]="best.raisedScore">{{ best.dungeon.shortName }} <b>+{{ best.keyLevel }}</b>@if (!best.timed) {<span class="visually-hidden"> over time</span>}@if (best.raisedScore) {<span class="visually-hidden">, {{ raisedScoreLabel }}</span>}</span>
+                      [class.raised-score]="best.raisedScore"
+                      [attr.title]="best.raisedScore ? raisedLabel(best) : null">{{ best.dungeon.shortName }} <b>+{{ best.keyLevel }}</b>@if (!best.timed) {<span class="visually-hidden"> over time</span>}@if (best.raisedScore) {<span class="visually-hidden">, {{ raisedLabel(best) }}</span>}</span>
                   }
                 </span>
               }
@@ -224,7 +225,11 @@
                   [class.over-time]="!best?.timed"
                   [class.raised-score]="best?.raisedScore"
                   [title]="bestTitle(best)">
-                  {{ best ? '+' + best.keyLevel : '–' }}@if (best?.raisedScore) {<span class="visually-hidden">, {{ raisedScoreLabel }}</span>}
+                  @if (best && best.raisedScore) {
+                    <span class="raised-key">+{{ best.keyLevel }}</span><span class="visually-hidden">, {{ raisedLabel(best) }}</span>
+                  } @else {
+                    {{ best ? '+' + best.keyLevel : '–' }}
+                  }
                 </td>
               }
             }
