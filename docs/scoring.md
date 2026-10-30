@@ -158,6 +158,8 @@ decision: ask first.** When a rule does change, change its tests first and see t
   flatters: to a tenth of a percent below 10%, to whole percents above (`mythic-plus-profile.ts`).
 - **Frequent teammates** (profile): most shared runs first, then the better best run
   together, then the name.
+- **Spec pills** (profile): "All" first, then each spec played, most runs first, then the
+  spec's name (`specsPlayed` in `mythic-plus-profile.ts`).
 - **"Timed"** is `isTimed` (`mythic-plus-activity.ts`) everywhere: the leaderboard, the stats
   page and the records agree on it.
 - **Weeks** (`currentAffixWeek` in `mythic-plus.ts`, `affixWeeks` in
@@ -179,7 +181,8 @@ decision: ask first.** When a rule does change, change its tests first and see t
 - **The scoring page** `/mythic-plus/scoring` explains all this with worked examples.
   `Score_MatchesTheScoringPageExamples` in `api/tests/AchievementLadder.Tests/MythicPlusExportServiceTests.cs`
   pins those examples, so change the page and the test together.
-- **Tests:** `MythicPlusExportServiceTests`, `mythic-plus.spec.ts`, `mythic-plus-activity.spec.ts`.
+- **Tests:** `MythicPlusExportServiceTests`, `mythic-plus.spec.ts`, `mythic-plus-activity.spec.ts`,
+  `mythic-plus-profile.spec.ts`.
 
 ## Mythic+ guild ladder
 

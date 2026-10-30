@@ -275,7 +275,7 @@ describe('frequentTeammates', () => {
 });
 
 describe('specsPlayed', () => {
-  it('puts the top run spec first, then the most played', () => {
+  it('puts the most played spec first, then the name on a tie', () => {
     const me = member('Progtrix');
     const runs = [
       run('nl', 100, [{ ...me, spec: 'Mistweaver', role: 'healer' }]),
@@ -284,10 +284,10 @@ describe('specsPlayed', () => {
       run('eoa', 180, [me])
     ];
 
-    expect(specsPlayed(runs, characterKey(me), 'Windwalker')).toEqual([
-      { class: 10, spec: 'Windwalker', runs: 1 },
+    expect(specsPlayed(runs, characterKey(me))).toEqual([
       { class: 10, spec: 'Mistweaver', runs: 2 },
-      { class: 10, spec: 'Brewmaster', runs: 1 }
+      { class: 10, spec: 'Brewmaster', runs: 1 },
+      { class: 10, spec: 'Windwalker', runs: 1 }
     ]);
   });
 });
