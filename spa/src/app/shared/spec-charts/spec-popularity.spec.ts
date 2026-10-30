@@ -1,9 +1,10 @@
 import { describe, it, expect } from 'vitest';
 import { formatShare, shareTicks, specPopularity } from './spec-popularity';
 import { Role } from '../../game/wow';
+import { specFor } from '../../game/wow-specs';
 
 const member = (name: string, classId: number, spec: string, role: Role) =>
-  ({ name, realm: 'Evermoon', class: classId, spec, role });
+  ({ name, realm: 'Evermoon', class: classId, spec, role, range: specFor(classId, spec)?.range });
 
 const runs = [
   {
@@ -79,6 +80,19 @@ describe('specPopularity', () => {
     expect(result.classes[0].className).toBe('Monk');
     expect(result.classes[0].specs.map(spec => spec.spec)).toEqual(['Brewmaster']);
     expect(result.classes[0].share).toBe(1);
+  });
+
+  it('limits the counts and the listed specs to the melee or the ranged damage specs', () => {
+    const melee = specPopularity(runs, { role: 'melee' });
+    const ranged = specPopularity(runs, { role: 'ranged' });
+
+    expect(melee.total).toBe(3);
+    expect(melee.classes.map(group => group.className)).toEqual([
+      'Demon Hunter', 'Monk', 'Warrior', 'Paladin', 'Hunter', 'Rogue', 'Death Knight', 'Shaman', 'Druid'
+    ]);
+    expect(melee.classes[1].specs.map(spec => spec.spec)).toEqual(['Windwalker']);
+    expect(ranged.total).toBe(3);
+    expect(ranged.classes[0].specs.map(spec => [spec.spec, spec.count])).toEqual([['Frost', 3], ['Arcane', 0], ['Fire', 0]]);
   });
 
   it('counts each character once per spec in unique mode', () => {

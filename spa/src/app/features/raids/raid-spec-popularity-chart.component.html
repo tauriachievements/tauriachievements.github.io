@@ -32,16 +32,8 @@
         }
       </div>
 
-      <div class="segmented role-filter" role="group" aria-label="Filter by role" appGlide>
-        @for (option of roleOptions; track option) {
-          <button
-            type="button"
-            [class.active]="role() === option.value"
-            [attr.aria-pressed]="role() === option.value"
-            (click)="role.set(option.value)">
-            {{ option.label }}
-          </button>
-        }
+      <div class="role-slot">
+        <app-role-filter dropdownId="raidSpecChartRole" [selected]="role()" (selectedChange)="role.set($event)" />
       </div>
     </div>
   </header>

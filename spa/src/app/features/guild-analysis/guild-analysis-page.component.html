@@ -54,14 +54,7 @@
       </div>
 
       <div class="combat-role-filter collapsible-filter">
-        <app-filter-dropdown
-          dropdownId="combat-role-dropdown"
-          triggerId="combat-role-filter"
-          ariaLabel="Filter by combat role"
-          [options]="combatRoleFilterOptions"
-          [selectedValue]="selectedCombatRole() || undefined"
-          [compact]="true"
-          (selectionChange)="selectCombatRole($event)" />
+        <app-role-filter dropdownId="guildRole" [selected]="selectedRole()" (selectedChange)="selectRole($event)" />
       </div>
 
       <button class="reset-filters collapsible-filter" type="button" (click)="resetFilters()">
@@ -235,7 +228,7 @@
               </td>
             </tr>
           }
-          @if (players().length === 0 && (selectedClassId() !== null || selectedGuildRank() || selectedCombatRole())) {
+          @if (players().length === 0 && (selectedClassId() !== null || selectedGuildRank() || selectedRole())) {
             <tr
               class="empty-roster"
               >

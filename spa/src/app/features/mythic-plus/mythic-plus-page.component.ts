@@ -13,7 +13,6 @@ import { injectCompactViewport } from '../../shared/compact-viewport';
 import { SkeletonBlock } from '../../shared/skeleton';
 import {
   MythicPlusAffix,
-  ROLE_LABELS,
   characterKey,
   currentAffixWeek,
   exportedAt,
@@ -64,7 +63,8 @@ import {
 import { getClassColor } from '../../game/class-colors';
 import { GlideDirective } from '../../shared/motion/glide.directive';
 import { characterTransitionName } from '../../shared/motion/motion';
-import { CLASS_FILTER_OPTIONS, CLASS_NAMES, parseClassId, parseRole, Role } from '../../game/wow';
+import { CLASS_FILTER_OPTIONS, CLASS_NAMES, RoleFilter, parseClassId, parseRoleFilter } from '../../game/wow';
+import { RoleFilterComponent } from '../../shared/role-filter.component';
 import { LEGION_SPECS, parseSpecName } from '../../game/wow-specs';
 import { injectReplaceUrl, parsePage } from '../../core/url-state';
 import { LoadStateComponent } from '../../shared/load-state.component';
@@ -97,6 +97,7 @@ interface CharacterFilter {
     MythicPlusRunsListComponent,
     MythicPlusPlayersListComponent,
     FilterDropdownComponent,
+    RoleFilterComponent,
     MobileFilterToggleComponent,
     GlideDirective,
     BottomBarDirective,
@@ -141,10 +142,9 @@ export class MythicPlusPageComponent implements OnInit {
   readonly classFilter = signal<number | undefined>(parseClassId(this.route.snapshot.queryParamMap.get('class')));
   readonly specFilter = signal<string | undefined>(
     parseSpecName(this.classFilter(), this.route.snapshot.queryParamMap.get('spec')));
-  readonly roleFilter = signal<Role | undefined>(
-    this.view() === 'players' ? parseRole(this.route.snapshot.queryParamMap.get('role')) : undefined);
-  readonly roles: readonly Role[] = ['tank', 'healer', 'dps'];
-  readonly roleLabels = ROLE_LABELS;
+  readonly roleFilter = signal<RoleFilter | undefined>(
+    this.view() === 'players' ? parseRoleFilter(this.route.snapshot.queryParamMap.get('role')) : undefined);
+  readonly chartRole = signal<RoleFilter | undefined>(parseRoleFilter(this.route.snapshot.queryParamMap.get('chartRole')));
   readonly period = signal<LeaderboardPeriod>(
     this.route.snapshot.queryParamMap.get('period') === 'week' ? 'week' : 'season');
 
@@ -515,13 +515,18 @@ export class MythicPlusPageComponent implements OnInit {
     this.syncQueryParams();
   }
 
-  setRole(role: Role): void {
-    if (role === this.roleFilter()) {
+  setRole(role: RoleFilter | undefined): void {
+    if (!role || role === this.roleFilter()) {
       return;
     }
 
     this.roleFilter.set(role);
     this.page.set(1);
+    this.syncQueryParams();
+  }
+
+  setChartRole(role: RoleFilter | undefined): void {
+    this.chartRole.set(role);
     this.syncQueryParams();
   }
 
@@ -572,6 +577,7 @@ export class MythicPlusPageComponent implements OnInit {
       class: players ? this.classFilter() ?? null : null,
       spec: players ? this.specFilter() ?? null : null,
       role: players ? this.roleFilter() ?? null : null,
+      chartRole: this.chartRole() ?? null,
       character: character ? characterParam(character) : null,
       page: this.currentPage() > 1 ? this.currentPage() : null,
       compare: this.compareMode() ? compareParam(this.picked()) || null : null

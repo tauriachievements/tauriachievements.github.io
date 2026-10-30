@@ -244,7 +244,7 @@ describe('createRunDecoder', () => {
       affixes: [8, 3, 10],
       roster: [
         { name: 'Pashao', realm: 'Evermoon', guild: 'Хранители Вечности', class: 12, race: 4, gender: 1, spec: 'Vengeance', role: 'tank' },
-        { name: 'Swag', realm: 'Tauri', guild: undefined, class: 3, race: 22, gender: 0, spec: 'Marksmanship', role: 'dps' }
+        { name: 'Swag', realm: 'Tauri', guild: undefined, class: 3, race: 22, gender: 0, spec: 'Marksmanship', role: 'dps', range: 'ranged' }
       ]
     });
   });

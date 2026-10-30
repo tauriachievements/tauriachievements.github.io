@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { RaidBoss, RaidCharacter, RaidDifficulty, RaidKillDetails, RaidMember, RaidSpec, RaidTalentTable } from './raid-logs.types';
-import { RoleFilter } from './raid-display';
+import { RoleFilter } from '../../game/wow';
 import {
   TalentSample,
   agreementLabel,
@@ -30,7 +30,7 @@ const nythendra = boss(0, 'nythendra');
 const ursoc = boss(1, 'ursoc');
 const heroic: RaidDifficulty = { id: 15, slug: 'heroic', name: 'Heroic', shortName: 'HC', kills: 1 };
 
-const fire: RaidSpec = { id: 63, classId: 8, name: 'Fire', role: 'dps' };
+const fire: RaidSpec = { id: 63, classId: 8, name: 'Fire', role: 'dps', range: 'ranged' };
 const holy: RaidSpec = { id: 65, classId: 2, name: 'Holy', role: 'healer' };
 
 const characters = new Map<string, RaidCharacter>();
@@ -256,19 +256,26 @@ describe('specTalentSummaries', () => {
 });
 
 describe('specsMatching', () => {
-  const retribution: RaidSpec = { id: 70, classId: 2, name: 'Retribution', role: 'dps' };
+  const retribution: RaidSpec = { id: 70, classId: 2, name: 'Retribution', role: 'dps', range: 'melee' };
   const specs = [fire, holy, retribution];
-  const names = (classId: number | undefined, role: RoleFilter) => specsMatching(specs, classId, role).map(spec => spec.name);
+  const names = (classId: number | undefined, role: RoleFilter | undefined) =>
+    specsMatching(specs, classId, role).map(spec => spec.name);
 
   it('keeps every spec without a class or a role', () => {
-    expect(names(undefined, 'all')).toEqual(['Fire', 'Holy', 'Retribution']);
+    expect(names(undefined, undefined)).toEqual(['Fire', 'Holy', 'Retribution']);
   });
 
   it('narrows by class, by role, and by both', () => {
-    expect(names(2, 'all')).toEqual(['Holy', 'Retribution']);
+    expect(names(2, undefined)).toEqual(['Holy', 'Retribution']);
     expect(names(undefined, 'dps')).toEqual(['Fire', 'Retribution']);
     expect(names(2, 'healer')).toEqual(['Holy']);
     expect(names(8, 'healer')).toEqual([]);
+  });
+
+  it('narrows to the melee or the ranged damage specs', () => {
+    expect(names(undefined, 'melee')).toEqual(['Retribution']);
+    expect(names(undefined, 'ranged')).toEqual(['Fire']);
+    expect(names(2, 'ranged')).toEqual([]);
   });
 });
 

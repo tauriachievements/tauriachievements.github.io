@@ -58,10 +58,28 @@ export function raceFaction(race: number): number | undefined {
   return ALLIANCE_RACES.has(race) ? 0 : HORDE_RACES.has(race) ? 1 : undefined;
 }
 
-export const ROLES: readonly Role[] = ['tank', 'healer', 'dps'];
+export type RoleFilter = Role | DamageRange;
 
-export function parseRole(value: string | null | undefined): Role | undefined {
-  return ROLES.find(role => role === value);
+export const ROLE_FILTERS: readonly RoleFilter[] = ['tank', 'healer', 'dps', 'melee', 'ranged'];
+
+export const ROLE_FILTER_LABELS: Readonly<Record<RoleFilter, string>> = {
+  tank: 'Tank', healer: 'Healer', dps: 'DPS', melee: 'Melee DPS', ranged: 'Ranged DPS'
+};
+
+export function parseRoleFilter(value: string | null | undefined): RoleFilter | undefined {
+  return ROLE_FILTERS.find(role => role === value);
+}
+
+export function matchesRoleFilter(subject: { role: Role; range?: DamageRange }, filter: RoleFilter | undefined): boolean {
+  if (filter === undefined) {
+    return true;
+  }
+
+  return filter === 'melee' || filter === 'ranged' ? subject.range === filter : subject.role === filter;
+}
+
+export function roleFiltersFor(specs: ReadonlyArray<{ role: Role; range?: DamageRange }>): RoleFilter[] {
+  return ROLE_FILTERS.filter(filter => specs.some(spec => matchesRoleFilter(spec, filter)));
 }
 
 export function parseClassId(value: string | null): number | undefined {

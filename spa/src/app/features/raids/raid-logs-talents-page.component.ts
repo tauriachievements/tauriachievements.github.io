@@ -7,7 +7,7 @@ import { getClassColor } from '../../game/class-colors';
 import { FilterDropdownComponent } from '../../shared/filter-dropdown.component';
 import { FilterDropdownCoordinatorService } from '../../shared/filter-dropdown-coordinator.service';
 import { FilterDropdownValue } from '../../shared/filter-dropdown.types';
-import { GlideDirective } from '../../shared/motion/glide.directive';
+import { RoleFilterComponent } from '../../shared/role-filter.component';
 import { IconTipsComponent } from '../../shared/icon-tips.component';
 import { RaidDifficultySwitchComponent } from './raid-difficulty-switch.component';
 import {
@@ -20,11 +20,9 @@ import {
   RaidTalentTooltips
 } from './raid-logs.types';
 import {
-  RoleFilter,
   formatPerSecond,
   iconSrcset,
   itemIconUrl,
-  parseRoleFilter,
   raidCharacterLink,
   raidLogLink,
   spellUrl
@@ -60,7 +58,16 @@ import {
   talentTierViews
 } from './raid-talents-views';
 import { RaidLogsDataService } from './raid-logs-data.service';
-import { CLASS_FILTER_OPTIONS, CLASS_NAMES, parseClassId, Role } from '../../game/wow';
+import {
+  CLASS_FILTER_OPTIONS,
+  CLASS_NAMES,
+  Role,
+  RoleFilter,
+  matchesRoleFilter,
+  parseClassId,
+  parseRoleFilter,
+  roleFiltersFor
+} from '../../game/wow';
 import { injectQueryParamMap, injectReplaceUrl, parseInteger } from '../../core/url-state';
 import { LoadStateComponent } from '../../shared/load-state.component';
 import { setPageHeader } from '../../core/page-header';
@@ -69,11 +76,19 @@ const FEW_CHARACTERS = 10;
 
 const SPEC_COLUMNS = 3;
 
-const ROLE_GROUPS: ReadonlyArray<{ role: Role; title: string; noun: string }> = [
-  { role: 'dps', title: 'Damage', noun: 'damage' },
-  { role: 'tank', title: 'Tanks', noun: 'tank' },
-  { role: 'healer', title: 'Healers', noun: 'healer' }
+const ROLE_GROUPS: ReadonlyArray<{ role: Role; title: string }> = [
+  { role: 'dps', title: 'Damage' },
+  { role: 'tank', title: 'Tanks' },
+  { role: 'healer', title: 'Healers' }
 ];
+
+const ROLE_NOUNS: Readonly<Record<RoleFilter, string>> = {
+  dps: 'damage',
+  tank: 'tank',
+  healer: 'healer',
+  melee: 'melee',
+  ranged: 'ranged'
+};
 
 interface SpecCard extends SpecTalentSummary {
   className: string;
@@ -89,7 +104,7 @@ interface SpecCard extends SpecTalentSummary {
     FilterDropdownComponent,
     RaidDifficultySwitchComponent,
     IconTipsComponent,
-    GlideDirective,
+    RoleFilterComponent,
     DecimalPipe,
     LoadStateComponent
   ],
@@ -120,7 +135,7 @@ export class RaidLogsTalentsPageComponent {
   readonly specId = signal<number | undefined>(undefined);
   private readonly bossSlug = signal<string | undefined>(undefined);
   private readonly classFilter = signal<number | undefined>(undefined);
-  private readonly requestedRole = signal<RoleFilter>('all');
+  private readonly requestedRole = signal<RoleFilter | undefined>(undefined);
 
   readonly difficulty = computed(() => {
     const difficulties = this.index()?.difficulties ?? [];
@@ -146,16 +161,23 @@ export class RaidLogsTalentsPageComponent {
     const classId = this.classFilter();
     return classId === undefined ? undefined : CLASS_NAMES[classId];
   });
-  readonly availableRoles = computed(() => new Set(specsMatching(this.specs(), this.classFilter(), 'all').map(spec => spec.role)));
-  readonly role = computed<RoleFilter>(() => {
+  readonly availableRoles = computed(() => roleFiltersFor(specsMatching(this.specs(), this.classFilter(), undefined)));
+  readonly role = computed<RoleFilter | undefined>(() => {
     const requested = this.requestedRole();
-    return requested === 'all' || this.availableRoles().has(requested) ? requested : 'all';
+    return requested && this.availableRoles().includes(requested) ? requested : undefined;
   });
-  readonly selectedRole = computed<RoleFilter>(() => this.spec()?.role ?? this.role());
-  readonly roleNoun = computed(() => ROLE_GROUPS.find(group => group.role === this.role())?.noun);
+  readonly selectedRole = computed<RoleFilter | undefined>(() => {
+    const spec = this.spec();
+    const role = this.role();
+    return spec && !(role && matchesRoleFilter(spec, role)) ? spec.role : role;
+  });
+  readonly roleNoun = computed(() => {
+    const role = this.role();
+    return role && ROLE_NOUNS[role];
+  });
   readonly backLabel = computed(() => ['All', this.classFilterName(), this.roleNoun(), 'specs'].filter(Boolean).join(' '));
   readonly hasFilters = computed(() =>
-    this.classFilter() !== undefined || this.role() !== 'all' || this.spec() !== undefined || this.boss() !== undefined);
+    this.classFilter() !== undefined || this.role() !== undefined || this.spec() !== undefined || this.boss() !== undefined);
 
   private readonly samples = computed(() => talentSamples(this.kills()));
   readonly bossesWithKills = computed(() => new Set(this.kills().map(kill => kill.boss)));
@@ -236,10 +258,6 @@ export class RaidLogsTalentsPageComponent {
     talentHeatRows(this.bossShares(), this.tiers(), talentLevels(this.spec()?.classId ?? 0)));
 
   readonly classOptions = CLASS_FILTER_OPTIONS;
-  readonly roleOptions: ReadonlyArray<{ value: RoleFilter; label: string }> = [
-    { value: 'all', label: 'All' },
-    ...ROLE_GROUPS.map(group => ({ value: group.role, label: group.title }))
-  ];
   readonly notableDifference = Math.round(NOTABLE_DIFFERENCE * 100);
   readonly icon = itemIconUrl;
   readonly iconSrcset = iconSrcset;
@@ -329,14 +347,14 @@ export class RaidLogsTalentsPageComponent {
     this.applyFilters();
   }
 
-  setRole(role: RoleFilter): void {
+  setRole(role: RoleFilter | undefined): void {
     this.requestedRole.set(role);
     this.applyFilters();
   }
 
   resetFilters(): void {
     this.classFilter.set(undefined);
-    this.requestedRole.set('all');
+    this.requestedRole.set(undefined);
     this.bossSlug.set(undefined);
     this.applyFilters();
   }
@@ -346,7 +364,7 @@ export class RaidLogsTalentsPageComponent {
     return {
       difficulty: this.difficulty()?.slug ?? null,
       boss: this.boss()?.slug ?? null,
-      role: role === 'all' ? null : role,
+      role: role ?? null,
       class: this.classFilter() ?? null,
       spec: specId ?? null
     };

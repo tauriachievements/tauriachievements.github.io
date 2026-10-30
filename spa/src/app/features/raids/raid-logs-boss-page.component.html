@@ -58,13 +58,17 @@
               type="button"
               role="tab"
               [class.active]="tab() === entry.id"
-              [class.kill-tab]="!entry.metric"
               [attr.aria-selected]="tab() === entry.id"
               (click)="setTab(entry.id)">{{ entry.label }}</button>
           }
         </div>
 
         <div class="filters">
+          @if (tab() === 'dps') {
+            <div class="role-slot">
+              <app-role-filter dropdownId="raidBossRole" [roles]="damageRoles" [selected]="role()" (selectedChange)="setRole($event)" />
+            </div>
+          }
           @if (isRanking()) {
             <div class="filter-slot realm-slot">
               <app-filter-dropdown
@@ -116,7 +120,7 @@
 
       @if (isRanking()) {
         <p class="list-note">
-          Each character's best kill. {{ tabEntry().note }}
+          Each character's best kill. {{ rankingNote() }}
           <a class="talents-link" routerLink="/raid-logs/talents" [queryParams]="talentsQueryParams()">Which talents do they pick? <span aria-hidden="true">›</span></a>
         </p>
       }

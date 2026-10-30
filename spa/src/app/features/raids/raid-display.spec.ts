@@ -5,14 +5,29 @@ import {
   formatFightTime,
   formatPerSecond,
   nameMatches,
-  parseRoleFilter,
+  parseBossView,
   raidLogLink
 } from './raid-display';
 
-describe('parseRoleFilter', () => {
-  it('reads ?role=, falling back to every role', () => {
-    expect(['tank', 'healer', 'dps', 'heal', null].map(parseRoleFilter))
-      .toEqual(['tank', 'healer', 'dps', 'all', 'all']);
+describe('parseBossView', () => {
+  it('reads the tab, and the role on the Damage tab', () => {
+    expect(parseBossView(null, null)).toEqual({ tab: 'dps', role: undefined });
+    expect(parseBossView('hps', null)).toEqual({ tab: 'hps', role: undefined });
+    expect(parseBossView('latest', null)).toEqual({ tab: 'latest', role: undefined });
+    expect(parseBossView(null, 'tank')).toEqual({ tab: 'dps', role: 'tank' });
+    expect(parseBossView(null, 'melee')).toEqual({ tab: 'dps', role: 'melee' });
+  });
+
+  it('keeps the links to the old Ranged and Melee tabs working', () => {
+    expect(parseBossView('ranged', null)).toEqual({ tab: 'dps', role: 'ranged' });
+    expect(parseBossView('melee', 'tank')).toEqual({ tab: 'dps', role: 'melee' });
+  });
+
+  it('drops a role the tab does not rank, and anything it does not know', () => {
+    expect(parseBossView('fastest', 'tank')).toEqual({ tab: 'fastest', role: undefined });
+    expect(parseBossView('hps', 'healer')).toEqual({ tab: 'hps', role: undefined });
+    expect(parseBossView(null, 'healer')).toEqual({ tab: 'dps', role: undefined });
+    expect(parseBossView('tanks', 'heal')).toEqual({ tab: 'dps', role: undefined });
   });
 });
 

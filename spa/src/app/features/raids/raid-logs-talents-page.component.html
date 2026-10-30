@@ -41,16 +41,6 @@
         [selected]="difficulty()?.slug"
         label="Raid difficulty"
         (selectedChange)="setDifficulty($event)" />
-      <div class="role-switch" role="group" aria-label="Filter by role" appGlide>
-        @for (option of roleOptions; track option) {
-          <button
-            type="button"
-            [class.active]="selectedRole() === option.value"
-            [attr.aria-pressed]="selectedRole() === option.value"
-            [disabled]="option.value !== 'all' && !availableRoles().has(option.value)"
-            (click)="setRole(option.value)">{{ option.label }}</button>
-        }
-      </div>
       <div class="filters">
         <button
           type="button"
@@ -60,6 +50,9 @@
           (click)="resetFilters()">
           Reset
         </button>
+        <div class="role-slot">
+          <app-role-filter dropdownId="talentRole" [roles]="availableRoles()" [selected]="selectedRole()" (selectedChange)="setRole($event)" />
+        </div>
         <div class="class-slot">
           <app-filter-dropdown
             dropdownId="talentClass"

@@ -1,6 +1,6 @@
 import { getClassColor } from '../../game/class-colors';
 import { compareSpecLists } from '../../shared/spec-charts/spec-popularity';
-import { CLASS_FILTER_OPTIONS, CLASS_NAMES, DamageRange, raceFaction, realmSlug, Role } from '../../game/wow';
+import { CLASS_FILTER_OPTIONS, CLASS_NAMES, matchesRoleFilter, raceFaction, realmSlug, RoleFilter } from '../../game/wow';
 import { FilterDropdownOption } from '../../shared/filter-dropdown.types';
 import { ScanChange, scanChanges } from '../../shared/scan-change';
 import { LEGION_SPECS, LegionSpec } from '../../game/wow-specs';
@@ -13,8 +13,7 @@ export interface RankingFilter {
   classId?: number;
   specId?: number;
   realm?: string;
-  role?: Role;
-  range?: DamageRange;
+  role?: RoleFilter;
 }
 
 export interface ClassAndSpec {
@@ -37,25 +36,25 @@ export function countsFor(metric: RaidMetric, spec: RaidSpec | undefined): boole
   return metric === 'hps' ? spec.role === 'healer' : spec.role !== 'healer';
 }
 
-function ranks(spec: RaidSpec, metric: RaidMetric, range: DamageRange | undefined): boolean {
-  return countsFor(metric, spec) && (range === undefined || spec.range === range);
+function ranks(spec: RaidSpec, metric: RaidMetric, role: RoleFilter | undefined): boolean {
+  return countsFor(metric, spec) && matchesRoleFilter(spec, role);
 }
 
 export function rankedSpecs(
   specs: ReadonlyMap<number, RaidSpec>,
   classId: number | undefined,
   metric: RaidMetric,
-  range?: DamageRange
+  role?: RoleFilter
 ): RaidSpec[] {
-  return [...specs.values()].filter(spec => spec.classId === classId && ranks(spec, metric, range));
+  return [...specs.values()].filter(spec => spec.classId === classId && ranks(spec, metric, role));
 }
 
 export function rankedClassOptions(
   specs: ReadonlyMap<number, RaidSpec>,
   metric: RaidMetric,
-  range?: DamageRange
+  role?: RoleFilter
 ): FilterDropdownOption[] {
-  const ranked = new Set([...specs.values()].filter(spec => ranks(spec, metric, range)).map(spec => spec.classId));
+  const ranked = new Set([...specs.values()].filter(spec => ranks(spec, metric, role)).map(spec => spec.classId));
   return CLASS_FILTER_OPTIONS.filter(option => typeof option.value !== 'number' || ranked.has(option.value));
 }
 
@@ -63,9 +62,9 @@ export function fitClassAndSpec(
   specs: ReadonlyMap<number, RaidSpec>,
   picked: ClassAndSpec,
   metric: RaidMetric,
-  range?: DamageRange
+  role?: RoleFilter
 ): ClassAndSpec {
-  const ranked = [...specs.values()].filter(spec => ranks(spec, metric, range));
+  const ranked = [...specs.values()].filter(spec => ranks(spec, metric, role));
   const classId = ranked.some(spec => spec.classId === picked.classId) ? picked.classId : undefined;
   const classSpecs = ranked.filter(spec => spec.classId === classId);
   const specId = classSpecs.some(spec => spec.id === picked.specId)
@@ -103,8 +102,7 @@ export function rankCharacters(
 function matchesFilter(member: RaidMember, filter: RankingFilter): boolean {
   return (filter.classId === undefined || member.character.classId === filter.classId)
     && (filter.specId === undefined || member.spec?.id === filter.specId)
-    && (filter.role === undefined || member.spec?.role === filter.role)
-    && (filter.range === undefined || member.spec?.range === filter.range)
+    && (filter.role === undefined || (member.spec !== undefined && matchesRoleFilter(member.spec, filter.role)))
     && (filter.realm === undefined || realmSlug(member.character.realm) === filter.realm);
 }
 
@@ -366,14 +364,14 @@ export interface SpecPerformanceSummary {
 
 export function specPerformance(
   scores: ReadonlyMap<RaidSpec, readonly SpecCharacterScore[]>,
-  role?: Role
+  role?: RoleFilter
 ): SpecPerformanceSummary {
   const bySpec = new Map([...scores].map(([spec, entries]) => [`${spec.classId}|${spec.name}`, entries]));
   const groups = new Map<number, { group: ClassPerformance; characters: Map<string, number> }>();
   const characters = new Set<string>();
 
   for (const definition of LEGION_SPECS) {
-    if (role && definition.role !== role) {
+    if (!matchesRoleFilter(definition, role)) {
       continue;
     }
 

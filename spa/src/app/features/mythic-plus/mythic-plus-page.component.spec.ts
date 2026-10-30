@@ -1,3 +1,4 @@
+import { Location } from '@angular/common';
 import { TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 import { RouterTestingHarness } from '@angular/router/testing';
@@ -150,10 +151,16 @@ describe('MythicPlusPageComponent character and realm in the URL', () => {
 
 describe('MythicPlusPageComponent roles', () => {
   const roles = exportOf('dddddddddddd', [['Exkeito', 'Evermoon', '', 11, 4, 0], ['Napim', 'Tauri', '', 11, 4, 0]]);
-  roles.index.specs = [{ class: 11, name: 'Restoration', role: 'healer' }, { class: 11, name: 'Guardian', role: 'tank' }];
+  roles.index.specs = [
+    { class: 11, name: 'Restoration', role: 'healer' },
+    { class: 11, name: 'Guardian', role: 'tank' },
+    { class: 11, name: 'Feral', role: 'dps' },
+    { class: 11, name: 'Balance', role: 'dps' }
+  ];
   roles.cos.runs = [
     [19, 1297289, 1791293804, 196, [], [[0, 0], [1, 1]]],
-    [15, 1297289, 1791293904, 160, [], [[1, 0]]]
+    [15, 1297289, 1791293904, 160, [], [[1, 0]]],
+    [12, 1297289, 1791294004, 140, [], [[0, 2], [1, 3]]]
   ];
 
   async function open(url: string): Promise<MythicPlusPageComponent> {
@@ -178,6 +185,27 @@ describe('MythicPlusPageComponent roles', () => {
 
     page.setRole('tank');
     expect(ladder(page)).toEqual([['Napim', 196]]);
+  });
+
+  it('ranks the melee or the ranged damage dealers and keeps the role in the address bar', async () => {
+    const page = await open('/mythic-plus?view=players&role=melee');
+    expect(ladder(page)).toEqual([['Exkeito', 140]]);
+
+    page.setRole('ranged');
+    expect(ladder(page)).toEqual([['Napim', 140]]);
+    expect(TestBed.inject(Location).path()).toBe('/mythic-plus?view=players&role=ranged');
+  });
+
+  it('keeps the spec chart role in the address bar, apart from the ladder role', async () => {
+    const page = await open('/mythic-plus?chartRole=healer');
+    const location = TestBed.inject(Location);
+    expect([page.chartRole(), page.roleFilter()]).toEqual(['healer', undefined]);
+
+    page.setChartRole('melee');
+    expect(location.path()).toBe('/mythic-plus?chartRole=melee');
+
+    page.setChartRole(undefined);
+    expect(location.path()).toBe('/mythic-plus');
   });
 
   it('opens on tanks, and Players goes back to the plain ladder', async () => {

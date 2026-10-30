@@ -152,6 +152,16 @@ describe('MythicPlusGuildPageComponent', () => {
     expect(element.querySelector('.rank-change, .player-new')).toBeNull();
   });
 
+  it('ranks the melee or the ranged damage dealers from the address bar', async () => {
+    const { page } = await open('/mythic-plus/guild/evermoon/Skill%20Issue?role=melee');
+    expect(page.rows().map(row => [row.member.name, row.score])).toEqual([['Polán', 290], ['Dksmus', 160]]);
+
+    page.setRole('ranged');
+    expect(page.rows()).toEqual([]);
+    expect(page.emptyMessage()).toBe('No ranged DPS player of Skill Issue has a run yet.');
+    expect(TestBed.inject(Location).path()).toBe('/mythic-plus/guild/evermoon/Skill%20Issue?role=ranged');
+  });
+
   it('scores members on one spec only, and shares a rank in one dungeon', async () => {
     const spec = await open('/mythic-plus/guild/evermoon/Skill%20Issue?class=6&spec=Unholy');
     expect(spec.page.rows().map(row => [row.member.name, row.score])).toEqual([['Dksmus', 160]]);

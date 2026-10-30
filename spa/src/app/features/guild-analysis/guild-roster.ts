@@ -1,8 +1,6 @@
-import { CLASS_NAMES } from '../../game/wow';
+import { CLASS_NAMES, RoleFilter, matchesRoleFilter } from '../../game/wow';
 import { specFor } from '../../game/wow-specs';
 import { GuildAnalysisLegendary, GuildAnalysisPlayer, GuildAnalysisRank } from './guild-analysis';
-
-export type CombatRole = 'Tank' | 'Heal' | 'Ranged' | 'Melee';
 
 export type SortColumn =
   | 'name'
@@ -23,7 +21,7 @@ export interface ClassCountEntry {
 export interface RosterFilters {
   classId: number | null;
   guildRank: string;
-  combatRole: CombatRole | '';
+  role?: RoleFilter;
 }
 
 const LEGACY_GUILD_RANK_ORDER = [
@@ -129,10 +127,8 @@ export function rosterRows(
         ) === 0
       )
     : classFilteredPlayers;
-  const visiblePlayers = filters.combatRole
-    ? rankFilteredPlayers.filter((player) =>
-        combatRole(player) === filters.combatRole
-      )
+  const visiblePlayers = filters.role
+    ? rankFilteredPlayers.filter((player) => playsRole(player, filters.role))
     : rankFilteredPlayers;
 
   return [...visiblePlayers].sort((left, right) => {
@@ -157,18 +153,9 @@ export function rosterRows(
   });
 }
 
-export function combatRole(player: GuildAnalysisPlayer): CombatRole | undefined {
+function playsRole(player: GuildAnalysisPlayer, role: RoleFilter | undefined): boolean {
   const spec = specFor(player.class, player.specialization?.trim() ?? '');
-  switch (spec?.role) {
-    case 'tank':
-      return 'Tank';
-    case 'healer':
-      return 'Heal';
-    case 'dps':
-      return spec.range === 'ranged' ? 'Ranged' : 'Melee';
-    default:
-      return undefined;
-  }
+  return spec !== undefined && matchesRoleFilter(spec, role);
 }
 
 export function parseGuildTimestamp(timestamp: string): Date | undefined {

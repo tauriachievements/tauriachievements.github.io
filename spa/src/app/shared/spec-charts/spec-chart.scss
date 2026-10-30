@@ -33,6 +33,8 @@ $plot-height: 180px;
 
 .chart-filters { display: flex; flex-wrap: wrap; align-items: stretch; gap: 8px; }
 
+.role-slot { flex: none; min-width: 200px; }
+
 .filter-reset {
   display: inline-flex;
   align-items: center;
@@ -294,6 +296,7 @@ $plot-height: 180px;
   .chart-filters { flex: 1 1 100%; }
   .segmented { flex: 1 1 100%; }
   .segmented button { flex: 1 1 0; padding: 7px 6px; }
+  .role-slot { flex: 1 1 100%; }
   .filter-reset { order: 1; min-height: 40px; }
   .filter-reset:disabled { display: none; }
 }

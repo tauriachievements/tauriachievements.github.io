@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, computed, input, output, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, input, model, output, signal } from '@angular/core';
 import { getClassIconPath } from '../../game/classIconHelper';
 import { injectCompactViewport } from '../../shared/compact-viewport';
 import { MythicPlusRun } from './mythic-plus';
@@ -8,9 +8,9 @@ import { GlideDirective } from '../../shared/motion/glide.directive';
 import { MYTHIC_PLUS_CARDS_QUERY } from './mythic-plus-views';
 import { RevealDirective } from '../../shared/motion/reveal.directive';
 import { TapTooltipDirective } from '../../shared/tap-tooltip.directive';
-import { Role } from '../../game/wow';
+import { RoleFilterComponent } from '../../shared/role-filter.component';
+import { ROLE_FILTER_LABELS, RoleFilter } from '../../game/wow';
 
-type RoleFilter = Role | 'all';
 type CountMode = 'runs' | 'characters';
 
 interface SpecBar extends SpecShare {
@@ -27,7 +27,7 @@ interface ClassGroup extends Omit<ClassShare, 'specs'> {
 
 @Component({
   selector: 'app-mythic-plus-spec-chart',
-  imports: [TapTooltipDirective, GlideDirective, RevealDirective, FlipDirective],
+  imports: [TapTooltipDirective, GlideDirective, RevealDirective, FlipDirective, RoleFilterComponent],
   templateUrl: './mythic-plus-spec-chart.component.html',
   styleUrls: ['../../shared/spec-charts/spec-chart.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush
@@ -40,12 +40,6 @@ export class MythicPlusSpecChartComponent {
   readonly selectedSpec = input<string>();
   readonly specSelect = output<{ classId: number; spec: string }>();
 
-  readonly roleOptions: ReadonlyArray<{ value: RoleFilter; label: string }> = [
-    { value: 'all', label: 'All roles' },
-    { value: 'tank', label: 'Tank' },
-    { value: 'healer', label: 'Healer' },
-    { value: 'dps', label: 'DPS' }
-  ];
   readonly countOptions: ReadonlyArray<{ value: CountMode; label: string }> = [
     { value: 'runs', label: 'All runs' },
     { value: 'characters', label: 'Unique characters' }
@@ -57,7 +51,7 @@ export class MythicPlusSpecChartComponent {
     { value: 15, label: '+15', title: 'Keys +15 and higher' }
   ];
 
-  readonly role = signal<RoleFilter>('all');
+  readonly role = model<RoleFilter>();
   readonly countMode = signal<CountMode>('runs');
   readonly minLevel = signal(0);
 
@@ -66,10 +60,10 @@ export class MythicPlusSpecChartComponent {
   readonly showBody = computed(() => !this.collapsible() || this.expanded());
 
   readonly isFiltered = computed(() =>
-    this.role() !== 'all' || this.minLevel() !== 0 || this.countMode() !== 'runs');
+    this.role() !== undefined || this.minLevel() !== 0 || this.countMode() !== 'runs');
 
   resetFilters(): void {
-    this.role.set('all');
+    this.role.set(undefined);
     this.minLevel.set(0);
     this.countMode.set('runs');
   }
@@ -79,7 +73,7 @@ export class MythicPlusSpecChartComponent {
     const minLevel = this.minLevel();
     const runs = minLevel > 0 ? this.runs().filter(run => run.keyLevel >= minLevel) : this.runs();
     return specPopularity(runs, {
-      role: role === 'all' ? undefined : role,
+      role,
       uniqueCharacters: this.countMode() === 'characters'
     });
   });
@@ -122,7 +116,8 @@ export class MythicPlusSpecChartComponent {
 
   readonly subtitle = computed(() => {
     const { total, runCount } = this.popularity();
-    const role = this.roleOptions.find(option => option.value === this.role())?.label ?? 'All roles';
+    const selected = this.role();
+    const role = selected ? ROLE_FILTER_LABELS[selected] : 'All roles';
     const count = this.countMode() === 'characters' ? 'Unique characters' : 'All runs';
     const minLevel = this.minLevel();
 

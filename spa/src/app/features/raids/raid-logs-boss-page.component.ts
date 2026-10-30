@@ -10,8 +10,11 @@ import { FilterDropdownCoordinatorService } from '../../shared/filter-dropdown-c
 import { FilterDropdownOption, FilterDropdownValue } from '../../shared/filter-dropdown.types';
 import { GlideDirective } from '../../shared/motion/glide.directive';
 import { IconTipsComponent } from '../../shared/icon-tips.component';
+import { RoleFilterComponent } from '../../shared/role-filter.component';
 import { RaidDifficultySwitchComponent } from './raid-difficulty-switch.component';
 import {
+  BOSS_DAMAGE_ROLES,
+  BossTab,
   ITEM_QUALITY_COLORS,
   RAID_PAGE_SIZE,
   formatAgo,
@@ -21,6 +24,7 @@ import {
   itemIconUrl,
   itemUrl,
   nameMatches,
+  parseBossView,
   raidBossLink,
   raidCharacterLink,
   raidGuildLink,
@@ -41,7 +45,7 @@ import { RaidMetric, RankedPerformance, fitClassAndSpec, rankCharacters, rankedC
 import { characterKey, defaultDifficulty, logKey, memberTalents } from './raid-logs';
 import { fastestKills, latestKills } from './raid-progression';
 import { RaidLogsDataService } from './raid-logs-data.service';
-import { DamageRange, REALM_FILTER_OPTIONS } from '../../game/wow';
+import { REALM_FILTER_OPTIONS, RoleFilter } from '../../game/wow';
 import { injectReplaceUrl, parseInteger, parsePage } from '../../core/url-state';
 import { LoadStateComponent } from '../../shared/load-state.component';
 import { PagerComponent } from '../../shared/pager.component';
@@ -49,27 +53,32 @@ import { pageCount, pageSlice } from '../../shared/pager';
 import { SkeletonBlock } from '../../shared/skeleton';
 import { setPageHeader } from '../../core/page-header';
 
-const KILLS_SKELETON: readonly SkeletonBlock[] = ['tiles:5', 'switch:6', 'toolbar:3', 'rows:10'];
+const KILLS_SKELETON: readonly SkeletonBlock[] = ['tiles:5', 'switch:4', 'toolbar:3', 'rows:10'];
 const PAGE_SKELETON: readonly SkeletonBlock[] = ['icons:7', 'hero', ...KILLS_SKELETON];
-
-type BossTab = 'dps' | 'ranged' | 'melee' | 'hps' | 'fastest' | 'latest';
 
 interface TabEntry {
   id: BossTab;
   label: string;
   metric?: RaidMetric;
-  range?: DamageRange;
-  note?: string;
 }
 
 const TABS: ReadonlyArray<TabEntry> = [
-  { id: 'dps', label: 'Damage', metric: 'dps', note: 'Damage done over the length of the fight; healers are ranked under Healing.' },
-  { id: 'ranged', label: 'Ranged', metric: 'dps', range: 'ranged', note: 'Damage done over the length of the fight, by ranged damage specs only.' },
-  { id: 'melee', label: 'Melee', metric: 'dps', range: 'melee', note: 'Damage done over the length of the fight, by melee damage specs only; tanks are ranked under Damage.' },
-  { id: 'hps', label: 'Healing', metric: 'hps', note: 'Healing counts absorbs; only healers are ranked.' },
+  { id: 'dps', label: 'Damage', metric: 'dps' },
+  { id: 'hps', label: 'Healing', metric: 'hps' },
   { id: 'fastest', label: 'Fastest kills' },
   { id: 'latest', label: 'Latest kills' }
 ];
+
+const DAMAGE_NOTES: Readonly<Partial<Record<RoleFilter, string>>> = {
+  tank: 'Damage done over the length of the fight, by tanks only.',
+  dps: 'Damage done over the length of the fight, by damage specs only; tanks are left out.',
+  melee: 'Damage done over the length of the fight, by melee damage specs only.',
+  ranged: 'Damage done over the length of the fight, by ranged damage specs only.'
+};
+
+const ALL_DAMAGE_NOTE = 'Damage done over the length of the fight, tanks included; healers are ranked under Healing.';
+
+const HEALING_NOTE = 'Healing counts absorbs; only healers are ranked.';
 
 interface KillRow {
   rank?: number;
@@ -91,6 +100,7 @@ interface SummaryTile {
   imports: [
     RouterLink,
     FilterDropdownComponent,
+    RoleFilterComponent,
     RaidDifficultySwitchComponent,
     GlideDirective,
     IconTipsComponent,
@@ -118,6 +128,7 @@ export class RaidLogsBossPageComponent {
   private readonly query = this.route.snapshot.queryParamMap;
 
   readonly tabs = TABS;
+  readonly damageRoles = BOSS_DAMAGE_ROLES;
   readonly index = signal<RaidLogsIndex | undefined>(undefined);
   readonly kills = signal<RaidKillDetails[]>([]);
   private readonly invalidKills = signal<RaidKillDetails[]>([]);
@@ -130,7 +141,9 @@ export class RaidLogsBossPageComponent {
   readonly skeleton = computed(() => (this.index() ? KILLS_SKELETON : PAGE_SKELETON));
 
   private readonly requestedDifficulty = signal(this.query.get('difficulty') ?? undefined);
-  readonly tab = signal<BossTab>(parseTab(this.query.get('tab')));
+  private readonly requestedView = parseBossView(this.query.get('tab'), this.query.get('role'));
+  readonly tab = signal<BossTab>(this.requestedView.tab);
+  private readonly damageRole = signal<RoleFilter | undefined>(this.requestedView.role);
   readonly classFilter = signal<number | undefined>(parseInteger(this.query.get('class')));
   readonly specFilter = signal<number | undefined>(parseInteger(this.query.get('spec')));
   readonly realmFilter = signal<string | undefined>(this.query.get('realm') ?? undefined);
@@ -160,8 +173,15 @@ export class RaidLogsBossPageComponent {
 
   readonly tabEntry = computed(() => TABS.find(entry => entry.id === this.tab()) ?? TABS[0]);
   readonly metric = computed<RaidMetric>(() => this.tabEntry().metric ?? 'dps');
-  readonly range = computed(() => this.tabEntry().range);
+  readonly role = computed(() => this.tab() === 'dps' ? this.damageRole() : undefined);
   readonly isRanking = computed(() => this.tabEntry().metric !== undefined);
+  readonly rankingNote = computed(() => {
+    if (this.metric() === 'hps') {
+      return HEALING_NOTE;
+    }
+    const role = this.role();
+    return (role && DAMAGE_NOTES[role]) ?? ALL_DAMAGE_NOTE;
+  });
 
   readonly rankings = computed<RankedPerformance[]>(() => {
     if (!this.isRanking()) {
@@ -172,7 +192,7 @@ export class RaidLogsBossPageComponent {
       classId: this.classFilter(),
       specId: this.specFilter(),
       realm: this.realmFilter(),
-      range: this.range()
+      role: this.role()
     });
     const query = this.search();
     return query ? ranked.filter(entry => nameMatches(entry.member.character.name, query)) : ranked;
@@ -222,10 +242,10 @@ export class RaidLogsBossPageComponent {
 
   private readonly specs = computed<ReadonlyMap<number, RaidSpec>>(() => this.index()?.specs ?? new Map());
 
-  readonly classOptions = computed(() => rankedClassOptions(this.specs(), this.metric(), this.range()));
+  readonly classOptions = computed(() => rankedClassOptions(this.specs(), this.metric(), this.role()));
 
   readonly specOptions = computed<FilterDropdownOption[]>(() => {
-    const specs = rankedSpecs(this.specs(), this.classFilter(), this.metric(), this.range());
+    const specs = rankedSpecs(this.specs(), this.classFilter(), this.metric(), this.role());
     return [{ value: undefined, label: 'All specs' }, ...specs.map(spec => ({ value: spec.id, label: spec.name, icon: spec.icon }))];
   });
 
@@ -246,6 +266,7 @@ export class RaidLogsBossPageComponent {
   readonly bossQueryParams = computed(() => ({
     difficulty: this.difficulty()?.slug ?? null,
     tab: this.tab() === 'dps' ? null : this.tab(),
+    role: this.role() ?? null,
     class: this.isRanking() ? this.classFilter() ?? null : null,
     spec: this.isRanking() ? this.specFilter() ?? null : null,
     realm: this.isRanking() ? this.realmFilter() ?? null : null
@@ -293,7 +314,7 @@ export class RaidLogsBossPageComponent {
         next: index => {
           this.index.set(index);
           if (this.isRanking()) {
-            this.fitFiltersToTab();
+            this.fitFiltersToRanking();
           }
           if (!this.boss()) {
             this.loadError.set('There is no such boss in the raid.');
@@ -320,14 +341,21 @@ export class RaidLogsBossPageComponent {
     }
     this.tab.set(tab);
     if (this.isRanking()) {
-      this.fitFiltersToTab();
+      this.fitFiltersToRanking();
     }
     this.page.set(1);
     this.writeUrl();
   }
 
-  private fitFiltersToTab(): void {
-    const fitted = fitClassAndSpec(this.specs(), { classId: this.classFilter(), specId: this.specFilter() }, this.metric(), this.range());
+  setRole(role: RoleFilter | undefined): void {
+    this.damageRole.set(role);
+    this.fitFiltersToRanking();
+    this.page.set(1);
+    this.writeUrl();
+  }
+
+  private fitFiltersToRanking(): void {
+    const fitted = fitClassAndSpec(this.specs(), { classId: this.classFilter(), specId: this.specFilter() }, this.metric(), this.role());
     this.classFilter.set(fitted.classId);
     this.specFilter.set(fitted.specId);
   }
@@ -335,7 +363,7 @@ export class RaidLogsBossPageComponent {
   setClassFilter(value: FilterDropdownValue): void {
     this.classFilter.set(typeof value === 'number' ? value : undefined);
     this.specFilter.set(undefined);
-    this.fitFiltersToTab();
+    this.fitFiltersToRanking();
     this.page.set(1);
     this.writeUrl();
   }
@@ -414,8 +442,4 @@ export class RaidLogsBossPageComponent {
       page: this.currentPage() > 1 ? this.currentPage() : null
     });
   }
-}
-
-function parseTab(value: string | null): BossTab {
-  return TABS.some(tab => tab.id === value) ? value as BossTab : 'dps';
 }

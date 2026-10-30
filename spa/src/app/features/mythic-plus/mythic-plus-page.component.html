@@ -68,6 +68,8 @@
         [seasonName]="period() === 'week' ? 'This week' : index()?.season?.name ?? ''"
         [selectedClassId]="view() === 'players' ? classFilter() : undefined"
         [selectedSpec]="view() === 'players' ? specFilter() : undefined"
+        [role]="chartRole()"
+        (roleChange)="setChartRole($event)"
         (specSelect)="showSpecPlayers($event)" />
 
       <div class="toolbar" #leaderboard>
@@ -143,29 +145,8 @@
               [activeFilters]="activeFilterLabels()"
               (expandedChange)="filtersOpen.set($event)" />
             @if (roleFilter(); as currentRole) {
-              <div class="view-switch role-switch" role="group" aria-label="Rank tanks, healers or DPS" appGlide>
-                @for (role of roles; track role) {
-                  <button
-                    type="button"
-                    [class.active]="currentRole === role"
-                    [attr.aria-pressed]="currentRole === role"
-                    (click)="setRole(role)">
-                    <span class="role-icon" [class]="role" aria-hidden="true">
-                      @switch (role) {
-                        @case ('tank') {
-                          <svg viewBox="0 0 24 24" focusable="false"><path d="M12 2 4 5v6.1c0 5 3.4 9.6 8 10.9 4.6-1.3 8-5.9 8-10.9V5l-8-3z" /></svg>
-                        }
-                        @case ('healer') {
-                          <svg viewBox="0 0 24 24" focusable="false"><path d="M9.5 3h5v6.5H21v5h-6.5V21h-5v-6.5H3v-5h6.5z" /></svg>
-                        }
-                        @case ('dps') {
-                          <svg viewBox="0 0 24 24" focusable="false"><path d="M21 3l-7.5 1.6-7.8 7.8-1.9-1.9-1.4 1.4 2.6 2.6-2.4 2.4a1.5 1.5 0 1 0 2.1 2.1l2.4-2.4 2.6 2.6 1.4-1.4-1.9-1.9 7.8-7.8z" /></svg>
-                        }
-                      }
-                    </span>
-                    {{ roleLabels[role] }}
-                  </button>
-                }
+              <div class="filter-slot role-slot">
+                <app-role-filter dropdownId="mythicPlusRole" [includeAll]="false" [selected]="currentRole" (selectedChange)="setRole($event)" />
               </div>
             }
             <button

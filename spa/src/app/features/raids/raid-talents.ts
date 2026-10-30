@@ -7,7 +7,7 @@ import {
   RaidTalent,
   RaidTalentTable
 } from './raid-logs.types';
-import { RoleFilter } from './raid-display';
+import { RoleFilter, matchesRoleFilter } from '../../game/wow';
 import { SpecCharacterScore, specMetric, topAverage } from './raid-scores';
 import { characterKey } from './raid-logs';
 
@@ -415,8 +415,8 @@ export function specTalentSummaries(samples: readonly TalentSample[], specs: rea
   });
 }
 
-export function specsMatching(specs: readonly RaidSpec[], classId: number | undefined, role: RoleFilter): RaidSpec[] {
-  return specs.filter(spec => (classId === undefined || spec.classId === classId) && (role === 'all' || spec.role === role));
+export function specsMatching(specs: readonly RaidSpec[], classId: number | undefined, role: RoleFilter | undefined): RaidSpec[] {
+  return specs.filter(spec => (classId === undefined || spec.classId === classId) && matchesRoleFilter(spec, role));
 }
 
 export function sortByPerformance<T extends { spec: RaidSpec }>(

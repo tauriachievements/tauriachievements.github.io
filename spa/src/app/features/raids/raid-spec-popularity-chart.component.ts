@@ -5,7 +5,8 @@ import { FlipDirective } from '../../shared/motion/flip.directive';
 import { GlideDirective } from '../../shared/motion/glide.directive';
 import { formatShare, shareTicks, specPopularity } from '../../shared/spec-charts/spec-popularity';
 import { RaidBoss, RaidDifficulty, RaidKillDetails } from './raid-logs.types';
-import { RoleFilter } from './raid-display';
+import { ROLE_FILTER_LABELS, RoleFilter } from '../../game/wow';
+import { RoleFilterComponent } from '../../shared/role-filter.component';
 import {
   SPEC_TOP_SCORES,
   SpecCharacterScore,
@@ -45,7 +46,7 @@ export function parseChartView(value: string | null | undefined): ChartView {
 
 @Component({
   selector: 'app-raid-spec-popularity-chart',
-  imports: [TapTooltipDirective, GlideDirective, RevealDirective, FlipDirective, DecimalPipe, SkeletonComponent],
+  imports: [TapTooltipDirective, GlideDirective, RevealDirective, FlipDirective, DecimalPipe, SkeletonComponent, RoleFilterComponent],
   templateUrl: './raid-spec-popularity-chart.component.html',
   styleUrls: ['../../shared/spec-charts/spec-chart.scss', './raid-spec-popularity-chart.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush
@@ -68,13 +69,7 @@ export class RaidSpecPopularityChartComponent {
   ];
   readonly view = model<ChartView>('popularity');
 
-  readonly roleOptions: ReadonlyArray<{ value: RoleFilter; label: string }> = [
-    { value: 'all', label: 'All roles' },
-    { value: 'tank', label: 'Tank' },
-    { value: 'healer', label: 'Healer' },
-    { value: 'dps', label: 'DPS' }
-  ];
-  readonly role = model<RoleFilter>('all');
+  readonly role = model<RoleFilter>();
 
   readonly shownDifficulties = computed(() => this.difficulties().filter(difficulty =>
     difficulty.kills > 0 && ['normal', 'heroic', 'mythic'].includes(difficulty.slug)));
@@ -87,16 +82,17 @@ export class RaidSpecPopularityChartComponent {
         realm: member.character.realm,
         class: member.character.classId,
         spec: member.spec.name,
-        role: member.spec.role
+        role: member.spec.role,
+        range: member.spec.range
       }] : [])
-    })), { role: role === 'all' ? undefined : role });
+    })), { role });
   });
 
   private readonly specScores = computed(() => scoresBySpecForKills(this.bosses(), this.kills()));
 
   readonly performance = computed(() => {
     const role = this.role();
-    return specPerformance(this.specScores(), role === 'all' ? undefined : role);
+    return specPerformance(this.specScores(), role);
   });
 
   readonly hasData = computed(() =>
@@ -160,7 +156,8 @@ export class RaidSpecPopularityChartComponent {
   readonly title = computed(() => this.view() === 'performance' ? 'Spec Performance' : 'Spec Popularity');
 
   readonly subtitle = computed(() => {
-    const role = this.roleOptions.find(option => option.value === this.role())?.label ?? 'All roles';
+    const selected = this.role();
+    const role = selected ? ROLE_FILTER_LABELS[selected] : 'All roles';
 
     if (this.view() === 'performance') {
       const { characterCount } = this.performance();
@@ -184,7 +181,7 @@ export class RaidSpecPopularityChartComponent {
   private scoreNoun(): string {
     switch (this.role()) {
       case 'healer': return 'HPS scores';
-      case 'all': return 'scores (HPS for healers, DPS for the rest)';
+      case undefined: return 'scores (HPS for healers, DPS for the rest)';
       default: return 'DPS scores';
     }
   }

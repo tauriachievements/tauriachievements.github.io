@@ -127,6 +127,23 @@ decision: ask first.** When a rule does change, change its tests first and see t
   honorable kills.
 - The limits must match `GUILD_SOURCE_LIMIT_OPTIONS` in `guild-presence-options.ts`.
 
+## Role filters
+
+- **Code:** `ROLE_FILTERS`, `matchesRoleFilter` and `roleFiltersFor` in
+  `spa/src/app/game/wow.ts`; each damage spec's `range` in `spa/src/app/game/wow-specs.ts`.
+  Every role dropdown is `app-role-filter` ([frontend.md](frontend.md#shared-building-blocks)).
+- Five roles, in this order: Tank, Healer and DPS are the spec's role; Melee DPS and Ranged DPS
+  split the damage specs by their `range`. Ranged: Beast Mastery and Marksmanship Hunters,
+  Shadow Priests, Elemental Shamans, Mages, Warlocks and Balance Druids. Every other damage spec
+  is melee, Survival Hunters included. Tanks and healers are in neither.
+- A role matches by the spec played in that run, kill or roster entry, so a character who
+  played a melee and a ranged spec shows under both, each time with what they did as that kind
+  of spec.
+- Where a page offers fewer roles, it lists only those: a boss's Damage tab has no Healer
+  (healers rank under Healing), and Talent Analytics with a class picked lists only the roles
+  that class can fill. The Mythic+ Roles views need a role, so they have no "All roles".
+- **Tests:** `wow.spec.ts`, `role-filter.component.spec.ts`.
+
 ## Mythic+
 
 - **Run score** (`api/MythicPlusExporter/MythicPlusScore.cs`), modelled on Raider.IO:
@@ -141,7 +158,8 @@ decision: ask first.** When a rule does change, change its tests first and see t
   numbers, so the 60% and 80% boundaries are exact.
 - **Player score** (`rankPlayers` in `mythic-plus.ts`): the sum of the character's best run
   score in each dungeon, Raider.IO's classic model. A spec, role or class filter scores a
-  character only on the runs played that way.
+  character only on the runs played that way; Melee DPS and Ranged DPS count the runs played
+  as a damage spec of that range ([Role filters](#role-filters)).
 - **Ties** (`playerRanks`): two players share a place only with the same score and the same
   total time. Places use competition ranking (1, 1, 1, 4).
 - **Colours:**
@@ -219,7 +237,8 @@ decision: ask first.** When a rule does change, change its tests first and see t
 - **Spec charts** (`specPopularity` in `shared/spec-charts/spec-popularity.ts`): classes are
   ordered by their most-seen spec, then the next one, so one dominant spec outranks a class
   whose total is spread out. On the Mythic+ chart, a minimum key level keeps that level and
-  everything above it. Only each class's most-seen spec carries a value on its bar.
+  everything above it. Only each class's most-seen spec carries a value on its bar. A role
+  ([Role filters](#role-filters)) limits both the counted slots and the listed specs to it.
 - **Raid spec popularity** counts player slots: a character who killed several bosses counts
   once per kill.
 - **Race by spec** (`shared/spec-charts/race-popularity.ts`): a character counts once per
@@ -304,21 +323,21 @@ decision: ask first.** When a rule does change, change its tests first and see t
 ## Raid boss rankings
 
 - **Code:** `rankCharacters`, `rankedSpecs`, `rankedClassOptions` and `fitClassAndSpec` in
-  `spa/src/app/features/raids/raid-scores.ts`; each damage spec's `range` in
-  `spa/src/app/game/wow-specs.ts`.
+  `spa/src/app/features/raids/raid-scores.ts`; `parseBossView` and `BOSS_DAMAGE_ROLES` in
+  `raid-display.ts`.
 - A boss's ranking tabs list each character's best counted kill of the boss on the difficulty;
   the earlier kill wins a tie. Damage ranks every spec but the healers, tanks included, on DPS.
   Healing ranks the healers on HPS.
-- **Ranged and Melee** rank damage specs only, on DPS, split by the spec's `range`. Ranged:
-  Beast Mastery and Marksmanship Hunters, Shadow Priests, Elemental Shamans, Mages, Warlocks
-  and Balance Druids. Every other damage spec is melee, Survival Hunters included. Tanks are in
-  neither, only under Damage. A character who played a ranged and a melee spec shows on both
-  tabs, each time with their best kill as that kind of spec.
+- **Damage's role dropdown** narrows it, on DPS: Tank ranks the tanks only, DPS the damage
+  specs without the tanks, Melee DPS and Ranged DPS the damage specs of that range
+  ([Role filters](#role-filters)). "All roles" is the plain Damage ranking. Links to the old
+  Ranged and Melee tabs (`?tab=ranged`, `?tab=melee`) open Damage with that role.
 - Filters (class, spec, realm) re-rank the rest; the search hides rows without renumbering
-  them. Class and spec fit the tab as on the leaderboard (above): Ranged lists no Rogue, and a
-  Shaman on Ranged gets Elemental picked.
-- The guild pages' Melee and Ranged roles (`combatRole`) read the same `range`.
-- **Tests:** `raid-scores.spec.ts`, `wow-specs.spec.ts`, `guild-roster.spec.ts`.
+  them. Class and spec fit the tab and role as on the leaderboard (above): Ranged DPS lists no
+  Rogue, a Shaman on Ranged DPS gets Elemental picked, and a Paladin on Tank gets Protection.
+- The guild pages' role dropdown reads the same `range`.
+- **Tests:** `raid-scores.spec.ts`, `raid-display.spec.ts`, `wow-specs.spec.ts`,
+  `guild-roster.spec.ts`.
 
 ## Raid guild progression and kill speed
 
@@ -433,7 +452,8 @@ decision: ask first.** When a rule does change, change its tests first and see t
   nobody played it. Only the best ten count, so attendance doesn't drag a spec down.
 - Each difficulty is scored on its own, over every boss of the raid.
 - Where it shows:
-  - Raid Stats → Performance draws it as bars.
+  - Raid Stats → Performance draws it as bars, all specs or one role's
+    ([Role filters](#role-filters)).
   - The Tier List page sorts it into tiers ([below](#raid-spec-tier-list)).
   - Talent Analytics lists each role's specs by it, best first. A tie keeps the game's order,
     the order is the same whichever boss is picked, and a picked class shows its specs in the

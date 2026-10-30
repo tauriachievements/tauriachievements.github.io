@@ -156,23 +156,6 @@
   &:focus-visible { outline: 2px solid $gold; outline-offset: 2px; }
 }
 
-.role-switch button { display: inline-flex; align-items: center; gap: 6px; }
-
-.role-icon {
-  display: grid;
-  place-items: center;
-  width: 18px;
-  height: 18px;
-  border: 1px solid #555;
-  border-radius: 50%;
-  background: #0c0c0c;
-
-  svg { width: 10px; height: 10px; fill: currentColor; }
-  &.tank { color: #6ea8ff; }
-  &.healer { color: #3ecf5e; }
-  &.dps { color: #e5484d; }
-}
-
 .view-switch {
   display: inline-flex;
   padding: 2px;
