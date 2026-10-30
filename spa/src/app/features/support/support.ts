@@ -139,9 +139,9 @@ export function formatDonation({ amount, currency }: Donation): string {
       minimumFractionDigits: fractionDigits,
       maximumFractionDigits: fractionDigits
     });
-    return currency === 'eur' ? `${money} €` : `$${money}`;
+    return currency === 'eur' ? `${money}€` : `$${money}`;
   }
 
   const count = amount.toLocaleString('en-US');
-  return currency === 'gold' ? `${count} gold` : `${count} Tauri Credits`;
+  return currency === 'gold' ? `${count} Gold` : `${count} Tauri Credits`;
 }

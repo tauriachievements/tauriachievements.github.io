@@ -2,10 +2,10 @@ import { describe, expect, it } from 'vitest';
 import { formatDonation, quoteSpans } from './support';
 
 describe('formatDonation', () => {
-  it('writes euros as the number, then the euro sign, and cents only when there are some', () => {
-    expect(formatDonation({ names: [{ name: 'A' }], amount: 50, currency: 'eur' })).toBe('50 €');
-    expect(formatDonation({ names: [{ name: 'A' }], amount: 1500, currency: 'eur' })).toBe('1,500 €');
-    expect(formatDonation({ names: [{ name: 'A' }], amount: 12.5, currency: 'eur' })).toBe('12.50 €');
+  it('writes euros as the number, then the euro sign with no space, and cents only when there are some', () => {
+    expect(formatDonation({ names: [{ name: 'A' }], amount: 50, currency: 'eur' })).toBe('50€');
+    expect(formatDonation({ names: [{ name: 'A' }], amount: 1500, currency: 'eur' })).toBe('1,500€');
+    expect(formatDonation({ names: [{ name: 'A' }], amount: 12.5, currency: 'eur' })).toBe('12.50€');
   });
 
   it('writes dollars with the sign first, and cents only when there are some', () => {
@@ -14,7 +14,7 @@ describe('formatDonation', () => {
   });
 
   it('writes in-game currency as a grouped count and its name', () => {
-    expect(formatDonation({ names: [{ name: 'A' }], amount: 100_000, currency: 'gold' })).toBe('100,000 gold');
+    expect(formatDonation({ names: [{ name: 'A' }], amount: 100_000, currency: 'gold' })).toBe('100,000 Gold');
     expect(formatDonation({ names: [{ name: 'A' }], amount: 500, currency: 'credits' })).toBe('500 Tauri Credits');
   });
 });
