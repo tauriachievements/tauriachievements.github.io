@@ -315,6 +315,67 @@ describe('RaidLogsProgressionPageComponent All groups', () => {
   });
 });
 
+describe('RaidLogsProgressionPageComponent guild search', () => {
+  beforeEach(() => {
+    vi.useFakeTimers({ toFake: ['Date'] });
+    vi.setSystemTime(new Date('2026-10-29T12:00:00Z'));
+  });
+
+  afterEach(() => vi.useRealTimers());
+
+  function search(harness: RouterTestingHarness, element: HTMLElement, query: string) {
+    const input = element.querySelector<HTMLInputElement>('app-search-suggestions input')!;
+    input.dispatchEvent(new FocusEvent('focusin', { bubbles: true }));
+    input.value = query;
+    input.dispatchEvent(new Event('input'));
+    harness.detectChanges();
+  }
+
+  const suggestions = (element: HTMLElement) => [...element.querySelectorAll('app-search-suggestions .suggestions a')].map(link => [
+    link.querySelector('.suggestion-name')?.textContent,
+    link.querySelector('.suggestion-rank')?.textContent,
+    link.querySelector('.suggestion-value')?.textContent,
+    link.getAttribute('href')
+  ]);
+
+  const noMatch = (element: HTMLElement) => element.querySelector('app-search-suggestions .search-empty')?.textContent?.trim();
+
+  it('suggests the guilds in the list with their rank and progress, and links each to its page on the difficulty shown', async () => {
+    const { harness, element } = await open(indexFile);
+    expect(element.querySelector<HTMLInputElement>('app-search-suggestions input')?.placeholder).toBe('Find a guild…');
+
+    search(harness, element, 'o');
+    expect(suggestions(element)).toEqual([
+      ['Outlaws', '#2', '1/3', '/raid-logs/guild/tauri/Outlaws?difficulty=mythic'],
+      ['Newcomers', '#3', '1/3', '/raid-logs/guild/evermoon/Newcomers?difficulty=mythic']
+    ]);
+  });
+
+  it('searches the list the period and the filters show, with the ranks they give', async () => {
+    const week = await open(weekFile, '/raid-logs/guilds?period=week');
+    search(week.harness, week.element, 'mir');
+    expect(suggestions(week.element)).toEqual([['Miracle', '#2', '1/3', '/raid-logs/guild/evermoon/Miracle?difficulty=mythic']]);
+
+    search(week.harness, week.element, 'new');
+    expect(suggestions(week.element)).toEqual([]);
+    expect(noMatch(week.element)).toBe('No guild by that name in this list.');
+
+    TestBed.resetTestingModule();
+    const alliance = await open(indexFile, '/raid-logs/guilds?faction=alliance');
+    search(alliance.harness, alliance.element, 'outlaws');
+    expect(suggestions(alliance.element)).toEqual([['Outlaws', '#1', '1/3', '/raid-logs/guild/tauri/Outlaws?difficulty=mythic']]);
+  });
+
+  it('leaves the pickup groups out on All groups, and gives the guilds their rank among them', async () => {
+    const { harness, element } = await open(pickupFile, '/raid-logs/guilds?groups=all', pickupBossFiles);
+    search(harness, element, 'mir');
+    expect(suggestions(element)).toEqual([['Miracle', '#2', '1/3', '/raid-logs/guild/evermoon/Miracle?difficulty=mythic']]);
+
+    search(harness, element, 'pickup');
+    expect(suggestions(element)).toEqual([]);
+  });
+});
+
 describe('RaidLogsProgressionPageComponent pages', () => {
   const manyGuilds: RaidLogsIndexFile = {
     ...indexFile,

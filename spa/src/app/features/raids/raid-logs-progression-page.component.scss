@@ -25,6 +25,8 @@
 
 .groups-switch { margin-left: auto; }
 
+.guild-search { flex: 0 1 360px; }
+
 .guild-name { display: inline-flex; align-items: center; gap: 8px; }
 tr.cleared:not(.pickup) .guild-name .strong { color: $gold; }
 tr.pickup .guild-name .strong { color: $pickup-silver; font-weight: 400; }
@@ -60,6 +62,7 @@ tr.pickup .guild-name { vertical-align: middle; }
   .groups-switch button,
   .period-switch button { flex: 1 1 0; }
   .filter-slot { min-width: 0; flex: 1 1 0; }
+  .guild-search { flex-basis: 100%; }
   .filter-reset:disabled { display: none; }
   .pips { display: none; }
   .progress { flex-wrap: wrap; gap: 3px 6px; }

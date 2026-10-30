@@ -1,4 +1,5 @@
 import { realmSlug } from '../../game/wow';
+import { foldName, searchByName } from '../../shared/search-suggestions';
 import { RaidGuild, RaidKill, RaidKillDetails } from './raid-logs.types';
 import { characterKey, guildKey, logKey, raidWeekStart } from './raid-logs';
 
@@ -167,6 +168,13 @@ export function filterProgression(rows: readonly GuildProgress[], filter: Progre
     .filter(row => (filter.faction === undefined || row.faction === filter.faction)
       && (filter.realm === undefined || realmSlug(row.realm) === filter.realm))
     .map((row, index) => ({ ...row, rank: index + 1 }));
+}
+
+export type RankedGuild = GuildProgress & { guild: RaidGuild };
+
+export function searchGuilds(rows: readonly GuildProgress[], query: string, limit: number): RankedGuild[] {
+  const guilds = rows.filter((row): row is RankedGuild => !!row.guild?.name);
+  return searchByName(guilds, query, limit, row => foldName(row.guild.name));
 }
 
 export interface ProgressChange {

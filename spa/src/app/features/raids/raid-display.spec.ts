@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
+  DIFFICULTY_COLORS,
+  guildSuggestion,
   formatAgo,
   formatAmount,
   formatFightTime,
@@ -59,5 +61,41 @@ describe('formatting', () => {
 
   it('links a log by its realm and id', () => {
     expect(raidLogLink({ realm: 'WoD', logId: 283007 })).toEqual(['/raid-logs', 'log', 'wod', 283007]);
+  });
+});
+
+describe('guildSuggestion', () => {
+  const guild = (faction: number) => ({
+    rank: 11,
+    key: 'Evermoon/Cara Máxima',
+    guild: { name: 'Cara Máxima', realm: 'Evermoon', faction, id: 7 },
+    realm: 'Evermoon',
+    faction,
+    firsts: Array.from({ length: 7 }, () => undefined),
+    killed: 5,
+    progressedAt: 0,
+    kills: 25
+  });
+
+  it('shows the faction, the guild, its realm, its rank and its progress, and opens the guild on the difficulty shown', () => {
+    expect(guildSuggestion(guild(0), 'mythic')).toEqual({
+      key: 'Evermoon/Cara Máxima',
+      link: ['/raid-logs', 'guild', 'evermoon', 'Cara Máxima'],
+      queryParams: { difficulty: 'mythic' },
+      name: 'Cara Máxima',
+      mark: '#3b78d8',
+      detail: 'Evermoon',
+      rank: 11,
+      value: '5/7',
+      valueColor: DIFFICULTY_COLORS['mythic']
+    });
+  });
+
+  it('marks a Horde guild red and colours the progress by difficulty', () => {
+    const heroic = guildSuggestion(guild(1), 'heroic');
+
+    expect(heroic.mark).toBe('#c8322e');
+    expect(heroic.valueColor).toBe(DIFFICULTY_COLORS['heroic']);
+    expect(heroic.queryParams).toEqual({ difficulty: 'heroic' });
   });
 });

@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { MythicPlusIndex, MythicPlusMember, MythicPlusRun, characterKey, playerRanks, rankPlayers } from './mythic-plus';
 import {
   characterParam,
+  characterSuggestion,
   findCharacters,
   formatTopPercent,
   frequentTeammates,
@@ -121,6 +122,30 @@ describe('searchCharacters', () => {
     expect(xyhop.member.realm).toBe('Evermoon');
     expect(xyhop.member.className).toBe('Rogue');
     expect(xyhop.member.profileLink).toEqual(['/mythic-plus', 'character', 'evermoon', 'Xyhop']);
+  });
+});
+
+describe('characterSuggestion', () => {
+  it('shows the class icon, the name in its class colour, the realm and the score, and opens the profile', () => {
+    const [found] = searchCharacters(rankPlayers([run('nl', 250, [member('Xyhop', { class: 4, spec: 'Outlaw' })])]), 'xyhop', { limit: 8 });
+    const xyhop = { ...found, score: 1064.54 };
+
+    expect(characterSuggestion(xyhop, 'en-US')).toEqual({
+      key: 'Xyhop|Evermoon',
+      link: ['/mythic-plus', 'character', 'evermoon', 'Xyhop'],
+      name: 'Xyhop',
+      color: xyhop.member.color,
+      icon: xyhop.member.classIcon,
+      iconLabel: 'Rogue',
+      detail: 'Evermoon',
+      value: '1,064.5'
+    });
+  });
+
+  it('writes the score with one decimal', () => {
+    const [found] = searchCharacters(rankPlayers([run('nl', 72, [member('Xyhopwarlock', { class: 9 })])]), 'xyhop', { limit: 8 });
+
+    expect(characterSuggestion({ ...found, score: 72 }, 'en-US').value).toBe('72.0');
   });
 });
 

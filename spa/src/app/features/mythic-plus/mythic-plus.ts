@@ -1,6 +1,7 @@
 import { DamageRange, Role } from '../../game/wow';
 import { specFor } from '../../game/wow-specs';
 import { formatClock } from '../../shared/time-format';
+import { foldName } from '../../shared/search-suggestions';
 
 export interface MythicPlusSeason {
   id: string;
@@ -419,8 +420,4 @@ export function foldedMemberName(member: Pick<MythicPlusMember, 'name'>): string
   }
 
   return folded;
-}
-
-export function foldName(value: string): string {
-  return value.normalize('NFD').replace(/\p{M}/gu, '').toLocaleLowerCase();
 }

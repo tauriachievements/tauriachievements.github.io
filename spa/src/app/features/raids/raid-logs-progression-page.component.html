@@ -72,6 +72,14 @@
               [title]="weekTitle"
               (click)="setPeriod('week')">This week</button>
           </div>
+          <app-search-suggestions
+            class="guild-search"
+            label="Find a guild"
+            listLabel="Matching guilds"
+            noMatchText="No guild by that name in this list."
+            [suggestions]="guildSuggestions()"
+            [ready]="pickupsReady()"
+            [(query)]="guildQuery" />
         </div>
       </header>
 

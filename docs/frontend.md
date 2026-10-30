@@ -12,7 +12,7 @@ folders:
 | Folder | Holds |
 |---|---|
 | `core/` | what the whole app runs on: the header (`update-bar`, `nav-sections.ts`, `page-header.ts`), the back-to-top button, `url-state.ts`, `page-links.ts` (links into one feature's pages from another's), `DataFileService`, `ObservableCache`, `time-zone-label.ts`, `image-placeholders.ts` |
-| `shared/` | building blocks any page may use: the filter dropdown, the role filter, the mobile filter toggle, `app-load-state`, `app-skeleton` with `skeleton.ts` and `_skeleton.scss`, `app-pager` and `pager.ts`, `app-icon-tips`, `appTapTooltip`, `compact-viewport.ts`, `time-format.ts`, `score-quality.ts`, `scan-change.ts`, `_mythic-plus-shared.scss` |
+| `shared/` | building blocks any page may use: the filter dropdown, the role filter, the mobile filter toggle, `app-load-state`, `app-skeleton` with `skeleton.ts` and `_skeleton.scss`, `app-pager` and `pager.ts`, `app-search-suggestions` and `search-suggestions.ts`, `app-icon-tips`, `appTapTooltip`, `compact-viewport.ts`, `time-format.ts`, `score-quality.ts`, `scan-change.ts`, `_mythic-plus-shared.scss` |
 | `shared/spec-charts/` | the spec and race popularity charts the Mythic+ and Raids statistics share: `spec-popularity.ts`, `race-popularity.ts`, `app-race-by-spec`, and `spec-chart.scss`, the chart look every spec chart lists first in its `styleUrls` |
 | `shared/motion/` | the motion directives and their helpers (`motion.ts`, `count-up.ts`, `decode-text.ts`) |
 | `game/` | the game's own tables and links: `wow.ts`, `wow-specs.ts`, `class-colors.ts`, `armory.ts`, the class and race icon helpers, and the asset paths in `classIconHelper.ts` (class icons, class crests, spec art) |
@@ -170,17 +170,27 @@ The query parameters each page reads:
 
 On the Mythic+ leaderboard and guild ladder, a `spec` counts only when it belongs to the
 `class` in the same URL. A `Name-Realm` value splits on its last hyphen: character names can't
-hold one. Name searches ignore case and accents (`nameMatches`, `memberNameMatches`: `sosa`
-finds Sósa), while a picked character matches name and realm exactly.
+hold one. Name searches ignore case and accents (`foldName` in `shared/search-suggestions.ts`,
+which `nameMatches` and `memberNameMatches` use: `sosa` finds Sósa), while a picked character
+matches name and realm exactly.
 
-The Mythic+ boxes that suggest characters as you type all call `searchCharacters`
-(`mythic-plus-profile.ts`): names that start with the query come first, then names that contain
-it, each group in ranking order, up to a limit and without the characters it excludes. They are
-the character page's header search (`app-mythic-plus-character-search`, 8 suggestions that open
-the character's page), its Compare box (8, without the character shown), its search on the
-"No Mythic+ runs this season" page (20), and the compare page's "Add a player…" (8, without
-the characters picked). In the header search, Enter opens the top suggestion, Escape clears the
-box, and a pick empties it. The leaderboard and guild ladder searches filter their tables
+Every box that suggests names as you type orders them with `searchByName`
+(`shared/search-suggestions.ts`): names that start with the query come first, then names that
+contain it, each group in list order, up to a limit.
+
+- On the Mythic+ pages, `searchCharacters` (`mythic-plus-profile.ts`) wraps it and leaves out
+  the characters it's told to exclude. It serves the character page's header search (8
+  suggestions that open the character's page), its Compare box (8, without the character
+  shown), its search on the "No Mythic+ runs this season" page (20), and the compare page's
+  "Add a player…" (8, without the characters picked).
+- On the Raids Guilds page, `searchGuilds` (`raid-progression.ts`) searches the list as it's
+  shown: the difficulty, the period, Guilds or All groups, and the faction and realm filters.
+  It leaves the pickup groups out (they have no name) and keeps each guild's rank in that list.
+  It suggests 8, and each opens the guild's page on the difficulty shown.
+
+The two searches that open a page, the Mythic+ header search and the Guilds search, are one
+shared component, `app-search-suggestions` ([Shared building blocks](#shared-building-blocks)).
+The leaderboard, guild ladder, Raids Rankings and boss page searches filter their tables
 instead.
 
 ## Loading data
@@ -351,6 +361,7 @@ decision (ask first).
 | `app-mythic-plus-week-affixes` | this week's affixes with their descriptions (leaderboard and stats page). On phones it shows icons only and its tooltips position against the row around it, which needs `position: relative` |
 | `app-back-to-top-button` | the floating back-to-top button |
 | `app-pager` (`pager.component`) | every list split into pages: « First, ‹ Prev, Next ›, Last ». `<app-pager [page]="currentPage()" [pages]="pages()" [count]="(total() \| number) + ' characters'" [scrollTarget]="listSection" (pageChange)="goToPage($event)" />`. With `count`, it shows "Page 3 of 41 · 2,034 characters" after the buttons, and anything inside it (the M+ dungeon timer) sits there too. It emits only a page in range that differs from the current one, and the page writes it to `?page=`. Given a `scrollTarget`, the pager under a list scrolls back to the list's top after a change; give that element a `scroll-margin-top` that clears the header. `pageCount` and `pageSlice` (`pager.ts`) do the page maths. The Mythic+ leaderboard, the Raids Rankings, Guilds and boss pages, Rated Battlegrounds and Rare Items use it. A list that grows in place ("Show 50 more") isn't a pager |
+| `app-search-suggestions` (`search-suggestions.component`) | a search box that suggests as you type and opens the page you pick: the Mythic+ character page's header search (inside `app-mythic-plus-character-search`) and the Raids Guilds page's guild search. `<app-search-suggestions label="Find a guild" listLabel="Matching guilds" noMatchText="No guild by that name in this list." [suggestions]="guildSuggestions()" [ready]="pickupsReady()" [(query)]="guildQuery" />`. The page works out the suggestions from `query`, each a `SearchSuggestion` (`search-suggestions.ts`): its link and query parameters, then the row's cells, which are an `icon` image or a `mark` colour square, the `name` (in `color`), a grey `detail`, an optional `#rank`, and the `value` (in `valueColor`). Enter opens the top suggestion, Escape empties the box, and so does a pick. It shows `noMatchText` only while `ready` is true, so a list still loading never reads as "no match". The page sizes its host: 300 px in the Mythic+ header, 360 px on Guilds (guild names run longer), and the full row on phones |
 | `appBottomBar` (`core/bottom-bar.directive.ts`) | a bar fixed to the bottom of the screen, such as the Mythic+ compare tray. It publishes its height as `--bottom-bar-height`, so on phones the page end and the back-to-top button stay above it ([below](#the-app-shell-and-the-header-height-contract)) |
 | `app-load-state` | a page's loading skeleton and its error box with "Try again": `<app-load-state [loading]="isLoading()" [error]="loadError()" [skeleton]="['tiles:5', 'rows:10']" loadingText="Reading the logs..." (retry)="loadData()" />`. It renders nothing once loaded; content inside it shows in the error box (the character page's difficulty switch). Without `[skeleton]` it shows a spinner. The Mythic+ and Raids pages use it; the older pages and the themed Arena, Emerald Nightmare and Rare Items pages keep their own error boxes and use `app-skeleton` directly |
 | `app-skeleton` | the shape of a page while its data loads: `<app-skeleton [blocks]="['rows:12']" label="Loading guild rankings..." />`, `bare` inside a card that is already on screen ([Loading skeletons](#loading-skeletons)) |
@@ -361,7 +372,7 @@ decision (ask first).
 | `formatClock()`, `formatDuration()` (`shared/time-format.ts`) | seconds as `29:07` / `1:02:05`, or the fixed-width `00:29:07` |
 | `scoreQuality()` (`shared/score-quality.ts`) | a score's item-quality tier against the best score (`artifact` down to `uncommon`), for the `quality-colors` mixin |
 | `shared/scan-change.ts` | changes since the last scan on a leaderboard: `scanChanges(current, previous, key, value)` compares two rankings (each entry's place in its list is its rank) and gives each changed entry its ranks climbed, its value change and whether it's new; `signedChange` (`+24`, `−12`), `rankChangeLabel` and `valueChangeLabel` for the marks' titles. The raid leaderboard, Arena and Rated Battlegrounds use it, with the `scan-change-marks` mixin |
-| Raids helpers | in `raid-display.ts`: `nameMatches` for name search, `parseBossView` for a boss page's `?tab=` and `?role=`, `FACTION_FILTERS` for a faction dropdown and `?faction=` (`horde`, `alliance`), the links, icon URLs and number formats, and `DIFFICULTY_COLORS` for code that draws (the same colours as `$difficulty-colors` in `_raid-logs-shared.scss`, so change both); in `raid-logs.ts`: `bossShortName` (a boss's `shortName`) for tiles, table cells and other tight spots: the name up to its first comma, or a shorter name from `BOSS_SHORT_NAMES` ("Elerethe", "Dragons"). A long boss name in a new raid gets an entry there |
+| Raids helpers | in `raid-display.ts`: `nameMatches` for name search, `parseBossView` for a boss page's `?tab=` and `?role=`, `FACTION_FILTERS` for a faction dropdown and `?faction=` (`horde`, `alliance`), the links, icon URLs and number formats, `DIFFICULTY_COLORS` and `FACTION_COLORS` for code that draws (the same colours as `$difficulty-colors` and the `faction-marks` mixin in `_raid-logs-shared.scss`, so change both), and `guildSuggestion`, a guild's row in the Guilds search; in `raid-logs.ts`: `bossShortName` (a boss's `shortName`) for tiles, table cells and other tight spots: the name up to its first comma, or a shorter name from `BOSS_SHORT_NAMES` ("Elerethe", "Dragons"). A long boss name in a new raid gets an entry there |
 | `_tables.scss` (forwarded by `_mythic-plus-shared.scss`) | the phone rules every table shares: `table-scroll`, `phone-columns` (`phone-hidden`, `narrow-phone-hidden`, `phone-only`), `phone-detail-rows`, `fluid-cell`, `fluid-identity`, `truncate`, and `$phone-breakpoint` / `$narrow-phone-breakpoint` ([Tables on phones](#tables-on-phones)) |
 | `_mythic-plus-shared.scss` | mixins such as `tooltip-box`, `quality-colors`, `visually-hidden` (and `hidden-visually`, its declarations alone), `motion-safe`, `glide-pill`, `week-bands` (a chart's affix-week bands), `details-reveal` ([motion](motion-and-rendering.md)), `filter-reset` (a toolbar's Reset button, greyed out while there's nothing to reset; the Raids Rankings, Guilds and Talent Analytics pages and Rare Items). `crest-glow` needs `isolation: isolate` on the crest's parent, so the glow sits under the crest and above the parent's background. `spotlight-card` takes the card's `::before` and `::after`. `scan-change-marks($drop-color)` styles the since-the-last-scan marks: `.rank-move` (with `.move-arrow`) beside a rank, `.value-change` beside a value, both green with `.up` and `$drop-color` without, and `.rank-new` (the `new-tag` mixin's gold "new"). The raid leaderboard's drops are grey, the PvP pages' red ([scoring.md](scoring.md#arena-changes-since-the-last-scan)) |
 | `_raid-logs-shared.scss` | forwards the M+ mixins, and adds `raid-table` (with the phone column rules and `phone-fluid` cells), `boss-picker($count)`, `ranking-toolbar`, `difficulty-switch`, `segmented-switch` (the difficulty switch's pill look, for any other switch beside it), and `change-pill` (a guild's progress change, with `.positive` / `.negative`); `invalid-tag`, the red "Invalid" on a kill that doesn't count |
