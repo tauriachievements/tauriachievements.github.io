@@ -61,11 +61,15 @@ export interface GuildPage {
 }
 
 export const GUILD_PAGES = [
-  { key: 'endless', hash: 'f8c2a91d', name: 'Endless', realm: 'Evermoon' },
   { key: 'competence-optional', hash: 'a47d9c2e', name: 'Competence Optional', realm: 'Evermoon' },
   { key: 'miracle', hash: '6e2d8f14', name: 'Miracle', realm: 'Evermoon' },
   { key: 'outlaws', hash: '34c1426b', name: 'Outlaws', realm: 'Tauri' },
+  { key: 'endless', hash: 'f8c2a91d', name: 'Endless', realm: 'Evermoon' },
   { key: 'impaired', hash: 'c18e7b42', name: 'Impaired', realm: 'Evermoon' },
+  { key: 'deeznuts', hash: '0a326714', name: 'deeznuts', realm: 'Evermoon' },
+  { key: 'nfa', hash: '87da69ea', name: 'NFA', realm: 'Evermoon' },
+  { key: 'vistustan', hash: '72be7ddb', name: 'Vistustan', realm: 'Evermoon' },
+  { key: 'skill-issue', hash: '26f105b6', name: 'Skill Issue', realm: 'Evermoon' },
   { key: 'highly-regarded', hash: 'd74a9e3c', name: 'Highly Regarded', realm: 'Evermoon' }
 ] as const satisfies readonly GuildPage[];
 

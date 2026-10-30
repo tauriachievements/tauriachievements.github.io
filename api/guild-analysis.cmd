@@ -24,22 +24,34 @@ if errorlevel 1 (
 
 set /a GUILD_COUNT=0
 
-call :ScanGuild "Evermoon" "Endless"
-if errorlevel 1 goto :ScanFailed
-
 call :ScanGuild "Evermoon" "Competence Optional"
 if errorlevel 1 goto :ScanFailed
 
-call :ScanGuild "Evermoon" "Highly Regarded"
-if errorlevel 1 goto :ScanFailed
-
-call :ScanGuild "Evermoon" "Impaired"
+call :ScanGuild "Evermoon" "Miracle"
 if errorlevel 1 goto :ScanFailed
 
 call :ScanGuild "Tauri" "Outlaws"
 if errorlevel 1 goto :ScanFailed
 
-call :ScanGuild "Evermoon" "Miracle"
+call :ScanGuild "Evermoon" "Endless"
+if errorlevel 1 goto :ScanFailed
+
+call :ScanGuild "Evermoon" "Impaired"
+if errorlevel 1 goto :ScanFailed
+
+call :ScanGuild "Evermoon" "deeznuts"
+if errorlevel 1 goto :ScanFailed
+
+call :ScanGuild "Evermoon" "NFA"
+if errorlevel 1 goto :ScanFailed
+
+call :ScanGuild "Evermoon" "Vistustan"
+if errorlevel 1 goto :ScanFailed
+
+call :ScanGuild "Evermoon" "Skill Issue"
+if errorlevel 1 goto :ScanFailed
+
+call :ScanGuild "Evermoon" "Highly Regarded"
 if errorlevel 1 goto :ScanFailed
 
 if %GUILD_COUNT% equ 0 (
