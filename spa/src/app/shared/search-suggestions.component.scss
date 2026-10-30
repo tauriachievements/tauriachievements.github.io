@@ -46,7 +46,7 @@ input {
   z-index: 20;
   top: calc(100% + 4px);
   right: 0;
-  left: 0;
+  width: max(100%, var(--search-suggestions-width, 0px));
   margin: 0;
   padding: 4px;
   border: 1px solid #3a3a3a;
