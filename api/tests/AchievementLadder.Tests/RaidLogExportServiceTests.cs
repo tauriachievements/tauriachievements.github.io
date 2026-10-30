@@ -1293,10 +1293,7 @@ public sealed class RaidLogExportServiceTests
             Assert.Equal(0, rerun.ReadLogCount);
             var index = Parse(File.ReadAllText(Path.Combine(outputDirectory, "index.json")));
             Assert.Equal(
-                [
-                    "Tauri 15 Tauri 10,1,1,1,1,1,1",
-                    "Tauri 16 Evermoon 100,1,1,1,1,1,1",
-                ],
+                ["Tauri 15 Tauri 10,1,1,1,1,1,1", "Tauri 16 Evermoon 100,1,1,1,1,1,1"],
                 index
                     .GetProperty("clears")
                     .EnumerateArray()
