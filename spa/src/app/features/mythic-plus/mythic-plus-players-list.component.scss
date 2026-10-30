@@ -142,6 +142,7 @@
 .col-overall { width: 120px; color: #9a9a9a; font-size: .85rem; font-variant-numeric: tabular-nums; }
 .col-best { width: 52px; color: #fff; font-size: .85rem; font-variant-numeric: tabular-nums; }
 td.over-time { color: #8a8a8a; }
+td.raised-score { color: #61d887; font-weight: 700; }
 
 .player-identity {
   display: inline-flex;
@@ -308,6 +309,8 @@ a.card-guild {
 
   b { color: #fff; font-variant-numeric: tabular-nums; }
   &.over-time b { color: #8a8a8a; }
+  &.raised-score { background: rgba(97, 216, 135, .14); }
+  &.raised-score b { color: #61d887; }
 }
 
 .card-score { position: relative; color: #fff; font-size: .95rem; text-align: right; font-variant-numeric: tabular-nums; }

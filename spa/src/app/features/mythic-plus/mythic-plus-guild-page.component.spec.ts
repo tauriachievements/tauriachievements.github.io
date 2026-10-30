@@ -50,7 +50,7 @@ const runs: Record<string, MythicPlusRunEntry[]> = {
     [14, 1600000, unix('2026-10-11T18:00:00Z'), 140, [], [[1, 1], [3, 3]]]
   ],
   dht: [
-    [15, 1500000, unix('2026-10-12T18:00:00Z'), 150, [], [[1, 1], [2, 2]]],
+    [15, 1500000, unix('2026-10-14T18:00:00Z'), 150, [], [[1, 1], [2, 2]]],
     [12, 1600000, unix('2026-10-13T18:00:00Z'), 120, [], [[0, 4], [4, 3]]]
   ]
 };
@@ -139,6 +139,17 @@ describe('MythicPlusGuildPageComponent', () => {
       ['Newbie', undefined, true]
     ]);
     expect(texts(element, '.player-row .rank-change')).toEqual(['▲ 1', '▼ 1']);
+  });
+
+  it('marks the key that raised a member\'s score since the last scan', async () => {
+    const { page, element } = await open('/mythic-plus/guild/evermoon/Skill%20Issue');
+
+    expect(page.rows().map(row => [row.member.name, row.bests.map(best => best?.raisedScore)])).toEqual([
+      ['Polán', [false, true]],
+      ['Dksmus', [false, false]],
+      ['Newbie', [undefined, false]]
+    ]);
+    expect(element.querySelectorAll('.player-row td.raised-score')).toHaveLength(1);
   });
 
   it('ranks one role, renumbering the guild and the overall ranks and hiding the movement', async () => {

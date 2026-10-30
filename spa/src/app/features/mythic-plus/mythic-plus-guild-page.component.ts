@@ -273,9 +273,11 @@ export class MythicPlusGuildPageComponent implements OnInit {
     const standings = this.memberStandings();
     const overallFilters = this.overallFilters();
     const pageSize = this.pageSize();
+    const previousScan = this.index()?.previousGeneratedAt;
 
     return this.filteredLadder().slice(0, this.shownCount()).map(({ player, rank, overallRank, overallPosition }) => {
       const rankChange = changes?.get(player.key);
+      const scoreChange = rankChange === undefined ? 0 : standings.get(player.key)?.[2] ?? 0;
       const page = pageOfRank(overallPosition, pageSize);
       return {
         key: player.key,
@@ -283,13 +285,13 @@ export class MythicPlusGuildPageComponent implements OnInit {
         member: toMemberView({ ...player.member, spec: player.primarySpec }),
         score: player.score,
         color: playerColor(player.score),
-        change: rankChange === undefined ? undefined : { rank: rankChange, score: standings.get(player.key)?.[2] ?? 0 },
+        change: rankChange === undefined ? undefined : { rank: rankChange, score: scoreChange },
         newSinceLastScan: !!changes && rankChange === undefined,
         overall: {
           rank: overallRank,
           queryParams: { ...overallFilters, character: characterParam(player.member), page: page > 1 ? page : undefined }
         },
-        bests: bestRunCells(player.bestRuns, dungeons)
+        bests: bestRunCells(player.bestRuns, dungeons, scoreChange > 0 ? previousScan : undefined)
       };
     });
   });

@@ -101,6 +101,27 @@ describe('MythicPlusPageComponent data from two exports', () => {
     expect(page.pagedPlayers()[0].change).toBeUndefined();
     expect(page.pagedPlayers()[0].newSinceLastScan).toBe(false);
   });
+
+  it('marks the best run that raised a player\'s score since the last scan, only while the change shows', () => {
+    const raised = exportOf('eeeeeeeeeeee', [['Exkeito', 'Evermoon', '', 11, 4, 0]]);
+    raised.index.previousGeneratedAt = '2026-10-06T09:00:00Z';
+    raised.index.standings = [[196, 1, 4.5, 2]];
+    const page = createPage(new FakeDataFiles(raised.index, raised));
+
+    expect(page.pagedPlayers()[0].bests.map(best => best?.raisedScore)).toEqual([true]);
+
+    page.selectDungeon('cos');
+    expect(page.pagedPlayers()[0].bests.map(best => best?.raisedScore)).toEqual([false]);
+  });
+
+  it('marks no run when the score did not go up since the last scan', () => {
+    const flat = exportOf('ffffffffffff', [['Exkeito', 'Evermoon', '', 11, 4, 0]]);
+    flat.index.previousGeneratedAt = '2026-10-06T09:00:00Z';
+    flat.index.standings = [[196, 1, 0, -3]];
+    const page = createPage(new FakeDataFiles(flat.index, flat));
+
+    expect(page.pagedPlayers()[0].bests.map(best => best?.raisedScore)).toEqual([false]);
+  });
 });
 
 describe('MythicPlusPageComponent character and realm in the URL', () => {

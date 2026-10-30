@@ -48,7 +48,7 @@ function playerRow(name: string, guild?: string): PlayerRow {
     score: 300,
     color: 'rgb(163, 54, 237)',
     bests: [
-      { dungeon, keyLevel: 15, timed: true, upgrades: 2, clearTime: '00:30:00', score: 150 },
+      { dungeon, keyLevel: 15, timed: true, upgrades: 2, clearTime: '00:30:00', score: 150, raisedScore: false },
       undefined
     ]
   };
@@ -287,6 +287,30 @@ describe('MythicPlusPlayersListComponent', () => {
       expect(score.querySelector('.score-change')).toBeNull();
       if (!cards) {
         expect(score.classList).toContain('score-metric');
+      }
+    }
+  });
+
+  it('marks the keys that raised the score in tables and cards, and says so to screen readers', () => {
+    for (const cards of [true, false]) {
+      const fixture = TestBed.createComponent(MythicPlusPlayersListComponent);
+      const row = playerRow('Alpha');
+      const best = row.bests[0]!;
+      fixture.componentRef.setInput('rows', [{
+        ...row,
+        change: { score: 12.3, rank: 4 },
+        bests: [{ ...best, keyLevel: 21, raisedScore: true }, { ...best, dungeon: otherDungeon, keyLevel: 18 }]
+      }]);
+      fixture.componentRef.setInput('dungeons', [dungeon, otherDungeon]);
+      fixture.componentRef.setInput('cards', cards);
+      fixture.detectChanges();
+
+      const raised: HTMLElement[] = [...fixture.nativeElement.querySelectorAll('.raised-score')];
+      expect(raised).toHaveLength(1);
+      expect(raised[0].textContent).toContain('+21');
+      expect(raised[0].querySelector('.visually-hidden')?.textContent).toContain('raised the score since the last scan');
+      if (!cards) {
+        expect(raised[0].getAttribute('title')).toBe('Black Rook Hold +21 · 150.0 · raised the score since the last scan');
       }
     }
   });

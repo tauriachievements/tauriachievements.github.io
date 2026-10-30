@@ -27,6 +27,7 @@ export class MythicPlusPlayersListComponent {
   readonly ladder = input<'server' | 'guild'>('server');
 
   readonly upgradeStars = upgradeStars;
+  readonly raisedScoreLabel = 'raised the score since the last scan';
 
   rankChangeLabel(change: number): string {
     return change > 0
@@ -77,6 +78,7 @@ export class MythicPlusPlayersListComponent {
   bestTitle(best: BestRunCell | undefined): string {
     return best
       ? `${best.dungeon.name} +${best.keyLevel}${best.timed ? '' : ' (over time)'} · ${best.score.toFixed(1)}`
+        + (best.raisedScore ? ` · ${this.raisedScoreLabel}` : '')
       : '';
   }
 

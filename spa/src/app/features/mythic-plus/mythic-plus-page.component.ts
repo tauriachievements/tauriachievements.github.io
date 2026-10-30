@@ -317,6 +317,7 @@ export class MythicPlusPageComponent implements OnInit {
     const dungeons = this.playerDungeons();
     const showChanges = this.showStandingChanges();
     const changes = this.standingChanges();
+    const previousScan = this.index()?.previousGeneratedAt;
 
     const playerColor = this.playerColor();
     return pageSlice(this.filteredPlayers(), this.currentPage(), this.pageSize()).map(({ player, rank }) => {
@@ -329,7 +330,7 @@ export class MythicPlusPageComponent implements OnInit {
         color: playerColor(player.score),
         change,
         newSinceLastScan: showChanges && !change,
-        bests: bestRunCells(player.bestRuns, dungeons)
+        bests: bestRunCells(player.bestRuns, dungeons, change && change.score > 0 ? previousScan : undefined)
       };
     });
   });

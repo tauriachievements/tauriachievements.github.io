@@ -74,6 +74,7 @@ export interface BestRunCell {
   upgrades: number;
   clearTime: string;
   score: number;
+  raisedScore: boolean;
 }
 
 export interface PlayerRow {
@@ -105,8 +106,10 @@ export function toMemberView(member: MythicPlusMember): MemberView {
 
 export function bestRunCells(
   bestRuns: ReadonlyMap<string, MythicPlusRun>,
-  dungeons: readonly MythicPlusDungeon[]
+  dungeons: readonly MythicPlusDungeon[],
+  raisedSince?: string
 ): Array<BestRunCell | undefined> {
+  const raisedAfter = raisedSince ? Date.parse(raisedSince) : Infinity;
   return dungeons.map(dungeon => {
     const run = bestRuns.get(dungeon.id);
     const upgrades = run ? keystoneUpgrades(run.clearTimeSeconds, dungeon.timerSeconds) : 0;
@@ -116,7 +119,8 @@ export function bestRunCells(
       timed: upgrades > 0,
       upgrades,
       clearTime: formatDuration(run.clearTimeSeconds),
-      score: run.score
+      score: run.score,
+      raisedScore: Date.parse(run.completedAt) > raisedAfter
     };
   });
 }
