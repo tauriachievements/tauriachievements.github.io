@@ -58,6 +58,7 @@ import {
   MYTHIC_PLUS_PAGE_SIZE,
   PlayerRow,
   bestRunCells,
+  scoreGains,
   toMemberView
 } from './mythic-plus-views';
 import { MythicPlusWeekAffixesComponent } from './mythic-plus-week-affixes.component';
@@ -273,8 +274,14 @@ export class MythicPlusGuildPageComponent implements OnInit {
     const standings = this.memberStandings();
     const overallFilters = this.overallFilters();
     const pageSize = this.pageSize();
+    const scoreChangeOf = (key: string) => changes?.has(key) ? standings.get(key)?.[2] ?? 0 : 0;
+    const shown = this.filteredLadder().slice(0, this.shownCount());
+    const gains = scoreGains(
+      this.allRuns(),
+      shown.filter(({ player }) => scoreChangeOf(player.key) > 0).map(({ player }) => player.member),
+      this.index()?.previousGeneratedAt);
 
-    return this.filteredLadder().slice(0, this.shownCount()).map(({ player, rank, overallRank, overallPosition }) => {
+    return shown.map(({ player, rank, overallRank, overallPosition }) => {
       const rankChange = changes?.get(player.key);
       const page = pageOfRank(overallPosition, pageSize);
       return {
@@ -283,13 +290,13 @@ export class MythicPlusGuildPageComponent implements OnInit {
         member: toMemberView({ ...player.member, spec: player.primarySpec }),
         score: player.score,
         color: playerColor(player.score),
-        change: rankChange === undefined ? undefined : { rank: rankChange, score: standings.get(player.key)?.[2] ?? 0 },
+        change: rankChange === undefined ? undefined : { rank: rankChange, score: scoreChangeOf(player.key) },
         newSinceLastScan: !!changes && rankChange === undefined,
         overall: {
           rank: overallRank,
           queryParams: { ...overallFilters, character: characterParam(player.member), page: page > 1 ? page : undefined }
         },
-        bests: bestRunCells(player.bestRuns, dungeons)
+        bests: bestRunCells(player.bestRuns, dungeons, gains.get(player.key))
       };
     });
   });

@@ -8,7 +8,9 @@ import {
   MythicPlusDungeon,
   MythicPlusMember,
   MythicPlusRun,
+  characterKey,
   formatTimerDelta,
+  isBetterRun,
   keystoneUpgrades,
   runScoreColor,
   ScoreColors,
@@ -74,6 +76,19 @@ export interface BestRunCell {
   upgrades: number;
   clearTime: string;
   score: number;
+  raisedScore: boolean;
+  previousBest?: PreviousBest;
+}
+
+export interface PreviousBest {
+  keyLevel: number;
+  timed: boolean;
+  score: number;
+}
+
+export interface ScoreGain {
+  since: string;
+  earlierBests: ReadonlyMap<string, MythicPlusRun>;
 }
 
 export interface PlayerRow {
@@ -105,20 +120,63 @@ export function toMemberView(member: MythicPlusMember): MemberView {
 
 export function bestRunCells(
   bestRuns: ReadonlyMap<string, MythicPlusRun>,
-  dungeons: readonly MythicPlusDungeon[]
+  dungeons: readonly MythicPlusDungeon[],
+  gain?: ScoreGain
 ): Array<BestRunCell | undefined> {
+  const raisedAfter = gain ? Date.parse(gain.since) : Infinity;
   return dungeons.map(dungeon => {
     const run = bestRuns.get(dungeon.id);
-    const upgrades = run ? keystoneUpgrades(run.clearTimeSeconds, dungeon.timerSeconds) : 0;
-    return run && {
+    if (!run) {
+      return undefined;
+    }
+
+    const upgrades = keystoneUpgrades(run.clearTimeSeconds, dungeon.timerSeconds);
+    const raisedScore = Date.parse(run.completedAt) > raisedAfter;
+    const previous = raisedScore ? gain?.earlierBests.get(dungeon.id) : undefined;
+    return {
       dungeon,
       keyLevel: run.keyLevel,
       timed: upgrades > 0,
       upgrades,
       clearTime: formatDuration(run.clearTimeSeconds),
-      score: run.score
+      score: run.score,
+      raisedScore,
+      previousBest: previous && {
+        keyLevel: previous.keyLevel,
+        timed: keystoneUpgrades(previous.clearTimeSeconds, dungeon.timerSeconds) > 0,
+        score: previous.score
+      }
     };
   });
+}
+
+export function scoreGains(
+  runs: readonly MythicPlusRun[],
+  players: readonly Pick<MythicPlusMember, 'name' | 'realm'>[],
+  since: string | undefined
+): Map<string, ScoreGain> {
+  if (!since || !players.length) {
+    return new Map();
+  }
+
+  const earlierBests = new Map(players.map(player => [characterKey(player), new Map<string, MythicPlusRun>()]));
+  const names = new Set(players.map(player => player.name));
+  const cutoff = new Date(since).toISOString();
+  for (const run of runs) {
+    if (run.completedAt > cutoff) {
+      continue;
+    }
+
+    for (const member of run.roster) {
+      const bests = names.has(member.name) ? earlierBests.get(characterKey(member)) : undefined;
+      const best = bests?.get(run.dungeon);
+      if (bests && (!best || isBetterRun(run, best))) {
+        bests.set(run.dungeon, run);
+      }
+    }
+  }
+
+  return new Map([...earlierBests].map(([key, bests]) => [key, { since, earlierBests: bests }]));
 }
 
 export function toRunView(
