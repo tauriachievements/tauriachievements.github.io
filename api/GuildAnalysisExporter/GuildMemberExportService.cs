@@ -70,6 +70,7 @@ public sealed class GuildMemberExportService(
         };
 
     private const int UnderlightAnglerId = 133755;
+    private const int ExportedLevel = 110;
 
     private readonly string _outputDirectory = Path.GetFullPath(outputDirectory);
     private readonly ITauriApiClient _apiClient = apiClient;
@@ -156,7 +157,7 @@ public sealed class GuildMemberExportService(
             StringComparer.OrdinalIgnoreCase
         );
 
-        Console.WriteLine($"Loading The Nightfallen reputation for {playerNames.Count} players...");
+        Console.WriteLine($"Loading character sheets for {playerNames.Count} players...");
 
         var characterResults = new Dictionary<string, CharacterScanResult>(
             StringComparer.OrdinalIgnoreCase
@@ -167,54 +168,38 @@ public sealed class GuildMemberExportService(
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            var reputation = await LoadNightfallenReputationAsync(
+            var details = await LoadLevel110CharacterDetailsAsync(
                 apiRealmName,
                 playerName,
                 cancellationToken
             );
-            ArtifactResult artifact;
-            CharacterDetailsResult details;
-            if (reputation.IsLevel110)
+            if (details is { } level110Details)
             {
-                artifact = await LoadArtifactDetailsAsync(
+                var artifact = await LoadArtifactDetailsAsync(
                     apiRealmName,
                     playerName,
                     cancellationToken
                 );
-                details = await LoadCharacterDetailsAsync(
-                    apiRealmName,
-                    playerName,
-                    cancellationToken
-                );
+                characterResults[playerName] = new CharacterScanResult(artifact, level110Details);
             }
-            else
-            {
-                artifact = ArtifactResult.Excluded;
-                details = CharacterDetailsResult.Excluded;
-            }
-
-            characterResults[playerName] = new CharacterScanResult(reputation, artifact, details);
 
             processedPlayerCount++;
             if (processedPlayerCount % 25 == 0 || processedPlayerCount == playerNames.Count)
             {
                 Console.WriteLine(
-                    $"Scanned character reputations, artifacts, and item levels {processedPlayerCount}/{playerNames.Count}"
+                    $"Scanned character sheets and artifacts {processedPlayerCount}/{playerNames.Count}"
                 );
             }
         }
 
         var sortedRows = playerNames
-            .Where(playerName => characterResults[playerName].Reputation.IsLevel110)
+            .Where(characterResults.ContainsKey)
             .Select(playerName => new OutputRow(
                 playerName,
                 guildRankOrders[playerName],
                 guildRankNames[playerName],
                 characterResults[playerName]
             ))
-            .OrderBy(row => GetMaximumSortOrder(row.Reputation))
-            .ThenByDescending(row => row.Reputation.Reputation)
-            .ThenBy(row => row.PlayerName, StringComparer.OrdinalIgnoreCase)
             .ToList();
         var outputName = MakeFileNamePart(guildName).ToLowerInvariant();
         var outputPath = Path.Combine(_outputDirectory, outputName + ".json");
@@ -228,15 +213,7 @@ public sealed class GuildMemberExportService(
             cancellationToken
         );
 
-        var level110Count = characterResults.Values.Count(result => result.Reputation.IsLevel110);
-        var reputationCount = characterResults.Values.Count(result => result.Reputation.Found);
-        return new GuildMemberExportResult(
-            playerNames.Count,
-            level110Count,
-            reputationCount,
-            level110Count - reputationCount,
-            outputPath
-        );
+        return new GuildMemberExportResult(playerNames.Count, characterResults.Count, outputPath);
     }
 
     private async Task<ArtifactResult> LoadArtifactDetailsAsync(
@@ -401,7 +378,7 @@ public sealed class GuildMemberExportService(
         return traitCount;
     }
 
-    private async Task<CharacterDetailsResult> LoadCharacterDetailsAsync(
+    private async Task<CharacterDetailsResult?> LoadLevel110CharacterDetailsAsync(
         string realmName,
         string playerName,
         CancellationToken cancellationToken
@@ -418,9 +395,10 @@ public sealed class GuildMemberExportService(
             !result.Succeeded
             || result.ResponseElement is not { } response
             || response.ValueKind != JsonValueKind.Object
+            || ReadInt(response, "level") != ExportedLevel
         )
         {
-            return CharacterDetailsResult.Missing;
+            return null;
         }
 
         var averageItemLevel = CharacterItemLevelCalculator.Calculate(response);
@@ -432,7 +410,6 @@ public sealed class GuildMemberExportService(
         }
 
         return new CharacterDetailsResult(
-            true,
             ReadInt(response, "race"),
             ReadInt(response, "gender"),
             ReadInt(response, "class"),
@@ -490,69 +467,6 @@ public sealed class GuildMemberExportService(
             ? property.GetString() ?? string.Empty
             : string.Empty;
 
-    private async Task<ReputationResult> LoadNightfallenReputationAsync(
-        string realmName,
-        string playerName,
-        CancellationToken cancellationToken
-    )
-    {
-        var result = await _apiClient.FetchResponseElementAsync(
-            "character-reputation",
-            new { r = realmName, n = playerName },
-            $"character reputation for '{playerName}' on {realmName}",
-            cancellationToken
-        );
-
-        if (!result.Succeeded || result.ResponseElement is not { } response)
-        {
-            return ReputationResult.Excluded;
-        }
-
-        if (
-            response.ValueKind != JsonValueKind.Object
-            || !response.TryGetProperty("level", out var level)
-            || !level.TryGetInt32(out var levelValue)
-            || levelValue != 110
-        )
-        {
-            return ReputationResult.Excluded;
-        }
-
-        if (
-            !response.TryGetProperty("characterReputation", out var reputations)
-            || reputations.ValueKind != JsonValueKind.Array
-        )
-        {
-            return ReputationResult.Missing;
-        }
-
-        foreach (var reputation in reputations.EnumerateArray())
-        {
-            if (
-                reputation.ValueKind != JsonValueKind.Object
-                || !reputation.TryGetProperty("name", out var name)
-                || !string.Equals(
-                    name.GetString(),
-                    "The Nightfallen",
-                    StringComparison.OrdinalIgnoreCase
-                )
-                || !reputation.TryGetProperty("standings", out var standings)
-                || standings.ValueKind != JsonValueKind.Object
-                || !standings.TryGetProperty("rep", out var reputationValue)
-                || !reputationValue.TryGetInt32(out var reputationAmount)
-                || !standings.TryGetProperty("max", out var maximumValue)
-                || !maximumValue.TryGetInt32(out var maximumAmount)
-            )
-            {
-                continue;
-            }
-
-            return new ReputationResult(true, true, reputationAmount, maximumAmount);
-        }
-
-        return ReputationResult.Missing;
-    }
-
     private static string ResolveApiRealmName(string realmName) =>
         realmName.Trim().ToLowerInvariant() switch
         {
@@ -561,23 +475,6 @@ public sealed class GuildMemberExportService(
             "wod" => "[HU] Warriors of Darkness",
             _ => realmName.Trim(),
         };
-
-    private static int GetMaximumSortOrder(ReputationResult reputation)
-    {
-        if (!reputation.Found)
-        {
-            return 5;
-        }
-
-        return reputation.Maximum switch
-        {
-            21000 => 0,
-            12000 => 1,
-            6000 => 2,
-            3000 => 3,
-            _ => 4,
-        };
-    }
 
     private static string MakeFileNamePart(string value)
     {
@@ -632,8 +529,6 @@ public sealed class GuildMemberExportService(
                         : row.Result.Artifact.Specialization,
                     row.Result.Details.PlayedTime,
                     row.Result.Details.AchievementPoints,
-                    row.Reputation.Found ? row.Reputation.Reputation : null,
-                    row.Reputation.Found ? row.Reputation.Maximum : null,
                     row.Result.Artifact.Found
                     && !string.IsNullOrWhiteSpace(row.Result.Artifact.Name)
                         ? row.Result.Artifact.Name
@@ -670,18 +565,6 @@ public sealed class GuildMemberExportService(
         );
     }
 
-    private readonly record struct ReputationResult(
-        bool IsLevel110,
-        bool Found,
-        int Reputation,
-        int Maximum
-    )
-    {
-        public static ReputationResult Excluded => new(false, false, 0, 0);
-
-        public static ReputationResult Missing => new(true, false, 0, 0);
-    }
-
     private readonly record struct ArtifactResult(
         bool Found,
         int RelicCount,
@@ -692,9 +575,6 @@ public sealed class GuildMemberExportService(
         IReadOnlyList<ArtifactWeaponExport> Weapons
     )
     {
-        public static ArtifactResult Excluded =>
-            new(false, 0, 0, null, string.Empty, string.Empty, []);
-
         public static ArtifactResult Missing =>
             new(false, 0, 0, null, string.Empty, string.Empty, []);
     }
@@ -707,7 +587,6 @@ public sealed class GuildMemberExportService(
     );
 
     private readonly record struct CharacterDetailsResult(
-        bool Found,
         int Race,
         int Gender,
         int Class,
@@ -716,17 +595,9 @@ public sealed class GuildMemberExportService(
         int AchievementPoints,
         decimal? ItemLevel,
         IReadOnlyList<LegendaryItem> Legendaries
-    )
-    {
-        public static CharacterDetailsResult Excluded =>
-            new(false, 0, 0, 0, string.Empty, 0, 0, null, []);
-
-        public static CharacterDetailsResult Missing =>
-            new(false, 0, 0, 0, string.Empty, 0, 0, null, []);
-    }
+    );
 
     private readonly record struct CharacterScanResult(
-        ReputationResult Reputation,
         ArtifactResult Artifact,
         CharacterDetailsResult Details
     );
@@ -736,10 +607,7 @@ public sealed class GuildMemberExportService(
         int GuildRankOrder,
         string GuildRankName,
         CharacterScanResult Result
-    )
-    {
-        public ReputationResult Reputation => Result.Reputation;
-    }
+    );
 
     private sealed record GuildExport(
         string Timestamp,
@@ -762,8 +630,6 @@ public sealed class GuildMemberExportService(
         string Specialization,
         long PlayedTime,
         int AchievementPoints,
-        int? NightfallenReputation,
-        int? NightfallenReputationMaximum,
         string? ArtifactWeapon,
         int? ArtifactRelics,
         int? ArtifactTraits,

@@ -52,8 +52,6 @@ internal static class Program
 
             Console.WriteLine($"Scanned {result.ScannedPlayerCount} guild players.");
             Console.WriteLine($"Exported {result.PlayerCount} level 110 players.");
-            Console.WriteLine($"Nightfallen reputations found: {result.ReputationCount}");
-            Console.WriteLine($"Missing reputation data: {result.MissingReputationCount}");
             Console.WriteLine($"JSON file: {result.OutputPath}");
             return 0;
         }
