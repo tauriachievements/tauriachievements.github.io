@@ -35,6 +35,11 @@ export const DONATIONS: readonly Donation[] = [
     names: [{ name: 'Clouds' }, { name: 'Faenrin', classId: 6, realm: 'evermoon' }],
     amount: 150_000,
     currency: 'gold'
+  },
+  {
+    names: [{ name: 'Vicapriest', classId: 5, realm: 'evermoon' }],
+    amount: 50,
+    currency: 'eur'
   }
 ];
 
@@ -77,7 +82,12 @@ export const TESTIMONIALS: readonly Testimonial[] = [
     names: [{ name: 'Nap', classId: 11, realm: 'evermoon' }],
     from: 'discord'
   },
-  { quote: 'ngl Xyhop, this website you did is sick af', names: [{ name: 'Hutas' }], from: 'stoat' }
+  { quote: 'ngl Xyhop, this website you did is sick af', names: [{ name: 'Hutas' }], from: 'stoat' },
+  {
+    quote: 'Fantastic work, man! Keep it up, the site and addon are both awesome!',
+    names: [{ name: 'Vicapriest', classId: 5, realm: 'evermoon' }],
+    from: 'discord'
+  }
 ];
 
 const SOURCE_LABELS: Record<TestimonialSource, string> = {
@@ -124,13 +134,14 @@ export function donationIcon(currency: DonationCurrency): string {
 
 export function formatDonation({ amount, currency }: Donation): string {
   if (currency === 'eur' || currency === 'usd') {
-    return amount.toLocaleString('en-US', {
-      style: 'currency',
-      currency: currency.toUpperCase(),
-      minimumFractionDigits: Number.isInteger(amount) ? 0 : 2
+    const fractionDigits = Number.isInteger(amount) ? 0 : 2;
+    const money = amount.toLocaleString('en-US', {
+      minimumFractionDigits: fractionDigits,
+      maximumFractionDigits: fractionDigits
     });
+    return currency === 'eur' ? `${money}€` : `$${money}`;
   }
 
   const count = amount.toLocaleString('en-US');
-  return currency === 'gold' ? `${count} gold` : `${count} Tauri Credits`;
+  return currency === 'gold' ? `${count} Gold` : `${count} Tauri Credits`;
 }
