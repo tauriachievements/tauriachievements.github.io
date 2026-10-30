@@ -42,7 +42,7 @@ describe('findNavLocation', () => {
   });
 
   it('leaves pages outside the navigation unmatched', () => {
-    expect(locate('/endless-f8c2a91d')).toBeUndefined();
+    expect(locate('/endless-9f4c446e-5fef-4265-b4c6-2fc5d61e5e59')).toBeUndefined();
     expect(locate('/k7m2q9v4x8p3n6z')).toBeUndefined();
   });
 

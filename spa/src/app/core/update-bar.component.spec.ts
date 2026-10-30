@@ -86,7 +86,7 @@ describe('UpdateBarComponent drawer', () => {
   });
 
   it('reads just "Menu" on a page outside the navigation', async () => {
-    const fixture = await render('/endless-f8c2a91d');
+    const fixture = await render('/endless-9f4c446e-5fef-4265-b4c6-2fc5d61e5e59');
     const toggle = query<HTMLButtonElement>(fixture, '.site-menu-toggle');
 
     expect(toggle.textContent?.trim()).toBe('Menu');

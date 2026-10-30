@@ -96,8 +96,10 @@ the page's store. The component keeps the URL, the filters and the event handler
   The first navigation is the exception (`skipInitialTransition`): it replaces the
   [boot skeleton](#the-boot-skeleton), and a transition there would fade through an empty page.
 - Shared URLs never break. A renamed page keeps a `redirectTo` from its old path (as with
-  `guild-realm-firsts` and `50-games-played-arenas`).
-- Unlisted routes are unlisted on purpose: the guild pages (`<key>-<8 hex>`) and the Rare Items
+  `guild-realm-firsts` and `50-games-played-arenas`). Guild pages are the exception: the GUID
+  in the address is the guild's access key, so a new GUID replaces the old address with no
+  redirect, and the owner sends the guild its new link.
+- Unlisted routes are unlisted on purpose: the guild pages (`<key>-<guid>`) and the Rare Items
   page. Don't add them to the nav or link to them from public pages.
 - Pages hosting: GitHub Pages serves `src/404.html` for any unknown path. It redirects to
   `/?p=<path>`, and `index.html` restores the path before Angular starts. Paths that contain a
