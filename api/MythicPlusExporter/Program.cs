@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using Tauri.Core.Configuration;
 using Tauri.Core.Infrastructure;
 
@@ -31,6 +32,7 @@ internal static class Program
             "MythicPlusExporter.csproj"
         );
         var solutionRoot = ProjectPaths.FindSolutionRoot(projectRoot);
+        var repoRoot = Path.GetFullPath(Path.Combine(solutionRoot, ".."));
         var settingsPath = ResolveSettingsPath(projectRoot, solutionRoot);
         var outputDirectory = Path.Combine(
             ProjectPaths.GetFrontendSrcDirectory(solutionRoot),
@@ -45,45 +47,41 @@ internal static class Program
             cancellationTokenSource.Cancel();
         };
 
+        var stopwatch = Stopwatch.StartNew();
         try
         {
             var settings = AppSettings.Load(settingsPath);
             using var apiClient = new TauriApiClient(settings.TauriApi);
             var exporter = new MythicPlusExportService(outputDirectory, apiClient);
 
-            Console.WriteLine(
-                $"Reading Mythic+ leaderboards for {string.Join(", ", options!.Realms)}..."
-            );
+            Console.WriteLine("Reading the Mythic+ leaderboards...");
+            var result = await exporter.ExportAsync(options!, cancellationTokenSource.Token);
 
-            var result = await exporter.ExportAsync(options, cancellationTokenSource.Token);
-            var dataset = result.Dataset;
-
-            Console.WriteLine();
-            foreach (var dungeon in dataset.Dungeons)
+            foreach (var line in MythicPlusConsoleReport.Summary(result, repoRoot))
             {
-                Console.WriteLine(
-                    $"{dungeon.Info.ShortName, -5} {dungeon.Map.Name, -28} {dungeon.Runs.Count, 6} runs  best {dungeon.BestScore:0.0}"
-                );
+                Console.WriteLine(line);
             }
 
+            Console.WriteLine();
             Console.WriteLine(
-                result.PreviousRunCount == 0
-                    ? $"New M+ runs: {dataset.RunCount} (first export)"
-                    : $"New M+ runs since last export: {dataset.RunCount - result.PreviousRunCount}"
+                $"Mythic+ export finished in {MythicPlusConsoleReport.Duration(stopwatch.Elapsed)}."
             );
-            Console.WriteLine($"Players: {dataset.Players.Count}");
-            Console.WriteLine($"Output: {result.OutputDirectory}");
-
             return 0;
         }
         catch (OperationCanceledException)
         {
-            Console.Error.WriteLine("Mythic+ export cancelled.");
+            Console.Error.WriteLine();
+            Console.Error.WriteLine(
+                $"Mythic+ export cancelled after {MythicPlusConsoleReport.Duration(stopwatch.Elapsed)}."
+            );
             return 1;
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Mythic+ export failed: {ex.Message}");
+            Console.Error.WriteLine();
+            Console.Error.WriteLine(
+                $"Mythic+ export failed after {MythicPlusConsoleReport.Duration(stopwatch.Elapsed)}: {ex.Message}"
+            );
             return 1;
         }
     }

@@ -1,4 +1,5 @@
 using System.Collections.Concurrent;
+using System.Diagnostics;
 using Tauri.Core.Infrastructure;
 
 namespace MythicPlusExporter;
@@ -8,11 +9,16 @@ public sealed record ChallengeLeaderboards(
     IReadOnlyList<string> Failures
 );
 
-public sealed class ChallengeLeaderboardReader(ITauriApiClient apiClient)
+public sealed class ChallengeLeaderboardReader(
+    ITauriApiClient apiClient,
+    TextWriter? progress = null
+)
 {
     private const string IndexEndpoint = "challenge-index";
     private const string LeaderboardEndpoint = "challenge-leaderboard";
     private const int MaxParallelLeaderboards = 4;
+
+    private readonly TextWriter _progress = progress ?? Console.Out;
 
     public async Task<ChallengeIndex> ReadIndexAsync(
         string realm,
@@ -39,14 +45,6 @@ public sealed class ChallengeLeaderboardReader(ITauriApiClient apiClient)
             throw new InvalidOperationException("challenge-index returned no challenge maps.");
         }
 
-        var skipped = index.Maps.Where(map => !MythicPlusCatalog.IsReleased(map.ChallengeId));
-        if (skipped.Any())
-        {
-            Console.WriteLine(
-                $"  Skipping unreleased: {string.Join(", ", skipped.Select(map => map.Name))}"
-            );
-        }
-
         return index with
         {
             Maps = [.. index.Maps.Where(map => MythicPlusCatalog.IsReleased(map.ChallengeId))],
@@ -61,6 +59,8 @@ public sealed class ChallengeLeaderboardReader(ITauriApiClient apiClient)
     {
         var runsByChallengeId = new ConcurrentDictionary<int, IReadOnlyList<ChallengeRun>>();
         var failures = new ConcurrentBag<string>();
+        var progressLock = new Lock();
+        var finished = 0;
 
         await Parallel.ForEachAsync(
             index.Maps,
@@ -71,27 +71,39 @@ public sealed class ChallengeLeaderboardReader(ITauriApiClient apiClient)
             },
             async (map, token) =>
             {
-                var runs = new List<ChallengeRun>();
-                foreach (var realm in realms)
+                var started = Stopwatch.GetTimestamp();
+                var (runs, failure) = await ReadLeaderboardAsync(map, realms, token);
+                var elapsed = Stopwatch.GetElapsedTime(started);
+
+                if (failure is null)
                 {
-                    var result = await apiClient.FetchResponseElementAsync(
-                        LeaderboardEndpoint,
-                        new { r = realm, id = map.ChallengeId },
-                        $"{map.Name} ({realm})",
-                        token
-                    );
-
-                    if (!result.Succeeded || result.ResponseElement is not { } response)
-                    {
-                        failures.Add($"{map.Name} ({realm}): {result.FailureMessage}");
-                        return;
-                    }
-
-                    runs.AddRange(ChallengeResponseParser.ParseLeaderboard(response));
+                    runsByChallengeId[map.ChallengeId] = runs;
+                }
+                else
+                {
+                    failures.Add(failure);
                 }
 
-                runsByChallengeId[map.ChallengeId] = runs;
-                Console.WriteLine($"  {map.Name}: {runs.Count} runs");
+                lock (progressLock)
+                {
+                    finished++;
+                    _progress.WriteLine(
+                        failure is null
+                            ? MythicPlusConsoleReport.LeaderboardRead(
+                                finished,
+                                index.Maps.Count,
+                                map.Name,
+                                runs.Count,
+                                elapsed
+                            )
+                            : MythicPlusConsoleReport.LeaderboardFailed(
+                                finished,
+                                index.Maps.Count,
+                                map.Name,
+                                elapsed
+                            )
+                    );
+                }
             }
         );
 
@@ -99,5 +111,32 @@ public sealed class ChallengeLeaderboardReader(ITauriApiClient apiClient)
             runsByChallengeId,
             [.. failures.Order(StringComparer.Ordinal)]
         );
+    }
+
+    private async Task<(List<ChallengeRun> Runs, string? Failure)> ReadLeaderboardAsync(
+        ChallengeMap map,
+        IReadOnlyList<string> realms,
+        CancellationToken cancellationToken
+    )
+    {
+        var runs = new List<ChallengeRun>();
+        foreach (var realm in realms)
+        {
+            var result = await apiClient.FetchResponseElementAsync(
+                LeaderboardEndpoint,
+                new { r = realm, id = map.ChallengeId },
+                $"{map.Name} ({realm})",
+                cancellationToken
+            );
+
+            if (!result.Succeeded || result.ResponseElement is not { } response)
+            {
+                return (runs, $"{map.Name} ({realm}): {result.FailureMessage}");
+            }
+
+            runs.AddRange(ChallengeResponseParser.ParseLeaderboard(response));
+        }
+
+        return (runs, null);
     }
 }
