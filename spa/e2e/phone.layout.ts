@@ -1,6 +1,6 @@
-import { expect, test } from '@playwright/test';
+import { Page, expect, test } from '@playwright/test';
 import { openPage } from './page-setup';
-import { PHONE_WIDTHS, SIDEWAYS_BY_DESIGN, VISUAL_PAGES } from './visual-pages';
+import { PHONE_WIDTHS, SIDEWAYS_BY_DESIGN, VISUAL_PAGES, VisualPage, WIDE_WIDTHS } from './visual-pages';
 
 interface Finding {
   readonly rule: 'scrolls-sideways' | 'cut-off' | 'text-cut' | 'covered-at-page-end';
@@ -87,22 +87,34 @@ function findControlsCoveredAtPageEnd(): Finding[] {
   return findings;
 }
 
+async function expectNoLayoutProblems(page: Page, visualPage: VisualPage, width: number): Promise<void> {
+  await openPage(page, visualPage);
+  const problems = await page.evaluate(findLayoutProblems, SIDEWAYS_BY_DESIGN.map(entry => entry.selector));
+  if (!visualPage.clicks?.length) {
+    await page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight));
+    await page.waitForTimeout(300);
+    problems.push(...(await page.evaluate(findControlsCoveredAtPageEnd)));
+  }
+  const unique = [...new Map(problems.map(problem => [`${problem.rule} ${problem.where}`, problem])).values()];
+  expect(unique.map(problem => `${problem.rule}: ${problem.where} | ${problem.detail}`), `${visualPage.path} at ${width} px`).toEqual([]);
+}
+
 for (const width of PHONE_WIDTHS) {
   test.describe(`${width} px`, () => {
     test.use({ viewport: { width, height: 780 }, isMobile: true, hasTouch: true });
 
     for (const visualPage of VISUAL_PAGES.filter(entry => !entry.fail && entry.only !== 'desktop')) {
-      test(visualPage.name, async ({ page }) => {
-        await openPage(page, visualPage);
-        const problems = await page.evaluate(findLayoutProblems, SIDEWAYS_BY_DESIGN.map(entry => entry.selector));
-        if (!visualPage.clicks?.length) {
-          await page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight));
-          await page.waitForTimeout(300);
-          problems.push(...(await page.evaluate(findControlsCoveredAtPageEnd)));
-        }
-        const unique = [...new Map(problems.map(problem => [`${problem.rule} ${problem.where}`, problem])).values()];
-        expect(unique.map(problem => `${problem.rule}: ${problem.where} | ${problem.detail}`), `${visualPage.path} at ${width} px`).toEqual([]);
-      });
+      test(visualPage.name, ({ page }) => expectNoLayoutProblems(page, visualPage, width));
+    }
+  });
+}
+
+for (const width of WIDE_WIDTHS) {
+  test.describe(`${width} px`, () => {
+    test.use({ viewport: { width, height: 900 } });
+
+    for (const visualPage of VISUAL_PAGES.filter(entry => entry.wide)) {
+      test(visualPage.name, ({ page }) => expectNoLayoutProblems(page, visualPage, width));
     }
   });
 }

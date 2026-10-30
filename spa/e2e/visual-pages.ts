@@ -8,6 +8,7 @@ export interface VisualPage {
   readonly only?: ViewportName;
   readonly fail?: readonly string[];
   readonly hold?: readonly string[];
+  readonly wide?: boolean;
 }
 
 export const VISUAL_PAGES: readonly VisualPage[] = [
@@ -19,8 +20,8 @@ export const VISUAL_PAGES: readonly VisualPage[] = [
   { name: 'rare-achievements', path: '/rare-achievements' },
   { name: 'new-rare-characters', path: '/new-rare-characters' },
   { name: 'ap-chest-looters', path: '/ap-chest-looters' },
-  { name: 'arena', path: '/arena' },
-  { name: 'arena-3v3', path: '/arena?bracket=3v3' },
+  { name: 'arena', path: '/arena', wide: true },
+  { name: 'arena-3v3', path: '/arena?bracket=3v3', wide: true },
   { name: 'battleground', path: '/battleground' },
   { name: 'rated-battleground', path: '/rated-battleground' },
   { name: 'rated-battleground-matches', path: '/rated-battleground?view=matches' },
@@ -94,7 +95,7 @@ export const VISUAL_PAGES: readonly VisualPage[] = [
   },
   { name: 'state-battleground-starts', path: '/battleground', clicks: ['.bg-count-row >> nth=0'] },
   { name: 'state-rated-battleground-history', path: '/rated-battleground', clicks: ['.player-history-trigger >> nth=0'] },
-  { name: 'state-arena-min-games', path: '/arena?bracket=3v3&games=30' },
+  { name: 'state-arena-min-games', path: '/arena?bracket=3v3&games=30', wide: true },
   { name: 'state-arena-min-games-menu', path: '/arena', clicks: ['#arenaMinGamesTrigger'] },
   { name: 'state-rare-achievements-filtered', path: '/rare-achievements?realm=Tauri&class=2' },
   { name: 'state-rare-items-class-season', path: '/k7m2q9v4x8p3n6z?class=6&season=malevolent' },
@@ -146,6 +147,8 @@ export const VISUAL_VIEWPORTS: ReadonlyArray<{ readonly name: ViewportName; read
 ];
 
 export const PHONE_WIDTHS: readonly number[] = [320, 360, 390, 412];
+
+export const WIDE_WIDTHS: readonly number[] = [641, 768, 1280];
 
 export const SIDEWAYS_BY_DESIGN: ReadonlyArray<{ readonly selector: string; readonly reason: string }> = [
   { selector: 'app-rated-battleground-page .match-tabs', reason: 'a swipe strip of match cards; the next card peeks in' },

@@ -253,7 +253,7 @@
 
   @include phone-columns;
 
-  th, td { padding: 12px 18px; border-bottom: 1px solid rgba(255, 255, 255, 0.055); text-align: left; }
+  th, td { padding: 12px; border-bottom: 1px solid rgba(255, 255, 255, 0.055); text-align: left; }
   th { background: rgba(0, 0, 0, 0.22); color: #958f80; font-size: 0.74rem; letter-spacing: 0.08em; text-transform: uppercase; }
   td { color: #cbc6ba; }
   .rank { width: 62px; color: #7f7a6e; text-align: right; }
@@ -327,7 +327,7 @@
   &:focus-visible { outline: 2px solid #f7b500; outline-offset: 4px; border-radius: 2px; }
 }
 
-.players-table.with-rank-changes th.rank { padding-right: 62px; }
+.players-table.with-rank-changes th.rank { padding-right: 56px; }
 
 .with-rank-changes .rank-cell {
   display: grid;
@@ -356,7 +356,26 @@
   .sort-button:hover .sort-arrow { visibility: visible; }
 }
 
-@media (max-width: 600px) {
+@media (max-width: 899px) {
+  .players-table {
+    th, td { padding: 12px 8px; }
+    .realm { display: none; }
+    .realm-inline { display: block; margin-top: 2px; color: #8f8a7d; font-size: 0.76rem; }
+    td.character { @include fluid-cell; }
+    td.character > * { display: block; @include truncate; }
+    td.character > .character-line { display: flex; gap: 6px; }
+    .character-line a { min-width: 0; @include truncate; }
+  }
+
+  .players-table.with-rank-changes th.rank { padding-right: 52px; }
+}
+
+@media (min-width: $phone-breakpoint + 1) and (max-width: 899px) {
+  .realm-inline .rank-move,
+  .realm-inline .rank-new { display: none; }
+}
+
+@media (max-width: $phone-breakpoint) {
   .arena-games-page { width: min(100% - 32px, 860px); padding-top: 46px; }
   .arena-header { padding: 18px 14px; }
   .feedback.error { flex-direction: column; padding: 28px 18px; }
@@ -380,12 +399,7 @@
     td { font-size: 0.88rem; }
     a { font-size: 0.84rem; }
 
-    .rank, .realm { display: none; }
-    .realm-inline { display: block; margin-top: 2px; color: #8f8a7d; font-size: 0.76rem; }
-    td.character { @include fluid-cell; }
-    td.character > * { display: block; @include truncate; }
-    td.character > .character-line { display: flex; gap: 6px; }
-    .character-line a { min-width: 0; @include truncate; }
+    .rank { display: none; }
     .spec-icon { width: 16px; height: 16px; }
     tbody tr.title-group td { padding: 9px 10px 8px; }
     .label-short { display: inline; }

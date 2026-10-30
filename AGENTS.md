@@ -106,8 +106,9 @@ There is no root package manager; each half has its own toolchain.
   screenshots of every page at 360 and 1280 px against a local baseline, for changes that
   should look the same ([docs/frontend.md](docs/frontend.md#visual-check)). Both run against
   the last `npm run build`. The first run needs `npx playwright install chromium`.
-- `npm run test:layout`: opens the same pages as a phone at 320, 360, 390 and 412 px and fails
-  on anything that scrolls sideways, runs past a box that clips it, or ends under a bottom bar
+- `npm run test:layout`: opens the same pages as a phone at 320, 360, 390 and 412 px (and the
+  entries marked `wide` at 641, 768 and 1280 px too) and fails on anything that scrolls
+  sideways, runs past a box that clips it, or ends under a bottom bar
   ([docs/frontend.md](docs/frontend.md#phone-layout-check)). It runs against the last
   `npm run build` and needs no baseline.
 

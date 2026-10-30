@@ -58,7 +58,9 @@ whose names match.
 A page that scrolls sideways, clips or ends under a bottom bar only in some state (a menu open, a
 filter set) reproduces as an entry in `spa/e2e/visual-pages.ts`, with the `path` and `clicks`
 that reach that state. `npm run test:layout` fails on the entry before the fix and passes after
-it. The entry stays, so the check guards the state from then on.
+it. The entry stays, so the check guards the state from then on. A bug wider than a phone (a
+tablet, a desktop) needs `wide: true` on the entry, so the check also opens it at 641, 768 and
+1280 px.
 
 ## Gotchas
 

@@ -457,7 +457,8 @@ Phones come first (see the product rules in [AGENTS.md](../AGENTS.md)).
 - Checking overflow: `npm run test:layout` ([below](#phone-layout-check)). By hand,
   `html, body { overflow-x: clip }` hides page overflow, so measure element rects, not
   `document.scrollWidth`. Some overflow only reproduces with mobile emulation (`isMobile`).
-  Look at 768 px too; the check covers 320 to 412.
+  Look at 768 px too: the check covers 320 to 412, and 641, 768 and 1280 only for entries
+  marked `wide`.
 - Known traps:
   - An absolutely positioned `.visually-hidden` inside a non-positioned `overflow-x: auto`
     table escapes the clip and widens the mobile layout viewport. Give the scroller
@@ -496,6 +497,12 @@ steps in order, and stop when the table fits:
    Battlegrounds), put the line inside the name cell instead.
 4. **Shorten labels.** Pair `<span class="phone-hidden">Shortest</span>` with
    `<span class="phone-only">Min</span>`, or the dungeon's `shortName` in an `<abbr>`.
+
+Past the phone breakpoint a table still has to fit its box. Most pages cap their column's
+width, so a table can scroll sideways on a tablet or a desktop too. The Arena table takes steps 1
+and 3 up to 899 px (the name gives way, the realm moves under it, cells keep 8 px a side) and
+fits all eight columns with 12 px a side from 900 px. Its entries in `e2e/visual-pages.ts`
+are marked `wide`, so the layout check covers those widths ([below](#phone-layout-check)).
 
 A few things scroll sideways by design: charts over time that open at the latest point
 (`appScrollToEnd`), a strip of cards you swipe through, and the Emerald Nightmare race
@@ -586,9 +593,10 @@ npm run test:visual:baseline`. Add `-- -g <name>` to capture only some pages.
 
 An entry in `e2e/visual-pages.ts` is a URL, optionally with `clicks` (selectors clicked in
 order before the screenshots, for menus, dropdowns and dialogs), `fill` (a selector and the text
-typed into it after the clicks, for a search box's suggestions), `only` (one viewport), and
+typed into it after the clicks, for a search box's suggestions), `only` (one viewport),
 `fail` or `hold` (regular expressions for data paths that answer 500, or never answer), which
-show a page's error and loading states.
+show a page's error and loading states, and `wide` (the layout check also opens it wider than a
+phone, [below](#phone-layout-check)).
 
 How it stays deterministic:
 
@@ -616,6 +624,11 @@ loading states are in, because their skeletons have to fit a phone like any page
 - text cut off without an ellipsis;
 - a link or button that sits under a bar fixed to the bottom of the screen at the end of the
   page.
+
+Entries marked `wide` are also opened at 641, 768 and 1280 px (`WIDE_WIDTHS`), as a desktop
+browser without touch: the first width past the phone breakpoint, a tablet, and the visual
+check's desktop. Many pages still scroll sideways at 768 px, so a page is marked `wide` once it
+fits there.
 
 It needs no baseline, so it gives the same answer on every machine. Run it against
 `npm run build`, like the visual check, which shares its page setup (`e2e/page-setup.ts`).
