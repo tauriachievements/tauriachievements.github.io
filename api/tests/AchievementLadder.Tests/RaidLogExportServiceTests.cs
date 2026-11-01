@@ -1231,6 +1231,44 @@ public sealed class RaidLogExportServiceTests
     }
 
     [Fact]
+    public async Task ExportAsync_PicksTheBestHealingOfTheHealersAndTanks()
+    {
+        var outputDirectory = CreateTempDirectory();
+        try
+        {
+            var api = new FakeRaidApiClient();
+            api.Rankings[(Tauri, Xavius, Mythic)] = [1];
+            api.Logs[(Tauri, 1)] = LogJson(
+                1,
+                Xavius,
+                Mythic,
+                1_790_000_000,
+                100_000,
+                null,
+                [],
+                Member("Healer", "", 5, 256, heal: 20_000_000, absorb: 0),
+                Member("Brewmaster", "", 10, 268, heal: 30_000_000, absorb: 5_000_000),
+                Member("Leecher", "", 8, 63, damage: 50_000_000, heal: 90_000_000, absorb: 0)
+            );
+
+            await Service(outputDirectory, api, PlayerGuildDirectory.Empty)
+                .ExportAsync(Options(), CancellationToken.None);
+
+            var index = Parse(File.ReadAllText(Path.Combine(outputDirectory, "index.json")));
+            var top = index.GetProperty("top").EnumerateArray().Single();
+            Assert.Equal(
+                ("Brewmaster", 350_000L),
+                (top.GetProperty("hps")[0].GetString(), top.GetProperty("hps")[4].GetInt64())
+            );
+            Assert.Equal("Leecher", top.GetProperty("dps")[0].GetString());
+        }
+        finally
+        {
+            Directory.Delete(outputDirectory, recursive: true);
+        }
+    }
+
+    [Fact]
     public async Task ExportAsync_ListsEachInstanceWithEveryBossDownAsAClear()
     {
         var outputDirectory = CreateTempDirectory();

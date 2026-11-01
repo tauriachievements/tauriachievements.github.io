@@ -6,6 +6,7 @@ import { mythic, nythendra } from './raid-logs.fixture';
 const fire: RaidSpec = { id: 63, classId: 8, name: 'Fire', role: 'dps' };
 const frost: RaidSpec = { id: 64, classId: 8, name: 'Frost', role: 'dps' };
 const holy: RaidSpec = { id: 65, classId: 8, name: 'Holy', role: 'healer' };
+const guardian: RaidSpec = { id: 104, classId: 8, name: 'Guardian', role: 'tank' };
 const kael: RaidCharacter = { name: 'Kael', realm: 'Tauri', classId: 8, race: 1, gender: 0, guild: '' };
 
 function appearance(logId: number, killedAt: number, dps: number, spec = fire): KillAppearance {
@@ -56,10 +57,14 @@ describe('killHistory', () => {
     expect(history.kills.map(kill => kill.value)).toEqual([400, 500]);
   });
 
-  it('measures healing on the healing kills only', () => {
-    const history = killHistory([appearance(1, 1_000, 400), appearance(2, 2_000, 5_000, holy)], 'hps');
+  it('measures healing on the healing and tanking kills only', () => {
+    const history = killHistory([
+      appearance(1, 1_000, 400),
+      appearance(2, 2_000, 5_000, holy),
+      appearance(3, 3_000, 2_000, guardian)
+    ], 'hps');
 
-    expect(logIds(history.kills)).toEqual([2]);
+    expect(logIds(history.kills)).toEqual([2, 3]);
     expect(history.best?.value).toBe(500);
   });
 

@@ -181,7 +181,8 @@ public static class RaidLogDatasetBuilder
             ),
             TopPerformer(
                 logs.Where(log => !invalidLogs.Contains(log.Key)),
-                member => RaidCatalog.SpecRole(member.SpecId) == RaidCatalog.Healer,
+                member =>
+                    RaidCatalog.SpecRole(member.SpecId) is RaidCatalog.Healer or RaidCatalog.Tank,
                 member => member.HealingDone + member.AbsorbDone
             )
         );
