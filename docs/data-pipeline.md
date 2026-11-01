@@ -22,7 +22,7 @@ Tauri API ──► api/ console apps ──► spa/src/ data files ──► co
 | `RareItems.json` | `AchievementLadder` | `sync data` | Rare Items page |
 | `elite-pvp-items.json` | built once from TauriShoot, then kept by hand ([below](#elite-pvp-items)) | `feat:` / `chore:` | Rare Items page, `AchievementLadder` |
 | `battlegrounds.json`, `battleground-collector-state.json`, `rated-battlegrounds.json` | `BattlegroundCollector` | `sync data` | Battleground and Rated Battleground pages |
-| `arena-ladder-2v2.json`, `arena-ladder-3v3.json` | `ArenaLadderExporter` | `sync data` | Arena page |
+| `arena-ladder-2v2.json`, `arena-ladder-3v3.json` | `ArenaLadderExporter` | `sync data`, or `sync arena data` from `Run-Arena.cmd` | Arena page |
 | `mythic-plus-data/` | `MythicPlusExporter` | `sync data`, or `sync mythic plus data` from `Run-MythicPlus.cmd` | `/mythic-plus/*` |
 | `raid-log-data/` | `RaidLogExporter` | `sync data`, or `sync raid logs data` from `Run-RaidLogs.cmd` | `/raid-logs/*` |
 | `guild-analysis/<key>.json` | `GuildAnalysisExporter`, once per guild in the daily update | `sync data` | the hidden guild pages |
@@ -85,16 +85,17 @@ So a night's run is one commit and one Pages deploy, the guild pages included.
 - `MissingPlayers` works in rounds and stops once a round resolves nobody: characters gone from
   the realm fail every time. A character already in Players.csv only gets its rare achievements
   refreshed, which needs `character-achievements` alone.
-- `Run-MythicPlus.cmd` and `Run-RaidLogs.cmd` refresh one dataset on its own. Their arguments
-  go to the exporter (`Run-MythicPlus.cmd --allow-shrink` at a season reset). Before the
-  export, each checks that the push at the end will be accepted: you're on `main` and level
-  with `origin/main`. `Run-RaidLogs.cmd` stops when you aren't. `Run-MythicPlus.cmd` asks you
-  to type `1` to fix it, by switching to `main` (only when nothing is uncommitted) or by
-  pulling with `--ff-only`, and then goes on. After the switch or pull it starts itself again
-  from the top, because cmd.exe reads a running script from disk by byte offset: a checkout
-  or pull that changes the script would otherwise leave it running from the middle of a
-  different file. Both commit with `git commit --only` on their data folder, so unrelated
-  staged work never rides along.
+- `Run-MythicPlus.cmd`, `Run-RaidLogs.cmd` and `Run-Arena.cmd` refresh one dataset on its
+  own. Their arguments go to the exporter (`Run-MythicPlus.cmd --allow-shrink` at a season
+  reset). Before the export, each checks that the push at the end will be accepted: you're on
+  `main` and level with `origin/main`. `Run-RaidLogs.cmd` stops when you aren't.
+  `Run-MythicPlus.cmd` and `Run-Arena.cmd` ask you to type `1` to fix it, by switching to
+  `main` (only when nothing is uncommitted) or by pulling with `--ff-only`, and then go on.
+  After the switch or pull the script starts itself again from the top, because cmd.exe reads
+  a running script from disk by byte offset: a checkout or pull that changes the script would
+  otherwise leave it running from the middle of a different file. All three commit with
+  `git commit --only` on their data files, so unrelated staged work never rides along. Their
+  commit messages aren't `sync data`, so they don't post to Discord.
 
 ## Publishing safety
 
@@ -286,7 +287,10 @@ taken straight from the ladder ([tauri-api.md](tauri-api.md#arena-ladder-arena-l
 
 The comparison is with the previous export, published or not: running the exporter twice
 (the whole daily update again after a failure, instead of `-From`) compares the second run with
-the first, and the day's changes shrink to whatever happened in between.
+the first, and the day's changes shrink to whatever happened in between. `Run-Arena.cmd` during
+the day does the same to the night's run, which then shows only the changes since it.
+Every export writes a new `generatedAt`, so `Run-Arena.cmd` commits and deploys on every run,
+even when no game was played since the last one.
 
 A ladder entry without a name, class, known realm or games is left out, and so is a second
 entry for the same realm and guid.
