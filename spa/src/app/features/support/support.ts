@@ -13,7 +13,7 @@ export interface Donation {
   readonly currency: DonationCurrency;
 }
 
-export type TestimonialSource = 'character' | 'discord' | 'stoat';
+export type TestimonialSource = 'ingame' | 'discord' | 'stoat';
 
 export interface Testimonial {
   readonly quote: string;
@@ -40,6 +40,11 @@ export const DONATIONS: readonly Donation[] = [
     names: [{ name: 'Vicapriest', classId: 5, realm: 'evermoon' }],
     amount: 50,
     currency: 'eur'
+  },
+  {
+    names: [{ name: 'Ratillas', classId: 4, realm: 'evermoon' }],
+    amount: 100_000,
+    currency: 'gold'
   }
 ];
 
@@ -87,11 +92,16 @@ export const TESTIMONIALS: readonly Testimonial[] = [
     quote: 'Fantastic work, man! Keep it up, the site and addon are both awesome!',
     names: [{ name: 'Vicapriest', classId: 5, realm: 'evermoon' }],
     from: 'discord'
+  },
+  {
+    quote: 'Thanks for setting up such a nice website!',
+    names: [{ name: 'Ratillas', classId: 4, realm: 'evermoon' }],
+    from: 'ingame'
   }
 ];
 
 const SOURCE_LABELS: Record<TestimonialSource, string> = {
-  character: 'Character',
+  ingame: 'Ingame',
   discord: 'Discord',
   stoat: 'Stoat'
 };
