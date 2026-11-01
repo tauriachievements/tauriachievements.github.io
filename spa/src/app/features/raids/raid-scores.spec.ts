@@ -25,14 +25,20 @@ import { index, mythic, kills } from './raid-logs.fixture';
 import { LEGION_SPECS } from '../../game/wow-specs';
 
 describe('rankCharacters', () => {
-  it("ranks each character's best kill, healers only by healing", () => {
+  it("ranks each character's best kill, healers and tanks by healing", () => {
     const dps = rankCharacters(kills, 'dps');
     expect(dps.map(entry => [entry.rank, entry.member.character.name, Math.round(entry.value)])).toEqual([
       [1, 'Kael', 600_000],
       [2, 'Sósa', 500_000],
       [3, 'Light', 200_000]
     ]);
-    expect(rankCharacters(kills, 'hps').map(entry => entry.member.character.name)).toEqual(['Light']);
+    expect(rankCharacters(kills, 'hps').map(entry => [entry.member.character.name, entry.member.spec?.name])).toEqual([['Light', 'Holy']]);
+  });
+
+  it('ranks a tank by healing', () => {
+    const tankKill = kills.filter(kill => kill.logId === 11);
+    expect(rankCharacters(tankKill, 'hps').map(entry => [entry.member.character.name, entry.member.spec?.name, Math.round(entry.value)]))
+      .toEqual([['Light', 'Protection', 3_571]]);
   });
 
   it('ranks a spec on kills played as that spec only', () => {
@@ -65,7 +71,7 @@ describe('rankedSpecs', () => {
   it("lists a class's specs the metric ranks, in the index's order", () => {
     expect(rankedSpecs(index.specs, 8, 'dps').map(spec => spec.name)).toEqual(['Fire', 'Frost']);
     expect(rankedSpecs(index.specs, 2, 'dps').map(spec => spec.name)).toEqual(['Protection']);
-    expect(rankedSpecs(index.specs, 2, 'hps').map(spec => spec.name)).toEqual(['Holy']);
+    expect(rankedSpecs(index.specs, 2, 'hps').map(spec => spec.name)).toEqual(['Holy', 'Protection']);
     expect(rankedSpecs(index.specs, 8, 'hps')).toEqual([]);
     expect(rankedSpecs(index.specs, undefined, 'dps')).toEqual([]);
   });
@@ -93,6 +99,9 @@ describe('rankedClassOptions', () => {
   it('lists the classes with a spec the metric and range rank, after "All classes"', () => {
     expect(labels(rankedClassOptions(index.specs, 'dps'))).toEqual(['All classes', 'Mage', 'Paladin']);
     expect(labels(rankedClassOptions(index.specs, 'hps'))).toEqual(['All classes', 'Paladin']);
+    expect(labels(rankedClassOptions(allSpecs, 'hps'))).toEqual([
+      'All classes', 'Death Knight', 'Demon Hunter', 'Druid', 'Monk', 'Paladin', 'Priest', 'Shaman', 'Warrior'
+    ]);
     expect(labels(rankedClassOptions(allSpecs, 'dps', 'ranged'))).toEqual([
       'All classes', 'Druid', 'Hunter', 'Mage', 'Priest', 'Shaman', 'Warlock'
     ]);
@@ -113,7 +122,7 @@ describe('fitClassAndSpec', () => {
 
   it('clears a class the view does not rank, and its spec', () => {
     expect(fitClassAndSpec(allSpecs, { classId: 4, specId: 259 }, 'dps', 'ranged')).toEqual({ classId: undefined, specId: undefined });
-    expect(fitClassAndSpec(allSpecs, { classId: 1 }, 'hps')).toEqual({ classId: undefined, specId: undefined });
+    expect(fitClassAndSpec(allSpecs, { classId: 8, specId: 63 }, 'hps')).toEqual({ classId: undefined, specId: undefined });
   });
 
   it("swaps a spec the view does not rank for the class's only ranked spec", () => {
@@ -121,6 +130,11 @@ describe('fitClassAndSpec', () => {
     expect(fitClassAndSpec(allSpecs, { classId: 5, specId: 257 }, 'dps')).toEqual({ classId: 5, specId: 258 });
     expect(fitClassAndSpec(allSpecs, { classId: 7 }, 'dps', 'ranged')).toEqual({ classId: 7, specId: 262 });
     expect(fitClassAndSpec(allSpecs, { classId: 2, specId: 70 }, 'dps', 'tank')).toEqual({ classId: 2, specId: 66 });
+    expect(fitClassAndSpec(allSpecs, { classId: 1, specId: 71 }, 'hps')).toEqual({ classId: 1, specId: 73 });
+  });
+
+  it('drops a spec the view does not rank when the class has several it does', () => {
+    expect(fitClassAndSpec(allSpecs, { classId: 2, specId: 70 }, 'hps')).toEqual({ classId: 2, specId: undefined });
   });
 
   it('drops a spec without a class', () => {
@@ -198,9 +212,17 @@ describe('scoreCharacters', () => {
     expect(bossKills.map(kills => bossStanding(kills, 'dps', key).relative)).toEqual(example.bosses.map(entry => entry.relative));
   });
 
-  it('scores healers only by healing', () => {
-    const healing = scoreCharacters(bosses, bossKills, 'hps');
-    expect(healing.map(entry => [entry.character.name, entry.score])).toEqual([['Light', MAX_SCORE]]);
+  it('scores healers and tanks by healing, against the best of either', () => {
+    const healingKills = [
+      [kill(0, 1, [[character('Light', 10, 2), holy, 0, 100], [character('Tank', 1, 2), protection, 500, 25], [character('Best'), fire, 1000, 900]])],
+      [kill(1, 2, [[character('Light', 10, 2), holy, 0, 100], [character('Tank', 1, 2), protection, 500, 200]])],
+      [],
+      []
+    ];
+    expect(scoreCharacters(bosses, healingKills, 'hps').map(entry => [entry.character.name, entry.score])).toEqual([
+      ['Light', Math.floor(MAX_SCORE * (1 + .5) / 2)],
+      ['Tank', Math.floor(MAX_SCORE * (.25 + 1) / 2)]
+    ]);
   });
 
   it('leaves a boss nobody has killed out of the average', () => {
@@ -260,6 +282,15 @@ describe('scoreCharacters', () => {
         expect(new Map(scores.map(entry => [entry.character.name, entry.score])))
           .toEqual(new Map(leaderboard.map(entry => [entry.character.name, entry.score])));
       }
+    });
+
+    it("measures a healer against a tank's healing when the tank healed most, and the tank on damage", () => {
+      const tankHealedMost = [[kill(0, 1, [[character('Light', 10, 2), holy, 0, 100], [character('Tank', 1, 2), protection, 500, 400]])], [], [], []];
+      const bySpec = scoresBySpec(bosses, tankHealedMost);
+      expect(bySpec.get(holy)).toEqual(scoreCharacters(bosses, tankHealedMost, 'hps', holy.id)
+        .map(entry => ({ character: entry.character, score: entry.score })));
+      expect(bySpec.get(holy)?.map(entry => entry.score)).toEqual([Math.floor(MAX_SCORE * .25)]);
+      expect(bySpec.get(protection)?.map(entry => entry.score)).toEqual([MAX_SCORE]);
     });
 
     it("sorts one difficulty's kills by boss before scoring them", () => {

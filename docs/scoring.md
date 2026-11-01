@@ -263,8 +263,11 @@ decision: ask first.** When a rule does change, change its tests first and see t
   character hasn't killed counts as 0; a boss nobody has killed is left out of the average.
 - **This reproduces tauriprogress's character score exactly.** It matched the owner's
   screenshot rank for rank. Don't "fix" the formula.
-- Metric: healers are ranked on HPS, every other spec on DPS (`specMetric`), tanks included.
-  HPS is healing plus absorbs.
+- Metric (`countsFor`): DPS ranks every spec but the healers, tanks included. HPS ranks the
+  healers and the tanks, so a tank is on both. HPS is healing plus absorbs. A tank's healing
+  can be a boss's best on HPS, and then every healer is measured against it: a Brewmaster can
+  heal more than any healer on a boss. The owner chose this over measuring tanks against the
+  best healer.
 - A character is its realm and name (`characterKey`), and the name belongs to the class of its
   latest kill on any boss and difficulty. Kills logged on another class belong to a former
   character with that name ([data-pipeline.md](data-pipeline.md#raid-log-files)): they're left
@@ -277,9 +280,11 @@ decision: ask first.** When a rule does change, change its tests first and see t
   boss is still the best anyone did there.
 - Filters (class, faction, realm) only hide rows and re-rank the rest. Each score is still
   measured against everyone.
-- A class or spec the tab doesn't rank (a Warrior on HPS) is cleared rather than leaving an
-  empty list. A class with one spec the tab ranks gets that spec picked: on HPS that's every
-  healing class but the Priest. No class has a single DPS spec. The class dropdown lists only
+- A class or spec the tab doesn't rank (a Mage on HPS) is cleared rather than leaving an
+  empty list. A class with one spec the tab ranks gets that spec picked: on HPS that's the
+  Shaman's Restoration and the tank of the Warrior, Death Knight and Demon Hunter. Paladins,
+  Monks and Druids have a healer and a tank on HPS, and Priests two healers, so a picked
+  damage spec of theirs is dropped. No class has a single DPS spec. The class dropdown lists only
   the classes the tab ranks. `fitClassAndSpec` and `rankedClassOptions` do this, here and on a
   boss's ranking tabs.
 - **Changes since the last scan:** the same ranking (metric, spec, class, realm) worked out
@@ -335,7 +340,7 @@ decision: ask first.** When a rule does change, change its tests first and see t
   `raid-display.ts`.
 - A boss's ranking tabs list each character's best counted kill of the boss on the difficulty;
   the earlier kill wins a tie. Damage ranks every spec but the healers, tanks included, on DPS.
-  Healing ranks the healers on HPS.
+  Healing ranks the healers and the tanks on HPS.
 - **Damage's role dropdown** narrows it, on DPS: Tank ranks the tanks only, DPS the damage
   specs without the tanks, Melee DPS and Ranged DPS the damage specs of that range
   ([Role filters](#role-filters)). "All roles" is the plain Damage ranking. Links to the old
@@ -455,7 +460,9 @@ decision: ask first.** When a rule does change, change its tests first and see t
   and `specPerformance` in `spa/src/app/features/raids/raid-scores.ts`; `sortByPerformance` in
   `spa/src/app/features/raids/raid-talents.ts`.
 - Every character gets the raid leaderboard score for each spec they played, as if that spec
-  were picked on the leaderboard. A spec's performance is the average of its best
+  were picked on the leaderboard: HPS for a healer, DPS for everyone else, tanks too
+  (`specMetric`). A healer's share of a boss is of the best HPS there, a tank's included, as on
+  the leaderboard. A spec's performance is the average of its best
   `SPEC_TOP_SCORES` (10) character scores, or of all of them when it has fewer, and 0 when
   nobody played it. Only the best ten count, so attendance doesn't drag a spec down.
 - Each difficulty is scored on its own, over every boss of the raid.

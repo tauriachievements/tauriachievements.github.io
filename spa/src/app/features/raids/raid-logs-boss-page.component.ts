@@ -78,7 +78,7 @@ const DAMAGE_NOTES: Readonly<Partial<Record<RoleFilter, string>>> = {
 
 const ALL_DAMAGE_NOTE = 'Damage done over the length of the fight, tanks included; healers are ranked under Healing.';
 
-const HEALING_NOTE = 'Healing counts absorbs; only healers are ranked.';
+const HEALING_NOTE = 'Healing counts absorbs; healers and tanks are ranked.';
 
 interface KillRow {
   rank?: number;

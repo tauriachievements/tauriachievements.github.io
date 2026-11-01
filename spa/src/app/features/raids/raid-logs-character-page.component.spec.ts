@@ -583,7 +583,7 @@ describe('RaidLogsCharacterPageComponent spec comparison', () => {
     [...element.querySelectorAll<HTMLButtonElement>('[role="tab"]')][1].click();
     harness.detectChanges();
     expect(location.path()).toBe('/raid-logs/character/tauri/Ret?metric=hps&compare=class');
-    expect(comparison(element)).toEqual({ selected: 'All Paladins', options: ['All players', 'All Paladins', 'Holy'] });
+    expect(comparison(element)).toEqual({ selected: 'All Paladins', options: ['All players', 'All Paladins', 'Holy', 'Protection'] });
 
     [...element.querySelectorAll<HTMLButtonElement>('[role="tab"]')][0].click();
     harness.detectChanges();

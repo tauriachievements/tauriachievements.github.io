@@ -177,7 +177,8 @@ appearance, so a new kill is a few added lines in git.
   `[name, realm, faction, guildId]` (an empty name for a guild that couldn't be named), each
   name with a former character (below) as `formerCharacters`
   (`[name, realm, classNow, [earlierClass, ...]]`, latest first), each boss and difficulty's
-  best DPS and HPS as `[name, realm, class, spec, perSecond, logRealm, logId]`
+  best DPS (every spec but the healers) and HPS (the healers and the tanks) as
+  `[name, realm, class, spec, perSecond, logRealm, logId]`
   (the earlier kill on a tie, invalid logs left out), and the loot's `items` as
   `[id, name, quality, icon]`.
 - `<boss>-<difficulty>.json`: that boss's kills on that difficulty, oldest first, as

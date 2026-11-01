@@ -9,6 +9,8 @@ import { characterKey, logKey } from './raid-logs';
 
 export type RaidMetric = 'dps' | 'hps';
 
+const RAID_METRICS: readonly RaidMetric[] = ['dps', 'hps'];
+
 export interface RankingFilter {
   classId?: number;
   specId?: number;
@@ -33,7 +35,7 @@ export function countsFor(metric: RaidMetric, spec: RaidSpec | undefined): boole
     return false;
   }
 
-  return metric === 'hps' ? spec.role === 'healer' : spec.role !== 'healer';
+  return metric === 'hps' ? spec.role === 'healer' || spec.role === 'tank' : spec.role !== 'healer';
 }
 
 function ranks(spec: RaidSpec, metric: RaidMetric, role: RoleFilter | undefined): boolean {
@@ -284,9 +286,12 @@ export function scoresBySpec(
           continue;
         }
 
-        const metric = specMetric(member.spec);
-        const value = member[metric];
-        tops[metric][bossIndex] = Math.max(tops[metric][bossIndex], value);
+        for (const counted of RAID_METRICS) {
+          if (countsFor(counted, member.spec)) {
+            tops[counted][bossIndex] = Math.max(tops[counted][bossIndex], member[counted]);
+          }
+        }
+        const value = member[specMetric(member.spec)];
         if (member.character.former) {
           continue;
         }
