@@ -60,7 +60,8 @@ $guildAnalysisGuilds = @(
     @{ Realm = 'Evermoon'; Name = 'NFA' },
     @{ Realm = 'Evermoon'; Name = 'Vistustan' },
     @{ Realm = 'Evermoon'; Name = 'Skill Issue' },
-    @{ Realm = 'Evermoon'; Name = 'Highly Regarded' }
+    @{ Realm = 'Evermoon'; Name = 'Highly Regarded' },
+    @{ Realm = 'Evermoon'; Name = 'Insidious' }
 )
 
 $steps = @(

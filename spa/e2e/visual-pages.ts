@@ -72,6 +72,7 @@ export const VISUAL_PAGES: readonly VisualPage[] = [
   { name: 'guild-vistustan', path: '/vistustan-8ecce8ca-c670-4d06-ab01-06861c3d3ec2' },
   { name: 'guild-skill-issue', path: '/skill-issue-3f7fe216-b578-47c4-b22b-ddf7c9e4e834' },
   { name: 'guild-highly-regarded', path: '/highly-regarded-cedd1db9-e352-4c11-8f6f-e85937723121' },
+  { name: 'guild-insidious', path: '/insidious-9ef2392c-af98-45b4-94b2-e40495d1c489' },
   { name: 'redirect-old-arena', path: '/50-games-played-arenas' },
   { name: 'redirect-old-raid-history', path: '/guild-realm-firsts' },
   { name: 'state-menu-drawer', path: '/', clicks: ['.site-menu-toggle'], only: 'phone' },
