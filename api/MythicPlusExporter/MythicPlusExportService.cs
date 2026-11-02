@@ -13,6 +13,7 @@ internal sealed record PreviousMythicPlusSnapshot(
     int RunCount,
     string? SeasonId,
     DateTimeOffset? GeneratedAt,
+    MythicPlusTables? Tables,
     IReadOnlyDictionary<(string Realm, string Name), MythicPlusStanding> Standings
 );
 
@@ -66,19 +67,24 @@ public sealed class MythicPlusExportService(
             );
         }
 
+        var sameSeason = previous.SeasonId == MythicPlusCatalog.Season.Id;
+        var tables = MythicPlusTables.Extend(sameSeason ? previous.Tables : null, dataset);
         var currentStandings = MythicPlusStandings.Build(dataset);
         var comparable =
-            previous.SeasonId == MythicPlusCatalog.Season.Id
-            && previous.GeneratedAt is not null
-            && previous.Standings.Count > 0;
+            sameSeason && previous.GeneratedAt is not null && previous.Standings.Count > 0;
         var standings = comparable
             ? MythicPlusStandings.Compare(currentStandings, previous.Standings)
             : currentStandings;
+        var departed = comparable
+            ? MythicPlusStandings.Departed(currentStandings, previous.Standings)
+            : [];
 
         await MythicPlusFileWriter.WriteAsync(
             outputDirectory,
             dataset,
+            tables,
             standings,
+            departed,
             scannedAt,
             comparable ? previous.GeneratedAt : null,
             cancellationToken
@@ -109,15 +115,34 @@ public sealed class MythicPlusExportService(
                 && DateTimeOffset.TryParse(generated.GetString(), out var parsedGeneratedAt)
                     ? parsedGeneratedAt
                     : (DateTimeOffset?)null;
-            var players = ReadPlayerKeys(root);
-            var standings = ReadStandings(root, players);
-
-            if (standings.Count == 0 && players.Count > 0)
+            var version =
+                root.TryGetProperty("version", out var versionElement)
+                && versionElement.TryGetInt32(out var parsedVersion)
+                    ? parsedVersion
+                    : 1;
+            var tables = version <= MythicPlusFileWriter.FormatVersion ? ReadTables(root) : null;
+            if (tables is null)
             {
-                standings = ReadLegacyStandings(root, players);
+                return new PreviousMythicPlusSnapshot(
+                    runCount,
+                    seasonId,
+                    generatedAt,
+                    null,
+                    new Dictionary<(string Realm, string Name), MythicPlusStanding>()
+                );
             }
 
-            return new PreviousMythicPlusSnapshot(runCount, seasonId, generatedAt, standings);
+            var standings =
+                version == MythicPlusFileWriter.FormatVersion
+                    ? ReadScores(root, tables.Players)
+                    : ReadLegacyStandings(root, tables.Players);
+            return new PreviousMythicPlusSnapshot(
+                runCount,
+                seasonId,
+                generatedAt,
+                tables,
+                standings
+            );
         }
         catch (Exception error) when (error is JsonException or IOException)
         {
@@ -138,34 +163,72 @@ public sealed class MythicPlusExportService(
                 )
             : 0;
 
-    private static List<(string Realm, string Name)> ReadPlayerKeys(JsonElement root)
+    private static MythicPlusTables? ReadTables(JsonElement root)
     {
         if (
-            !root.TryGetProperty("players", out var players)
-            || players.ValueKind != JsonValueKind.Array
+            !root.TryGetProperty("players", out var playerRows)
+            || playerRows.ValueKind != JsonValueKind.Array
+            || !root.TryGetProperty("specs", out var specRows)
+            || specRows.ValueKind != JsonValueKind.Array
         )
         {
-            return [];
+            return null;
         }
 
-        return players
+        var players = new List<MythicPlusPlayer>();
+        foreach (var row in playerRows.EnumerateArray())
+        {
+            if (row.ValueKind != JsonValueKind.Array || row.GetArrayLength() < 6)
+            {
+                return null;
+            }
+
+            players.Add(
+                new MythicPlusPlayer(
+                    row[0].GetString() ?? "",
+                    row[1].GetString() ?? "",
+                    row[2].GetString() ?? "",
+                    row[3].GetInt32(),
+                    row[4].GetInt32(),
+                    row[5].GetInt32()
+                )
+            );
+        }
+
+        var specs = specRows
             .EnumerateArray()
-            .Where(player =>
-                player.ValueKind == JsonValueKind.Array && player.GetArrayLength() >= 2
-            )
-            .Select(player => (player[1].GetString() ?? "", player[0].GetString() ?? ""))
+            .Select(spec => new MythicPlusSpec(
+                spec.GetProperty("class").GetInt32(),
+                spec.GetProperty("name").GetString() ?? "",
+                spec.GetProperty("role").GetString() ?? ""
+            ))
             .ToList();
+
+        if (
+            players.DistinctBy(player => (player.Realm, player.Name)).Count() != players.Count
+            || specs.Distinct().Count() != specs.Count
+        )
+        {
+            return null;
+        }
+
+        var fingerprint =
+            root.TryGetProperty("tables", out var tables)
+            && tables.GetString() is { Length: > 0 } stored
+                ? stored
+                : MythicPlusTables.FingerprintOf(specs, players);
+        return new MythicPlusTables(fingerprint, specs, players);
     }
 
-    private static Dictionary<(string Realm, string Name), MythicPlusStanding> ReadStandings(
+    private static Dictionary<(string Realm, string Name), MythicPlusStanding> ReadScores(
         JsonElement root,
-        IReadOnlyList<(string Realm, string Name)> players
+        IReadOnlyList<MythicPlusPlayer> players
     )
     {
         if (
-            !root.TryGetProperty("standings", out var standings)
-            || standings.ValueKind != JsonValueKind.Array
-            || standings.GetArrayLength() != players.Count
+            !root.TryGetProperty("scores", out var scores)
+            || scores.ValueKind != JsonValueKind.Array
+            || scores.GetArrayLength() != players.Count
         )
         {
             return [];
@@ -173,20 +236,23 @@ public sealed class MythicPlusExportService(
 
         var result = new Dictionary<(string Realm, string Name), MythicPlusStanding>();
         var position = 0;
-        foreach (var standing in standings.EnumerateArray())
+        foreach (var entry in scores.EnumerateArray())
         {
-            if (standing.ValueKind != JsonValueKind.Array || standing.GetArrayLength() < 2)
+            var player = players[position++];
+            if (entry.ValueKind != JsonValueKind.Array)
             {
                 return [];
             }
 
-            var (realm, name) = players[position++];
-            result[(realm, name)] = new MythicPlusStanding(
-                name,
-                realm,
-                standing[0].GetDouble(),
-                standing[1].GetInt32()
-            );
+            if (entry.GetArrayLength() >= 2)
+            {
+                result[(player.Realm, player.Name)] = new MythicPlusStanding(
+                    player.Name,
+                    player.Realm,
+                    entry[0].GetDouble(),
+                    entry[1].GetInt64()
+                );
+            }
         }
 
         return result;
@@ -194,9 +260,10 @@ public sealed class MythicPlusExportService(
 
     private Dictionary<(string Realm, string Name), MythicPlusStanding> ReadLegacyStandings(
         JsonElement root,
-        IReadOnlyList<(string Realm, string Name)> players
+        IReadOnlyList<MythicPlusPlayer> tablePlayers
     )
     {
+        var players = tablePlayers.Select(player => (player.Realm, player.Name)).ToList();
         if (
             !root.TryGetProperty("dungeons", out var dungeons)
             || dungeons.ValueKind != JsonValueKind.Array
@@ -269,10 +336,10 @@ public sealed class MythicPlusExportService(
         }
 
         return MythicPlusStandings
-            .Rank(players, best.Scores, best.Times)
+            .Totals(players, best.Scores, best.Times)
             .ToDictionary(standing => (standing.Realm, standing.Name), standing => standing);
     }
 
     private static PreviousMythicPlusSnapshot EmptyPreviousSnapshot() =>
-        new(0, null, null, new Dictionary<(string Realm, string Name), MythicPlusStanding>());
+        new(0, null, null, null, new Dictionary<(string Realm, string Name), MythicPlusStanding>());
 }

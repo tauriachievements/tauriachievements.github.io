@@ -8,10 +8,12 @@ import {
   MythicPlusRun,
   PlayerScore,
   characterKey,
+  currentPlayers,
   foldedMemberName,
   hasScanChanges,
   isBetterRun,
-  samePlace
+  samePlace,
+  standingChanges
 } from './mythic-plus';
 import { MemberView, toMemberView } from './mythic-plus-views';
 import { realmSlug } from '../../game/wow';
@@ -259,15 +261,14 @@ export function profileScanChange(index: MythicPlusIndex | undefined, key: strin
     return undefined;
   }
 
-  const position = index.players.findIndex(entry => characterKey({ name: entry[0], realm: entry[1] }) === key);
-  const standing = position >= 0 ? index.standings[position] : undefined;
-  if (!standing) {
-    return undefined;
+  const change = standingChanges(index).get(key);
+  if (change) {
+    return { score: change.score, rank: change.rank, isNew: false };
   }
 
-  return standing[2] === undefined || standing[3] === undefined
+  return currentPlayers(index).some(entry => characterKey({ name: entry[0], realm: entry[1] }) === key)
     ? { isNew: true }
-    : { score: standing[2], rank: standing[3], isNew: false };
+    : undefined;
 }
 
 export function rankChangeLabel(change: number): string {

@@ -6,8 +6,7 @@ import {
   guildLadderLink,
   guildOf,
   guildRankChanges,
-  inGuild,
-  previousOverallRank
+  inGuild
 } from './mythic-plus-guild';
 
 function member(name: string, overrides: Partial<MythicPlusMember> = {}): MythicPlusMember {
@@ -131,19 +130,6 @@ describe('guildLadder', () => {
 
   it('is empty for a guild nobody in the ranking is in', () => {
     expect(guildLadder(ranking, { name: 'Skill Issue', realm: 'WoD' })).toEqual([]);
-  });
-});
-
-describe('previousOverallRank', () => {
-  it('adds the rank change back: a climb came from further down', () => {
-    expect(previousOverallRank([1500, 12, 30.5, 4])).toBe(16);
-    expect(previousOverallRank([1500, 12, -3, -2])).toBe(10);
-    expect(previousOverallRank([1500, 12, 0, 0])).toBe(12);
-  });
-
-  it('has none for a character new since the last scan', () => {
-    expect(previousOverallRank([1500, 12])).toBeUndefined();
-    expect(previousOverallRank(undefined)).toBeUndefined();
   });
 });
 

@@ -88,7 +88,9 @@ describe('MythicPlusPageComponent data from two exports', () => {
   it('maps compact scan changes to overall season player rows only', () => {
     const movement = exportOf('dddddddddddd', [['Exkeito', 'Evermoon', '', 11, 4, 0]]);
     movement.index.previousGeneratedAt = '2026-10-07T09:30:00Z';
-    movement.index.standings = [[196, 1, 4.5, 2]];
+    movement.index.players.push(['Gone', 'Tauri', '', 11, 4, 0], ['Left', 'Tauri', '', 11, 4, 0]);
+    movement.index.scores = [[196, 1297289, 4.5, 0], [], []];
+    movement.index.departed = [[1, 250, 1500000], [2, 200, 1500000]];
     const page = createPage(new FakeDataFiles(movement.index, movement));
 
     expect(page.pagedPlayers()[0]).toMatchObject({
@@ -105,7 +107,7 @@ describe('MythicPlusPageComponent data from two exports', () => {
   it('marks the best run that raised a player\'s score since the last scan, only while the change shows', () => {
     const raised = exportOf('eeeeeeeeeeee', [['Exkeito', 'Evermoon', '', 11, 4, 0]]);
     raised.index.previousGeneratedAt = '2026-10-06T09:00:00Z';
-    raised.index.standings = [[196, 1, 4.5, 2]];
+    raised.index.scores = [[196, 1297289, 4.5, 0]];
     raised.cos.runs.push([17, 1500000, Date.parse('2026-10-05T11:00:00Z') / 1000, 180, [], [[0, 0]]]);
     const page = createPage(new FakeDataFiles(raised.index, raised));
 
@@ -119,7 +121,7 @@ describe('MythicPlusPageComponent data from two exports', () => {
   it('marks no run when the score did not go up since the last scan', () => {
     const flat = exportOf('ffffffffffff', [['Exkeito', 'Evermoon', '', 11, 4, 0]]);
     flat.index.previousGeneratedAt = '2026-10-06T09:00:00Z';
-    flat.index.standings = [[196, 1, 0, -3]];
+    flat.index.scores = [[196, 1297289, 0, 0]];
     const page = createPage(new FakeDataFiles(flat.index, flat));
 
     expect(page.pagedPlayers()[0].bests.map(best => best?.raisedScore)).toEqual([false]);
@@ -158,6 +160,29 @@ describe('MythicPlusPageComponent character and realm in the URL', () => {
     expect(page.filteredPlayers().map(entry => entry.player.member.name)).toEqual(['Exkeito']);
     expect(page.realmOptions().map(option => option.label)).toEqual(['All realms', 'Evermoon', 'Tauri']);
     expect(page.activeFilterLabels()).toEqual(['Evermoon']);
+  });
+
+  it('leaves the rows kept for players who left out of the realms and the ?character= match', async () => {
+    const left = exportOf('gggggggggggg', [
+      ['Exkeito', 'Evermoon', '', 11, 4, 0],
+      ['Napim', 'Tauri', '', 11, 4, 0],
+      ['Gone', 'WoD', '', 11, 4, 0],
+      ['Left', 'WoD', '', 11, 4, 0],
+      ['Away', 'WoD', '', 11, 4, 0]
+    ]);
+    left.index.scores = [[196, 1297289], [160, 1297289], [], [], []];
+    left.cos.runs = both.cos.runs;
+    TestBed.configureTestingModule({
+      providers: [
+        provideRouter([{ path: 'mythic-plus', component: MythicPlusPageComponent }]),
+        { provide: DataFileService, useValue: new FakeDataFiles(left.index, left) }
+      ]
+    });
+    const harness = await RouterTestingHarness.create();
+    const page = await harness.navigateByUrl('/mythic-plus?character=gone-wod', MythicPlusPageComponent);
+
+    expect(page.realmOptions().map(option => option.label)).toEqual(['All realms', 'Evermoon', 'Tauri']);
+    expect(page.characterFilter()?.color).toBe('#e0e0e0');
   });
 
   it('opens the players view with the class and spec selected from the popularity chart', async () => {
