@@ -88,12 +88,11 @@ So a night's run is one commit and one Pages deploy, the guild pages included.
 - `Run-MythicPlus.cmd`, `Run-RaidLogs.cmd` and `Run-Arena.cmd` refresh one dataset on its
   own. Their arguments go to the exporter (`Run-MythicPlus.cmd --allow-shrink` at a season
   reset). Before the export, each checks that the push at the end will be accepted: you're on
-  `main` and level with `origin/main`. `Run-RaidLogs.cmd` stops when you aren't.
-  `Run-MythicPlus.cmd` and `Run-Arena.cmd` ask you to type `1` to fix it, by switching to
-  `main` (only when nothing is uncommitted) or by pulling with `--ff-only`, and then go on.
-  After the switch or pull the script starts itself again from the top, because cmd.exe reads
-  a running script from disk by byte offset: a checkout or pull that changes the script would
-  otherwise leave it running from the middle of a different file. All three commit with
+  `main` and level with `origin/main`. When you aren't, each asks you to type `1` to fix it,
+  by switching to `main` (only when nothing is uncommitted) or by pulling with `--ff-only`,
+  and then goes on. After the switch or pull the script starts itself again from the top,
+  because cmd.exe reads a running script from disk by byte offset: a checkout or pull that
+  changes the script would otherwise leave it running from the middle of a different file. All three commit with
   `git commit --only` on their data files, so unrelated staged work never rides along. Their
   commit messages aren't `sync data`, so they don't post to Discord.
 
