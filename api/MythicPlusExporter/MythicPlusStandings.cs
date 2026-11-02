@@ -4,9 +4,9 @@ public sealed record MythicPlusStanding(
     string Name,
     string Realm,
     double Score,
-    int Rank,
+    long TimeMilliseconds,
     double? ScoreChange = null,
-    int? RankChange = null
+    long? TimeChangeMilliseconds = null
 );
 
 public static class MythicPlusStandings
@@ -35,54 +35,29 @@ public static class MythicPlusStandings
             best.EndDungeon();
         }
 
-        return Rank(
+        return Totals(
             dataset.Players.Select(player => (player.Realm, player.Name)).ToList(),
             best.Scores,
             best.Times
         );
     }
 
-    internal static IReadOnlyList<MythicPlusStanding> Rank(
+    internal static IReadOnlyList<MythicPlusStanding> Totals(
         IReadOnlyList<(string Realm, string Name)> players,
         IReadOnlyList<double> scores,
         IReadOnlyList<long> times
-    )
-    {
-        var order = Enumerable
-            .Range(0, players.Count)
-            .Select(index =>
-                (
-                    Index: index,
-                    Score: RoundScore(scores[index]),
-                    Time: times[index],
-                    Key: $"{players[index].Name}|{players[index].Realm}"
-                )
+    ) =>
+        players
+            .Select(
+                (player, index) =>
+                    new MythicPlusStanding(
+                        player.Name,
+                        player.Realm,
+                        RoundScore(scores[index]),
+                        times[index]
+                    )
             )
-            .OrderByDescending(entry => entry.Score)
-            .ThenBy(entry => entry.Time)
-            .ThenBy(entry => entry.Key, StringComparer.Ordinal)
             .ToList();
-
-        var standings = new MythicPlusStanding[players.Count];
-        var rank = 0;
-        for (var position = 0; position < order.Count; position++)
-        {
-            var entry = order[position];
-            if (
-                position == 0
-                || entry.Score != order[position - 1].Score
-                || entry.Time != order[position - 1].Time
-            )
-            {
-                rank = position + 1;
-            }
-
-            var (realm, name) = players[entry.Index];
-            standings[entry.Index] = new MythicPlusStanding(name, realm, entry.Score, rank);
-        }
-
-        return standings;
-    }
 
     public static IReadOnlyList<MythicPlusStanding> Compare(
         IReadOnlyList<MythicPlusStanding> current,
@@ -99,10 +74,19 @@ public static class MythicPlusStandings
                 return standing with
                 {
                     ScoreChange = RoundScore(standing.Score - old.Score),
-                    RankChange = old.Rank - standing.Rank,
+                    TimeChangeMilliseconds = standing.TimeMilliseconds - old.TimeMilliseconds,
                 };
             })
             .ToList();
+
+    public static IReadOnlyList<MythicPlusStanding> Departed(
+        IReadOnlyList<MythicPlusStanding> current,
+        IReadOnlyDictionary<(string Realm, string Name), MythicPlusStanding> previous
+    )
+    {
+        var present = current.Select(standing => (standing.Realm, standing.Name)).ToHashSet();
+        return previous.Values.Where(old => !present.Contains((old.Realm, old.Name))).ToList();
+    }
 
     internal static double RoundScore(double score)
     {

@@ -23,9 +23,9 @@ import {
   MythicPlusAffix,
   MythicPlusIndex,
   MythicPlusRun,
-  MythicPlusStandingEntry,
   characterKey,
   currentAffixWeek,
+  currentPlayers,
   exportedAt,
   hasScanChanges,
   memberNameMatches,
@@ -33,7 +33,8 @@ import {
   runScoreColor,
   scoreColor,
   scoreTiers,
-  seasonScoreColors
+  seasonScoreColors,
+  standingChanges
 } from './mythic-plus';
 import {
   GuildLadderEntry,
@@ -41,8 +42,7 @@ import {
   guildLadder,
   guildLadderLink,
   guildRankChanges,
-  inGuild,
-  previousOverallRank
+  inGuild
 } from './mythic-plus-guild';
 import { memberFilter, rolePlayerNoun } from './mythic-plus-leaderboard';
 import { MythicPlusPlayersListComponent } from './mythic-plus-players-list.component';
@@ -148,14 +148,14 @@ export class MythicPlusGuildPageComponent implements OnInit {
     return classId === undefined ? [] : [[this.specFilter(), CLASS_NAMES[classId]].filter(Boolean).join(' ')];
   });
 
-  readonly guild = computed(() => {
-    const players = this.index()?.players ?? [];
-    return findGuild(players.map(([, realm, guild]) => ({ realm, guild })), this.urlRealm(), this.urlGuild());
-  });
+  private readonly players = computed(() => currentPlayers(this.index()));
+
+  readonly guild = computed(() =>
+    findGuild(this.players().map(([, realm, guild]) => ({ realm, guild })), this.urlRealm(), this.urlGuild()));
 
   readonly realmName = computed(() => {
     const slug = realmSlug(this.urlRealm());
-    return this.index()?.players.find(([, realm]) => realmSlug(realm) === slug)?.[1] ?? this.urlRealm();
+    return this.players().find(([, realm]) => realmSlug(realm) === slug)?.[1] ?? this.urlRealm();
   });
 
   readonly armoryUrl = computed(() => {
@@ -163,21 +163,14 @@ export class MythicPlusGuildPageComponent implements OnInit {
     return guild && getGuildArmoryUrl(guild.name, guild.realm);
   });
 
-  private readonly memberStandings = computed(() => {
-    const index = this.index();
+  private readonly memberCount = computed(() => {
     const guild = this.guild();
-    const standings = new Map<string, MythicPlusStandingEntry | undefined>();
-    if (!index || !guild) {
-      return standings;
+    if (!guild) {
+      return 0;
     }
 
     const isMember = inGuild(guild);
-    index.players.forEach(([name, realm, guildName], position) => {
-      if (isMember({ realm, guild: guildName })) {
-        standings.set(characterKey({ name, realm }), index.standings?.[position]);
-      }
-    });
-    return standings;
+    return this.players().filter(([, realm, guildName]) => isMember({ realm, guild: guildName })).length;
   });
 
   readonly dungeons = computed(() => this.index()?.dungeons ?? []);
@@ -249,11 +242,11 @@ export class MythicPlusGuildPageComponent implements OnInit {
       return undefined;
     }
 
-    const standings = this.memberStandings();
+    const changes = standingChanges(index);
     return guildRankChanges(this.ladder().map(entry => ({
       key: entry.player.key,
       rank: entry.rank,
-      previousOverallRank: previousOverallRank(standings.get(entry.player.key))
+      previousOverallRank: changes.get(entry.player.key)?.previousRank
     })));
   });
 
@@ -271,10 +264,10 @@ export class MythicPlusGuildPageComponent implements OnInit {
     const dungeons = this.ladderDungeons();
     const playerColor = this.playerColor();
     const changes = this.rankChanges();
-    const standings = this.memberStandings();
+    const overallChanges = standingChanges(this.index());
     const overallFilters = this.overallFilters();
     const pageSize = this.pageSize();
-    const scoreChangeOf = (key: string) => changes?.has(key) ? standings.get(key)?.[2] ?? 0 : 0;
+    const scoreChangeOf = (key: string) => changes?.has(key) ? overallChanges.get(key)?.score ?? 0 : 0;
     const shown = this.filteredLadder().slice(0, this.shownCount());
     const gains = scoreGains(
       this.allRuns(),
@@ -319,7 +312,7 @@ export class MythicPlusGuildPageComponent implements OnInit {
     const season = guildLadder(this.seasonRanking(), guild);
     const best = season[0];
     const inTop = season.filter(entry => entry.overallRank <= TOP_OVERALL).length;
-    const members = this.memberStandings().size;
+    const members = this.memberCount();
     return [
       {
         label: 'Characters',

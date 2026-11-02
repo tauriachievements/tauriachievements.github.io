@@ -8,7 +8,7 @@ import {
   MythicPlusDungeonFile,
   MythicPlusIndex,
   MythicPlusRunEntry,
-  MythicPlusStandingEntry,
+  MythicPlusScoreEntry,
   NEWER_DATA_MESSAGE
 } from './mythic-plus';
 import { MythicPlusProfilePageComponent } from './mythic-plus-profile-page.component';
@@ -173,12 +173,15 @@ describe('MythicPlusProfilePageComponent', () => {
   });
 
   it('shows score gain and overall rank movement from the previous scan', async () => {
-    const standings: MythicPlusStandingEntry[] = index.players.map(() => [0, 0]);
-    standings[0] = [290, 1, 12.3, 4];
+    const scores: MythicPlusScoreEntry[] = index.players.map(() => [0, 0]);
+    scores[0] = [290, 3000000, 12.3, 0];
+    const gone = index.players.length;
     const changedIndex: MythicPlusIndex = {
       ...index,
       previousGeneratedAt: '2026-10-07T12:00:00Z',
-      standings
+      players: [...index.players, ...[1, 2, 3, 4].map((n): MythicPlusIndex['players'][number] => [`Gone${n}`, 'Tauri', '', 1, 1, 0])],
+      scores: [...scores, [], [], [], []],
+      departed: [[gone, 280, 3000000], [gone + 1, 281, 3000000], [gone + 2, 282, 3000000], [gone + 3, 283, 3000000]]
     };
     const { page, harness, element } = await open(
       '/mythic-plus/character/evermoon/Progtrix',

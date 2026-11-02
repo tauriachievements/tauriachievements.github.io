@@ -6,10 +6,15 @@ import {
   characterKey,
   createRunDecoder,
   currentAffixWeek,
+  currentPlayers,
   exportedAt,
   formatTimerDelta,
   hasScanChanges,
+  MythicPlusDepartedEntry,
   MythicPlusIndex,
+  MythicPlusPlayerEntry,
+  MythicPlusRunEntry,
+  MythicPlusScoreEntry,
   keystoneUpgrades,
   memberNameMatches,
   sharesTables,
@@ -17,7 +22,9 @@ import {
   rankRuns,
   runIncludesCharacter,
   runIncludesPlayer,
+  seasonScoreColors,
   sortRoster,
+  standingChanges,
   upgradeCutoffs,
   upgradeStars
 } from './mythic-plus';
@@ -117,23 +124,93 @@ describe('upgradeCutoffs', () => {
   });
 });
 
-describe('hasScanChanges', () => {
-  const index: MythicPlusIndex = {
-    version: 1,
-    season: { id: 'legion-s1', name: 'Legion Season 1', raid: 'Emerald Nightmare', startDate: '2026-09-16' },
-    dungeons: [],
-    affixes: [],
-    specs: [],
-    previousGeneratedAt: '2026-10-07T09:30:00Z',
-    players: [['Exkeito', 'Evermoon', '', 11, 4, 0]],
-    standings: [[196, 1, 4.5, 2]]
-  };
+const emptyIndex: MythicPlusIndex = {
+  version: 2,
+  season: { id: 'legion-s1', name: 'Legion Season 1', raid: 'Emerald Nightmare', startDate: '2026-09-16' },
+  dungeons: [],
+  affixes: [],
+  specs: [],
+  players: []
+};
 
-  it('needs an earlier scan and a standing for every player', () => {
+const scanIndex = (rows: Array<[name: string, score: MythicPlusScoreEntry]>, departed: MythicPlusDepartedEntry[] = []): MythicPlusIndex => ({
+  ...emptyIndex,
+  previousGeneratedAt: '2026-10-07T09:30:00Z',
+  players: rows.map(([name]) => [name, 'Evermoon', '', 11, 4, 0]),
+  scores: rows.map(([, score]) => score),
+  departed
+});
+
+describe('hasScanChanges', () => {
+  const index = scanIndex([['Exkeito', [196, 1500000, 4.5, 0]]]);
+
+  it('needs an earlier scan and a score entry for every player', () => {
     expect(hasScanChanges(index)).toBe(true);
     expect(hasScanChanges({ ...index, previousGeneratedAt: undefined })).toBe(false);
-    expect(hasScanChanges({ ...index, standings: [] })).toBe(false);
+    expect(hasScanChanges({ ...index, scores: [] })).toBe(false);
     expect(hasScanChanges(undefined)).toBe(false);
+  });
+});
+
+describe('standingChanges', () => {
+  const key = (name: string) => `${name}|Evermoon`;
+
+  it('ranks both scans by score, then total time, sharing a place only on both', () => {
+    const changes = standingChanges(scanIndex([
+      ['Alpha', [300, 5000000, 50, 1000]],
+      ['Beta', [280, 5000000, 0, 0]],
+      ['Gamma', [280, 5000000, 0, 0]],
+      ['Delta', [280, 5100000, 0, 0]]
+    ]));
+
+    expect(changes.get(key('Alpha'))).toEqual({ score: 50, rank: 3, previousRank: 4 });
+    expect(changes.get(key('Beta'))).toEqual({ score: 0, rank: -1, previousRank: 1 });
+    expect(changes.get(key('Gamma'))).toEqual({ score: 0, rank: -1, previousRank: 1 });
+    expect(changes.get(key('Delta'))).toEqual({ score: 0, rank: -1, previousRank: 3 });
+  });
+
+  it('counts the players who left since the previous scan in its places', () => {
+    const changes = standingChanges(scanIndex(
+      [['Alpha', [300, 5000000, 0, 0]], ['Beta', []], ['Gamma', []]],
+      [[1, 400, 5000000], [2, 300, 4900000]]
+    ));
+
+    expect(changes.get(key('Alpha'))).toEqual({ score: 0, rank: 2, previousRank: 3 });
+    expect(changes.has(key('Beta'))).toBe(false);
+  });
+
+  it('has no change for a player new since the previous scan', () => {
+    const changes = standingChanges(scanIndex([['Alpha', [300, 5000000, 0, 0]], ['Beta', [400, 5000000]]]));
+
+    expect(changes.get(key('Alpha'))).toEqual({ score: 0, rank: -1, previousRank: 1 });
+    expect(changes.has(key('Beta'))).toBe(false);
+  });
+
+  it('recovers the previous score exactly from the score change', () => {
+    const changes = standingChanges(scanIndex([['Alpha', [1100.1, 5000000, 0.2, 0]], ['Beta', [1099.9, 5000000, 0, 0]]]));
+
+    expect(changes.get(key('Alpha'))?.previousRank).toBe(1);
+    expect(changes.get(key('Beta'))?.previousRank).toBe(1);
+  });
+
+  it('is empty without a complete previous scan', () => {
+    const index = scanIndex([['Alpha', [300, 5000000, 0, 0]]]);
+
+    expect(standingChanges({ ...index, previousGeneratedAt: undefined }).size).toBe(0);
+    expect(standingChanges({ ...index, scores: [] }).size).toBe(0);
+    expect(standingChanges(undefined).size).toBe(0);
+  });
+});
+
+describe('currentPlayers', () => {
+  const alpha: MythicPlusPlayerEntry = ['Alpha', 'Evermoon', '', 6, 1, 0];
+  const beta: MythicPlusPlayerEntry = ['Beta', 'Tauri', '', 6, 1, 0];
+  const gamma: MythicPlusPlayerEntry = ['Gamma', 'WoD', '', 6, 1, 0];
+
+  it('lists the players with a score in this scan, leaving out the rows kept for those who left', () => {
+    expect(currentPlayers({ players: [alpha, beta, gamma], scores: [[100, 1000], [], [90, 2000, 0, 0]] })).toEqual([alpha, gamma]);
+    expect(currentPlayers({ players: [alpha] })).toEqual([alpha]);
+    expect(currentPlayers(undefined)).toEqual([]);
   });
 });
 
@@ -260,10 +337,17 @@ describe('createRunDecoder', () => {
 });
 
 describe('sharesTables', () => {
-  it('matches a dungeon file only to the index of the same tables', () => {
-    expect(sharesTables({ tables: 'aaa' }, { tables: 'aaa' })).toBe(true);
-    expect(sharesTables({ tables: 'aaa' }, { tables: 'bbb' })).toBe(false);
-    expect(sharesTables({}, { tables: 'bbb' })).toBe(false);
+  const player: MythicPlusPlayerEntry = ['Alpha', 'Evermoon', '', 6, 1, 0];
+  const index = { tables: 'aaa', players: [player, player], specs: [{ class: 6, name: 'Blood', role: 'tank' as const }] };
+  const file = (tables: string, roster: Array<[number, number]>) => ({ tables, runs: [[10, 1500000, 0, 100, [], roster] as MythicPlusRunEntry] });
+
+  it('matches a dungeon file to an index of the same tables that holds every player and spec it names', () => {
+    expect(sharesTables(index, file('aaa', [[1, 0]]))).toBe(true);
+    expect(sharesTables({ ...index, players: [player, player, player] }, file('aaa', [[1, 0]]))).toBe(true);
+    expect(sharesTables(index, file('aaa', [[2, 0]]))).toBe(false);
+    expect(sharesTables(index, file('aaa', [[0, 1]]))).toBe(false);
+    expect(sharesTables(index, file('bbb', [[0, 0]]))).toBe(false);
+    expect(sharesTables({ ...index, tables: undefined }, file('bbb', [[0, 0]]))).toBe(false);
   });
 });
 
@@ -349,5 +433,12 @@ describe('score colours', () => {
 
   it('colours one run as if every dungeon had it', () => {
     expect(runScoreColor(220, { tiers, dungeons: 9 })).toBe(scoreColor(1980, tiers));
+  });
+
+  it('places the season stops among the players of this scan only', () => {
+    const entries: MythicPlusScoreEntry[] = [...scores.map((score): MythicPlusScoreEntry => [score, 1000]), [], []];
+    const index = { ...emptyIndex, scores: entries };
+
+    expect(seasonScoreColors(index).tiers).toEqual(tiers);
   });
 });

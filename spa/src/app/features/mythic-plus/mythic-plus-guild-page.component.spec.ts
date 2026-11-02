@@ -33,15 +33,20 @@ const index: MythicPlusIndex = {
     ['Polán', 'Evermoon', 'Skill Issue', 10, 1, 0],
     ['Outsider', 'Evermoon', 'A Murder of Crows', 8, 1, 0],
     ['Twin', 'Tauri', 'Skill Issue', 5, 1, 0],
-    ['Newbie', 'Evermoon', 'Skill Issue', 5, 1, 0]
+    ['Newbie', 'Evermoon', 'Skill Issue', 5, 1, 0],
+    ['Former', 'Evermoon', 'Ghost Crew', 8, 1, 0],
+    ['Gone', 'Evermoon', 'Skill Issue', 6, 1, 0]
   ],
-  standings: [
-    [280, 3, 0, -2],
-    [290, 2, 25, 3],
-    [310, 1, 30, 1],
-    [140, 4, 0, 0],
-    [120, 5]
-  ]
+  scores: [
+    [280, 3100000, 0, 0],
+    [290, 3100000, 25, 0],
+    [310, 3000000, 30, 0],
+    [140, 1600000, 0, 0],
+    [120, 1600000],
+    [],
+    []
+  ],
+  departed: []
 };
 
 const runs: Record<string, MythicPlusRunEntry[]> = {
@@ -234,6 +239,13 @@ describe('MythicPlusGuildPageComponent', () => {
     expect(element.querySelector('.not-found p')?.textContent).toContain('on Evermoon');
     expect(element.querySelector('.not-found a')?.getAttribute('href')).toBe('/mythic-plus?view=players');
     expect(element.querySelector('app-mythic-plus-players-list')).toBeNull();
+  });
+
+  it('finds no guild among the rows kept for players who left', async () => {
+    const { page, element } = await open('/mythic-plus/guild/evermoon/Ghost%20Crew');
+
+    expect(page.guild()).toBeUndefined();
+    expect(element.querySelector('.not-found h1')?.textContent).toBe('No Mythic+ runs for Ghost Crew this season');
   });
 
   it('loads everything again once when the dungeon files come from a newer export', async () => {

@@ -13,8 +13,10 @@ import { injectCompactViewport } from '../../shared/compact-viewport';
 import { SkeletonBlock } from '../../shared/skeleton';
 import {
   MythicPlusAffix,
+  StandingChange,
   characterKey,
   currentAffixWeek,
+  currentPlayers,
   exportedAt,
   hasScanChanges,
   memberNameMatches,
@@ -24,7 +26,8 @@ import {
   runScoreColor,
   scoreColor,
   scoreTiers,
-  seasonScoreColors
+  seasonScoreColors,
+  standingChanges
 } from './mythic-plus';
 import { MythicPlusPlayersListComponent } from './mythic-plus-players-list.component';
 import { COMPARE_LIMIT, compareParam, parseCompareParam } from './mythic-plus-compare';
@@ -51,15 +54,13 @@ import { MythicPlusPageStore } from './mythic-plus-page.store';
 import {
   LeaderboardPeriod,
   LeaderboardView,
-  PlayerStandingChange,
   RankedRun,
   RunOrder,
   emptyLeaderboardMessage,
   filterRuns,
   memberFilter,
   realmFilterOptions,
-  runsInScope,
-  scanStandingChanges
+  runsInScope
 } from './mythic-plus-leaderboard';
 import { getClassColor } from '../../game/class-colors';
 import { GlideDirective } from '../../shared/motion/glide.directive';
@@ -161,7 +162,7 @@ export class MythicPlusPageComponent implements OnInit {
     ];
   });
 
-  readonly realmOptions = computed(() => realmFilterOptions(this.index()?.players ?? []));
+  readonly realmOptions = computed(() => realmFilterOptions(currentPlayers(this.index())));
 
   private readonly realmName = computed(() => {
     const realm = this.realmFilter();
@@ -178,7 +179,7 @@ export class MythicPlusPageComponent implements OnInit {
   });
 
   private readonly indexCharacters = computed(() =>
-    (this.index()?.players ?? []).map(([name, realm, , classId]) => ({ name, realm, classId })));
+    currentPlayers(this.index()).map(([name, realm, , classId]) => ({ name, realm, classId })));
 
   readonly characterFilter = computed<CharacterFilter | undefined>(() => {
     const wanted = this.characterParam();
@@ -273,8 +274,8 @@ export class MythicPlusPageComponent implements OnInit {
       && this.specFilter() === undefined
       && this.roleFilter() === undefined);
 
-  private readonly standingChanges = computed<ReadonlyMap<string, PlayerStandingChange>>(() =>
-    scanStandingChanges(this.index()));
+  private readonly standingChanges = computed<ReadonlyMap<string, StandingChange>>(() =>
+    standingChanges(this.index()));
 
   readonly resultCount = computed(() =>
     this.view() === 'players' ? this.filteredPlayers().length : this.filteredRows().length);

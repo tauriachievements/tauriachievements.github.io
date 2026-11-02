@@ -2,12 +2,9 @@ import { FilterDropdownOption } from '../../shared/filter-dropdown.types';
 import { CLASS_NAMES, RoleFilter, matchesRoleFilter, realmSlug } from '../../game/wow';
 import {
   MythicPlusDungeon,
-  MythicPlusIndex,
   MythicPlusMember,
   MythicPlusPlayerEntry,
   MythicPlusRun,
-  characterKey,
-  hasScanChanges,
   rankRuns,
   runIncludesCharacter,
   runIncludesPlayer
@@ -21,11 +18,6 @@ export type RunOrder = 'best' | 'latest';
 
 export interface RankedRun {
   run: MythicPlusRun;
-  rank: number;
-}
-
-export interface PlayerStandingChange {
-  score: number;
   rank: number;
 }
 
@@ -115,23 +107,6 @@ export function filterRuns(
   return order === 'latest'
     ? [...rows].sort((a, b) => Date.parse(b.run.completedAt) - Date.parse(a.run.completedAt) || a.rank - b.rank)
     : rows;
-}
-
-export function scanStandingChanges(index: MythicPlusIndex | undefined): Map<string, PlayerStandingChange> {
-  const changes = new Map<string, PlayerStandingChange>();
-  if (!hasScanChanges(index)) {
-    return changes;
-  }
-
-  index.standings.forEach((standing, playerIndex) => {
-    const score = standing[2];
-    const rank = standing[3];
-    const player = index.players[playerIndex];
-    if (player && score !== undefined && rank !== undefined) {
-      changes.set(characterKey({ name: player[0], realm: player[1] }), { score, rank });
-    }
-  });
-  return changes;
 }
 
 export function emptyLeaderboardMessage(state: EmptyLeaderboard): string {

@@ -16,7 +16,7 @@ const index = {
   affixes: [],
   players: [['Exkeito', 'Evermoon', '', 11, 4, 0]],
   specs: [{ class: 11, spec: 'Restoration', role: 'healer' }],
-  standings: [[100, 1]]
+  scores: [[100, 1500000]]
 } as unknown as MythicPlusIndex;
 
 class FakeDataFiles {

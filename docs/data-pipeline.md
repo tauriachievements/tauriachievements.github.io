@@ -137,27 +137,48 @@ Keep these guards in any new exporter ([guides/howto-add-exporter.md](guides/how
 
 ## Mythic+ files
 
-MythicPlusExporter writes `mythic-plus-data/` for the `/mythic-plus` pages, which decode it in
-`mythic-plus.ts`. Every entry goes on its own line.
+MythicPlusExporter writes `mythic-plus-data/` (format 2) for the `/mythic-plus` pages, which
+decode it in `mythic-plus.ts`. Every entry goes on its own line, and the tables only grow, so a
+sync adds its new runs and players as new lines and changes the score lines of the characters
+whose score changed, not the whole dataset.
 
 - `index.json`: `version`, when the leaderboards were read (`generatedAt`, UTC ISO 8601),
   `previousGeneratedAt` once there is an earlier export, the `tables` fingerprint (below), the
   `season`, `dungeons` and `affixes`, and the tables the dungeon files point into: `specs` as
-  objects and `players` as `[name, realm, guild, class, race, gender]`, sorted by realm, then
-  name. `standings` is aligned with `players`: `[score, rank, scoreChange, rankChange]`, a rank
-  change positive when the character climbed. A character new since the last export, and every
-  character on a first export, has no two changes. The exporter works the changes out once, so
-  no browser needs the previous run files.
+  objects and `players` as `[name, realm, guild, class, race, gender]`.
+- The two tables keep the order of the export that started them (specs by class, then name;
+  players by realm, then name) and add each new entry at the end, sorted the same way among the
+  export's new ones. A known character's row never moves: a new guild, class, race or gender is
+  updated in place, and a character missing from this export keeps their row too (the API can
+  leave a character out for a while, or the name was renamed or deleted).
+- `scores` is aligned with `players`: `[score, timeMs, scoreChange, timeChangeMs]`, the
+  character's score and the summed clear time of the best runs it counts, each with its change
+  since the previous export. A character new since then, and every character on a first export,
+  has `[score, timeMs]`. A character not in this export has `[]`, so code that lists characters
+  goes through `currentPlayers()`, never `index.players` on its own.
+- `departed`, once there is an earlier export: `[player, score, timeMs]` for each character who
+  was in the previous export and isn't in this one, with the score and time they had then.
+- The site works the ranks and rank changes out from `scores` and `departed`
+  ([scoring.md](scoring.md#mythic)), so a score line changes only when that character's score or
+  time does, and once more at the next export, when its changes go back to 0. Stored ranks would
+  shift for everyone below a single new score.
 - `<dungeon>.json`, named by the dungeon's slug: `version`, `dungeon`, `tables` and the
   dungeon's `runs`, best first (the higher score, then the faster clear, then the earlier
   finish), each `[keyLevel, clearTimeMs, completedAtUnix, score, [affixId, ...], [[player, spec], ...]]`
   with player and spec as positions in the index's tables. A dungeon nobody has run yet has no
   file and no tile.
-- `tables` is a short hash of the spec table and the players' realms and names, in order. A new
-  player shifts the sorted table and changes it; a known player's new guild or race doesn't, so
-  an unchanged dungeon file stays byte for byte the same and still matches a newer index. The
-  page uses it to never read a dungeon file against another export's index
-  ([below](#caching-the-data-manifest)).
+- `tables` is a short hash of the spec table and the players' realms and names, in order, taken
+  when the tables started (`MythicPlusTables.FingerprintOf`). Every export that only adds to them
+  keeps it, so an unchanged run stays byte for byte the same, and a dungeon file reads correctly
+  against any index with the same `tables` that holds every player and spec it names: an older
+  file against a newer index, not the other way round. The page checks both
+  (`sharesTables`, [below](#caching-the-data-manifest)).
+- The exporter reads the previous export to grow its tables and work out the changes: a format 2
+  index gives the previous scores from `scores`; a format 1 index (players sorted, `standings`
+  with ranks) gives them from its dungeon files, and its tables and `tables` carry on. A new
+  season, or an index of a newer format, starts new tables with a new `tables`. The first export
+  in format 2 rewrote `index.json` once; its dungeon files changed only by their new runs and the
+  version line.
 
 ## Raid log files
 
@@ -431,7 +452,8 @@ needs adding to `angular.json`.
 
 GitHub Pages ignores `?v=`, so a tab left open across a deploy can mix old and new files. The
 Mythic+ files guard against this: `index.json` and every dungeon file carry a `tables`
-fingerprint. When they don't match, `MythicPlusDataService` refreshes the session and loads
+fingerprint. When they don't match, or the dungeon file names a player or spec the index
+doesn't have yet (`sharesTables`), `MythicPlusDataService` refreshes the session and loads
 again, once; a second mismatch means the deploy is still going out, and the page says so
 (`NEWER_DATA_MESSAGE`) instead of retrying in a loop.
 Any new data split across several files needs the same guard. Raid boss files carry their own
@@ -448,6 +470,9 @@ tables, so they don't. The page code has its own guard for a code deploy
 - **Never hand-edit or hand-merge a generated data file.** After a format change, a merge
   conflicts with the daily data commits on `main`. Take `main`'s side and rerun the job.
 - Exporters write one entry per line (`JsonLineWriter`), so the daily git diffs stay small.
+  For the same reason a table that other entries point into only grows, in order of first
+  appearance, and a file stores what changes for one entry at a time (a score), not what one
+  change moves for everyone (a rank). The Mythic+ and raid log tables work this way.
 - **Keep the slugs stable.** A Mythic+ dungeon's slug (`MythicPlusCatalog`) is its file name
   and the page's `?dungeon=` value; a raid boss's slug (`RaidCatalog`) is in its file name and
   page URLs.

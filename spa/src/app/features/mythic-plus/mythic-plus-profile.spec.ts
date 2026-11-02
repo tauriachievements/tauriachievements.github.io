@@ -325,14 +325,21 @@ describe('profileScanChange', () => {
     affixes: [],
     specs: [],
     previousGeneratedAt: '2026-10-07T09:30:00Z',
-    players: [['Exkeito', 'Evermoon', '', 11, 4, 0], ['Napim', 'Tauri', '', 11, 4, 0]],
-    standings: [[196, 1, 4.5, 2], [160, 2]]
+    players: [
+      ['Exkeito', 'Evermoon', '', 11, 4, 0],
+      ['Napim', 'Tauri', '', 11, 4, 0],
+      ['Ash', 'Tauri', '', 11, 4, 0],
+      ['Birch', 'Tauri', '', 11, 4, 0],
+      ['Gone', 'Tauri', '', 11, 4, 0]
+    ],
+    scores: [[196, 1500000, 4.5, 0], [160, 1500000], [195, 1500000, 0, 0], [194, 1500000, 0, 0], []]
   };
 
   it('reads the change since the last scan, or that the character is new to the ladder', () => {
     expect(profileScanChange(index, 'Exkeito|Evermoon')).toEqual({ score: 4.5, rank: 2, isNew: false });
     expect(profileScanChange(index, 'Napim|Tauri')).toEqual({ isNew: true });
     expect(profileScanChange(index, 'Nobody|Tauri')).toBeUndefined();
+    expect(profileScanChange(index, 'Gone|Tauri')).toBeUndefined();
     expect(profileScanChange({ ...index, previousGeneratedAt: undefined }, 'Exkeito|Evermoon')).toBeUndefined();
   });
 });

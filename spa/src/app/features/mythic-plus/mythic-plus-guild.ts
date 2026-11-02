@@ -1,4 +1,4 @@
-import { MythicPlusMember, MythicPlusStandingEntry, PlayerScore, playerRanks } from './mythic-plus';
+import { MythicPlusMember, PlayerScore, playerRanks } from './mythic-plus';
 import { realmSlug } from '../../game/wow';
 
 export interface MythicPlusGuild {
@@ -60,10 +60,6 @@ export function guildLadder(ranking: readonly PlayerScore[], guild: MythicPlusGu
 
   const ranks = playerRanks(members.map(member => member.player));
   return members.map((member, index) => ({ ...member, rank: ranks[index] }));
-}
-
-export function previousOverallRank(standing: MythicPlusStandingEntry | undefined): number | undefined {
-  return standing?.[3] === undefined ? undefined : standing[1] + standing[3];
 }
 
 export function guildRankChanges(

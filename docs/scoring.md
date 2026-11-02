@@ -192,7 +192,12 @@ decision: ask first.** When a rule does change, change its tests first and see t
   hides rows and never renumbers them, and "Latest" order keeps each run's score rank.
 - **Changes since the last scan** (rank and score arrows) describe the overall season ranking.
   They show only in that scope (season, all dungeons, no role, class or spec) and hide in any
-  other, where they would compare different things.
+  other, where they would compare different things. The page works them out
+  (`standingChanges` in `mythic-plus.ts`) from the index's `scores` and `departed`
+  ([data-pipeline.md](data-pipeline.md#mythic-files)): it ranks this export and the previous one
+  with `playerRanks`, so the ties above hold for both. The previous ranking counts the
+  characters who have left since then, as the leaderboard did when it showed them. A character
+  new since the previous export has no change.
 - **Keys that raised the score:** on a row whose score went up, each best key finished after
   the previous scan (`previousGeneratedAt`) shows green and bold (`bestRunCells` in
   `mythic-plus-views.ts`). A row without a score gain, a new character's included, marks none.
@@ -218,8 +223,8 @@ decision: ask first.** When a rule does change, change its tests first and see t
   `/evermoon/skill issue` still finds Skill Issue.
 - Scores are the leaderboard's, every run a member played counting, with guildmates or not.
   Only the ranks are counted again inside the guild; each row also shows the overall rank.
-- **Rank changes inside the guild:** the standings only keep overall changes, so the previous
-  guild ranks come from ordering the members by their previous overall ranks (shared on a tie).
+- **Rank changes inside the guild:** the previous guild ranks come from ordering the members by
+  their previous overall ranks (`standingChanges`, shared on a tie).
   Members new since the last scan have no change and are left out of that order. The guild is
   today's roster: someone who joined since the last scan counts as if they were in it then.
 - The header counts members in the leaderboard's top 100 (`TOP_OVERALL`).

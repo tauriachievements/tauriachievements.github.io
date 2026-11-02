@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using MythicPlusExporter;
@@ -191,162 +192,56 @@ public sealed class MythicPlusExportServiceTests
     }
 
     [Fact]
-    public async Task ExportAsync_WritesScoreGainsAndRankMovementAgainstThePreviousScan()
+    public async Task ExportAsync_WritesScoreAndTimeChangesAgainstThePreviousScan()
     {
         var outputDirectory = CreateTempDirectory();
         try
         {
-            static Dictionary<(string Realm, int ChallengeId), string> Leaderboards(
-                params string[] hallsRuns
-            ) =>
-                new()
-                {
-                    [(Evermoon, 197)] = LeaderboardJson(),
-                    [(Evermoon, 200)] = LeaderboardJson(hallsRuns),
-                };
-
+            var alpha = Run(10, 2_000_000, 100, [], Member("Alpha", Evermoon, 6, "Blood", 0, ""));
+            var beta = Run(
+                9,
+                2_000_000,
+                101,
+                [],
+                Member("Beta", Evermoon, 10, "Brewmaster", 0, "")
+            );
             var firstAt = new DateTimeOffset(2026, 10, 7, 9, 30, 0, TimeSpan.Zero);
-            var first = new MythicPlusExportService(
+            await ExportHallsAsync(outputDirectory, firstAt, alpha, beta);
+
+            var first = ReadJson(outputDirectory, "index.json");
+            Assert.Equal(2, first.GetProperty("version").GetInt32());
+            Assert.False(first.TryGetProperty("previousGeneratedAt", out _));
+            Assert.False(first.TryGetProperty("departed", out _));
+            Assert.Equal([HallsScore(10, 2_000_000), 2_000_000], Values(ScoresOf(first, "Alpha")));
+            Assert.Equal([HallsScore(9, 2_000_000), 2_000_000], Values(ScoresOf(first, "Beta")));
+
+            await ExportHallsAsync(
                 outputDirectory,
-                new FakeChallengeApiClient(
-                    IndexJson(),
-                    Leaderboards(
-                        Run(10, 2_000_000, 100, [], Member("Alpha", Evermoon, 6, "Blood", 0, "")),
-                        Run(
-                            9,
-                            2_000_000,
-                            101,
-                            [],
-                            Member("Beta", Evermoon, 10, "Brewmaster", 0, "")
-                        )
-                    )
-                ),
-                new FixedTimeProvider(firstAt)
-            );
-            await first.ExportAsync(
-                new MythicPlusExporterOptions([Evermoon], AllowShrink: false),
-                CancellationToken.None
+                firstAt.AddDays(1),
+                alpha,
+                beta,
+                Run(11, 1_900_000, 102, [], Member("Beta", Evermoon, 10, "Brewmaster", 0, ""))
             );
 
-            using (
-                var firstIndex = JsonDocument.Parse(
-                    File.ReadAllText(Path.Combine(outputDirectory, "index.json"))
-                )
-            )
-            {
-                Assert.False(firstIndex.RootElement.TryGetProperty("previousGeneratedAt", out _));
-                Assert.All(
-                    firstIndex.RootElement.GetProperty("standings").EnumerateArray(),
-                    standing => Assert.Equal(2, standing.GetArrayLength())
-                );
-            }
-
-            var second = new MythicPlusExportService(
-                outputDirectory,
-                new FakeChallengeApiClient(
-                    IndexJson(),
-                    Leaderboards(
-                        Run(10, 2_000_000, 100, [], Member("Alpha", Evermoon, 6, "Blood", 0, "")),
-                        Run(
-                            9,
-                            2_000_000,
-                            101,
-                            [],
-                            Member("Beta", Evermoon, 10, "Brewmaster", 0, "")
-                        ),
-                        Run(
-                            11,
-                            2_000_000,
-                            102,
-                            [],
-                            Member("Beta", Evermoon, 10, "Brewmaster", 0, "")
-                        )
-                    )
-                ),
-                new FixedTimeProvider(firstAt.AddDays(1))
-            );
-            await second.ExportAsync(
-                new MythicPlusExporterOptions([Evermoon], AllowShrink: false),
-                CancellationToken.None
-            );
-
-            using var secondIndex = JsonDocument.Parse(
-                File.ReadAllText(Path.Combine(outputDirectory, "index.json"))
-            );
-            var root = secondIndex.RootElement;
+            var second = ReadJson(outputDirectory, "index.json");
             Assert.Equal(
                 "2026-10-07T09:30:00Z",
-                root.GetProperty("previousGeneratedAt").GetString()
+                second.GetProperty("previousGeneratedAt").GetString()
             );
-
-            var names = root.GetProperty("players")
-                .EnumerateArray()
-                .Select(player => player[0].GetString())
-                .ToList();
-            var standings = root.GetProperty("standings").EnumerateArray().ToList();
-            var alpha = standings[names.IndexOf("Alpha")];
-            var beta = standings[names.IndexOf("Beta")];
-
             Assert.Equal(
-                (2, 0d, -1),
-                (alpha[1].GetInt32(), alpha[2].GetDouble(), alpha[3].GetInt32())
+                [HallsScore(10, 2_000_000), 2_000_000, 0, 0],
+                Values(ScoresOf(second, "Alpha"))
             );
-            Assert.Equal(1, beta[1].GetInt32());
-            Assert.True(beta[2].GetDouble() > 0);
-            Assert.Equal(1, beta[3].GetInt32());
-
-            var indexPath = Path.Combine(outputDirectory, "index.json");
-            var legacyIndex = JsonNode.Parse(File.ReadAllText(indexPath))!.AsObject();
-            legacyIndex.Remove("standings");
-            legacyIndex.Remove("previousGeneratedAt");
-            File.WriteAllText(indexPath, legacyIndex.ToJsonString());
-
-            var third = new MythicPlusExportService(
-                outputDirectory,
-                new FakeChallengeApiClient(
-                    IndexJson(),
-                    Leaderboards(
-                        Run(10, 2_000_000, 100, [], Member("Alpha", Evermoon, 6, "Blood", 0, "")),
-                        Run(
-                            9,
-                            2_000_000,
-                            101,
-                            [],
-                            Member("Beta", Evermoon, 10, "Brewmaster", 0, "")
-                        ),
-                        Run(
-                            11,
-                            2_000_000,
-                            102,
-                            [],
-                            Member("Beta", Evermoon, 10, "Brewmaster", 0, "")
-                        ),
-                        Run(12, 2_000_000, 103, [], Member("Alpha", Evermoon, 6, "Blood", 0, ""))
-                    )
-                ),
-                new FixedTimeProvider(firstAt.AddDays(2))
-            );
-            await third.ExportAsync(
-                new MythicPlusExporterOptions([Evermoon], AllowShrink: false),
-                CancellationToken.None
-            );
-
-            using var migratedIndex = JsonDocument.Parse(File.ReadAllText(indexPath));
-            var migratedRoot = migratedIndex.RootElement;
             Assert.Equal(
-                "2026-10-08T09:30:00Z",
-                migratedRoot.GetProperty("previousGeneratedAt").GetString()
+                [
+                    HallsScore(11, 1_900_000),
+                    1_900_000,
+                    RoundScore(HallsScore(11, 1_900_000) - HallsScore(9, 2_000_000)),
+                    -100_000,
+                ],
+                Values(ScoresOf(second, "Beta"))
             );
-            var migratedNames = migratedRoot
-                .GetProperty("players")
-                .EnumerateArray()
-                .Select(player => player[0].GetString())
-                .ToList();
-            var migratedStandings = migratedRoot.GetProperty("standings").EnumerateArray().ToList();
-            var migratedAlpha = migratedStandings[migratedNames.IndexOf("Alpha")];
-            Assert.Equal(1, migratedAlpha[1].GetInt32());
-            Assert.True(migratedAlpha[2].GetDouble() > 0);
-            Assert.Equal(1, migratedAlpha[3].GetInt32());
+            Assert.Empty(second.GetProperty("departed").EnumerateArray());
         }
         finally
         {
@@ -355,7 +250,7 @@ public sealed class MythicPlusExportServiceTests
     }
 
     [Fact]
-    public async Task ExportAsync_SharesARankOnlyOnTheSameScoreAndTotalTime()
+    public async Task ExportAsync_ScoresEachPlayerOnTheirBestRunInEachDungeon()
     {
         var outputDirectory = CreateTempDirectory();
         try
@@ -366,30 +261,23 @@ public sealed class MythicPlusExportServiceTests
                     IndexJson(),
                     new()
                     {
-                        [(Evermoon, 197)] = LeaderboardJson(),
+                        [(Evermoon, 197)] = LeaderboardJson(
+                            Run(8, 1_800_000, 100, [], Member("Alpha", Evermoon, 6, "Blood", 0, ""))
+                        ),
                         [(Evermoon, 200)] = LeaderboardJson(
                             Run(
-                                10,
-                                2_000_000,
-                                100,
-                                [],
-                                Member("Alpha", Evermoon, 6, "Blood", 0, ""),
-                                Member("Beta", Evermoon, 10, "Brewmaster", 0, ""),
-                                Member("Gamma", Evermoon, 2, "Holy", 1, "")
-                            ),
-                            Run(
-                                10,
-                                2_001_000,
+                                9,
+                                1_500_000,
                                 101,
                                 [],
-                                Member("Delta", Evermoon, 6, "Blood", 0, "")
+                                Member("Alpha", Evermoon, 6, "Blood", 0, "")
                             ),
                             Run(
-                                9,
+                                10,
                                 2_000_000,
                                 102,
                                 [],
-                                Member("Epsilon", Evermoon, 6, "Blood", 0, "")
+                                Member("Alpha", Evermoon, 6, "Blood", 0, "")
                             )
                         ),
                     }
@@ -401,22 +289,15 @@ public sealed class MythicPlusExportServiceTests
                 CancellationToken.None
             );
 
-            using var index = JsonDocument.Parse(
-                File.ReadAllText(Path.Combine(outputDirectory, "index.json"))
-            );
-            var root = index.RootElement;
-            var names = root.GetProperty("players")
-                .EnumerateArray()
-                .Select(player => player[0].GetString())
-                .ToList();
-            var standings = root.GetProperty("standings").EnumerateArray().ToList();
-            double Score(string name) => standings[names.IndexOf(name)][0].GetDouble();
-            int Rank(string name) => standings[names.IndexOf(name)][1].GetInt32();
-
-            Assert.Equal(Score("Alpha"), Score("Delta"));
+            var index = ReadJson(outputDirectory, "index.json");
             Assert.Equal(
-                [1, 1, 1, 4, 5],
-                new[] { "Alpha", "Beta", "Gamma", "Delta", "Epsilon" }.Select(Rank)
+                [
+                    RoundScore(
+                        MythicPlusScore.Calculate(8, 1_800_000, 2100) + HallsScore(10, 2_000_000)
+                    ),
+                    3_800_000,
+                ],
+                Values(ScoresOf(index, "Alpha"))
             );
         }
         finally
@@ -426,22 +307,214 @@ public sealed class MythicPlusExportServiceTests
     }
 
     [Fact]
-    public void TablesFingerprint_ChangesWhenPositionsShiftOnly()
+    public async Task ExportAsync_KeepsEveryPlayerInPlaceAndAddsNewPlayersAtTheEnd()
     {
-        static MythicPlusDataset Dataset(params MythicPlusPlayer[] players) =>
-            new("", [], [], [new MythicPlusSpec(6, "Blood", "tank")], players, 0);
+        var outputDirectory = CreateTempDirectory();
+        try
+        {
+            var delta = Run(
+                9,
+                2_000_000,
+                101,
+                [],
+                Member("Delta", Evermoon, 10, "Brewmaster", 0, "")
+            );
+            var firstAt = new DateTimeOffset(2026, 10, 7, 9, 30, 0, TimeSpan.Zero);
+            await ExportHallsAsync(
+                outputDirectory,
+                firstAt,
+                Run(10, 2_000_000, 100, [], Member("Beta", Evermoon, 6, "Blood", 0, "Outlaws")),
+                delta
+            );
+            var firstTables = ReadJson(outputDirectory, "index.json")
+                .GetProperty("tables")
+                .GetString();
+            var firstDeltaLine = Assert.Single(
+                RunLines(outputDirectory, "hov"),
+                line => line.Contains("[[1,1]]")
+            );
+
+            await ExportHallsAsync(
+                outputDirectory,
+                firstAt.AddDays(1),
+                Run(10, 2_000_000, 100, [], Member("Beta", Evermoon, 6, "Blood", 0, "Lawmen")),
+                delta,
+                Run(12, 2_000_000, 102, [], Member("Alpha", Evermoon, 6, "Blood", 0, "")),
+                Run(11, 2_000_000, 103, [], Member("Gamma", Evermoon, 6, "Blood", 0, ""))
+            );
+
+            var second = ReadJson(outputDirectory, "index.json");
+            Assert.Equal(["Beta", "Delta", "Alpha", "Gamma"], PlayerNames(second));
+            Assert.Equal("Lawmen", second.GetProperty("players")[0][2].GetString());
+            Assert.Equal(firstTables, second.GetProperty("tables").GetString());
+            Assert.Equal(
+                firstTables,
+                ReadJson(outputDirectory, "hov.json").GetProperty("tables").GetString()
+            );
+            Assert.Contains(firstDeltaLine, RunLines(outputDirectory, "hov"));
+        }
+        finally
+        {
+            Directory.Delete(outputDirectory, recursive: true);
+        }
+    }
+
+    [Fact]
+    public async Task ExportAsync_KeepsTheRowOfAPlayerWhoLeftAndListsThemAsDeparted()
+    {
+        var outputDirectory = CreateTempDirectory();
+        try
+        {
+            var alpha = Run(10, 2_000_000, 100, [], Member("Alpha", Evermoon, 6, "Blood", 0, ""));
+            var beta = Run(
+                9,
+                2_100_000,
+                101,
+                [],
+                Member("Beta", Evermoon, 10, "Brewmaster", 0, "")
+            );
+            var firstAt = new DateTimeOffset(2026, 10, 7, 9, 30, 0, TimeSpan.Zero);
+            await ExportHallsAsync(outputDirectory, firstAt, alpha, beta);
+
+            await ExportHallsAsync(outputDirectory, firstAt.AddDays(1), allowShrink: true, alpha);
+
+            var second = ReadJson(outputDirectory, "index.json");
+            Assert.Equal(["Alpha", "Beta"], PlayerNames(second));
+            Assert.Equal(0, ScoresOf(second, "Beta").GetArrayLength());
+            var departed = Assert.Single(second.GetProperty("departed").EnumerateArray());
+            Assert.Equal([1, HallsScore(9, 2_100_000), 2_100_000], Values(departed));
+
+            await ExportHallsAsync(outputDirectory, firstAt.AddDays(2), alpha, beta);
+
+            var third = ReadJson(outputDirectory, "index.json");
+            Assert.Equal(["Alpha", "Beta"], PlayerNames(third));
+            Assert.Equal([HallsScore(9, 2_100_000), 2_100_000], Values(ScoresOf(third, "Beta")));
+            Assert.Empty(third.GetProperty("departed").EnumerateArray());
+        }
+        finally
+        {
+            Directory.Delete(outputDirectory, recursive: true);
+        }
+    }
+
+    [Fact]
+    public async Task ExportAsync_ContinuesTheTablesOfAFormatOneExport()
+    {
+        var outputDirectory = CreateTempDirectory();
+        try
+        {
+            var betaScore = Invariant(HallsScore(10, 2_000_000));
+            var zetaScore = Invariant(HallsScore(9, 2_100_000));
+            File.WriteAllText(
+                Path.Combine(outputDirectory, "index.json"),
+                $$"""
+                {"version":1,"generatedAt":"2026-10-07T09:30:00Z","tables":"0123456789ab",
+                "season":{"id":"{{MythicPlusCatalog.Season.Id}}"},
+                "dungeons":[{"id":"hov","runCount":2}],
+                "specs":[{"class":6,"name":"Blood","role":"tank"},{"class":10,"name":"Brewmaster","role":"tank"}],
+                "players":[["Beta","Evermoon","",6,1,0],["Zeta","Evermoon","",10,1,0]],
+                "standings":[[{{betaScore}},1],[{{zetaScore}},2]]}
+                """
+            );
+            File.WriteAllText(
+                Path.Combine(outputDirectory, "hov.json"),
+                $$"""
+                {"version":1,"dungeon":"hov","tables":"0123456789ab","runs":[
+                [10,2000000,100,{{betaScore}},[],[[0,0]]],
+                [9,2100000,101,{{zetaScore}},[],[[1,1]]]]}
+                """
+            );
+
+            await ExportHallsAsync(
+                outputDirectory,
+                new DateTimeOffset(2026, 10, 8, 9, 30, 0, TimeSpan.Zero),
+                Run(10, 2_000_000, 100, [], Member("Beta", Evermoon, 6, "Blood", 0, "")),
+                Run(9, 2_100_000, 101, [], Member("Zeta", Evermoon, 10, "Brewmaster", 0, "")),
+                Run(12, 2_000_000, 102, [], Member("Alpha", Evermoon, 6, "Blood", 0, ""))
+            );
+
+            var index = ReadJson(outputDirectory, "index.json");
+            Assert.Equal(2, index.GetProperty("version").GetInt32());
+            Assert.Equal("0123456789ab", index.GetProperty("tables").GetString());
+            Assert.Equal(["Beta", "Zeta", "Alpha"], PlayerNames(index));
+            Assert.Equal(
+                "2026-10-07T09:30:00Z",
+                index.GetProperty("previousGeneratedAt").GetString()
+            );
+            Assert.Equal(
+                [HallsScore(10, 2_000_000), 2_000_000, 0, 0],
+                Values(ScoresOf(index, "Beta"))
+            );
+            Assert.Equal([HallsScore(12, 2_000_000), 2_000_000], Values(ScoresOf(index, "Alpha")));
+
+            var halls = RunLines(outputDirectory, "hov");
+            Assert.Contains($"[10,2000000,100,{betaScore},[],[[0,0]]],", halls);
+            Assert.Contains($"[9,2100000,101,{zetaScore},[],[[1,1]]]]}}", halls);
+        }
+        finally
+        {
+            Directory.Delete(outputDirectory, recursive: true);
+        }
+    }
+
+    [Theory]
+    [InlineData(true, 2)]
+    [InlineData(false, 99)]
+    public async Task ExportAsync_StartsNewTablesForANewSeasonOrANewerFormat(
+        bool newSeason,
+        int version
+    )
+    {
+        var outputDirectory = CreateTempDirectory();
+        try
+        {
+            var seasonId = newSeason ? "legion-s0" : MythicPlusCatalog.Season.Id;
+            File.WriteAllText(
+                Path.Combine(outputDirectory, "index.json"),
+                $$"""
+                {"version":{{version}},"generatedAt":"2026-10-07T09:30:00Z","tables":"0123456789ab",
+                "season":{"id":"{{seasonId}}"},
+                "dungeons":[{"id":"hov","runCount":1}],
+                "specs":[{"class":6,"name":"Blood","role":"tank"}],
+                "players":[["Zeta","Evermoon","",6,1,0]],
+                "scores":[[100,2000000]]}
+                """
+            );
+
+            await ExportHallsAsync(
+                outputDirectory,
+                new DateTimeOffset(2026, 10, 8, 9, 30, 0, TimeSpan.Zero),
+                Run(10, 2_000_000, 100, [], Member("Alpha", Evermoon, 6, "Blood", 0, ""))
+            );
+
+            var index = ReadJson(outputDirectory, "index.json");
+            Assert.Equal(["Alpha"], PlayerNames(index));
+            Assert.NotEqual("0123456789ab", index.GetProperty("tables").GetString());
+            Assert.False(index.TryGetProperty("previousGeneratedAt", out _));
+        }
+        finally
+        {
+            Directory.Delete(outputDirectory, recursive: true);
+        }
+    }
+
+    [Fact]
+    public void FingerprintOf_ChangesWhenPositionsShiftOnly()
+    {
+        IReadOnlyList<MythicPlusSpec> specs = [new MythicPlusSpec(6, "Blood", "tank")];
         var alpha = new MythicPlusPlayer("Alpha", Evermoon, "Outlaws", 6, 1, 0);
         var gamma = new MythicPlusPlayer("Gamma", Evermoon, "", 10, 2, 1);
-        var original = MythicPlusFileWriter.TablesFingerprint(Dataset(alpha, gamma));
+        var original = MythicPlusTables.FingerprintOf(specs, [alpha, gamma]);
 
         Assert.Equal(
             original,
-            MythicPlusFileWriter.TablesFingerprint(Dataset(alpha with { Guild = "" }, gamma))
+            MythicPlusTables.FingerprintOf(specs, [alpha with { Guild = "" }, gamma])
         );
         Assert.NotEqual(
             original,
-            MythicPlusFileWriter.TablesFingerprint(
-                Dataset(alpha, new MythicPlusPlayer("Beta", Evermoon, "", 2, 1, 1), gamma)
+            MythicPlusTables.FingerprintOf(
+                specs,
+                [alpha, new MythicPlusPlayer("Beta", Evermoon, "", 2, 1, 1), gamma]
             )
         );
     }
@@ -515,6 +588,61 @@ public sealed class MythicPlusExportServiceTests
             Directory.Delete(outputDirectory, recursive: true);
         }
     }
+
+    private static Task<MythicPlusExportResult> ExportHallsAsync(
+        string outputDirectory,
+        DateTimeOffset scannedAt,
+        params string[] hallsRuns
+    ) => ExportHallsAsync(outputDirectory, scannedAt, allowShrink: false, hallsRuns);
+
+    private static Task<MythicPlusExportResult> ExportHallsAsync(
+        string outputDirectory,
+        DateTimeOffset scannedAt,
+        bool allowShrink,
+        params string[] hallsRuns
+    ) =>
+        new MythicPlusExportService(
+            outputDirectory,
+            new FakeChallengeApiClient(
+                IndexJson(),
+                new()
+                {
+                    [(Evermoon, 197)] = LeaderboardJson(),
+                    [(Evermoon, 200)] = LeaderboardJson(hallsRuns),
+                }
+            ),
+            new FixedTimeProvider(scannedAt)
+        ).ExportAsync(
+            new MythicPlusExporterOptions([Evermoon], AllowShrink: allowShrink),
+            CancellationToken.None
+        );
+
+    private static double HallsScore(int keyLevel, long clearTimeMilliseconds) =>
+        MythicPlusScore.Calculate(keyLevel, clearTimeMilliseconds, 2700);
+
+    private static double RoundScore(double score) =>
+        Math.Round(score, 1, MidpointRounding.AwayFromZero);
+
+    private static string Invariant(double value) => value.ToString(CultureInfo.InvariantCulture);
+
+    private static JsonElement ReadJson(string outputDirectory, string fileName) =>
+        Parse(File.ReadAllText(Path.Combine(outputDirectory, fileName)));
+
+    private static string[] RunLines(string outputDirectory, string dungeon) =>
+        File.ReadAllLines(Path.Combine(outputDirectory, dungeon + ".json"));
+
+    private static List<string?> PlayerNames(JsonElement index) =>
+        index
+            .GetProperty("players")
+            .EnumerateArray()
+            .Select(player => player[0].GetString())
+            .ToList();
+
+    private static JsonElement ScoresOf(JsonElement index, string name) =>
+        index.GetProperty("scores")[PlayerNames(index).IndexOf(name)];
+
+    private static double[] Values(JsonElement entry) =>
+        entry.EnumerateArray().Select(value => value.GetDouble()).ToArray();
 
     internal static string CreateTempDirectory()
     {

@@ -211,8 +211,11 @@ instead.
   `dungeonRuns()` for the leaderboard (through `MythicPlusPageStore`), which loads only the
   dungeons its scope shows. Its errors go through `mythicPlusLoadError()` for the message.
   `hasScanChanges()` (`mythic-plus.ts`) says whether an index carries the previous scan's
-  standings for every player, which the movement arrows on the leaderboard, guild and profile
-  pages need.
+  changes for every player, and `standingChanges()` turns them into each character's score
+  change, rank change and previous rank, worked out once per index, for the movement arrows on
+  the leaderboard, guild and profile pages. `index.players` also keeps the rows of characters
+  who aren't in this export ([data-pipeline.md](data-pipeline.md#mythic-files)): list
+  characters, realms or guilds from `currentPlayers()`.
 - `RaidLogsDataService` loads the raid files. `bossKills()` and `difficultyKills()` leave the
   invalid logs out ([data-pipeline.md](data-pipeline.md#invalid-raid-logs)); a list of kills
   that shows them also asks for `invalidBossKills()`. It keeps `lastDifficulty`, so the Raids tabs

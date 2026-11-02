@@ -1,6 +1,4 @@
 using System.Globalization;
-using System.Security.Cryptography;
-using System.Text;
 using System.Text.Encodings.Web;
 using System.Text.Json;
 using Tauri.Core.Infrastructure;
@@ -9,7 +7,7 @@ namespace MythicPlusExporter;
 
 public static class MythicPlusFileWriter
 {
-    public const int FormatVersion = 1;
+    public const int FormatVersion = 2;
     public const string IndexFileName = "index.json";
 
     private static readonly JsonWriterOptions WriterOptions = new()
@@ -20,7 +18,9 @@ public static class MythicPlusFileWriter
     public static async Task WriteAsync(
         string outputDirectory,
         MythicPlusDataset dataset,
+        MythicPlusTables tables,
         IReadOnlyList<MythicPlusStanding> standings,
+        IReadOnlyList<MythicPlusStanding> departed,
         DateTimeOffset generatedAt,
         DateTimeOffset? previousGeneratedAt,
         CancellationToken cancellationToken
@@ -28,20 +28,26 @@ public static class MythicPlusFileWriter
     {
         Directory.CreateDirectory(outputDirectory);
 
-        var playerIndexes = dataset
+        var playerIndexes = tables
             .Players.Select((player, index) => (player, index))
             .ToDictionary(entry => (entry.player.Realm, entry.player.Name), entry => entry.index);
-        var specIndexes = dataset
+        var specIndexes = tables
             .Specs.Select((spec, index) => (spec, index))
             .ToDictionary(entry => entry.spec, entry => entry.index);
-        var tables = TablesFingerprint(dataset);
 
         foreach (var dungeon in dataset.Dungeons)
         {
             await AtomicFile.WriteAsync(
                 Path.Combine(outputDirectory, dungeon.Info.Slug + ".json"),
                 (stream, token) =>
-                    WriteDungeonAsync(stream, dungeon, tables, playerIndexes, specIndexes, token),
+                    WriteDungeonAsync(
+                        stream,
+                        dungeon,
+                        tables.Fingerprint,
+                        playerIndexes,
+                        specIndexes,
+                        token
+                    ),
                 cancellationToken
             );
         }
@@ -52,10 +58,12 @@ public static class MythicPlusFileWriter
                 WriteIndexAsync(
                     stream,
                     dataset,
+                    tables,
                     standings,
+                    departed,
+                    playerIndexes,
                     generatedAt,
                     previousGeneratedAt,
-                    tables,
                     token
                 ),
             cancellationToken
@@ -64,39 +72,15 @@ public static class MythicPlusFileWriter
         RemoveStaleFiles(outputDirectory, dataset);
     }
 
-    public static string TablesFingerprint(MythicPlusDataset dataset)
-    {
-        var text = new StringBuilder();
-        foreach (var spec in dataset.Specs)
-        {
-            text.Append("spec\t")
-                .Append(spec.ClassId.ToString(CultureInfo.InvariantCulture))
-                .Append('\t')
-                .Append(spec.Name)
-                .Append('\t')
-                .Append(spec.Role)
-                .Append('\n');
-        }
-        foreach (var player in dataset.Players)
-        {
-            text.Append("player\t")
-                .Append(player.Realm)
-                .Append('\t')
-                .Append(player.Name)
-                .Append('\n');
-        }
-
-        var hash = SHA256.HashData(Encoding.UTF8.GetBytes(text.ToString()));
-        return Convert.ToHexStringLower(hash)[..12];
-    }
-
     private static async Task WriteIndexAsync(
         Stream stream,
         MythicPlusDataset dataset,
+        MythicPlusTables tables,
         IReadOnlyList<MythicPlusStanding> standings,
+        IReadOnlyList<MythicPlusStanding> departed,
+        IReadOnlyDictionary<(string Realm, string Name), int> playerIndexes,
         DateTimeOffset generatedAt,
         DateTimeOffset? previousGeneratedAt,
-        string tables,
         CancellationToken cancellationToken
     )
     {
@@ -111,7 +95,7 @@ public static class MythicPlusFileWriter
         {
             writer.WriteString("previousGeneratedAt", FormatTimestamp(previousGeneratedAt.Value));
         }
-        writer.WriteString("tables", tables);
+        writer.WriteString("tables", tables.Fingerprint);
         writer.WriteStartObject("season");
         writer.WriteString("id", season.Id);
         writer.WriteString("name", season.Name);
@@ -167,7 +151,7 @@ public static class MythicPlusFileWriter
         writer.WriteEndArray();
 
         writer.WriteStartArray("specs");
-        foreach (var spec in dataset.Specs)
+        foreach (var spec in tables.Specs)
         {
             line.WriteTo(
                 writer,
@@ -184,7 +168,7 @@ public static class MythicPlusFileWriter
         writer.WriteEndArray();
 
         writer.WriteStartArray("players");
-        foreach (var player in dataset.Players)
+        foreach (var player in tables.Players)
         {
             line.WriteTo(
                 writer,
@@ -204,20 +188,28 @@ public static class MythicPlusFileWriter
         }
         writer.WriteEndArray();
 
-        writer.WriteStartArray("standings");
-        foreach (var standing in standings)
+        var standingsByPlayer = standings.ToDictionary(standing => (standing.Realm, standing.Name));
+        writer.WriteStartArray("scores");
+        foreach (var player in tables.Players)
         {
+            var standing = standingsByPlayer.GetValueOrDefault((player.Realm, player.Name));
             line.WriteTo(
                 writer,
                 item =>
                 {
                     item.WriteStartArray();
-                    item.WriteNumberValue(standing.Score);
-                    item.WriteNumberValue(standing.Rank);
-                    if (standing.ScoreChange is not null && standing.RankChange is not null)
+                    if (standing is not null)
                     {
-                        item.WriteNumberValue(standing.ScoreChange.Value);
-                        item.WriteNumberValue(standing.RankChange.Value);
+                        item.WriteNumberValue(standing.Score);
+                        item.WriteNumberValue(standing.TimeMilliseconds);
+                        if (
+                            standing.ScoreChange is not null
+                            && standing.TimeChangeMilliseconds is not null
+                        )
+                        {
+                            item.WriteNumberValue(standing.ScoreChange.Value);
+                            item.WriteNumberValue(standing.TimeChangeMilliseconds.Value);
+                        }
                     }
                     item.WriteEndArray();
                 }
@@ -225,6 +217,30 @@ public static class MythicPlusFileWriter
             await JsonLineWriter.FlushIfLargeAsync(writer, cancellationToken);
         }
         writer.WriteEndArray();
+
+        if (previousGeneratedAt is not null)
+        {
+            writer.WriteStartArray("departed");
+            foreach (
+                var (position, standing) in departed
+                    .Select(standing => (playerIndexes[(standing.Realm, standing.Name)], standing))
+                    .OrderBy(entry => entry.Item1)
+            )
+            {
+                line.WriteTo(
+                    writer,
+                    item =>
+                    {
+                        item.WriteStartArray();
+                        item.WriteNumberValue(position);
+                        item.WriteNumberValue(standing.Score);
+                        item.WriteNumberValue(standing.TimeMilliseconds);
+                        item.WriteEndArray();
+                    }
+                );
+            }
+            writer.WriteEndArray();
+        }
 
         writer.WriteEndObject();
         await writer.FlushAsync(cancellationToken);

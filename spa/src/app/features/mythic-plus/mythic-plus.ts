@@ -62,7 +62,12 @@ export interface MythicPlusSpecEntry {
 
 export type MythicPlusPlayerEntry = [name: string, realm: string, guild: string, classId: number, race: number, gender: number];
 
-export type MythicPlusStandingEntry = [score: number, rank: number, scoreChange?: number, rankChange?: number];
+export type MythicPlusScoreEntry =
+  | []
+  | [score: number, timeMs: number]
+  | [score: number, timeMs: number, scoreChange: number, timeChangeMs: number];
+
+export type MythicPlusDepartedEntry = [player: number, score: number, timeMs: number];
 
 export type MythicPlusRunEntry = [
   keyLevel: number,
@@ -83,13 +88,85 @@ export interface MythicPlusIndex {
   affixes: MythicPlusAffix[];
   specs: MythicPlusSpecEntry[];
   players: MythicPlusPlayerEntry[];
-  standings?: MythicPlusStandingEntry[];
+  scores?: MythicPlusScoreEntry[];
+  departed?: MythicPlusDepartedEntry[];
 }
 
 export function hasScanChanges(
   index: MythicPlusIndex | undefined
-): index is MythicPlusIndex & { previousGeneratedAt: string; standings: MythicPlusStandingEntry[] } {
-  return !!index?.previousGeneratedAt && index.standings?.length === index.players.length;
+): index is MythicPlusIndex & { previousGeneratedAt: string; scores: MythicPlusScoreEntry[] } {
+  return !!index?.previousGeneratedAt && index.scores?.length === index.players.length;
+}
+
+export function currentPlayers(index: Pick<MythicPlusIndex, 'players' | 'scores'> | undefined): MythicPlusPlayerEntry[] {
+  const scores = index?.scores;
+  if (!scores) {
+    return index?.players ?? [];
+  }
+
+  return index.players.filter((_, position) => scores[position]?.length > 0);
+}
+
+export interface StandingChange {
+  score: number;
+  rank: number;
+  previousRank: number;
+}
+
+const standingChangeCache = new WeakMap<MythicPlusIndex, ReadonlyMap<string, StandingChange>>();
+
+export function standingChanges(index: MythicPlusIndex | undefined): ReadonlyMap<string, StandingChange> {
+  if (!hasScanChanges(index)) {
+    return new Map();
+  }
+
+  let changes = standingChangeCache.get(index);
+  if (!changes) {
+    changes = compareStandings(index);
+    standingChangeCache.set(index, changes);
+  }
+  return changes;
+}
+
+interface PlacedPlayer {
+  position: number;
+  score: number;
+  totalTime: number;
+}
+
+function compareStandings(index: MythicPlusIndex & { scores: MythicPlusScoreEntry[] }): Map<string, StandingChange> {
+  const now: PlacedPlayer[] = [];
+  const before: PlacedPlayer[] = [];
+  index.scores.forEach((entry, position) => {
+    if (entry.length === 0) {
+      return;
+    }
+    now.push({ position, score: entry[0], totalTime: entry[1] });
+    if (entry.length === 4) {
+      before.push({ position, score: roundScore(entry[0] - entry[2]), totalTime: entry[1] - entry[3] });
+    }
+  });
+  for (const [position, score, totalTime] of index.departed ?? []) {
+    before.push({ position, score, totalTime });
+  }
+
+  const ranks = placesByPosition(now);
+  const changes = new Map<string, StandingChange>();
+  for (const [position, previousRank] of placesByPosition(before)) {
+    const entry = index.scores[position];
+    const rank = ranks.get(position);
+    const player = index.players[position];
+    if (entry?.length === 4 && rank !== undefined && player) {
+      changes.set(characterKey({ name: player[0], realm: player[1] }), { score: entry[2], rank: previousRank - rank, previousRank });
+    }
+  }
+  return changes;
+}
+
+function placesByPosition(players: readonly PlacedPlayer[]): Map<number, number> {
+  const ranking = [...players].sort(comparePlaces);
+  const ranks = playerRanks(ranking);
+  return new Map(ranking.map((player, index) => [player.position, ranks[index]]));
 }
 
 export function exportedAt(index: Pick<MythicPlusIndex, 'generatedAt'> | undefined): Date | undefined {
@@ -108,10 +185,13 @@ export interface MythicPlusDungeonFile {
 }
 
 export function sharesTables(
-  index: Pick<MythicPlusIndex, 'tables'>,
-  file: Pick<MythicPlusDungeonFile, 'tables'>
+  index: Pick<MythicPlusIndex, 'tables' | 'players' | 'specs'>,
+  file: Pick<MythicPlusDungeonFile, 'tables' | 'runs'>
 ): boolean {
-  return index.tables === file.tables;
+  const players = index.players.length;
+  const specs = index.specs.length;
+  return index.tables === file.tables
+    && file.runs.every(run => run[5].every(([player, spec]) => player < players && spec < specs));
 }
 
 export const NEWER_DATA_MESSAGE = 'The Mythic+ leaderboard is being updated. Try again in a minute.';
@@ -288,7 +368,7 @@ export interface ScoreColors {
 
 export function seasonScoreColors(index: MythicPlusIndex | undefined): ScoreColors {
   return {
-    tiers: scoreTiers((index?.standings ?? []).map(([score]) => score)),
+    tiers: scoreTiers((index?.scores ?? []).flatMap(entry => entry.length === 0 ? [] : [entry[0]])),
     dungeons: index?.dungeons.length ?? 0
   };
 }
@@ -380,10 +460,18 @@ export function rankPlayers(
     }
 
     return {
-      key, member: player.member, primarySpec, score: Math.round(total * 10) / 10,
+      key, member: player.member, primarySpec, score: roundScore(total),
       totalTime: Math.round(time * 1000) / 1000, bestRuns: player.bestRuns
     };
-  }).sort((a, b) => b.score - a.score || a.totalTime - b.totalTime || (a.key < b.key ? -1 : a.key > b.key ? 1 : 0));
+  }).sort((a, b) => comparePlaces(a, b) || (a.key < b.key ? -1 : a.key > b.key ? 1 : 0));
+}
+
+function roundScore(score: number): number {
+  return Math.round(score * 10) / 10;
+}
+
+function comparePlaces(a: Pick<PlayerScore, 'score' | 'totalTime'>, b: Pick<PlayerScore, 'score' | 'totalTime'>): number {
+  return b.score - a.score || a.totalTime - b.totalTime;
 }
 
 export function samePlace(a: Pick<PlayerScore, 'score' | 'totalTime'>, b: Pick<PlayerScore, 'score' | 'totalTime'>): boolean {

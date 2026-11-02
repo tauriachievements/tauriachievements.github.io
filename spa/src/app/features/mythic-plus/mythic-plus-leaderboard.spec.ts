@@ -5,8 +5,7 @@ import {
   filterRuns,
   memberFilter,
   realmFilterOptions,
-  runsInScope,
-  scanStandingChanges
+  runsInScope
 } from './mythic-plus-leaderboard';
 
 function member(name: string, overrides: Partial<MythicPlusMember> = {}): MythicPlusMember {
@@ -100,29 +99,6 @@ describe('filterRuns', () => {
 
   it('orders by finish time for the latest runs, keeping rank order on a tie', () => {
     expect(filterRuns(ranked, undefined, '', 'latest').map(entry => entry.rank)).toEqual([2, 3, 1]);
-  });
-});
-
-describe('scanStandingChanges', () => {
-  const index: MythicPlusIndex = {
-    version: 1,
-    season: { id: 'legion-s1', name: 'Legion Season 1', raid: 'Emerald Nightmare', startDate: '2026-09-16' },
-    dungeons: [],
-    affixes: [],
-    specs: [],
-    previousGeneratedAt: '2026-10-07T09:30:00Z',
-    players: [['Exkeito', 'Evermoon', '', 11, 4, 0], ['Napim', 'Tauri', '', 11, 4, 0]],
-    standings: [[196, 1, 4.5, 2], [160, 2]]
-  };
-
-  it('maps each player who moved since the last scan to their change', () => {
-    expect([...scanStandingChanges(index)]).toEqual([['Exkeito|Evermoon', { score: 4.5, rank: 2 }]]);
-  });
-
-  it('has nothing when the export has no complete earlier standings', () => {
-    expect(scanStandingChanges({ ...index, previousGeneratedAt: undefined }).size).toBe(0);
-    expect(scanStandingChanges({ ...index, standings: index.standings?.slice(1) }).size).toBe(0);
-    expect(scanStandingChanges(undefined).size).toBe(0);
   });
 });
 
