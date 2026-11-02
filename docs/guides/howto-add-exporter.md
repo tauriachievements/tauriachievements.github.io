@@ -56,8 +56,13 @@ Each rule in the next step starts as a test that fails ([testing.md](../testing.
 - Put a `version` in the file, and make the reader treat an older version as out of date
   rather than misreading it (`RaidLogFileReader`).
 - When the site must read two or more of the files together, write a fingerprint of the shared
-  tables into each one, as `MythicPlusFileWriter.TablesFingerprint` does
+  tables into each one, as `MythicPlusTables.FingerprintOf` does
   ([data-pipeline.md](../data-pipeline.md#caching-the-data-manifest)).
+- Let a table that other entries point into only grow: keep each entry where it is and add new
+  ones at the end (`MythicPlusTables.Extend`). Re-sorting it moves every entry after a new one,
+  and every line that points past it changes in git. Store per-entry values (a score), and let
+  the page work out what one change moves for everyone (a rank)
+  ([data-pipeline.md](../data-pipeline.md#rules)).
 - If you write LF, add the folder to the root `.gitattributes` (`text eol=lf`).
 
 ## 4. Wiring it into the site
