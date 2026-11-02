@@ -264,10 +264,10 @@ export class MythicPlusGuildPageComponent implements OnInit {
     const dungeons = this.ladderDungeons();
     const playerColor = this.playerColor();
     const changes = this.rankChanges();
-    const standings = standingChanges(this.index());
+    const overallChanges = standingChanges(this.index());
     const overallFilters = this.overallFilters();
     const pageSize = this.pageSize();
-    const scoreChangeOf = (key: string) => changes?.has(key) ? standings.get(key)?.score ?? 0 : 0;
+    const scoreChangeOf = (key: string) => changes?.has(key) ? overallChanges.get(key)?.score ?? 0 : 0;
     const shown = this.filteredLadder().slice(0, this.shownCount());
     const gains = scoreGains(
       this.allRuns(),

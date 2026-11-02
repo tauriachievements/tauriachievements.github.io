@@ -156,7 +156,7 @@ function compareStandings(index: MythicPlusIndex & { scores: MythicPlusScoreEntr
     const entry = index.scores[position];
     const rank = ranks.get(position);
     const player = index.players[position];
-    if (entry.length === 4 && rank !== undefined && player) {
+    if (entry?.length === 4 && rank !== undefined && player) {
       changes.set(characterKey({ name: player[0], realm: player[1] }), { score: entry[2], rank: previousRank - rank, previousRank });
     }
   }
