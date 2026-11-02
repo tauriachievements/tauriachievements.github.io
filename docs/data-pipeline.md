@@ -23,8 +23,8 @@ Tauri API ──► api/ console apps ──► spa/src/ data files ──► co
 | `elite-pvp-items.json` | built once from TauriShoot, then kept by hand ([below](#elite-pvp-items)) | `feat:` / `chore:` | Rare Items page, `AchievementLadder` |
 | `battlegrounds.json`, `battleground-collector-state.json`, `rated-battlegrounds.json` | `BattlegroundCollector` | `sync data` | Battleground and Rated Battleground pages |
 | `arena-ladder-2v2.json`, `arena-ladder-3v3.json` | `ArenaLadderExporter` | `sync data`, or `sync arena data` from `Run-Arena.cmd` | Arena page |
-| `mythic-plus-data/` | `MythicPlusExporter` | `sync data`, or `sync mythic plus data` from `Run-MythicPlus.cmd` | `/mythic-plus/*` |
-| `raid-log-data/` | `RaidLogExporter` | `sync data`, or `sync raid logs data` from `Run-RaidLogs.cmd` | `/raid-logs/*` |
+| `mythic-plus-data/` | `MythicPlusExporter` | `sync data`, `sync mythic plus data` from `Run-MythicPlus.cmd`, or `sync mythic plus and raid logs data` from `Run-MythicPlusAndRaidLogs.cmd` | `/mythic-plus/*` |
+| `raid-log-data/` | `RaidLogExporter` | `sync data`, `sync raid logs data` from `Run-RaidLogs.cmd`, or `sync mythic plus and raid logs data` from `Run-MythicPlusAndRaidLogs.cmd` | `/raid-logs/*` |
 | `guild-analysis/<key>.json` | `GuildAnalysisExporter`, once per guild in the daily update | `sync data` | the hidden guild pages |
 | `EmeraldNightmare.json`, `RealmFirstAchievements.json`, `ap-chest-looters.json` | edited by hand | `chore:` / `feat:` | Race to Emerald Nightmare, Realm First History, Hall of Fame |
 
@@ -87,14 +87,20 @@ So a night's run is one commit and one Pages deploy, the guild pages included.
   refreshed, which needs `character-achievements` alone.
 - `Run-MythicPlus.cmd`, `Run-RaidLogs.cmd` and `Run-Arena.cmd` refresh one dataset on its
   own. Their arguments go to the exporter (`Run-MythicPlus.cmd --allow-shrink` at a season
-  reset). Before the export, each checks that the push at the end will be accepted: you're on
-  `main` and level with `origin/main`. When you aren't, each asks you to type `1` to fix it,
-  by switching to `main` (only when nothing is uncommitted) or by pulling with `--ff-only`,
-  and then goes on. After the switch or pull the script starts itself again from the top,
-  because cmd.exe reads a running script from disk by byte offset: a checkout or pull that
-  changes the script would otherwise leave it running from the middle of a different file. All three commit with
-  `git commit --only` on their data files, so unrelated staged work never rides along. Their
-  commit messages aren't `sync data`, so they don't post to Discord.
+  reset).
+- `Run-MythicPlusAndRaidLogs.cmd` runs MythicPlusExporter, then RaidLogExporter, and publishes
+  both in one commit, `sync mythic plus and raid logs data`. When only one dataset changed, the
+  commit takes that dataset's own message. It takes no arguments: `--allow-shrink` and `--full`
+  go through the single scripts. When one exporter fails, its folder is left out of the commit
+  and the other's still goes out; the script then names the failed exporter and exits with 1.
+- Before the export, each of these scripts checks that the push at the end will be accepted:
+  you're on `main` and level with `origin/main`. When you aren't, it asks you to type `1` to
+  fix it, by switching to `main` (only when nothing is uncommitted) or by pulling with
+  `--ff-only`, and then goes on. After the switch or pull the script starts itself again from
+  the top, because cmd.exe reads a running script from disk by byte offset: a checkout or pull
+  that changes the script would otherwise leave it running from the middle of a different
+  file. They all commit with `git commit --only` on their data files, so unrelated staged work
+  never rides along. Their commit messages aren't `sync data`, so they don't post to Discord.
 
 ## Publishing safety
 
