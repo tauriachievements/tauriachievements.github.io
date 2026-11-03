@@ -173,4 +173,12 @@ describe('RaidLogsLeaderboardPageComponent guild links', () => {
       ['Pickup Heroes', null]
     ]);
   });
+
+  it('shows no tooltip on a guild name', async () => {
+    const { element } = await openPage(indexFile);
+    const cells = [...element.querySelectorAll('tbody td.guild')];
+
+    expect(cells.length).toBe(3);
+    expect(cells.filter(cell => cell.hasAttribute('title') || cell.querySelector('[title]'))).toEqual([]);
+  });
 });

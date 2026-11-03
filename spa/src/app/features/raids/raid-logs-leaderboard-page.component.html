@@ -224,7 +224,7 @@
                       </span>
                     </span>
                   </td>
-                  <td class="center phone-hidden guild" [class]="'faction-text-' + entry.faction" [title]="entry.character.guild ? entry.character.guild + ' · ' + factionName(entry.faction) : ''">@if (guildLink(entry.character); as link) {<a [routerLink]="link" [queryParams]="{ difficulty: current.slug }">{{ entry.character.guild }}</a>} @else {{{ entry.character.guild }}}</td>
+                  <td class="center phone-hidden guild" [class]="'faction-text-' + entry.faction">@if (guildLink(entry.character); as link) {<a [routerLink]="link" [queryParams]="{ difficulty: current.slug }">{{ entry.character.guild }}</a>} @else {{{ entry.character.guild }}}</td>
                   <td class="center phone-hidden muted col-realm">{{ entry.character.realm }}</td>
                   <td class="num center strong score" [class]="'q-' + scoreTier(entry)">
                     <span class="score-cell">

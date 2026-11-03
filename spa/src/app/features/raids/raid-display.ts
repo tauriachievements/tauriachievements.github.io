@@ -4,8 +4,6 @@ import { parseRoleFilter, realmSlug, Role, RoleFilter } from '../../game/wow';
 import { RaidBoss, RaidGuild, RaidKill, RaidCharacter } from './raid-logs.types';
 import { RankedGuild } from './raid-progression';
 
-export const FACTION_NAMES: Readonly<Record<number, string>> = { 0: 'Alliance', 1: 'Horde' };
-
 export const FACTION_FILTERS: ReadonlyArray<{ slug: string; id: number; label: string }> = [
   { slug: 'horde', id: 1, label: 'Horde' },
   { slug: 'alliance', id: 0, label: 'Alliance' }

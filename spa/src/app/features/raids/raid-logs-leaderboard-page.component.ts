@@ -12,7 +12,6 @@ import { FilterDropdownOption, FilterDropdownValue } from '../../shared/filter-d
 import { GlideDirective } from '../../shared/motion/glide.directive';
 import { RaidDifficultySwitchComponent } from './raid-difficulty-switch.component';
 import {
-  FACTION_NAMES,
   RAID_PAGE_SIZE,
   characterGuildLink,
   formatPerSecond,
@@ -210,7 +209,6 @@ export class RaidLogsLeaderboardPageComponent {
   readonly formatPerSecond = formatPerSecond;
   readonly signed = signedChange;
   readonly rankChangeLabel = rankChangeLabel;
-  readonly factionName = (faction: number) => FACTION_NAMES[faction] ?? '';
 
   private subscription?: Subscription;
 
