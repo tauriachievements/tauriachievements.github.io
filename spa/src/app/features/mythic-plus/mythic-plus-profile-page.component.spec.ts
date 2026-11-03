@@ -172,6 +172,29 @@ describe('MythicPlusProfilePageComponent', () => {
     expect(page.ranks().map(tile => tile.scope)).toEqual(['Overall', 'Realm', 'Class', 'Spec', 'Role']);
   });
 
+  it('shows each frequent teammate with their race, and their guild linked to its ladder', async () => {
+    const { element } = await open('/mythic-plus/character/evermoon/Tank');
+    const mates = [...element.querySelectorAll('.teammate')];
+
+    expect(mates.map(mate => mate.querySelector('a.teammate-name')?.getAttribute('href')))
+      .toEqual(['/mythic-plus/character/evermoon/Progtrix', '/mythic-plus/character/tauri/Healer']);
+    expect(mates.map(mate => mate.querySelector('img.teammate-race')?.getAttribute('alt'))).toEqual(['Blood Elf', 'Human']);
+    expect(mates.map(mate => mate.querySelector('img.teammate-race')?.getAttribute('src')))
+      .toEqual(['assets/race-icons/10-1.gif', 'assets/race-icons/1-0.gif']);
+    expect(mates.map(mate => mate.querySelector('a.teammate-guild')?.textContent?.trim())).toEqual(['<The Echoes>', undefined]);
+    expect(mates[0].querySelector('a.teammate-guild')?.getAttribute('href')).toBe('/mythic-plus/guild/evermoon/The%20Echoes');
+  });
+
+  it('opens a frequent teammate from anywhere on their row', async () => {
+    const { harness, page, element } = await open('/mythic-plus/character/evermoon/Tank');
+
+    element.querySelector<HTMLElement>('.teammate .teammate-meta')?.click();
+    await harness.fixture.whenStable();
+
+    expect(TestBed.inject(Location).path()).toBe('/mythic-plus/character/evermoon/Progtrix');
+    expect(page.player()?.key).toBe('Progtrix|Evermoon');
+  });
+
   it('shows score gain and overall rank movement from the previous scan', async () => {
     const scores: MythicPlusScoreEntry[] = index.players.map(() => [0, 0]);
     scores[0] = [290, 3000000, 12.3, 0];

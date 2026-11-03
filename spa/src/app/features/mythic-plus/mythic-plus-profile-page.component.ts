@@ -12,7 +12,7 @@ import {
   untracked
 } from '@angular/core';
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
-import { ActivatedRoute, Params, RouterLink } from '@angular/router';
+import { ActivatedRoute, Params, Router, RouterLink } from '@angular/router';
 import { getClassCrestPath } from '../../game/classIconHelper';
 import { injectCompactViewport } from '../../shared/compact-viewport';
 import {
@@ -136,6 +136,7 @@ export class MythicPlusProfilePageComponent implements OnInit {
   private readonly mythicPlusData = inject(MythicPlusDataService);
   private readonly destroyRef = inject(DestroyRef);
   private readonly route = inject(ActivatedRoute);
+  private readonly router = inject(Router);
   private readonly replaceUrl = injectReplaceUrl();
 
   readonly cards = injectCompactViewport(MYTHIC_PLUS_CARDS_QUERY);
@@ -413,6 +414,10 @@ export class MythicPlusProfilePageComponent implements OnInit {
   compareParams(other: { name: string; realm: string }): Params {
     const member = this.player()?.member;
     return { players: compareParam(member ? [member, other] : [other]) };
+  }
+
+  openProfile(member: MemberView): void {
+    this.router.navigate(member.profileLink);
   }
 
   onCompareSearch(event: Event): void {

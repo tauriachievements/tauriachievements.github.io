@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { MythicPlusDungeon, MythicPlusMember, MythicPlusRun } from './mythic-plus';
-import { bestRunCells, scoreGains } from './mythic-plus-views';
+import { bestRunCells, scoreGains, toMemberView } from './mythic-plus-views';
 
 function dungeon(id: string): MythicPlusDungeon {
   return { id, challengeId: 1, shortName: id.toUpperCase(), name: id, timerSeconds: 1800, icon: '', runCount: 1, bestScore: 0 };
@@ -9,6 +9,17 @@ function dungeon(id: string): MythicPlusDungeon {
 function member(name: string, realm = 'Evermoon'): MythicPlusMember {
   return { name, realm, class: 1, race: 1, gender: 0, spec: 'Arms', role: 'dps' };
 }
+
+describe('toMemberView', () => {
+  it('names the race, a Pandaren of either faction as Pandaren', () => {
+    expect([10, 25, 26].map(race => toMemberView({ ...member('Pretz'), race }).raceName))
+      .toEqual(['Blood Elf', 'Pandaren', 'Pandaren']);
+  });
+
+  it('names a race it does not know as an unknown race', () => {
+    expect(toMemberView({ ...member('Pretz'), race: 99 }).raceName).toBe('Unknown race');
+  });
+});
 
 function run(
   dungeonId: string,
