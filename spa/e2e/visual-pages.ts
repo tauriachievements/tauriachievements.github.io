@@ -132,6 +132,7 @@ export const VISUAL_PAGES: readonly VisualPage[] = [
   { name: 'state-raid-logs-boss-role-menu', path: '/raid-logs/boss/xavius?difficulty=mythic', clicks: ['#raidBossRoleTrigger'] },
   { name: 'state-raid-logs-guilds-filtered', path: '/raid-logs/guilds?difficulty=heroic&realm=evermoon&faction=horde' },
   { name: 'state-raid-logs-guilds-all-groups', path: '/raid-logs/guilds?difficulty=heroic&groups=all&page=2' },
+  { name: 'state-raid-logs-guild-history-page', path: '/raid-logs/guild/evermoon/Competence%20Optional?difficulty=mythic&page=2' },
   { name: 'state-raid-logs-talents-role', path: '/raid-logs/talents?difficulty=heroic&role=healer' },
   { name: 'state-raid-logs-talents-role-menu', path: '/raid-logs/talents?difficulty=mythic&role=melee', clicks: ['#talentRoleTrigger'] },
   { name: 'state-raid-logs-boss-latest-invalid', path: '/raid-logs/boss/cenarius?difficulty=mythic&tab=latest' },
