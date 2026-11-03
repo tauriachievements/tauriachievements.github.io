@@ -1,3 +1,5 @@
+import { getRaceIconPath } from '../../game/raceIconHelper';
+import { RACE_NAMES } from '../../game/wow';
 import { specById } from '../../game/wow-specs';
 import { FilterDropdownOption, FilterDropdownValue } from '../../shared/filter-dropdown.types';
 import { ScanChange, scanChanges } from '../../shared/scan-change';
@@ -21,7 +23,7 @@ export function parseMinGames(value: FilterDropdownValue | null): number {
   return MIN_GAMES_OPTIONS.find(games => String(games) === String(value)) ?? DEFAULT_MIN_GAMES;
 }
 
-export const ARENA_PAGE_SIZE = 25;
+export const ARENA_PAGE_SIZE = 50;
 
 export function arenaUrlParams(
   bracket: ArenaBracket,
@@ -74,16 +76,27 @@ export interface ArenaSpec {
   readonly icon: string;
 }
 
+export interface ArenaRace {
+  readonly name: string;
+  readonly icon: string;
+}
+
 export interface ArenaPlayerRow extends ArenaPlayer {
   readonly isActive: boolean;
   readonly losses: number;
   readonly winRate: number;
   readonly lastSpec: ArenaSpec | undefined;
+  readonly raceInfo: ArenaRace | undefined;
 }
 
 export function getArenaSpec(player: Pick<ArenaPlayer, 'class' | 'spec'>): ArenaSpec | undefined {
   const spec = specById(player.spec);
   return spec?.classId === player.class && spec.icon ? { name: spec.spec, icon: spec.icon } : undefined;
+}
+
+export function getArenaRace(player: Pick<ArenaPlayer, 'race' | 'gender'>): ArenaRace | undefined {
+  const name = RACE_NAMES[player.race];
+  return name ? { name, icon: getRaceIconPath(player.race, player.gender) } : undefined;
 }
 
 export type ArenaSortKey = 'games' | 'wins' | 'losses' | 'winRate' | 'rating';
@@ -197,7 +210,8 @@ export function toArenaRows(players: readonly ArenaPlayer[], minGames: number): 
     isActive: player.games >= minGames,
     losses: player.games - player.wins,
     winRate: player.wins / player.games,
-    lastSpec: getArenaSpec(player)
+    lastSpec: getArenaSpec(player),
+    raceInfo: getArenaRace(player)
   }));
 }
 

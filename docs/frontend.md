@@ -522,9 +522,10 @@ steps in order, and stop when the table fits:
 
 Past the phone breakpoint a table still has to fit its box. Most pages cap their column's
 width, so a table can scroll sideways on a tablet or a desktop too. The Arena table takes steps 1
-and 3 up to 899 px (the name gives way, the realm moves under it, cells keep 8 px a side) and
-fits all eight columns with 12 px a side from 900 px. Its entries in `e2e/visual-pages.ts`
-are marked `wide`, so the layout check covers those widths ([below](#phone-layout-check)).
+and 3 up to 1031 px (the name gives way, the realm and guild move under it, cells keep 8 px a
+side) and fits all nine columns with 12 px a side from 1032 px, where the page grows to
+1000 px. Its entries in `e2e/visual-pages.ts` are marked `wide`, so the layout check covers
+those widths ([below](#phone-layout-check)).
 
 A few things scroll sideways by design: charts over time that open at the latest point
 (`appScrollToEnd`), a strip of cards you swipe through, and the Emerald Nightmare race

@@ -532,7 +532,7 @@ decision: ask first.** When a rule does change, change its tests first and see t
 
 - **Code:** `ARENA_TITLES`, `getTitleCutoffs` and `getTitle` in
   `spa/src/app/features/pvp/arena-games.ts`. The page lists every character on the ladder,
-  25 to a page. The active players, with 50 or more rated games this season
+  50 to a page (`ARENA_PAGE_SIZE`). The active players, with 50 or more rated games this season
   (`DEFAULT_MIN_GAMES`), come first in every order (`sortArenaRows`) and are the only ones
   titles count; the rest follow under an "Under 50 games" heading, and the `#` column runs on
   through them. A season reward needs 50 wins (`REWARD_MIN_WINS`).

@@ -10,6 +10,7 @@ import {
   arenaUrlParams,
   formatTitleShare,
   getArenaLadderFile,
+  getArenaRace,
   getArenaSpec,
   getTitle,
   getTitleCutoffs,
@@ -95,6 +96,20 @@ describe('getArenaSpec', () => {
   });
 });
 
+describe('getArenaRace', () => {
+  it('names the race with the icon for its gender', () => {
+    expect(getArenaRace({ race: 10, gender: 1 })).toEqual({
+      name: 'Blood Elf',
+      icon: 'assets/race-icons/10-1.gif'
+    });
+    expect(getArenaRace({ race: 26, gender: 0 })?.name).toBe('Pandaren');
+  });
+
+  it('gives no race the game does not know', () => {
+    expect(getArenaRace({ race: 0, gender: 0 })).toBeUndefined();
+  });
+});
+
 describe('toArenaRows', () => {
   it('keeps every ladder player, marks those with the minimum games active and adds losses and win rate', () => {
     const rows = toArenaRows(
@@ -108,6 +123,7 @@ describe('toArenaRows', () => {
       ['Sixty', true, 15, 0.75]
     ]);
     expect(rows[0].lastSpec?.name).toBe('Arms');
+    expect(rows[0].raceInfo?.name).toBe('Human');
   });
 
   it('lets a lower minimum bring more players into the cutoffs', () => {

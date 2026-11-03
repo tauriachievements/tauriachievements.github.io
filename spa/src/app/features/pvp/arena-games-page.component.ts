@@ -97,6 +97,7 @@ export class ArenaGamesPageComponent implements OnInit {
   readonly sortKey = signal<ArenaSortKey>('rating');
   readonly sortDirection = signal<SortDirection>('desc');
   readonly page = signal(1);
+  readonly showInfo = signal(false);
 
   private readonly rows = computed(() => toArenaRows(this.dataset()?.players ?? [], this.minGames()));
   readonly activeRows = computed(() => this.rows().filter(row => row.isActive));
@@ -183,6 +184,10 @@ export class ArenaGamesPageComponent implements OnInit {
   goToPage(page: number): void {
     this.page.set(page);
     this.replaceUrl(arenaUrlParams(this.bracket() ?? '2v2', this.minGames(), page), { merge: true });
+  }
+
+  toggleInfo(): void {
+    this.showInfo.update(shown => !shown);
   }
 
   retryLoad(): void {
