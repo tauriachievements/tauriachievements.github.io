@@ -531,12 +531,20 @@ decision: ask first.** When a rule does change, change its tests first and see t
 ## Arena titles
 
 - **Code:** `ARENA_TITLES`, `getTitleCutoffs` and `getTitle` in
-  `spa/src/app/features/pvp/arena-games.ts`. The page lists characters with 50 or more rated
-  games this season (`DEFAULT_MIN_GAMES`). A season reward needs 50 wins (`REWARD_MIN_WINS`).
+  `spa/src/app/features/pvp/arena-games.ts`. The page lists every character on the ladder,
+  50 to a page (`ARENA_PAGE_SIZE`). The active players, with 50 or more rated games this season
+  (`DEFAULT_MIN_GAMES`), come first in every order (`sortArenaRows`) and are the only ones
+  titles count; the rest follow under an "Under 50 games" heading, and the `#` column runs on
+  through them. A season reward needs 50 wins (`REWARD_MIN_WINS`).
 - **A lower bar, to compare:** the games dropdown (`MIN_GAMES_OPTIONS`: 50, 45, 40, 35, 30;
-  `?games=`) lowers the minimum. The listed players, the title cutoffs, the holders and the
+  `?games=`) lowers the minimum. Who counts as active, the title cutoffs, the holders and the
   changes since the last scan all follow it. The 50 wins a reward needs stay as they are.
-- Each title covers a cumulative "top X%" of the listed players by rating:
+- **Class and spec filters** (`filterArenaRows`; `?class=`, `?spec=`) hide rows and rank the
+  rest among themselves, as on the other leaderboards. The spec is the spec of the player's
+  latest game, the only one the ladder gives. Titles stay those of the whole list: a heading
+  reads "1 of 65 players" while filtered (`countArenaGroups`, `formatGroupCount`). Reset
+  clears the class, the spec and the games minimum.
+- Each title covers a cumulative "top X%" of the active players by rating:
   - 2v2: Gladiator 0.6%, Duelist 3%, Rival 10%, Challenger 35%;
   - 3v3: Season Gladiator 0.5%, Gladiator 3%, Duelist 10%, Rival 35%, Challenger 45%.
 - **Places round up**, the server's rule: 1.01 places are 2. A title whose rounded places don't
@@ -556,17 +564,18 @@ decision: ask first.** When a rule does change, change its tests first and see t
   `scanChanges` in `spa/src/app/shared/scan-change.ts`; the previous values come from the
   exporter ([data-pipeline.md](data-pipeline.md#arena-ladder-files)).
 - The previous ranking is the table's own ranking worked out on each player's previous rating
-  and games: the players who had the page's minimum games (50 unless lowered) or more then, by
-  rating, then more games, then the name. A player's rank change is their place then minus
-  their place now (▲ climbed, ▼ fell); the rating change is the rating now minus the rating
-  then.
-- **New** is a player in today's list who wasn't in that one: under the minimum then, or not on
-  the ladder at all (also a character the ladder moved to a new GUID). New players show "new"
+  and games: the players who had the page's minimum games (50 unless lowered) or more then,
+  followed by the rest, each part by rating, then more games, then the name. A player's rank
+  change is their place then minus their place now (▲ climbed, ▼ fell), the same places the
+  `#` column shows; the rating change is the rating now minus the rating then.
+- **New** is an active player who was under the minimum then, or any player who wasn't on the
+  ladder at all (also a character the ladder moved to a new GUID). New players show "new"
   and no rating change.
 - A character on the previous list that has left the ladder (deleted, or moved to a new GUID)
   isn't in the previous ranking either, so it gives the players below it no climb.
-- Rank changes show only in the table's default order, rating from the top, where the `#`
-  column is that ranking. Rating changes show in every order.
+- Rank changes show only in the table's default order, rating from the top, with no class
+  picked, where the `#` column is that ranking. Rating changes show in every order and under
+  every filter.
 - Gains are green and drops red: unlike a raid score, a rating only drops when its player
   loses.
 - **Tests:** `arena-games.spec.ts`, `scan-change.spec.ts`, `ArenaLadderExportServiceTests`.

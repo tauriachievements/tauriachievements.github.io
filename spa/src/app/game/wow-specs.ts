@@ -1,3 +1,4 @@
+import { FilterDropdownOption } from '../shared/filter-dropdown.types';
 import { DamageRange, Role } from './wow';
 
 export interface SpecDefinition {
@@ -71,6 +72,15 @@ export function specIconFor(classId: number, spec: string): string | undefined {
 
 export function specRoleFor(classId: number, spec: string): Role | undefined {
   return specFor(classId, spec)?.role;
+}
+
+export function specFilterOptions(classId: number | undefined): FilterDropdownOption[] {
+  return [
+    { value: undefined, label: 'All specs' },
+    ...LEGION_SPECS
+      .filter(spec => spec.classId === classId)
+      .map(spec => ({ value: spec.spec, label: spec.spec, icon: spec.icon }))
+  ];
 }
 
 export function parseSpecName(classId: number | undefined, value: string | null): string | undefined {

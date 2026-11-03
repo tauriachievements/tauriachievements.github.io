@@ -10,7 +10,7 @@
 }
 
 .arena-games-page {
-  width: min(860px, calc(100% - 32px));
+  width: min(1000px, calc(100% - 32px));
   margin: 0 auto;
   padding: 54px 0 36px;
 }
@@ -25,18 +25,56 @@
 }
 
 .arena-header {
-  padding: 22px 24px;
+  padding: 16px 20px;
+}
+
+.arena-info {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
 }
 
 @media (min-width: 900px) {
-  .arena-header {
+  .arena-info {
     display: grid;
     grid-template-columns: minmax(0, 290px) minmax(0, 1fr);
     gap: 28px;
     align-items: start;
   }
 
-  .arena-header .titles { margin-top: 0; }
+  .arena-info .titles { margin-top: 0; }
+}
+
+.info-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  min-height: 40px;
+  padding: 0 12px;
+  border: 1px solid rgba(247, 181, 0, 0.2);
+  border-radius: 7px;
+  background: #30262c;
+  color: #f3f3f3;
+  font: inherit;
+  font-size: 0.82rem;
+  font-weight: 700;
+  cursor: pointer;
+
+  &:hover { border-color: rgba(247, 181, 0, 0.55); }
+  &:focus-visible { outline: 2px solid #f7b500; outline-offset: 2px; }
+  &.is-open { border-color: rgba(247, 181, 0, 0.55); color: #fff3cf; }
+}
+
+.info-chevron {
+  width: 10px;
+  height: 7px;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%23f7b500' d='M1.41 0 6 4.58 10.59 0 12 1.41 6 7.41 0 1.41 1.41 0Z'/%3E%3C/svg%3E") center / 10px 7px no-repeat;
+
+  .is-open & { transform: rotate(180deg); }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .info-chevron { transition: transform 160ms ease; }
 }
 
 .header-top {
@@ -56,11 +94,29 @@
   gap: 8px;
 }
 
+@include filter-reset;
+
+.filter-slot { width: 160px; }
+
 .games-filter {
-  flex: none;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+  margin-bottom: 14px;
 
   ::ng-deep .dropdown-menu { min-width: 100%; }
 }
+
+.games-filter-label {
+  color: #8f8a7d;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.empty-state { margin: 0; padding: 28px 18px; color: #a39e91; text-align: center; }
 
 .bracket-switch {
   display: inline-flex;
@@ -99,7 +155,7 @@
   text-transform: uppercase;
 }
 
-.intro { margin: 10px 0 12px; color: #bdb8ab; font-size: 0.88rem; line-height: 1.45; }
+.intro { margin: 0 0 12px; color: #bdb8ab; font-size: 0.88rem; line-height: 1.45; }
 .changes-note { margin: -4px 0 12px; color: #958f80; font-size: 0.8rem; line-height: 1.45; }
 
 .summary {
@@ -240,7 +296,12 @@
   }
 }
 
-.results { margin-top: 16px; overflow: hidden; }
+.results { margin-top: 16px; overflow: hidden; scroll-margin-top: calc(var(--update-bar-height) + 16px); }
+
+app-pager {
+  padding: 14px 18px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
 
 .table-scroll { @include table-scroll; }
 
@@ -266,8 +327,11 @@
   .label-short,
   .realm-inline { display: none; }
   .character-line { display: inline-flex; align-items: center; gap: 7px; vertical-align: middle; }
+  td.guild { color: #a39e91; font-size: 0.86rem; }
+  .guild-name { display: block; max-width: 160px; @include truncate; }
 
-  .spec-icon {
+  .spec-icon,
+  .race-icon {
     flex: none;
     width: 18px;
     height: 18px;
@@ -288,7 +352,8 @@
     text-align: left;
   }
 
-  tbody tr.title-group.is-untitled { --tier: #6f6a5f; }
+  tbody tr.title-group.is-untitled,
+  tbody tr.title-group.is-inactive { --tier: #6f6a5f; }
 
   tbody tr:last-child td { border-bottom: 0; }
   a { font-weight: 700; text-decoration: none; }
@@ -307,7 +372,8 @@
 
 .group-ties { color: var(--tier); font-weight: 700; }
 
-.is-untitled .group-name { color: #a39e91; }
+.is-untitled .group-name,
+.is-inactive .group-name { color: #a39e91; }
 
 .sort-button {
   position: relative;
@@ -356,29 +422,39 @@
   .sort-button:hover .sort-arrow { visibility: visible; }
 }
 
-@media (max-width: 899px) {
+@media (max-width: 1031px) {
   .players-table {
     th, td { padding: 12px 8px; }
-    .realm { display: none; }
+    .realm,
+    .guild { display: none; }
     .realm-inline { display: block; margin-top: 2px; color: #8f8a7d; font-size: 0.76rem; }
     td.character { @include fluid-cell; }
     td.character > * { display: block; @include truncate; }
     td.character > .character-line { display: flex; gap: 6px; }
+    td.character > .realm-inline { display: flex; align-items: baseline; }
+    .realm-name,
+    .realm-inline .rank-move,
+    .realm-inline .rank-new { flex: none; }
+    .guild-inline { min-width: 0; margin-left: 4px; @include truncate; }
     .character-line a { min-width: 0; @include truncate; }
   }
 
   .players-table.with-rank-changes th.rank { padding-right: 52px; }
 }
 
-@media (min-width: $phone-breakpoint + 1) and (max-width: 899px) {
+@media (min-width: $phone-breakpoint + 1) and (max-width: 1031px) {
   .realm-inline .rank-move,
   .realm-inline .rank-new { display: none; }
 }
 
 @media (max-width: $phone-breakpoint) {
-  .arena-games-page { width: min(100% - 32px, 860px); padding-top: 46px; }
+  .arena-games-page { width: calc(100% - 32px); padding-top: 46px; }
   .arena-header { padding: 18px 14px; }
   .feedback.error { flex-direction: column; padding: 28px 18px; }
+
+  .header-controls { width: 100%; }
+  .filter-slot { flex: 1 1 calc((100% - 8px) / 2); width: auto; min-width: 0; }
+  .info-toggle { flex: 1 1 100%; justify-content: center; }
 
   .titles-table {
     th, td { padding: 6px 4px; font-size: 0.8rem; }

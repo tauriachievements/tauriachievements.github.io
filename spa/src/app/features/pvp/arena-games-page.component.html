@@ -1,21 +1,71 @@
 <main class="arena-games-page">
   <section class="arena-header">
-    <div class="header-main">
-      <div class="header-top">
-        <h1 class="eyebrow">Rated {{ bracket() }} arena</h1>
-        <div class="header-controls">
-          <div class="bracket-switch" role="group" aria-label="Bracket" appGlide>
-            @for (option of brackets; track option) {
-              <button
-                type="button"
-                [class.active]="option === bracket()"
-                [attr.aria-pressed]="option === bracket()"
-                (click)="selectBracket(option)">
-                {{ option }}
-              </button>
-            }
-          </div>
+    <div class="header-top">
+      <h1 class="eyebrow">Rated {{ bracket() }} arena</h1>
+      <div class="header-controls">
+        <button
+          type="button"
+          class="filter-reset"
+          [disabled]="!filtersActive()"
+          aria-label="Reset the class, spec and minimum games filters"
+          (click)="resetFilters()">
+          Reset
+        </button>
+        <div class="bracket-switch" role="group" aria-label="Bracket" appGlide>
+          @for (option of brackets; track option) {
+            <button
+              type="button"
+              [class.active]="option === bracket()"
+              [attr.aria-pressed]="option === bracket()"
+              (click)="selectBracket(option)">
+              {{ option }}
+            </button>
+          }
+        </div>
+        <div class="filter-slot">
+          <app-filter-dropdown
+            dropdownId="arenaClass"
+            triggerId="arenaClassTrigger"
+            ariaLabel="Filter players by class"
+            [options]="classOptions"
+            [selectedValue]="classFilter()"
+            [showIcons]="true"
+            [compact]="true"
+            [highlightWhenSelected]="true"
+            (selectionChange)="setClassFilter($event)" />
+        </div>
+        <div class="filter-slot">
+          <app-filter-dropdown
+            dropdownId="arenaSpec"
+            triggerId="arenaSpecTrigger"
+            ariaLabel="Filter players by spec"
+            [options]="specOptions()"
+            [selectedValue]="specFilter()"
+            [showIcons]="true"
+            [compact]="true"
+            [highlightWhenSelected]="true"
+            [disabled]="classFilter() === undefined"
+            (selectionChange)="setSpecFilter($event)" />
+        </div>
+        <button
+          type="button"
+          id="arenaInfoToggle"
+          class="info-toggle"
+          [class.is-open]="showInfo()"
+          aria-controls="arena-info"
+          [attr.aria-expanded]="showInfo()"
+          (click)="toggleInfo()">
+          Season info
+          <span class="info-chevron" aria-hidden="true"></span>
+        </button>
+      </div>
+    </div>
+
+    @if (showInfo()) {
+      <div id="arena-info" class="arena-info">
+        <div class="header-main">
           <div class="games-filter">
+            <span class="games-filter-label">Active players need</span>
             <app-filter-dropdown
               dropdownId="arenaMinGames"
               triggerId="arenaMinGamesTrigger"
@@ -26,101 +76,103 @@
               [compact]="true"
               (selectionChange)="setMinGames($event)" />
           </div>
+          @if (dataset(); as data) {
+            <p class="intro">
+              Everyone on the server's rated {{ bracket() }} arena ladder since
+              {{ data.seasonStart | date: 'd MMM y' : '+0200' }}, on Tauri, Evermoon and WoD. The active
+              players, with {{ minGames() }}+ games, come first and hold the titles. Rating is each player's
+              current personal rating.
+            </p>
+          }
+          @if (changesSince(); as since) {
+            <p class="changes-note">
+              Beside a rank, the places a player climbed (▲) or fell (▼) in rating order since the scan of
+              {{ since | date: 'd MMM, HH:mm' }}; beside a rating, the rating they gained or lost.
+              <span class="rank-new">New</span> marks a player who has reached {{ minGames() }} games, or
+              joined the ladder, since then.
+            </p>
+          }
+
+          @if (dataset(); as data) {
+            <dl class="summary">
+              <div>
+                <dt>Active players <small>{{ minGames() }}+ games</small></dt>
+                <dd>{{ activeRows().length | number }}</dd>
+              </div>
+              <div>
+                <dt>Reward eligible <small class="is-green">{{ minWins }}+ wins, in green</small></dt>
+                <dd>{{ eligibleCount() | number }}</dd>
+              </div>
+              <div>
+                <dt>On the ladder</dt>
+                <dd>{{ data.players.length | number }}</dd>
+              </div>
+            </dl>
+          }
         </div>
+
+        @if (dataset()) {
+          <section class="titles" aria-labelledby="titles-heading">
+            <h2 id="titles-heading" class="titles-heading">Season titles</h2>
+            <div class="titles-scroll">
+              <table class="titles-table">
+                <thead>
+                  <tr>
+                    <th scope="col">Title</th>
+                    <th scope="col" class="share">Top</th>
+                    <th scope="col">Active × top</th>
+                    <th scope="col">Rounded up</th>
+                    <th scope="col">Holders</th>
+                    <th scope="col">Cutoff</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @if (!hasSeasonGladiator()) {
+                    <tr class="tier-season-gladiator">
+                      <th scope="row">
+                        <span class="title-name">Season Gladiator</span>
+                        <span class="share-inline">top —</span>
+                      </th>
+                      <td class="share empty">—</td>
+                      <td class="empty">—</td>
+                      <td class="empty">—</td>
+                      <td class="empty">—</td>
+                      <td class="empty">—</td>
+                    </tr>
+                  }
+                  @for (cutoff of cutoffs(); track cutoff) {
+                    <tr [class]="'tier-' + cutoff.title.slug">
+                      <th scope="row">
+                        <span class="title-name">{{ cutoff.title.name }}</span>
+                        @if (cutoff.ties) {
+                          <span class="ties" [attr.title]="tiesHint(cutoff)">+{{ cutoff.ties }}</span>
+                        }
+                        <span class="share-inline">top {{ formatTitleShare(cutoff.title) }}</span>
+                      </th>
+                      <td class="share">{{ formatTitleShare(cutoff.title) }}</td>
+                      <td class="exact">{{ exactSpots(cutoff) | number: '1.0-3' }}</td>
+                      <td class="spots">
+                        {{ cutoff.places | number }}
+                        <span class="exact-inline">from {{ exactSpots(cutoff) | number: '1.0-3' }}</span>
+                      </td>
+                      <td>{{ holders(cutoff) | number }}</td>
+                      <td [class.cutoff]="cutoff.rating !== undefined" [class.empty]="cutoff.rating === undefined">
+                        {{ cutoff.rating !== undefined ? (cutoff.rating | number) + '+' : '—' }}
+                      </td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+            <p class="titles-note">
+              Titles go to the best ratings among active players with {{ minWins }}+ wins. Spots are the
+              active players times the share, always rounded up (1.01 makes 2), counted from the top, so
+              they include the titles above. Players on the same rating share one spot; the +N beside a
+              title counts those extra holders.
+            </p>
+          </section>
+        }
       </div>
-      @if (dataset(); as data) {
-        <p class="intro">
-          The season's active players: {{ minGames() }}+ rated {{ bracket() }} games since
-          {{ data.seasonStart | date: 'd MMM y' : '+0200' }} on Tauri, Evermoon and WoD, read from the
-          server's arena ladder. Rating is each player's current personal rating.
-        </p>
-      }
-      @if (changesSince(); as since) {
-        <p class="changes-note">
-          Beside a rank, the places a player climbed (▲) or fell (▼) in rating order since the scan of
-          {{ since | date: 'd MMM, HH:mm' }}; beside a rating, the rating they gained or lost.
-          <span class="rank-new">New</span> marks a player who wasn't on the list then.
-        </p>
-      }
-
-      @if (dataset(); as data) {
-        <dl class="summary">
-          <div>
-            <dt>Active players <small>{{ minGames() }}+ games</small></dt>
-            <dd>{{ players().length | number }}</dd>
-          </div>
-          <div>
-            <dt>Reward eligible <small class="is-green">{{ minWins }}+ wins, in green</small></dt>
-            <dd>{{ eligibleCount() | number }}</dd>
-          </div>
-          <div>
-            <dt>On the ladder</dt>
-            <dd>{{ data.players.length | number }}</dd>
-          </div>
-        </dl>
-      }
-    </div>
-
-    @if (dataset()) {
-      <section class="titles" aria-labelledby="titles-heading">
-        <h2 id="titles-heading" class="titles-heading">Season titles</h2>
-        <div class="titles-scroll">
-          <table class="titles-table">
-            <thead>
-              <tr>
-                <th scope="col">Title</th>
-                <th scope="col" class="share">Top</th>
-                <th scope="col">Active × top</th>
-                <th scope="col">Rounded up</th>
-                <th scope="col">Holders</th>
-                <th scope="col">Cutoff</th>
-              </tr>
-            </thead>
-            <tbody>
-              @if (!hasSeasonGladiator()) {
-                <tr class="tier-season-gladiator">
-                  <th scope="row">
-                    <span class="title-name">Season Gladiator</span>
-                    <span class="share-inline">top —</span>
-                  </th>
-                  <td class="share empty">—</td>
-                  <td class="empty">—</td>
-                  <td class="empty">—</td>
-                  <td class="empty">—</td>
-                  <td class="empty">—</td>
-                </tr>
-              }
-              @for (cutoff of cutoffs(); track cutoff) {
-                <tr [class]="'tier-' + cutoff.title.slug">
-                  <th scope="row">
-                    <span class="title-name">{{ cutoff.title.name }}</span>
-                    @if (cutoff.ties) {
-                      <span class="ties" [attr.title]="tiesHint(cutoff)">+{{ cutoff.ties }}</span>
-                    }
-                    <span class="share-inline">top {{ formatTitleShare(cutoff.title) }}</span>
-                  </th>
-                  <td class="share">{{ formatTitleShare(cutoff.title) }}</td>
-                  <td class="exact">{{ exactSpots(cutoff) | number: '1.0-3' }}</td>
-                  <td class="spots">
-                    {{ cutoff.places | number }}
-                    <span class="exact-inline">from {{ exactSpots(cutoff) | number: '1.0-3' }}</span>
-                  </td>
-                  <td>{{ titleCounts().get(cutoff) ?? 0 | number }}</td>
-                  <td [class.cutoff]="cutoff.rating !== undefined" [class.empty]="cutoff.rating === undefined">
-                    {{ cutoff.rating !== undefined ? (cutoff.rating | number) + '+' : '—' }}
-                  </td>
-                </tr>
-              }
-            </tbody>
-          </table>
-        </div>
-        <p class="titles-note">
-          Titles go to the best ratings among active players with {{ minWins }}+ wins. Spots are the
-          active players times the share, always rounded up (1.01 makes 2), counted from the top, so
-          they include the titles above. Players on the same rating share one spot; the +N beside a
-          title counts those extra holders.
-        </p>
-      </section>
     }
   </section>
 
@@ -136,13 +188,14 @@
   }
 
   @if (!isLoading() && !loadError()) {
-    <section class="results">
+    <section class="results" #results>
       <div class="table-scroll">
         <table class="players-table" [class.with-changes]="hasChanges()" [class.with-rank-changes]="showRankChanges()">
           <thead>
             <tr>
               <th scope="col" class="rank">#</th>
               <th scope="col">Character</th>
+              <th scope="col" class="guild">Guild</th>
               <th scope="col" class="realm">Realm</th>
               @for (column of sortColumns; track column) {
                 <th scope="col" class="num" [class.narrow-phone-hidden]="column.key === 'losses'" [attr.aria-sort]="ariaSort(column.key)">
@@ -162,24 +215,25 @@
             </tr>
           </thead>
           <tbody>
-            @for (player of players(); track `${player.realm}::${player.guid}`; let index = $index) {
-              @if (titleGroups().has(index)) {
-                <tr
-                  class="title-group"
-                  [class]="groupClasses(index)">
-                  <td colspan="8">
-                    @if (titleGroups().get(index); as group) {
-                      <span class="group-name">{{ group.title.name }}</span>
+            @for (player of pageRows(); track `${player.realm}::${player.guid}`; let index = $index) {
+              @if (groupHeadings().get(index); as group) {
+                <tr [class]="groupClasses(group)">
+                  <td colspan="9">
+                    @if (group.kind === 'title') {
+                      <span class="group-name">{{ group.cutoff.title.name }}</span>
                       <span class="group-detail">
-                        top {{ formatTitleShare(group.title) }} ·
-                        {{ titleCounts().get(group) ?? 0 }} {{ titleCounts().get(group) === 1 ? 'player' : 'players' }}
-                        @if (group.ties) {
-                          · <span class="group-ties" [attr.title]="tiesHint(group)">+{{ group.ties }} same rating</span>
+                        top {{ formatTitleShare(group.cutoff.title) }} ·
+                        {{ groupCount(group) }}
+                        @if (group.cutoff.ties) {
+                          · <span class="group-ties" [attr.title]="tiesHint(group.cutoff)">+{{ group.cutoff.ties }} same rating</span>
                         }
                       </span>
-                    } @else {
+                    } @else if (group.kind === 'untitled') {
                       <span class="group-name">No title</span>
-                      <span class="group-detail">{{ untitledCount() }} {{ untitledCount() === 1 ? 'player' : 'players' }}</span>
+                      <span class="group-detail">{{ groupCount(group) }}</span>
+                    } @else {
+                      <span class="group-name">Under {{ minGames() }} games</span>
+                      <span class="group-detail">{{ groupCount(group) }} · no title</span>
                     }
                   </td>
                 </tr>
@@ -187,7 +241,7 @@
               <tr>
                 <td class="rank">
                   <span class="rank-cell">
-                    <span>{{ index + 1 }}</span>
+                    <span>{{ rank(index) }}</span>
                     <ng-container *ngTemplateOutlet="rankMove; context: { $implicit: change(player) }" />
                   </span>
                 </td>
@@ -203,6 +257,16 @@
                         height="18"
                         loading="lazy" />
                     }
+                    @if (player.raceInfo; as race) {
+                      <img
+                        class="race-icon"
+                        [src]="race.icon"
+                        [alt]="race.name"
+                        [attr.title]="race.name"
+                        width="18"
+                        height="18"
+                        loading="lazy" />
+                    }
                     <a
                       [href]="getArmoryUrl(player.name, player.realm)"
                       [style.color]="getPlayerClassColor(player)"
@@ -211,8 +275,9 @@
                       {{ player.name }}
                     </a>
                   </span>
-                  <span class="realm-inline">{{ player.realm }}<ng-container *ngTemplateOutlet="rankMove; context: { $implicit: change(player) }" /></span>
+                  <span class="realm-inline"><span class="realm-name">{{ player.realm }}</span>@if (player.guild) {<span class="guild-inline">· {{ player.guild }}</span>}<ng-container *ngTemplateOutlet="rankMove; context: { $implicit: change(player) }" /></span>
                 </td>
+                <td class="guild"><span class="guild-name" [attr.title]="player.guild || null">{{ player.guild }}</span></td>
                 <td class="realm">{{ player.realm }}</td>
                 <td class="num games">{{ player.games | number }}</td>
                 <td
@@ -251,6 +316,20 @@
           }
         </ng-template>
       </div>
+
+      @if (!players().length) {
+        <p class="empty-state">No player on the {{ bracket() }} ladder matches these filters.</p>
+      }
+
+      @if (pages() > 1) {
+        <app-pager
+          [page]="currentPage()"
+          [pages]="pages()"
+          [count]="(players().length | number) + (players().length === 1 ? ' player' : ' players')"
+          label="Arena ladder pages"
+          [scrollTarget]="results"
+          (pageChange)="goToPage($event)" />
+      }
     </section>
   }
 </main>

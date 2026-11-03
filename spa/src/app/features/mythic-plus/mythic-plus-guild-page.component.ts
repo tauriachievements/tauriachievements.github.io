@@ -16,7 +16,7 @@ import { getGuildArmoryUrl } from '../../game/armory';
 import { injectCompactViewport } from '../../shared/compact-viewport';
 import { FilterDropdownComponent } from '../../shared/filter-dropdown.component';
 import { FilterDropdownCoordinatorService } from '../../shared/filter-dropdown-coordinator.service';
-import { FilterDropdownOption, FilterDropdownValue } from '../../shared/filter-dropdown.types';
+import { FilterDropdownValue } from '../../shared/filter-dropdown.types';
 import { GlideDirective } from '../../shared/motion/glide.directive';
 import { MobileFilterToggleComponent } from '../../shared/mobile-filter-toggle.component';
 import {
@@ -65,7 +65,7 @@ import { MythicPlusWeekAffixesComponent } from './mythic-plus-week-affixes.compo
 import { MythicPlusDataService, mythicPlusLoadError } from './mythic-plus-data.service';
 import { CLASS_FILTER_OPTIONS, CLASS_NAMES, RoleFilter, parseClassId, parseRoleFilter, realmSlug } from '../../game/wow';
 import { RoleFilterComponent } from '../../shared/role-filter.component';
-import { LEGION_SPECS, parseSpecName } from '../../game/wow-specs';
+import { parseSpecName, specFilterOptions } from '../../game/wow-specs';
 import { injectReplaceUrl } from '../../core/url-state';
 import { LoadStateComponent } from '../../shared/load-state.component';
 import { setPageHeader } from '../../core/page-header';
@@ -133,15 +133,7 @@ export class MythicPlusGuildPageComponent implements OnInit {
 
   readonly classOptions = CLASS_FILTER_OPTIONS;
 
-  readonly specOptions = computed<FilterDropdownOption[]>(() => {
-    const classId = this.classFilter();
-    return [
-      { value: undefined, label: 'All specs' },
-      ...LEGION_SPECS
-        .filter(spec => spec.classId === classId)
-        .map(spec => ({ value: spec.spec, label: spec.spec, icon: spec.icon }))
-    ];
-  });
+  readonly specOptions = computed(() => specFilterOptions(this.classFilter()));
 
   readonly activeFilterLabels = computed(() => {
     const classId = this.classFilter();
