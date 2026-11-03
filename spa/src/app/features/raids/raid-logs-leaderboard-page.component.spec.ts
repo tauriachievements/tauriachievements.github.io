@@ -44,7 +44,7 @@ const nythendraFile: RaidBossFile = {
   players: [
     ['Alpha', 'Evermoon', 8, 10, 0, 'Miracle'],
     ['Beta', 'Evermoon', 8, 10, 0, 'Miracle'],
-    ['Gamma', 'Evermoon', 8, 10, 0, 'Miracle']
+    ['Gamma', 'Evermoon', 8, 10, 0, 'Pickup Heroes']
   ],
   logs: [
     ['Tauri', 10, 1_000, 100_000, 0, 1, 0, 0, 0, [member(0, 64, 100_000_000), member(1, 63, 200_000_000)], []],
@@ -64,7 +64,7 @@ class FakeDataFiles {
   refresh(): void {}
 }
 
-async function open(index: RaidLogsIndexFile) {
+async function openPage(index: RaidLogsIndexFile, bossFiles: Readonly<Record<string, RaidBossFile>> = {}) {
   TestBed.configureTestingModule({
     providers: [
       provideRouter([{ path: 'raid-logs/leaderboard', component: RaidLogsLeaderboardPageComponent }]),
@@ -75,7 +75,8 @@ async function open(index: RaidLogsIndexFile) {
           'raid-log-data/index.json': index,
           'raid-log-data/nythendra-mythic.json': nythendraFile,
           'raid-log-data/ilgynoth-mythic.json': ilgynothFile,
-          'assets/data/raid-genders.json': { v: 1, female: {} }
+          'assets/data/raid-genders.json': { v: 1, female: {} },
+          ...bossFiles
         })
       }
     ]
@@ -83,7 +84,16 @@ async function open(index: RaidLogsIndexFile) {
   const harness = await RouterTestingHarness.create();
   await harness.navigateByUrl('/raid-logs/leaderboard?difficulty=mythic', RaidLogsLeaderboardPageComponent);
   harness.detectChanges();
-  return harness.routeNativeElement as HTMLElement;
+  return { harness, element: harness.routeNativeElement as HTMLElement };
+}
+
+async function open(index: RaidLogsIndexFile) {
+  return (await openPage(index)).element;
+}
+
+function guildCells(element: HTMLElement) {
+  return [...element.querySelectorAll('tbody td.guild')].map(cell =>
+    [cell.textContent?.trim(), cell.querySelector('a')?.getAttribute('href') ?? null]);
 }
 
 function rows(element: HTMLElement) {
@@ -126,5 +136,49 @@ describe('RaidLogsLeaderboardPageComponent changes since the last scan', () => {
       ['Beta', '', false, '', '4646', '', false],
       ['Gamma', '', false, '', '3484', '', false]
     ]);
+  });
+});
+
+describe('RaidLogsLeaderboardPageComponent guild links', () => {
+  const withHeroic: RaidLogsIndexFile = {
+    ...indexFile,
+    difficulties: [{ id: 15, slug: 'heroic', name: 'Heroic', shortName: 'H', kills: 1 }, ...indexFile.difficulties],
+    logs: [...indexFile.logs, ['Tauri', 12, 0, 15, 3_000, 100_000, 0, 1, 0, 0, 20]]
+  };
+
+  const nythendraHeroic: RaidBossFile = {
+    ...nythendraFile,
+    difficulty: 'heroic',
+    logs: [['Tauri', 12, 3_000, 100_000, 0, 1, 0, 0, 0, [member(0, 64, 100_000_000), member(2, 64, 50_000_000)], []]]
+  };
+
+  function difficultyButton(element: HTMLElement, name: string) {
+    return [...element.querySelectorAll<HTMLButtonElement>('.difficulty-switch button')].find(button => button.textContent?.trim() === name);
+  }
+
+  it('opens the guild page on the difficulty picked, and leaves a guild without a guild kill as plain text', async () => {
+    const { harness, element } = await openPage(withHeroic, { 'raid-log-data/nythendra-heroic.json': nythendraHeroic });
+
+    expect(guildCells(element)).toEqual([
+      ['Miracle', '/raid-logs/guild/evermoon/Miracle?difficulty=mythic'],
+      ['Miracle', '/raid-logs/guild/evermoon/Miracle?difficulty=mythic'],
+      ['Pickup Heroes', null]
+    ]);
+
+    difficultyButton(element, 'Heroic')?.click();
+    harness.detectChanges();
+
+    expect(guildCells(element)).toEqual([
+      ['Miracle', '/raid-logs/guild/evermoon/Miracle?difficulty=heroic'],
+      ['Pickup Heroes', null]
+    ]);
+  });
+
+  it('shows no tooltip on a guild name', async () => {
+    const { element } = await openPage(indexFile);
+    const cells = [...element.querySelectorAll('tbody td.guild')];
+
+    expect(cells.length).toBe(3);
+    expect(cells.filter(cell => cell.hasAttribute('title') || cell.querySelector('[title]'))).toEqual([]);
   });
 });

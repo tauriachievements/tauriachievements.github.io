@@ -4,8 +4,6 @@ import { parseRoleFilter, realmSlug, Role, RoleFilter } from '../../game/wow';
 import { RaidBoss, RaidGuild, RaidKill, RaidCharacter } from './raid-logs.types';
 import { RankedGuild } from './raid-progression';
 
-export const FACTION_NAMES: Readonly<Record<number, string>> = { 0: 'Alliance', 1: 'Horde' };
-
 export const FACTION_FILTERS: ReadonlyArray<{ slug: string; id: number; label: string }> = [
   { slug: 'horde', id: 1, label: 'Horde' },
   { slug: 'alliance', id: 0, label: 'Alliance' }
@@ -76,6 +74,20 @@ export function raidBossLink(boss: Pick<RaidBoss, 'slug'>): string[] {
 
 export function raidGuildLink(guild: Pick<RaidGuild, 'name' | 'realm'>): string[] {
   return ['/raid-logs', 'guild', realmSlug(guild.realm), guild.name];
+}
+
+function guildPageKey(name: string, realm: string): string {
+  return `${realmSlug(realm)}/${name.toLocaleLowerCase()}`;
+}
+
+export function guildsWithKills(kills: ReadonlyArray<Pick<RaidKill, 'guild'>>): ReadonlySet<string> {
+  return new Set(kills.flatMap(kill => (kill.guild?.name ? [guildPageKey(kill.guild.name, kill.guild.realm)] : [])));
+}
+
+export function characterGuildLink(character: Pick<RaidCharacter, 'guild' | 'realm'>, guilds: ReadonlySet<string>): string[] | undefined {
+  return character.guild && guilds.has(guildPageKey(character.guild, character.realm))
+    ? raidGuildLink({ name: character.guild, realm: character.realm })
+    : undefined;
 }
 
 export function guildSuggestion(row: RankedGuild, difficulty: string): SearchSuggestion {

@@ -1,7 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import {
   DIFFICULTY_COLORS,
+  characterGuildLink,
   guildSuggestion,
+  guildsWithKills,
   formatAgo,
   formatAmount,
   formatFightTime,
@@ -97,5 +99,28 @@ describe('guildSuggestion', () => {
     expect(heroic.mark).toBe('#c8322e');
     expect(heroic.valueColor).toBe(DIFFICULTY_COLORS['heroic']);
     expect(heroic.queryParams).toEqual({ difficulty: 'heroic' });
+  });
+});
+
+describe('characterGuildLink', () => {
+  const guilds = guildsWithKills([
+    { guild: { name: 'Miracle', realm: 'Evermoon', faction: 1, id: 3676 } },
+    { guild: { name: 'Outlaws', realm: 'Tauri', faction: 0, id: 12 } },
+    { guild: undefined }
+  ]);
+
+  it('opens the guild page of the character\'s guild', () => {
+    expect(characterGuildLink({ guild: 'Miracle', realm: 'Evermoon' }, guilds)).toEqual(['/raid-logs', 'guild', 'evermoon', 'Miracle']);
+    expect(characterGuildLink({ guild: 'Outlaws', realm: 'Tauri' }, guilds)).toEqual(['/raid-logs', 'guild', 'tauri', 'Outlaws']);
+  });
+
+  it('finds the guild in any case, as the guild page does', () => {
+    expect(characterGuildLink({ guild: 'miracle', realm: 'Evermoon' }, guilds)).toEqual(['/raid-logs', 'guild', 'evermoon', 'miracle']);
+  });
+
+  it('has no link for a guild without a guild kill, a guild on another realm, or no guild', () => {
+    expect(characterGuildLink({ guild: 'Pickup Heroes', realm: 'Evermoon' }, guilds)).toBeUndefined();
+    expect(characterGuildLink({ guild: 'Miracle', realm: 'Tauri' }, guilds)).toBeUndefined();
+    expect(characterGuildLink({ guild: '', realm: 'Evermoon' }, guilds)).toBeUndefined();
   });
 });
