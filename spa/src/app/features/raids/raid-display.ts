@@ -78,6 +78,20 @@ export function raidGuildLink(guild: Pick<RaidGuild, 'name' | 'realm'>): string[
   return ['/raid-logs', 'guild', realmSlug(guild.realm), guild.name];
 }
 
+function guildPageKey(name: string, realm: string): string {
+  return `${realmSlug(realm)}/${name.toLocaleLowerCase()}`;
+}
+
+export function guildsWithKills(kills: ReadonlyArray<Pick<RaidKill, 'guild'>>): ReadonlySet<string> {
+  return new Set(kills.flatMap(kill => (kill.guild?.name ? [guildPageKey(kill.guild.name, kill.guild.realm)] : [])));
+}
+
+export function characterGuildLink(character: Pick<RaidCharacter, 'guild' | 'realm'>, guilds: ReadonlySet<string>): string[] | undefined {
+  return character.guild && guilds.has(guildPageKey(character.guild, character.realm))
+    ? raidGuildLink({ name: character.guild, realm: character.realm })
+    : undefined;
+}
+
 export function guildSuggestion(row: RankedGuild, difficulty: string): SearchSuggestion {
   return {
     key: row.key,

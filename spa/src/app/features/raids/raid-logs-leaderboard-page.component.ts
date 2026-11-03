@@ -14,7 +14,9 @@ import { RaidDifficultySwitchComponent } from './raid-difficulty-switch.componen
 import {
   FACTION_NAMES,
   RAID_PAGE_SIZE,
+  characterGuildLink,
   formatPerSecond,
+  guildsWithKills,
   nameMatches,
   raidCharacterLink
 } from './raid-display';
@@ -186,6 +188,7 @@ export class RaidLogsLeaderboardPageComponent {
   readonly shownRankings = computed(() => pageSlice(this.rankings(), this.currentPage(), RAID_PAGE_SIZE));
 
   private readonly specs = computed<ReadonlyMap<number, RaidSpec>>(() => this.index()?.specs ?? new Map());
+  private readonly guildsWithKills = computed(() => guildsWithKills(this.index()?.kills ?? []));
 
   readonly classOptions = computed(() => rankedClassOptions(this.specs(), this.metric()));
 
@@ -301,6 +304,10 @@ export class RaidLogsLeaderboardPageComponent {
 
   classColor(classId: number): string {
     return getClassColor(classId) ?? '#e0e0e0';
+  }
+
+  guildLink(character: RaidCharacter): string[] | undefined {
+    return characterGuildLink(character, this.guildsWithKills());
   }
 
   raceIcon(character: RaidCharacter): string {
