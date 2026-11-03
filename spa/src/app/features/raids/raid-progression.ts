@@ -1,7 +1,7 @@
 import { realmSlug } from '../../game/wow';
 import { foldName, searchByName } from '../../shared/search-suggestions';
 import { RaidGuild, RaidKill, RaidKillDetails } from './raid-logs.types';
-import { characterKey, guildKey, logKey, raidWeekStart } from './raid-logs';
+import { characterKey, guildKey, logKey, raidWeekEnd } from './raid-logs';
 
 export function fastestKills<T extends Pick<RaidKill, 'fightMs' | 'killedAt'>>(kills: readonly T[]): T[] {
   return [...kills].sort((a, b) => a.fightMs - b.fightMs || a.killedAt - b.killedAt);
@@ -32,9 +32,6 @@ export interface PickupGroup {
   kills: RaidKillDetails[];
 }
 
-const RAID_WEEK_MS = 7 * 24 * 60 * 60 * 1000;
-const HALF_DAY_MS = 12 * 60 * 60 * 1000;
-
 export function pickupGroups(kills: readonly RaidKillDetails[]): PickupGroup[] {
   const pickups = kills.filter(kill => !kill.guild?.name).sort((a, b) => a.killedAt - b.killedAt);
   const players = pickups.map(kill => new Set(kill.members.map(member => characterKey(member.character))));
@@ -51,7 +48,7 @@ export function pickupGroups(kills: readonly RaidKillDetails[]): PickupGroup[] {
   let killsByPlayer = new Map<string, number[]>();
   pickups.forEach((kill, position) => {
     if (kill.killedAt >= weekEnd) {
-      weekEnd = raidWeekStart(raidWeekStart(kill.killedAt) + RAID_WEEK_MS + HALF_DAY_MS);
+      weekEnd = raidWeekEnd(kill.killedAt);
       killsByPlayer = new Map();
     }
     const shared = new Map<number, number>();

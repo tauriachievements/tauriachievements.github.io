@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { clearEndedBy, clearRun, clearSplits, rankClears } from './raid-clears';
+import { clearEndedBy, clearRun, clearSplits, guildClears, rankClears } from './raid-clears';
 import { RaidDifficulty, RaidFullClear, RaidGuild, RaidKill } from './raid-logs.types';
 import { logKey } from './raid-logs';
 import { index } from './raid-logs.fixture';
@@ -104,6 +104,19 @@ describe('rankClears', () => {
     expect(ranking({ faction: 0 })).toEqual([[1, 'Outlaws', 800]]);
     expect(ranking({ realm: 'evermoon' })).toEqual([[1, 'Miracle', 800]]);
     expect(ranking({ realm: 'tauri', groups: 'all' })).toEqual([[1, 'Outlaws', 800], [2, 'pickup', 960]]);
+  });
+});
+
+describe('guildClears', () => {
+  it("keeps the guild's own clears of the difficulty, the ones the API credits it with every kill of", () => {
+    const own = guildClear(miracle, 10_000, 1_000);
+    const heroicClear = guildClear(miracle, 20_000, 1_000, heroic);
+    const otherGuild = guildClear(outlaws, 30_000, 1_000);
+    const partly = clear([kill(39_000, 60, miracle), kill(40_000, 60, undefined, { boss: ilgynoth })]);
+    const sameNameElsewhere = guildClear({ ...miracle, realm: 'Tauri' }, 50_000, 1_000);
+
+    expect(guildClears([own, heroicClear, otherGuild, partly, sameNameElsewhere], mythic, miracle).map(run => run.key))
+      .toEqual([logKey(own.kills[1])]);
   });
 });
 

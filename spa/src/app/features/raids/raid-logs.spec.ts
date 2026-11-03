@@ -10,6 +10,7 @@ import {
   bossShortName,
   bossesInKillOrder,
   defaultDifficulty,
+  raidWeekEnd,
   raidWeekStart
 } from './raid-logs';
 import { indexFile, index, nythendra, mythic, bossFile, kills } from './raid-logs.fixture';
@@ -219,5 +220,20 @@ describe('raidWeekStart', () => {
     expect(weekStart('2026-10-28T07:30:00.000Z')).toBe('2026-10-21T07:00:00.000Z');
     expect(weekStart('2026-03-31T12:00:00.000Z')).toBe('2026-03-25T08:00:00.000Z');
     expect(weekStart('2026-04-01T07:00:00.000Z')).toBe('2026-04-01T07:00:00.000Z');
+  });
+});
+
+describe('raidWeekEnd', () => {
+  const weekEnd = (at: string) => new Date(raidWeekEnd(Date.parse(at))).toISOString();
+
+  it('ends the raid week at the next Wednesday reset', () => {
+    expect(weekEnd('2026-10-29T12:00:00.000Z')).toBe('2026-11-04T08:00:00.000Z');
+    expect(weekEnd('2026-11-04T07:59:59.999Z')).toBe('2026-11-04T08:00:00.000Z');
+    expect(weekEnd('2026-11-04T08:00:00.000Z')).toBe('2026-11-11T08:00:00.000Z');
+  });
+
+  it('keeps the next reset at 09:00 server time across the clock changes', () => {
+    expect(weekEnd('2026-10-22T12:00:00.000Z')).toBe('2026-10-28T08:00:00.000Z');
+    expect(weekEnd('2026-03-26T12:00:00.000Z')).toBe('2026-04-01T07:00:00.000Z');
   });
 });

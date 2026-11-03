@@ -65,6 +65,35 @@
 .boss-cell img { @include boss-portrait(30px); }
 tr.alive td { color: $raid-muted; }
 
+.week { display: flex; min-width: 0; flex-direction: column; gap: 8px; }
+.week + .week { margin-top: 10px; }
+
+.week-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 4px 16px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid $raid-line;
+
+  h3 { margin: 0; color: $raid-muted; font-size: .9rem; font-weight: 600; }
+}
+
+.week-name { color: $gold; font-size: .78rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
+.week-dates { color: #fff; }
+
+.week-stats {
+  margin: 0;
+  color: $raid-muted;
+  font-size: .82rem;
+  font-variant-numeric: tabular-nums;
+
+  a { color: $gold; font-weight: 600; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  a:focus-visible { outline: 2px solid $gold; outline-offset: 2px; }
+}
+
 .history {
   display: flex;
   flex-direction: column;
@@ -100,21 +129,6 @@ tr.alive td { color: $raid-muted; }
 .history-time { color: #fff; font-variant-numeric: tabular-nums; font-weight: 700; text-align: right; }
 .history-players { text-align: right; }
 .muted { color: $raid-muted; }
-
-.more-button {
-  align-self: center;
-  padding: 7px 14px;
-  border: 1px solid #333;
-  border-radius: 6px;
-  background: #111;
-  color: #e0e0e0;
-  font: inherit;
-  font-size: .85rem;
-  cursor: pointer;
-
-  &:hover { border-color: rgba(247, 181, 0, .45); color: #fff; }
-  &:focus-visible { outline: 2px solid $gold; outline-offset: 2px; }
-}
 
 @media (max-width: 640px) {
   .raid-page { padding-top: 32px; }

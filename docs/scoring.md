@@ -400,14 +400,25 @@ decision: ask first.** When a rule does change, change its tests first and see t
   so a guild the exporter has only just named isn't new because of that.
 - Fastest kills: the shortest fight first; the earlier kill wins a tie. A log's speed rank is
   its place among the boss's kills on that difficulty.
-- **Tests:** `raid-progression.spec.ts`, `raidWeekStart` in `raid-logs.spec.ts`, and the This
-  week, All groups and pages cases in `raid-logs-progression-page.component.spec.ts`.
+- **A guild's kill history** (the Raids guild page, `killWeeks` and `weekPages` in
+  `raid-kill-weeks.ts`) lists the guild's kills of the difficulty, invalid ones included, by
+  raid week: from one Wednesday reset to the next (`raidWeekStart` to `raidWeekEnd`), the
+  latest week and the latest kill first. A week without kills isn't listed. The reader's
+  current week is "This week" and the one before it "Last week"; older weeks show only their
+  dates. A week's heading counts its valid kills and the bosses they killed, and shows the
+  guild's fastest full clear that ended in the week ([below](#raid-fastest-full-clears)), the
+  earlier on a tie. A page holds as many whole weeks as fit in 25 kills, and a bigger week has
+  a page of its own, so a week is never split across pages.
+- **Tests:** `raid-progression.spec.ts`, `raidWeekStart` and `raidWeekEnd` in
+  `raid-logs.spec.ts`, `raid-kill-weeks.spec.ts`, the This week, All groups and pages cases in
+  `raid-logs-progression-page.component.spec.ts`, and `raid-logs-guild-page.component.spec.ts`.
 
 ## Raid fastest full clears
 
 - **Code:** `RaidLogDatasetBuilder.Clears` in RaidLogExporter finds the clears; `clearRun`,
-  `rankClears`, `clearSplits` and `clearEndedBy` in `spa/src/app/features/raids/raid-clears.ts`
-  time and rank them; `/raid-logs/clears` shows them.
+  `rankClears`, `clearSplits`, `clearEndedBy` and `guildClears` in
+  `spa/src/app/features/raids/raid-clears.ts` time and rank them; `/raid-logs/clears` shows
+  them, and a guild page's kill history shows the guild's fastest clear of each raid week.
 - **A full clear** is one raid instance (the API's `instance_uid`,
   [tauri-api.md](tauri-api.md#raid-logs-raid-rank-encounter-raid-log)) with a kill of every boss
   on one difficulty. A raid finished in a second instance doesn't count. An instance kept open
@@ -428,7 +439,7 @@ decision: ask first.** When a rule does change, change its tests first and see t
 - The clear time links to the last boss's log, and each block of the bosses strip, placed by
   its pull and its fight time, links to that boss's log. A log that finished a clear shows
   "Finished a full clear in …", linking to the clears of its difficulty (with All groups for a
-  pickup clear).
+  pickup clear). A week's "Full clear" on a guild page links to its last boss's log.
 - **Tests:** `raid-clears.spec.ts`, the clears case in `raid-logs.spec.ts`, and
   `ExportAsync_ListsEachInstanceWithEveryBossDownAsAClear` and
   `ParseLog_ReadsTheInstanceTheKillWasIn` in `RaidLogExportServiceTests`.

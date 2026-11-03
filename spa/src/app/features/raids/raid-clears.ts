@@ -91,6 +91,14 @@ export function rankClears(clears: readonly RaidFullClear[], difficulty: RaidDif
     .map((run, index) => ({ ...run, rank: index + 1 }));
 }
 
+export function guildClears(clears: readonly RaidFullClear[], difficulty: RaidDifficulty, guild: RaidGuild): RaidClearRun[] {
+  const key = guildKey(guild);
+  return clears
+    .filter(clear => clear.difficulty === difficulty)
+    .map(clearRun)
+    .filter(run => run.guild && guildKey(run.guild) === key);
+}
+
 export function clearEndedBy(clears: readonly RaidFullClear[], kill: Pick<RaidKill, 'realm' | 'logId'>): RaidClearRun | undefined {
   const key = logKey(kill);
   const clear = clears.find(candidate => logKey(candidate.kills[candidate.kills.length - 1]) === key);

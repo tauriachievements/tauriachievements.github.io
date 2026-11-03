@@ -1,4 +1,4 @@
-import { DatePipe } from '@angular/common';
+import { DatePipe, DecimalPipe } from '@angular/common';
 import { ChangeDetectionStrategy, Component, DestroyRef, computed, inject, signal } from '@angular/core';
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, RouterLink } from '@angular/router';
@@ -7,10 +7,13 @@ import { RaidDifficultySwitchComponent } from './raid-difficulty-switch.componen
 import { RaidBoss, RaidDifficulty, RaidGuild, RaidKill, RaidLogsIndex } from './raid-logs.types';
 import { defaultDifficulty, guildKey, logKey } from './raid-logs';
 import { ProgressKill, fastestKills, guildProgression, latestKills } from './raid-progression';
+import { guildClears } from './raid-clears';
+import { KillWeek, WeekName, killWeeks, weekName, weekPages } from './raid-kill-weeks';
 import { formatAgo, formatFightTime, raidBossLink, raidLogLink } from './raid-display';
 import { RaidLogsDataService } from './raid-logs-data.service';
-import { injectReplaceUrl } from '../../core/url-state';
+import { injectReplaceUrl, parsePage } from '../../core/url-state';
 import { LoadStateComponent } from '../../shared/load-state.component';
+import { PagerComponent } from '../../shared/pager.component';
 import { setPageHeader } from '../../core/page-header';
 import { realmSlug } from '../../game/wow';
 
@@ -27,11 +30,15 @@ interface SummaryTile {
   note: string;
 }
 
-const HISTORY_PREVIEW = 25;
+interface HistoryWeek extends KillWeek {
+  name?: WeekName;
+}
+
+const HISTORY_PAGE_SIZE = 25;
 
 @Component({
   selector: 'app-raid-logs-guild-page',
-  imports: [RouterLink, RaidDifficultySwitchComponent, DatePipe, LoadStateComponent],
+  imports: [RouterLink, RaidDifficultySwitchComponent, DatePipe, DecimalPipe, LoadStateComponent, PagerComponent],
   templateUrl: './raid-logs-guild-page.component.html',
   styleUrl: './raid-logs-guild-page.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush
@@ -50,9 +57,9 @@ export class RaidLogsGuildPageComponent {
   readonly isLoading = signal(true);
   readonly loadError = signal<string | undefined>(undefined);
   readonly now = signal(Date.now());
-  readonly showAllKills = signal(false);
   readonly lastEdited = computed(() => this.index()?.generatedAt);
   private readonly requestedDifficulty = signal(this.route.snapshot.queryParamMap.get('difficulty') ?? undefined);
+  private readonly page = signal(parsePage(this.route.snapshot.queryParamMap.get('page')));
 
   readonly guildKills = computed<RaidKill[]>(() => {
     const realm = realmSlug(this.params().get('realm') ?? '');
@@ -114,13 +121,22 @@ export class RaidLogsGuildPageComponent {
       .filter(kill => kill.difficulty === difficulty && kill.guild && guildKey(kill.guild) === key);
   });
 
-  readonly listedKills = computed(() => latestKills([...this.kills(), ...this.invalidKills()]));
+  readonly listedKills = computed(() => [...this.kills(), ...this.invalidKills()]);
 
-  readonly history = computed(() => {
-    const kills = this.listedKills();
-    return this.showAllKills() ? kills : kills.slice(0, HISTORY_PREVIEW);
+  private readonly clears = computed(() => {
+    const index = this.index();
+    const difficulty = this.difficulty();
+    const guild = this.guild();
+    return index && difficulty && guild ? guildClears(index.clears, difficulty, guild) : [];
   });
 
+  private readonly historyPages = computed(() => weekPages(killWeeks(this.listedKills(), this.clears()), HISTORY_PAGE_SIZE));
+  readonly pages = computed(() => Math.max(1, this.historyPages().length));
+  readonly currentPage = computed(() => Math.min(this.page(), this.pages()));
+  readonly bossCount = computed(() => this.index()?.bosses.length ?? 0);
+
+  readonly historyWeeks = computed<HistoryWeek[]>(() =>
+    (this.historyPages()[this.currentPage() - 1] ?? []).map(week => ({ ...week, name: weekName(week.start, this.now()) })));
 
   readonly summary = computed<SummaryTile[]>(() => {
     const progress = this.progress();
@@ -156,7 +172,6 @@ export class RaidLogsGuildPageComponent {
   readonly logLink = raidLogLink;
   readonly bossLink = raidBossLink;
   readonly formatFightTime = formatFightTime;
-  readonly historyPreview = HISTORY_PREVIEW;
 
   constructor() {
     setPageHeader(() => ({ lastEdited: this.lastEdited() }));
@@ -187,7 +202,19 @@ export class RaidLogsGuildPageComponent {
 
   setDifficulty(slug: string): void {
     this.requestedDifficulty.set(slug);
-    this.showAllKills.set(false);
-    this.replaceUrl({ difficulty: slug });
+    this.page.set(1);
+    this.writeUrl();
+  }
+
+  goToPage(page: number): void {
+    this.page.set(page);
+    this.writeUrl();
+  }
+
+  private writeUrl(): void {
+    this.replaceUrl({
+      difficulty: this.requestedDifficulty() ?? null,
+      page: this.currentPage() > 1 ? this.currentPage() : null
+    });
   }
 }
