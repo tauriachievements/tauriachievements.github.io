@@ -30,16 +30,18 @@
       </div>
       @if (dataset(); as data) {
         <p class="intro">
-          The season's active players: {{ minGames() }}+ rated {{ bracket() }} games since
-          {{ data.seasonStart | date: 'd MMM y' : '+0200' }} on Tauri, Evermoon and WoD, read from the
-          server's arena ladder. Rating is each player's current personal rating.
+          Everyone on the server's rated {{ bracket() }} arena ladder since
+          {{ data.seasonStart | date: 'd MMM y' : '+0200' }}, on Tauri, Evermoon and WoD. The active
+          players, with {{ minGames() }}+ games, come first and hold the titles. Rating is each player's
+          current personal rating.
         </p>
       }
       @if (changesSince(); as since) {
         <p class="changes-note">
           Beside a rank, the places a player climbed (▲) or fell (▼) in rating order since the scan of
           {{ since | date: 'd MMM, HH:mm' }}; beside a rating, the rating they gained or lost.
-          <span class="rank-new">New</span> marks a player who wasn't on the list then.
+          <span class="rank-new">New</span> marks a player who has reached {{ minGames() }} games, or
+          joined the ladder, since then.
         </p>
       }
 
@@ -47,7 +49,7 @@
         <dl class="summary">
           <div>
             <dt>Active players <small>{{ minGames() }}+ games</small></dt>
-            <dd>{{ players().length | number }}</dd>
+            <dd>{{ activeRows().length | number }}</dd>
           </div>
           <div>
             <dt>Reward eligible <small class="is-green">{{ minWins }}+ wins, in green</small></dt>
@@ -136,7 +138,7 @@
   }
 
   @if (!isLoading() && !loadError()) {
-    <section class="results">
+    <section class="results" #results>
       <div class="table-scroll">
         <table class="players-table" [class.with-changes]="hasChanges()" [class.with-rank-changes]="showRankChanges()">
           <thead>
@@ -162,24 +164,25 @@
             </tr>
           </thead>
           <tbody>
-            @for (player of players(); track `${player.realm}::${player.guid}`; let index = $index) {
-              @if (titleGroups().has(index)) {
-                <tr
-                  class="title-group"
-                  [class]="groupClasses(index)">
+            @for (player of pageRows(); track `${player.realm}::${player.guid}`; let index = $index) {
+              @if (groupHeadings().get(index); as group) {
+                <tr [class]="groupClasses(group)">
                   <td colspan="8">
-                    @if (titleGroups().get(index); as group) {
-                      <span class="group-name">{{ group.title.name }}</span>
+                    @if (group.kind === 'title') {
+                      <span class="group-name">{{ group.cutoff.title.name }}</span>
                       <span class="group-detail">
-                        top {{ formatTitleShare(group.title) }} ·
-                        {{ titleCounts().get(group) ?? 0 }} {{ titleCounts().get(group) === 1 ? 'player' : 'players' }}
-                        @if (group.ties) {
-                          · <span class="group-ties" [attr.title]="tiesHint(group)">+{{ group.ties }} same rating</span>
+                        top {{ formatTitleShare(group.cutoff.title) }} ·
+                        {{ titleCounts().get(group.cutoff) ?? 0 }} {{ titleCounts().get(group.cutoff) === 1 ? 'player' : 'players' }}
+                        @if (group.cutoff.ties) {
+                          · <span class="group-ties" [attr.title]="tiesHint(group.cutoff)">+{{ group.cutoff.ties }} same rating</span>
                         }
                       </span>
-                    } @else {
+                    } @else if (group.kind === 'untitled') {
                       <span class="group-name">No title</span>
                       <span class="group-detail">{{ untitledCount() }} {{ untitledCount() === 1 ? 'player' : 'players' }}</span>
+                    } @else {
+                      <span class="group-name">Under {{ minGames() }} games</span>
+                      <span class="group-detail">{{ inactiveCount() | number }} {{ inactiveCount() === 1 ? 'player' : 'players' }} · no title</span>
                     }
                   </td>
                 </tr>
@@ -187,7 +190,7 @@
               <tr>
                 <td class="rank">
                   <span class="rank-cell">
-                    <span>{{ index + 1 }}</span>
+                    <span>{{ rank(index) }}</span>
                     <ng-container *ngTemplateOutlet="rankMove; context: { $implicit: change(player) }" />
                   </span>
                 </td>
@@ -251,6 +254,16 @@
           }
         </ng-template>
       </div>
+
+      @if (pages() > 1) {
+        <app-pager
+          [page]="currentPage()"
+          [pages]="pages()"
+          [count]="(players().length | number) + (players().length === 1 ? ' player' : ' players')"
+          label="Arena ladder pages"
+          [scrollTarget]="results"
+          (pageChange)="goToPage($event)" />
+      }
     </section>
   }
 </main>

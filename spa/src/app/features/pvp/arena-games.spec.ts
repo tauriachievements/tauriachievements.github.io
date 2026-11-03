@@ -2,7 +2,10 @@ import { describe, expect, it } from 'vitest';
 import {
   ARENA_TITLES,
   ArenaPlayer,
+  ArenaPlayerRow,
   MIN_GAMES_FILTER_OPTIONS,
+  TitleCutoff,
+  arenaGroupHeadings,
   arenaRatingChanges,
   arenaUrlParams,
   formatTitleShare,
@@ -73,8 +76,8 @@ describe('parseMinGames', () => {
 
 describe('arenaUrlParams', () => {
   it('leaves the defaults out of the URL', () => {
-    expect(arenaUrlParams('2v2', 50)).toEqual({ bracket: null, games: null });
-    expect(arenaUrlParams('3v3', 35)).toEqual({ bracket: '3v3', games: '35' });
+    expect(arenaUrlParams('2v2', 50, 1)).toEqual({ bracket: null, games: null, page: null });
+    expect(arenaUrlParams('3v3', 35, 4)).toEqual({ bracket: '3v3', games: '35', page: '4' });
   });
 });
 
@@ -93,13 +96,17 @@ describe('getArenaSpec', () => {
 });
 
 describe('toArenaRows', () => {
-  it('keeps characters with at least the threshold of games and adds their losses and win rate', () => {
+  it('keeps every ladder player, marks those with the minimum games active and adds losses and win rate', () => {
     const rows = toArenaRows(
       [player('FortyNine', 25, 24, 1500), player('Fifty', 25, 25, 1500), player('Sixty', 45, 15, 1800)],
       50
     );
 
-    expect(rows.map(row => [row.name, row.losses, row.winRate])).toEqual([['Fifty', 25, 0.5], ['Sixty', 15, 0.75]]);
+    expect(rows.map(row => [row.name, row.isActive, row.losses, row.winRate])).toEqual([
+      ['FortyNine', false, 24, 25 / 49],
+      ['Fifty', true, 25, 0.5],
+      ['Sixty', true, 15, 0.75]
+    ]);
     expect(rows[0].lastSpec?.name).toBe('Arms');
   });
 
@@ -145,6 +152,20 @@ describe('sortArenaRows', () => {
     sortArenaRows(rows, 'rating', 'asc');
 
     expect(rows.map(row => row.name)).toEqual(['Bravo', 'Alpha', 'Delta', 'Charlie']);
+  });
+
+  it('puts the active players first in every order', () => {
+    const mixed = toArenaRows(
+      [player('Newcomer', 12, 0, 2400), player('Active', 40, 20, 1800), player('Other', 30, 25, 2000)],
+      50
+    );
+    const order = (key: Parameters<typeof sortArenaRows>[1], direction: 'asc' | 'desc') =>
+      sortArenaRows(mixed, key, direction).map(row => row.name);
+
+    expect(order('rating', 'desc')).toEqual(['Other', 'Active', 'Newcomer']);
+    expect(order('rating', 'asc')).toEqual(['Active', 'Other', 'Newcomer']);
+    expect(order('winRate', 'desc')).toEqual(['Active', 'Other', 'Newcomer']);
+    expect(order('games', 'asc')).toEqual(['Other', 'Active', 'Newcomer']);
   });
 });
 
@@ -201,6 +222,16 @@ describe('getTitleCutoffs', () => {
 
   it('has no places without players', () => {
     expect(summary('2v2', []).every(([, places, rating]) => places === 0 && rating === undefined)).toBe(true);
+  });
+
+  it('leaves the players under the minimum games out of the places', () => {
+    const rows = toArenaRows(
+      [player('Newcomer', 12, 0, 2900), ...[2400, 2300].map((rating, index) => player(`P${index}`, 30, 30, rating))],
+      50
+    );
+    const titles = [{ name: 'Top', slug: 'top', topPerMille: 500 }];
+
+    expect(getTitleCutoffs(rows, titles)[0]).toMatchObject({ places: 1, rating: 2400, ties: 0 });
   });
 });
 
@@ -274,5 +305,71 @@ describe('arenaRatingChanges', () => {
 
   it('shows no changes when the file has no previous scan', () => {
     expect(arenaRatingChanges({ players: [player('Alpha', 30, 30, 2000)] }, 50).size).toBe(0);
+  });
+
+  it('ranks the players under the minimum after the active ones, as the table does', () => {
+    const players = [
+      scanned(player('Rising', 10, 10, 1900), 1, 1700, 15),
+      scanned(player('Active', 30, 30, 1500), 2, 1500, 60),
+      scanned(player('Waiting', 15, 15, 1800), 3, 1800, 25)
+    ];
+
+    expect(changes(players)).toEqual([
+      ['Evermoon::1', { rank: 1, value: 200, isNew: false }],
+      ['Evermoon::3', { rank: -1, value: 0, isNew: false }]
+    ]);
+  });
+
+  it('marks a player under the minimum new only when they were not on the ladder', () => {
+    const players = [
+      scanned(player('Active', 30, 30, 1500), 1, 1500, 60),
+      scanned(player('Unseen', 5, 5, 1600), 2),
+      scanned(player('Known', 4, 4, 1550), 3, 1550, 6)
+    ];
+
+    expect(changes(players)).toEqual([
+      ['Evermoon::2', { rank: 0, value: 0, isNew: true }],
+      ['Evermoon::3', { rank: -1, value: 0, isNew: false }]
+    ]);
+  });
+});
+
+describe('arenaGroupHeadings', () => {
+  const [gladiator, duelist] = getTitleCutoffs(
+    toArenaRows([2400, 2300, 2200, 2100].map((rating, index) => player(`P${index}`, 30, 30, rating)), 50),
+    [
+      { name: 'Gladiator', slug: 'gladiator', topPerMille: 250 },
+      { name: 'Duelist', slug: 'duelist', topPerMille: 750 }
+    ]
+  );
+  const rows = toArenaRows(
+    [
+      player('Glad', 30, 30, 2400),
+      player('Duel', 30, 30, 2300),
+      player('Duel2', 30, 30, 2200),
+      player('Plain', 30, 30, 2100),
+      player('Newcomer', 10, 0, 2500),
+      player('Newcomer2', 5, 5, 1500)
+    ],
+    50
+  );
+  const titles = new Map<ArenaPlayerRow, TitleCutoff>([[rows[0], gladiator], [rows[1], duelist], [rows[2], duelist]]);
+  const headings = (slice: readonly ArenaPlayerRow[], byTitle: boolean) =>
+    [...arenaGroupHeadings(slice, row => titles.get(row), byTitle)].map(([index, group]) => [
+      index,
+      group.kind === 'title' ? group.cutoff.title.name : group.kind
+    ]);
+
+  it('heads each title, then the untitled active players, then the players under the minimum', () => {
+    expect(headings(rows, true)).toEqual([[0, 'Gladiator'], [1, 'Duelist'], [3, 'untitled'], [4, 'inactive']]);
+  });
+
+  it('starts a page that opens inside a group with that group heading', () => {
+    expect(headings(rows.slice(2, 5), true)).toEqual([[0, 'Duelist'], [1, 'untitled'], [2, 'inactive']]);
+  });
+
+  it('heads only the players under the minimum outside the title order', () => {
+    expect(headings(rows, false)).toEqual([[4, 'inactive']]);
+    expect(headings(rows.slice(0, 4), false)).toEqual([]);
   });
 });

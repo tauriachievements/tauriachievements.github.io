@@ -6,8 +6,10 @@ import { Subscription } from 'rxjs';
 import { getArmoryUrl } from '../../game/armory';
 import {
   ARENA_BRACKETS,
+  ARENA_PAGE_SIZE,
   ARENA_TITLES,
   ArenaBracket,
+  ArenaGroup,
   ArenaLadderFile,
   ArenaPlayerRow,
   ArenaSortKey,
@@ -16,6 +18,7 @@ import {
   REWARD_MIN_WINS,
   SortDirection,
   TitleCutoff,
+  arenaGroupHeadings,
   arenaPlayerKey,
   arenaRatingChanges,
   arenaUrlParams,
@@ -30,7 +33,9 @@ import {
 } from './arena-games';
 import { GlideDirective } from '../../shared/motion/glide.directive';
 import { DataFileService } from '../../core/data-file.service';
-import { injectQueryParamMap, injectReplaceUrl } from '../../core/url-state';
+import { injectQueryParamMap, injectReplaceUrl, parsePage } from '../../core/url-state';
+import { PagerComponent } from '../../shared/pager.component';
+import { pageCount, pageSlice } from '../../shared/pager';
 import { getClassColor } from '../../game/class-colors';
 import { setPageHeader } from '../../core/page-header';
 import { FilterDropdownComponent } from '../../shared/filter-dropdown.component';
@@ -63,6 +68,7 @@ const SORT_COLUMNS: readonly SortColumn[] = [
     DecimalPipe,
     FilterDropdownComponent,
     NgTemplateOutlet,
+    PagerComponent,
     PercentPipe,
     SkeletonComponent
   ],
@@ -90,17 +96,23 @@ export class ArenaGamesPageComponent implements OnInit {
   readonly loadError = signal<string | undefined>(undefined);
   readonly sortKey = signal<ArenaSortKey>('rating');
   readonly sortDirection = signal<SortDirection>('desc');
+  readonly page = signal(1);
 
   private readonly rows = computed(() => toArenaRows(this.dataset()?.players ?? [], this.minGames()));
+  readonly activeRows = computed(() => this.rows().filter(row => row.isActive));
+  readonly inactiveCount = computed(() => this.rows().length - this.activeRows().length);
   readonly players = computed(() => sortArenaRows(this.rows(), this.sortKey(), this.sortDirection()));
-  readonly eligibleCount = computed(() => this.rows().filter(row => row.wins >= REWARD_MIN_WINS).length);
+  readonly pages = computed(() => pageCount(this.players().length, ARENA_PAGE_SIZE));
+  readonly currentPage = computed(() => Math.min(this.page(), this.pages()));
+  readonly pageRows = computed(() => pageSlice(this.players(), this.currentPage(), ARENA_PAGE_SIZE));
+  readonly eligibleCount = computed(() => this.activeRows().filter(row => row.wins >= REWARD_MIN_WINS).length);
   readonly cutoffs = computed(() => getTitleCutoffs(this.rows(), ARENA_TITLES[this.bracket() ?? '2v2']));
   readonly hasSeasonGladiator = computed(() =>
     this.cutoffs().some(cutoff => cutoff.title.slug === 'season-gladiator')
   );
   private readonly titles = computed(() => {
     const cutoffs = this.cutoffs();
-    return new Map(this.rows().map(row => [row, getTitle(row.rating, cutoffs)]));
+    return new Map(this.activeRows().map(row => [row, getTitle(row.rating, cutoffs)]));
   });
   readonly titleCounts = computed(() => {
     const counts = new Map<TitleCutoff, number>();
@@ -114,21 +126,9 @@ export class ArenaGamesPageComponent implements OnInit {
   readonly untitledCount = computed(() =>
     [...this.titles().values()].filter(cutoff => !cutoff).length
   );
-  readonly titleGroups = computed(() => {
-    const groups = new Map<number, TitleCutoff | null>();
-    const rows = this.players();
-    if (this.sortKey() !== 'rating') {
-      return groups;
-    }
-
-    rows.forEach((row, index) => {
-      const title = this.titleOf(row) ?? null;
-      if (index === 0 || title !== (this.titleOf(rows[index - 1]) ?? null)) {
-        groups.set(index, title);
-      }
-    });
-    return groups;
-  });
+  readonly groupHeadings = computed(() =>
+    arenaGroupHeadings(this.pageRows(), row => this.titleOf(row), this.sortKey() === 'rating')
+  );
   private readonly changes = computed(() => {
     const dataset = this.dataset();
     return dataset ? arenaRatingChanges(dataset, this.minGames()) : new Map<string, ScanChange>();
@@ -157,6 +157,7 @@ export class ArenaGamesPageComponent implements OnInit {
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe(params => {
         this.minGames.set(parseMinGames(params.get('games')));
+        this.page.set(parsePage(params.get('page')));
         const bracket = parseArenaBracket(params.get('bracket'));
         if (bracket !== this.bracket()) {
           this.bracket.set(bracket);
@@ -168,7 +169,7 @@ export class ArenaGamesPageComponent implements OnInit {
   selectBracket(bracket: ArenaBracket): void {
     void this.router.navigate([], {
       relativeTo: this.route,
-      queryParams: arenaUrlParams(bracket, this.minGames()),
+      queryParams: arenaUrlParams(bracket, this.minGames(), 1),
       queryParamsHandling: 'merge',
       replaceUrl: true
     });
@@ -176,7 +177,12 @@ export class ArenaGamesPageComponent implements OnInit {
 
   setMinGames(value: FilterDropdownValue): void {
     this.minGames.set(parseMinGames(value ?? null));
-    this.replaceUrl(arenaUrlParams(this.bracket() ?? '2v2', this.minGames()), { merge: true });
+    this.goToPage(1);
+  }
+
+  goToPage(page: number): void {
+    this.page.set(page);
+    this.replaceUrl(arenaUrlParams(this.bracket() ?? '2v2', this.minGames(), page), { merge: true });
   }
 
   retryLoad(): void {
@@ -186,11 +192,15 @@ export class ArenaGamesPageComponent implements OnInit {
   sortBy(key: ArenaSortKey): void {
     if (this.sortKey() === key) {
       this.sortDirection.update(direction => direction === 'desc' ? 'asc' : 'desc');
-      return;
+    } else {
+      this.sortKey.set(key);
+      this.sortDirection.set('desc');
     }
+    this.goToPage(1);
+  }
 
-    this.sortKey.set(key);
-    this.sortDirection.set('desc');
+  rank(index: number): number {
+    return (this.currentPage() - 1) * ARENA_PAGE_SIZE + index + 1;
   }
 
   ariaSort(key: ArenaSortKey): string | null {
@@ -202,7 +212,7 @@ export class ArenaGamesPageComponent implements OnInit {
   }
 
   exactSpots(cutoff: TitleCutoff): number {
-    return (this.rows().length * cutoff.title.topPerMille) / 1000;
+    return (this.activeRows().length * cutoff.title.topPerMille) / 1000;
   }
 
   tiesHint(cutoff: TitleCutoff): string {
@@ -213,9 +223,8 @@ export class ArenaGamesPageComponent implements OnInit {
     return this.titles().get(player);
   }
 
-  groupClasses(index: number): string {
-    const group = this.titleGroups().get(index);
-    return group ? `tier-${group.title.slug}` : 'is-untitled';
+  groupClasses(group: ArenaGroup): string {
+    return group.kind === 'title' ? `title-group tier-${group.cutoff.title.slug}` : `title-group is-${group.kind}`;
   }
 
   isRewardEligible(player: ArenaPlayerRow): boolean {

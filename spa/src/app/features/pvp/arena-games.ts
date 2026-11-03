@@ -21,10 +21,17 @@ export function parseMinGames(value: FilterDropdownValue | null): number {
   return MIN_GAMES_OPTIONS.find(games => String(games) === String(value)) ?? DEFAULT_MIN_GAMES;
 }
 
-export function arenaUrlParams(bracket: ArenaBracket, minGames: number): { bracket: string | null; games: string | null } {
+export const ARENA_PAGE_SIZE = 25;
+
+export function arenaUrlParams(
+  bracket: ArenaBracket,
+  minGames: number,
+  page: number
+): { bracket: string | null; games: string | null; page: string | null } {
   return {
     bracket: bracket === '2v2' ? null : bracket,
-    games: minGames === DEFAULT_MIN_GAMES ? null : String(minGames)
+    games: minGames === DEFAULT_MIN_GAMES ? null : String(minGames),
+    page: page > 1 ? String(page) : null
   };
 }
 
@@ -68,6 +75,7 @@ export interface ArenaSpec {
 }
 
 export interface ArenaPlayerRow extends ArenaPlayer {
+  readonly isActive: boolean;
   readonly losses: number;
   readonly winRate: number;
   readonly lastSpec: ArenaSpec | undefined;
@@ -116,7 +124,7 @@ export interface TitleCutoff {
 }
 
 export function getTitleCutoffs(rows: readonly ArenaPlayerRow[], titles: readonly ArenaTitle[]): TitleCutoff[] {
-  const ratings = rows.map(row => row.rating).sort((left, right) => right - left);
+  const ratings = rows.filter(row => row.isActive).map(row => row.rating).sort((left, right) => right - left);
   const placeRatings = [...new Set(ratings)];
   let coveredPlaces = 0;
   let coveredPlayers = 0;
@@ -142,26 +150,66 @@ export function getTitle(rating: number, cutoffs: readonly TitleCutoff[]): Title
   return cutoffs.find(cutoff => cutoff.rating !== undefined && rating >= cutoff.rating);
 }
 
-export function toArenaRows(players: readonly ArenaPlayer[], minGames: number): ArenaPlayerRow[] {
-  return players
-    .filter(player => player.games >= minGames)
-    .map(player => ({
-      ...player,
-      losses: player.games - player.wins,
-      winRate: player.wins / player.games,
-      lastSpec: getArenaSpec(player)
-    }));
+export type ArenaGroup =
+  | { readonly kind: 'title'; readonly cutoff: TitleCutoff }
+  | { readonly kind: 'untitled' }
+  | { readonly kind: 'inactive' };
+
+export function arenaGroupHeadings(
+  rows: readonly ArenaPlayerRow[],
+  titleOf: (row: ArenaPlayerRow) => TitleCutoff | undefined,
+  byTitle: boolean
+): Map<number, ArenaGroup> {
+  const headings = new Map<number, ArenaGroup>();
+  let previousKey: string | undefined;
+
+  rows.forEach((row, index) => {
+    const group = rowGroup(row, titleOf, byTitle);
+    const key = group?.kind === 'title' ? group.cutoff.title.slug : group?.kind;
+    if (group && key !== previousKey) {
+      headings.set(index, group);
+    }
+    previousKey = key;
+  });
+
+  return headings;
 }
 
-export function sortArenaRows<K extends ArenaSortKey, T extends Pick<ArenaPlayerRow, K | 'games' | 'name'>>(
-  rows: readonly T[],
-  key: K,
-  direction: SortDirection
-): T[] {
+function rowGroup(
+  row: ArenaPlayerRow,
+  titleOf: (row: ArenaPlayerRow) => TitleCutoff | undefined,
+  byTitle: boolean
+): ArenaGroup | undefined {
+  if (!row.isActive) {
+    return { kind: 'inactive' };
+  }
+  if (!byTitle) {
+    return undefined;
+  }
+
+  const cutoff = titleOf(row);
+  return cutoff ? { kind: 'title', cutoff } : { kind: 'untitled' };
+}
+
+export function toArenaRows(players: readonly ArenaPlayer[], minGames: number): ArenaPlayerRow[] {
+  return players.map(player => ({
+    ...player,
+    isActive: player.games >= minGames,
+    losses: player.games - player.wins,
+    winRate: player.wins / player.games,
+    lastSpec: getArenaSpec(player)
+  }));
+}
+
+export function sortArenaRows<
+  K extends ArenaSortKey,
+  T extends Pick<ArenaPlayerRow, K | 'games' | 'name' | 'isActive'>
+>(rows: readonly T[], key: K, direction: SortDirection): T[] {
   const sign = direction === 'asc' ? 1 : -1;
 
   return [...rows].sort((left, right) =>
-    sign * (left[key] - right[key])
+    Number(right.isActive) - Number(left.isActive)
+    || sign * (left[key] - right[key])
     || right.games - left.games
     || left.name.localeCompare(right.name)
   );
@@ -181,16 +229,25 @@ export function arenaRatingChanges(
 
   const current = sortArenaRows(toArenaRows(players, minGames), 'rating', 'desc');
   const previous = sortArenaRows(previousLadder(players, minGames), 'rating', 'desc');
-  return scanChanges(current, previous, arenaPlayerKey, player => player.rating);
+  const changes = scanChanges(current, previous, arenaPlayerKey, player => player.rating);
+  const wasInactive = new Set(previous.filter(player => !player.isActive).map(arenaPlayerKey));
+
+  for (const player of current) {
+    if (player.isActive && wasInactive.has(arenaPlayerKey(player))) {
+      changes.set(arenaPlayerKey(player), { rank: 0, value: 0, isNew: true });
+    }
+  }
+
+  return changes;
 }
 
 function previousLadder(
   players: readonly ArenaPlayer[],
   minGames: number
-): Array<Pick<ArenaPlayer, 'realm' | 'guid' | 'name' | 'rating' | 'games'>> {
+): Array<Pick<ArenaPlayerRow, 'realm' | 'guid' | 'name' | 'rating' | 'games' | 'isActive'>> {
   return players.flatMap(({ realm, guid, name, previousRating, previousGames }) =>
-    previousRating !== undefined && previousGames !== undefined && previousGames >= minGames
-      ? [{ realm, guid, name, rating: previousRating, games: previousGames }]
+    previousRating !== undefined && previousGames !== undefined
+      ? [{ realm, guid, name, rating: previousRating, games: previousGames, isActive: previousGames >= minGames }]
       : []
   );
 }
