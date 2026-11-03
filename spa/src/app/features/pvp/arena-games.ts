@@ -25,15 +25,32 @@ export function parseMinGames(value: FilterDropdownValue | null): number {
 
 export const ARENA_PAGE_SIZE = 50;
 
-export function arenaUrlParams(
-  bracket: ArenaBracket,
-  minGames: number,
-  page: number
-): { bracket: string | null; games: string | null; page: string | null } {
+export interface ArenaFilters {
+  readonly classId?: number;
+  readonly spec?: string;
+}
+
+export interface ArenaUrlState extends ArenaFilters {
+  readonly bracket: ArenaBracket;
+  readonly minGames: number;
+  readonly page: number;
+}
+
+export interface ArenaUrlParams {
+  readonly bracket: string | null;
+  readonly games: string | null;
+  readonly page: string | null;
+  readonly class: string | null;
+  readonly spec: string | null;
+}
+
+export function arenaUrlParams({ bracket, minGames, page, classId, spec }: ArenaUrlState): ArenaUrlParams {
   return {
     bracket: bracket === '2v2' ? null : bracket,
     games: minGames === DEFAULT_MIN_GAMES ? null : String(minGames),
-    page: page > 1 ? String(page) : null
+    page: page > 1 ? String(page) : null,
+    class: classId === undefined ? null : String(classId),
+    spec: classId === undefined ? null : spec ?? null
   };
 }
 
@@ -178,7 +195,7 @@ export function arenaGroupHeadings(
 
   rows.forEach((row, index) => {
     const group = rowGroup(row, titleOf, byTitle);
-    const key = group?.kind === 'title' ? group.cutoff.title.slug : group?.kind;
+    const key = group && arenaGroupKey(group);
     if (group && key !== previousKey) {
       headings.set(index, group);
     }
@@ -186,6 +203,36 @@ export function arenaGroupHeadings(
   });
 
   return headings;
+}
+
+export function arenaGroupKey(group: ArenaGroup): string {
+  return group.kind === 'title' ? group.cutoff.title.slug : group.kind;
+}
+
+export function countArenaGroups(
+  rows: readonly ArenaPlayerRow[],
+  titleOf: (row: ArenaPlayerRow) => TitleCutoff | undefined
+): Map<string, number> {
+  const counts = new Map<string, number>();
+  for (const row of rows) {
+    const key = arenaGroupKey(rowGroup(row, titleOf, true) ?? { kind: 'untitled' });
+    counts.set(key, (counts.get(key) ?? 0) + 1);
+  }
+  return counts;
+}
+
+export function formatGroupCount(shown: number, total: number): string {
+  const players = total === 1 ? 'player' : 'players';
+  const totalLabel = total.toLocaleString('en-US');
+  return shown === total ? `${totalLabel} ${players}` : `${shown.toLocaleString('en-US')} of ${totalLabel} ${players}`;
+}
+
+export function filterArenaRows(rows: readonly ArenaPlayerRow[], { classId, spec }: ArenaFilters): ArenaPlayerRow[] {
+  if (classId === undefined) {
+    return [...rows];
+  }
+
+  return rows.filter(row => row.class === classId && (spec === undefined || row.lastSpec?.name === spec));
 }
 
 function rowGroup(

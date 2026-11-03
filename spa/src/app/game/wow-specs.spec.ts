@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { CLASS_NAMES, CLASSES_BY_NAME } from './wow';
-import { LEGION_SPECS, specById, specIconFor, specRoleFor } from './wow-specs';
+import { LEGION_SPECS, specById, specFilterOptions, specIconFor, specRoleFor } from './wow-specs';
 
 describe('LEGION_SPECS', () => {
   it('lists every class with a unique game id per spec', () => {
@@ -35,6 +35,22 @@ describe('specIconFor', () => {
   it('returns nothing for a spec it does not know', () => {
     expect(specIconFor(6, 'Frostfire')).toBeUndefined();
     expect(specRoleFor(6, 'Frostfire')).toBeUndefined();
+  });
+});
+
+describe('specFilterOptions', () => {
+  it("offers All specs, then the class's specs by name with their icons, in the game's order", () => {
+    expect(specFilterOptions(6).map(option => [option.value, option.label])).toEqual([
+      [undefined, 'All specs'],
+      ['Blood', 'Blood'],
+      ['Frost', 'Frost'],
+      ['Unholy', 'Unholy']
+    ]);
+    expect(specFilterOptions(6)[1].icon).toContain('spell_deathknight_bloodpresence');
+  });
+
+  it('offers only All specs without a class', () => {
+    expect(specFilterOptions(undefined)).toEqual([{ value: undefined, label: 'All specs' }]);
   });
 });
 

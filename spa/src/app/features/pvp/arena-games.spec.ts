@@ -6,6 +6,10 @@ import {
   MIN_GAMES_FILTER_OPTIONS,
   TitleCutoff,
   arenaGroupHeadings,
+  arenaGroupKey,
+  countArenaGroups,
+  filterArenaRows,
+  formatGroupCount,
   arenaRatingChanges,
   arenaUrlParams,
   formatTitleShare,
@@ -77,8 +81,24 @@ describe('parseMinGames', () => {
 
 describe('arenaUrlParams', () => {
   it('leaves the defaults out of the URL', () => {
-    expect(arenaUrlParams('2v2', 50, 1)).toEqual({ bracket: null, games: null, page: null });
-    expect(arenaUrlParams('3v3', 35, 4)).toEqual({ bracket: '3v3', games: '35', page: '4' });
+    expect(arenaUrlParams({ bracket: '2v2', minGames: 50, page: 1 })).toEqual({
+      bracket: null,
+      games: null,
+      page: null,
+      class: null,
+      spec: null
+    });
+    expect(arenaUrlParams({ bracket: '3v3', minGames: 35, page: 4, classId: 6, spec: 'Frost' })).toEqual({
+      bracket: '3v3',
+      games: '35',
+      page: '4',
+      class: '6',
+      spec: 'Frost'
+    });
+  });
+
+  it('writes a spec only with its class', () => {
+    expect(arenaUrlParams({ bracket: '2v2', minGames: 50, page: 1, spec: 'Frost' }).spec).toBeNull();
   });
 });
 
@@ -387,5 +407,48 @@ describe('arenaGroupHeadings', () => {
   it('heads only the players under the minimum outside the title order', () => {
     expect(headings(rows, false)).toEqual([[4, 'inactive']]);
     expect(headings(rows.slice(0, 4), false)).toEqual([]);
+  });
+
+  it('counts the players in each group, keyed like the headings', () => {
+    const counts = countArenaGroups(rows, row => titles.get(row));
+
+    expect([...counts]).toEqual([['gladiator', 1], ['duelist', 2], ['untitled', 1], ['inactive', 2]]);
+    expect(counts.get(arenaGroupKey({ kind: 'title', cutoff: duelist }))).toBe(2);
+    expect(counts.get(arenaGroupKey({ kind: 'inactive' }))).toBe(2);
+  });
+});
+
+describe('formatGroupCount', () => {
+  it('counts the players of a group, and how many of them a filter shows', () => {
+    expect(formatGroupCount(1, 1)).toBe('1 player');
+    expect(formatGroupCount(48, 48)).toBe('48 players');
+    expect(formatGroupCount(1, 2)).toBe('1 of 2 players');
+    expect(formatGroupCount(3, 1204)).toBe('3 of 1,204 players');
+  });
+});
+
+describe('filterArenaRows', () => {
+  const rows = toArenaRows(
+    [
+      { ...player('Armsy', 30, 30, 2000), class: 1, spec: 71 },
+      { ...player('Furyo', 30, 30, 1900), class: 1, spec: 72 },
+      { ...player('Frosty', 30, 30, 1800), class: 6, spec: 251 },
+      { ...player('Specless', 30, 30, 1700), class: 1, spec: 0 }
+    ],
+    50
+  );
+  const names = (filters: Parameters<typeof filterArenaRows>[1]) => filterArenaRows(rows, filters).map(row => row.name);
+
+  it('keeps everyone without a class', () => {
+    expect(names({})).toEqual(['Armsy', 'Furyo', 'Frosty', 'Specless']);
+  });
+
+  it("keeps a class's players", () => {
+    expect(names({ classId: 1 })).toEqual(['Armsy', 'Furyo', 'Specless']);
+  });
+
+  it('keeps the players whose latest game was in the spec', () => {
+    expect(names({ classId: 1, spec: 'Fury' })).toEqual(['Furyo']);
+    expect(names({ classId: 6, spec: 'Fury' })).toEqual([]);
   });
 });

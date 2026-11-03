@@ -48,7 +48,7 @@ import {
 import { MythicPlusWeekAffixesComponent } from './mythic-plus-week-affixes.component';
 import { FilterDropdownComponent } from '../../shared/filter-dropdown.component';
 import { FilterDropdownCoordinatorService } from '../../shared/filter-dropdown-coordinator.service';
-import { FilterDropdownOption, FilterDropdownValue } from '../../shared/filter-dropdown.types';
+import { FilterDropdownValue } from '../../shared/filter-dropdown.types';
 import { MobileFilterToggleComponent } from '../../shared/mobile-filter-toggle.component';
 import { MythicPlusPageStore } from './mythic-plus-page.store';
 import {
@@ -67,7 +67,7 @@ import { GlideDirective } from '../../shared/motion/glide.directive';
 import { characterTransitionName } from '../../shared/motion/motion';
 import { CLASS_FILTER_OPTIONS, CLASS_NAMES, RoleFilter, parseClassId, parseRoleFilter } from '../../game/wow';
 import { RoleFilterComponent } from '../../shared/role-filter.component';
-import { LEGION_SPECS, parseSpecName } from '../../game/wow-specs';
+import { parseSpecName, specFilterOptions } from '../../game/wow-specs';
 import { injectReplaceUrl, parsePage } from '../../core/url-state';
 import { LoadStateComponent } from '../../shared/load-state.component';
 import { PagerComponent } from '../../shared/pager.component';
@@ -152,15 +152,7 @@ export class MythicPlusPageComponent implements OnInit {
 
   readonly classOptions = CLASS_FILTER_OPTIONS;
 
-  readonly specOptions = computed<FilterDropdownOption[]>(() => {
-    const classId = this.classFilter();
-    return [
-      { value: undefined, label: 'All specs' },
-      ...LEGION_SPECS
-        .filter(spec => spec.classId === classId)
-        .map(spec => ({ value: spec.spec, label: spec.spec, icon: spec.icon }))
-    ];
-  });
+  readonly specOptions = computed(() => specFilterOptions(this.classFilter()));
 
   readonly realmOptions = computed(() => realmFilterOptions(currentPlayers(this.index())));
 

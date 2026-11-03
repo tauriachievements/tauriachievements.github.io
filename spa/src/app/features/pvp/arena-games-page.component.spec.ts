@@ -28,22 +28,27 @@ function player(index: number, overrides: Partial<ArenaPlayer> = {}): ArenaPlaye
   };
 }
 
-function ladder(players: ArenaPlayer[]): ArenaLadderFile {
+function ladder(players: ArenaPlayer[], previousGeneratedAt?: string): ArenaLadderFile {
   return {
     version: 2,
     bracket: '2v2',
     seasonStart: '2026-09-16T00:00:00+02:00',
     generatedAt: '2026-11-02T23:14:17Z',
+    previousGeneratedAt,
     players
   };
 }
 
-async function renderPage(players: ArenaPlayer[]) {
+function playerRows(element: HTMLElement): Element[] {
+  return [...element.querySelectorAll('.players-table tbody tr:not(.title-group)')];
+}
+
+async function renderPage(players: ArenaPlayer[], previousGeneratedAt?: string) {
   await TestBed.configureTestingModule({
     imports: [ArenaGamesPageComponent],
     providers: [
       provideRouter([]),
-      { provide: DataFileService, useValue: { getJson: () => of(ladder(players)) } }
+      { provide: DataFileService, useValue: { getJson: () => of(ladder(players, previousGeneratedAt)) } }
     ]
   }).compileComponents();
 
@@ -96,5 +101,80 @@ describe('ArenaGamesPageComponent', () => {
     fixture.detectChanges();
 
     expect(element.querySelector('.titles-table')).toBeNull();
+  });
+
+  it('keeps the minimum games dropdown inside the season info', async () => {
+    const fixture = await renderPage([player(0)]);
+    const element: HTMLElement = fixture.nativeElement;
+
+    expect(element.querySelector('#arenaMinGamesTrigger')).toBeNull();
+
+    element.querySelector<HTMLButtonElement>('#arenaInfoToggle')?.click();
+    fixture.detectChanges();
+
+    expect(element.querySelector('#arena-info #arenaMinGamesTrigger')).not.toBeNull();
+  });
+
+  it('filters by class and spec and numbers the players left from 1', async () => {
+    const fixture = await renderPage([
+      player(0, { name: 'Warrior' }),
+      player(1, { name: 'Fireball', class: 8, spec: 63 }),
+      player(2, { name: 'Iceblock', class: 8, spec: 64 })
+    ]);
+    const element: HTMLElement = fixture.nativeElement;
+    const page = fixture.componentInstance;
+
+    page.setClassFilter(8);
+    fixture.detectChanges();
+
+    expect(playerRows(element).map(row => [row.querySelector('td.rank')?.textContent?.trim(), row.querySelector('a')?.textContent?.trim()]))
+      .toEqual([['1', 'Fireball'], ['2', 'Iceblock']]);
+
+    page.setSpecFilter('Frost');
+    fixture.detectChanges();
+
+    expect(playerRows(element).map(row => row.querySelector('a')?.textContent?.trim())).toEqual(['Iceblock']);
+  });
+
+  it('hides the rank changes while a class is picked, but keeps the rating changes', async () => {
+    const fixture = await renderPage(
+      [
+        player(0, { name: 'Climber', previousRating: 1900, previousGames: 55 }),
+        player(1, { name: 'Faller', class: 8, spec: 64, previousRating: 2100, previousGames: 55 })
+      ],
+      '2026-11-01T23:10:00Z'
+    );
+    const element: HTMLElement = fixture.nativeElement;
+
+    expect(element.querySelectorAll('.players-table .rank-move').length).toBeGreaterThan(0);
+
+    fixture.componentInstance.setClassFilter(8);
+    fixture.detectChanges();
+
+    expect(element.querySelectorAll('.players-table .rank-move').length).toBe(0);
+    expect(element.querySelector('.players-table .value-change')?.textContent).toContain('−101');
+  });
+
+  it('resets the class, the spec and the minimum games', async () => {
+    const fixture = await renderPage([player(0), player(1, { class: 8, spec: 64, games: 35 })]);
+    const element: HTMLElement = fixture.nativeElement;
+    const page = fixture.componentInstance;
+    const reset = element.querySelector<HTMLButtonElement>('button.filter-reset');
+
+    expect(reset?.disabled).toBe(true);
+
+    page.setMinGames(30);
+    page.setClassFilter(8);
+    page.setSpecFilter('Frost');
+    fixture.detectChanges();
+
+    expect(reset?.disabled).toBe(false);
+
+    reset?.click();
+    fixture.detectChanges();
+
+    expect([page.classFilter(), page.specFilter(), page.minGames()]).toEqual([undefined, undefined, 50]);
+    expect(playerRows(element).length).toBe(2);
+    expect(reset?.disabled).toBe(true);
   });
 });

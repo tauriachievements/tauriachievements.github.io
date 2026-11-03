@@ -4,6 +4,8 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { getArmoryUrl } from '../../game/armory';
+import { CLASS_FILTER_OPTIONS, parseClassId } from '../../game/wow';
+import { parseSpecName, specFilterOptions } from '../../game/wow-specs';
 import {
   ARENA_BRACKETS,
   ARENA_PAGE_SIZE,
@@ -13,15 +15,20 @@ import {
   ArenaLadderFile,
   ArenaPlayerRow,
   ArenaSortKey,
+  ArenaUrlState,
   DEFAULT_MIN_GAMES,
   MIN_GAMES_FILTER_OPTIONS,
   REWARD_MIN_WINS,
   SortDirection,
   TitleCutoff,
   arenaGroupHeadings,
+  arenaGroupKey,
   arenaPlayerKey,
   arenaRatingChanges,
   arenaUrlParams,
+  countArenaGroups,
+  filterArenaRows,
+  formatGroupCount,
   formatTitleShare,
   getArenaLadderFile,
   getTitle,
@@ -98,11 +105,22 @@ export class ArenaGamesPageComponent implements OnInit {
   readonly sortDirection = signal<SortDirection>('desc');
   readonly page = signal(1);
   readonly showInfo = signal(false);
+  readonly classFilter = signal<number | undefined>(undefined);
+  readonly specFilter = signal<string | undefined>(undefined);
+
+  readonly classOptions = CLASS_FILTER_OPTIONS;
+  readonly specOptions = computed(() => specFilterOptions(this.classFilter()));
+  readonly filtersActive = computed(() =>
+    this.classFilter() !== undefined || this.specFilter() !== undefined || this.minGames() !== DEFAULT_MIN_GAMES
+  );
+  private readonly filtered = computed(() => this.classFilter() !== undefined);
 
   private readonly rows = computed(() => toArenaRows(this.dataset()?.players ?? [], this.minGames()));
   readonly activeRows = computed(() => this.rows().filter(row => row.isActive));
-  readonly inactiveCount = computed(() => this.rows().length - this.activeRows().length);
-  readonly players = computed(() => sortArenaRows(this.rows(), this.sortKey(), this.sortDirection()));
+  private readonly shownRows = computed(() =>
+    filterArenaRows(this.rows(), { classId: this.classFilter(), spec: this.specFilter() })
+  );
+  readonly players = computed(() => sortArenaRows(this.shownRows(), this.sortKey(), this.sortDirection()));
   readonly pages = computed(() => pageCount(this.players().length, ARENA_PAGE_SIZE));
   readonly currentPage = computed(() => Math.min(this.page(), this.pages()));
   readonly pageRows = computed(() => pageSlice(this.players(), this.currentPage(), ARENA_PAGE_SIZE));
@@ -115,18 +133,8 @@ export class ArenaGamesPageComponent implements OnInit {
     const cutoffs = this.cutoffs();
     return new Map(this.activeRows().map(row => [row, getTitle(row.rating, cutoffs)]));
   });
-  readonly titleCounts = computed(() => {
-    const counts = new Map<TitleCutoff, number>();
-    for (const cutoff of this.titles().values()) {
-      if (cutoff) {
-        counts.set(cutoff, (counts.get(cutoff) ?? 0) + 1);
-      }
-    }
-    return counts;
-  });
-  readonly untitledCount = computed(() =>
-    [...this.titles().values()].filter(cutoff => !cutoff).length
-  );
+  private readonly groupTotals = computed(() => countArenaGroups(this.rows(), row => this.titleOf(row)));
+  private readonly shownGroupCounts = computed(() => countArenaGroups(this.shownRows(), row => this.titleOf(row)));
   readonly groupHeadings = computed(() =>
     arenaGroupHeadings(this.pageRows(), row => this.titleOf(row), this.sortKey() === 'rating')
   );
@@ -137,7 +145,7 @@ export class ArenaGamesPageComponent implements OnInit {
   readonly hasChanges = computed(() => this.changes().size > 0);
   readonly changesSince = computed(() => this.hasChanges() ? this.dataset()?.previousGeneratedAt : undefined);
   readonly showRankChanges = computed(() =>
-    this.hasChanges() && this.sortKey() === 'rating' && this.sortDirection() === 'desc'
+    this.hasChanges() && !this.filtered() && this.sortKey() === 'rating' && this.sortDirection() === 'desc'
   );
   readonly lastEdited = computed(() => {
     const generatedAt = this.dataset()?.generatedAt;
@@ -159,6 +167,8 @@ export class ArenaGamesPageComponent implements OnInit {
       .subscribe(params => {
         this.minGames.set(parseMinGames(params.get('games')));
         this.page.set(parsePage(params.get('page')));
+        this.classFilter.set(parseClassId(params.get('class')));
+        this.specFilter.set(parseSpecName(this.classFilter(), params.get('spec')));
         const bracket = parseArenaBracket(params.get('bracket'));
         if (bracket !== this.bracket()) {
           this.bracket.set(bracket);
@@ -170,7 +180,7 @@ export class ArenaGamesPageComponent implements OnInit {
   selectBracket(bracket: ArenaBracket): void {
     void this.router.navigate([], {
       relativeTo: this.route,
-      queryParams: arenaUrlParams(bracket, this.minGames(), 1),
+      queryParams: arenaUrlParams({ ...this.urlState(), bracket, page: 1 }),
       queryParamsHandling: 'merge',
       replaceUrl: true
     });
@@ -183,7 +193,45 @@ export class ArenaGamesPageComponent implements OnInit {
 
   goToPage(page: number): void {
     this.page.set(page);
-    this.replaceUrl(arenaUrlParams(this.bracket() ?? '2v2', this.minGames(), page), { merge: true });
+    this.replaceUrl(arenaUrlParams(this.urlState()), { merge: true });
+  }
+
+  setClassFilter(value: FilterDropdownValue): void {
+    const classId = typeof value === 'number' ? value : undefined;
+    if (classId === this.classFilter()) {
+      return;
+    }
+
+    this.classFilter.set(classId);
+    this.specFilter.set(undefined);
+    this.goToPage(1);
+  }
+
+  setSpecFilter(value: FilterDropdownValue): void {
+    const spec = typeof value === 'string' ? value : undefined;
+    if (spec === this.specFilter()) {
+      return;
+    }
+
+    this.specFilter.set(spec);
+    this.goToPage(1);
+  }
+
+  resetFilters(): void {
+    this.classFilter.set(undefined);
+    this.specFilter.set(undefined);
+    this.minGames.set(DEFAULT_MIN_GAMES);
+    this.goToPage(1);
+  }
+
+  private urlState(): ArenaUrlState {
+    return {
+      bracket: this.bracket() ?? '2v2',
+      minGames: this.minGames(),
+      page: this.page(),
+      classId: this.classFilter(),
+      spec: this.specFilter()
+    };
   }
 
   toggleInfo(): void {
@@ -226,6 +274,15 @@ export class ArenaGamesPageComponent implements OnInit {
 
   titleOf(player: ArenaPlayerRow): TitleCutoff | undefined {
     return this.titles().get(player);
+  }
+
+  holders(cutoff: TitleCutoff): number {
+    return this.groupTotals().get(arenaGroupKey({ kind: 'title', cutoff })) ?? 0;
+  }
+
+  groupCount(group: ArenaGroup): string {
+    const key = arenaGroupKey(group);
+    return formatGroupCount(this.shownGroupCounts().get(key) ?? 0, this.groupTotals().get(key) ?? 0);
   }
 
   groupClasses(group: ArenaGroup): string {
