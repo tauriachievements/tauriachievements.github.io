@@ -587,6 +587,11 @@ the `tr` toggles, and the links and the toggle button inside it stop the click f
 - A spec that renders counting numbers (`appCountUp`) stubs `matchMedia` to report reduced
   motion, so the numbers show their final values at once. See
   `mythic-plus-profile-page.component.spec.ts`.
+- A link can't hold another link, so a row that opens a character and also links its guild
+  isn't one `<a>`. The row is a box whose `(click)` navigates to the character; the name and
+  the guild are links that stop the click's propagation; and the row draws the name link's
+  focus ring with `:has(.name:focus-visible)`. The M+ records page's "Most runs" list and the
+  profile's "Frequent teammates" work this way.
 
 ## Checking a change in a real browser
 

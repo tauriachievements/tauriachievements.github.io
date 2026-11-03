@@ -271,19 +271,23 @@
           <ol class="teammates">
             @for (mate of teammates(); track mate.key) {
               <li class="teammate-item">
-                <a class="teammate" [routerLink]="mate.member.profileLink" [style.--class-color]="mate.member.color">
-                  <img class="teammate-icon" [src]="mate.member.classIcon" [alt]="mate.member.className" />
-                  <span class="teammate-body">
-                    <span class="teammate-name" [style.color]="mate.member.color">{{ mate.member.name }}</span>
-                    <span class="teammate-meta">{{ mate.member.realm }} · {{ mate.member.spec }}</span>
+                <div class="teammate" [style.--class-color]="mate.member.color" (click)="openProfile(mate.member)">
+                  <span class="teammate-identity">
+                    <img class="teammate-icon" [src]="mate.member.classIcon" [alt]="mate.member.className" />
+                    <img class="teammate-race" [src]="mate.member.raceIcon" [alt]="mate.member.raceName" />
+                    <a class="teammate-name" [routerLink]="mate.member.profileLink" [style.color]="mate.member.color"
+                      (click)="$event.stopPropagation()">{{ mate.member.name }}</a>
+                    @if (mate.member.guildLink) {
+                      <a class="teammate-guild" [routerLink]="mate.member.guildLink" title="Open the guild's Mythic+ ladder"
+                        (click)="$event.stopPropagation()">&lt;{{ mate.member.guild }}&gt;</a>
+                    }
                   </span>
-                  <span class="teammate-numbers">
-                    <span class="teammate-count"><b>{{ mate.runs | number }}</b> {{ mate.runs === 1 ? 'run' : 'runs' }}</span>
-                    <span class="teammate-best" [title]="'Best key together: ' + mate.dungeonName + ' +' + mate.keyLevel">
-                      {{ mate.dungeon }} +{{ mate.keyLevel }}@if (mate.upgrades > 0) {<span class="level-star">{{ upgradeStars(mate.upgrades) }}</span>}
+                  <span class="teammate-count"><b>{{ mate.runs | number }}</b> {{ mate.runs === 1 ? 'run' : 'runs' }}</span>
+                  <span class="teammate-meta">{{ mate.member.realm }} · {{ mate.member.spec }}</span>
+                  <span class="teammate-best" [title]="'Best key together: ' + mate.dungeonName + ' +' + mate.keyLevel">
+                    {{ mate.dungeon }} +{{ mate.keyLevel }}@if (mate.upgrades > 0) {<span class="level-star">{{ upgradeStars(mate.upgrades) }}</span>}
                   </span>
-                </span>
-              </a>
+                </div>
               <a class="teammate-compare" routerLink="/mythic-plus/compare" [queryParams]="compareParams(mate.member)"
                 [attr.aria-label]="'Compare with ' + mate.member.name" [title]="'Compare with ' + mate.member.name">
                 <svg viewBox="0 0 16 16" aria-hidden="true" focusable="false">

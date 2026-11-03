@@ -18,7 +18,7 @@ import {
   upgradeCutoffs
 } from './mythic-plus';
 import { guildLadderLink, guildOf } from './mythic-plus-guild';
-import { CLASS_NAMES } from '../../game/wow';
+import { CLASS_NAMES, RACE_NAMES } from '../../game/wow';
 import { specIconFor } from '../../game/wow-specs';
 import { formatClock, formatDuration } from '../../shared/time-format';
 import { mythicPlusProfileLink } from '../../core/page-links';
@@ -36,6 +36,7 @@ export interface MemberView extends MythicPlusMember {
   guildLink?: string[];
   classIcon: string;
   raceIcon: string;
+  raceName: string;
   specIcon?: string;
 }
 
@@ -114,6 +115,7 @@ export function toMemberView(member: MythicPlusMember): MemberView {
     guildLink: guild && guildLadderLink(guild),
     classIcon: getClassIconPath(member.class),
     raceIcon: getRaceIconPath(member.race, member.gender),
+    raceName: RACE_NAMES[member.race] ?? 'Unknown race',
     specIcon: specIconFor(member.class, member.spec)
   };
 }
