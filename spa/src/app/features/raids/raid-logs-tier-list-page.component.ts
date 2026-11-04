@@ -4,8 +4,8 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ParamMap, RouterLink } from '@angular/router';
 import { RaidDifficulty, RaidKillDetails, RaidLogsIndex } from './raid-logs.types';
 import { defaultDifficulty } from './raid-logs';
-import { SPEC_TOP_SCORES, scoresBySpecForKills } from './raid-scores';
-import { FEW_PLAYERS, TIER_LIST_ROLES, describeTiers, roleTierList } from './raid-tier-list';
+import { SPEC_TOP_SCORES } from './raid-scores';
+import { FEW_PLAYERS, describeTiers, tierLists } from './raid-tier-list';
 import { TierListImageInfo, renderTierListImage, saveImage, tierListImageName } from './raid-tier-list-image';
 import { RaidLogsDataService } from './raid-logs-data.service';
 import { RaidDifficultySwitchComponent } from './raid-difficulty-switch.component';
@@ -49,11 +49,7 @@ export class RaidLogsTierListPageComponent implements OnInit {
       ?? defaultDifficulty(difficulties);
   });
 
-  readonly tierLists = computed(() => {
-    const scores = scoresBySpecForKills(this.index()?.bosses ?? [], this.kills());
-    const difficulty = this.difficulty()?.slug ?? '';
-    return TIER_LIST_ROLES.map(({ role, title }) => roleTierList(scores, role, title, difficulty));
-  });
+  readonly tierLists = computed(() => tierLists(this.index()?.bosses ?? [], this.kills(), this.difficulty()?.slug ?? ''));
 
   readonly hasLogs = computed(() => this.tierLists().some(list => list.characterCount > 0));
 

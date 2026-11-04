@@ -1,8 +1,8 @@
 import { Role } from '../../game/wow';
 import { LEGION_SPECS } from '../../game/wow-specs';
 import { getSpecArtPath } from '../../game/classIconHelper';
-import { RaidSpec } from './raid-logs.types';
-import { SPEC_TOP_SCORES, SpecCharacterScore, specPerformance } from './raid-scores';
+import { RaidBoss, RaidKillDetails, RaidSpec } from './raid-logs.types';
+import { SPEC_TOP_SCORES, SpecCharacterScore, scoresBySpecForKills, specPerformance } from './raid-scores';
 
 export interface SpecTier {
   key: string;
@@ -126,4 +126,13 @@ export function roleTierList(
     rows: SPEC_TIERS.map(tier => ({ tier, specs: played.filter(spec => tierFor(spec.percentOfBest) === tier) })),
     unplayed: ranked.filter(({ spec }) => spec.count === 0).map(({ spec, className }) => `${spec.spec} ${className}`)
   };
+}
+
+export function tierLists(
+  bosses: readonly RaidBoss[],
+  kills: readonly RaidKillDetails[],
+  difficulty: string
+): RoleTierList[] {
+  const scores = scoresBySpecForKills(bosses, kills);
+  return TIER_LIST_ROLES.map(({ role, title }) => roleTierList(scores, role, title, difficulty));
 }

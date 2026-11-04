@@ -491,7 +491,8 @@ decision: ask first.** When a rule does change, change its tests first and see t
 ## Raid spec tier list
 
 - **Code:** `roleTierList`, `percentOfBest` and `tierFor` in
-  `spa/src/app/features/raids/raid-tier-list.ts`; the page is `/raid-logs/tier-list`.
+  `spa/src/app/features/raids/raid-tier-list.ts`, and `tierLists`, which builds the three lists
+  from one difficulty's kills; the page is `/raid-logs/tier-list`.
 - Three lists, DPS, Heal and Tank, each from the spec performance above on the picked
   difficulty: HPS for healers, DPS for tanks and damage dealers.
 - A spec's share is its performance against the best spec in its role, as a whole percent
@@ -503,6 +504,18 @@ decision: ask first.** When a rule does change, change its tests first and see t
   its tier, with its character count on the icon. A spec nobody played gets no tier and is
   listed by name under the role's list.
 - **Tests:** `raid-tier-list.spec.ts`.
+
+## Character list order
+
+- **Code:** `characterListRows` in `spa/src/app/features/raids/character-list.ts`; the page is
+  the hidden character list ([frontend.md](frontend.md#routing)).
+- Each character counts only the spec it's on now (`spec` in its file), placed on the Mythic
+  tier list above. The higher share of the best spec in its role comes first. On a tie the
+  spec listed earlier on the tier list comes first: DPS, then Heal, then Tank, and inside a role
+  the higher score. So every role's best spec, all at 100%, sorts by role.
+- A spec with no Mythic logs, or a spec the site doesn't know for that class, comes after
+  every placed character. Characters left over are in name order.
+- **Tests:** `character-list.spec.ts`.
 
 ## Talent Analytics
 

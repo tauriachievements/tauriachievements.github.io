@@ -17,7 +17,7 @@ folders:
 | `shared/motion/` | the motion directives and their helpers (`motion.ts`, `count-up.ts`, `decode-text.ts`) |
 | `game/` | the game's own tables and links: `wow.ts`, `wow-specs.ts`, `class-colors.ts`, `armory.ts`, the class and race icon helpers, and the asset paths in `classIconHelper.ts` (class icons, class crests, spec art) |
 | `players/` | the ladder's data, `Players.csv` and `RareAchievements.json`: the `Character` model, `DataSyncService`, `LadderLastUpdatedService`, the rare-achievement service, groups and summaries, the realm, faction and class filter options, and the player test fixture. The Ladder, Achievements and Realm Stats pages read it |
-| `features/<area>/` | one folder per menu section (`ladder`, `achievements`, `pvp`, `raids`, `mythic-plus`, `realm-stats`), plus `guild-analysis` (the unlisted guild pages) and `support`. A feature holds its pages, their pure logic and specs, its child components, its data service and its SCSS partial |
+| `features/<area>/` | one folder per menu section (`ladder`, `achievements`, `pvp`, `raids`, `mythic-plus`, `realm-stats`), plus `guild-analysis` (the unlisted guild pages) and `support`. A feature holds its pages, their pure logic and specs, its child components, its data service and its SCSS partial. The unlisted character list page lives in `raids`, since it places each character on the raid tier list |
 
 Imports point down, never across:
 
@@ -106,8 +106,12 @@ the page's store. The component keeps the URL, the filters and the event handler
   it lived under (`mythic-plus/compare` goes to `mythic-plus`). Guild pages are the exception: the GUID
   in the address is the guild's access key, so a new GUID replaces the old address with no
   redirect, and the owner sends the guild its new link.
-- Unlisted routes are unlisted on purpose: the guild pages (`<key>-<guid>`) and the Rare Items
-  page. Don't add them to the nav or link to them from public pages.
+- Unlisted routes are unlisted on purpose: the guild pages (`<key>-<guid>`), the Rare Items
+  page, and the owner's character list (`xyhop-char-list-<guid>` in `raids.routes.ts`, reading
+  `character-lists/xyhop.json`, [data-pipeline.md](data-pipeline.md#character-list-files)).
+  Don't add them to the nav or link to them from public pages. A route's path is a literal in
+  its eager route file, so the file never imports a page's logic (and `wow-specs.ts` with it)
+  into the initial bundle.
 - Pages hosting: GitHub Pages serves `src/404.html` for any unknown path. It redirects to
   `/?p=<path>`, and `index.html` restores the path before Angular starts. Paths that contain a
   dot aren't redirected, so route parameters can't hold dots.
@@ -526,7 +530,8 @@ width, so a table can scroll sideways on a tablet or a desktop too. The Arena ta
 and 3 up to 1031 px (the name gives way, the realm and guild move under it, cells keep 8 px a
 side) and fits all nine columns with 12 px a side from 1032 px, where the page grows to
 1000 px. Its entries in `e2e/visual-pages.ts` are marked `wide`, so the layout check covers
-those widths ([below](#phone-layout-check)).
+those widths ([below](#phone-layout-check)). The character list table does the same from 641 to
+899 px: the name gives way, cells keep 6 px a side and the headers wrap onto two lines.
 
 A few things scroll sideways by design: charts over time that open at the latest point
 (`appScrollToEnd`), a strip of cards you swipe through, and the Emerald Nightmare race

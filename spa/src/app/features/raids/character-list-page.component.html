@@ -1,0 +1,88 @@
+<main class="raid-page">
+  <header class="page-head">
+    <h1>Xyhop's characters</h1>
+    <p>@if (list(); as loaded) {{{ loaded.realm }} · }Each character on the spec it plays now, in the order of the <a routerLink="/raid-logs/tier-list" [queryParams]="{ difficulty: tierListDifficulty }">Emerald Nightmare Mythic tier list</a>.</p>
+  </header>
+
+  <section class="section" aria-label="Characters">
+    <app-load-state [loading]="isLoading()" [error]="loadError()" [skeleton]="['rows:12']" loadingText="Reading the characters..." (retry)="loadData()" />
+
+    @if (!isLoading() && !loadError()) {
+      <div class="table-scroll">
+        <table>
+          <thead>
+            <tr>
+              <th class="rank" scope="col">#</th>
+              <th scope="col">Character</th>
+              <th scope="col" class="phone-hidden">Tier</th>
+              <th scope="col" class="num phone-hidden">Level</th>
+              <th scope="col" class="num"><span class="phone-hidden">Item level</span><span class="phone-only">ilvl</span></th>
+              <th scope="col" class="num">Traits</th>
+              <th scope="col" class="num phone-hidden"><abbr title="Artifact Knowledge">AK</abbr></th>
+              <th scope="col" class="phone-hidden">Class campaign</th>
+              <th scope="col" class="phone-hidden">Order hall</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (row of rows(); track row.character.name; let position = $index) {
+              <tr>
+                <td class="rank">{{ position + 1 }}</td>
+                <td class="phone-fluid">
+                  <span class="character">
+                    <img [src]="icon(row)" alt="" loading="lazy" />
+                    <span class="character-text">
+                      <a class="character-name" [style.color]="classColor(row)" [href]="armoryUrl(row)" target="_blank" rel="noopener">{{ row.character.name }}</a>
+                      <span class="character-sub">{{ row.character.spec }} {{ className(row) }}</span>
+                    </span>
+                  </span>
+                </td>
+                <td class="phone-hidden"><ng-container *ngTemplateOutlet="tierCell; context: { $implicit: row }" /></td>
+                <td class="num phone-hidden" [class.low]="row.character.level < maxLevel">{{ row.character.level }}</td>
+                <td class="num strong">@if (row.character.itemLevel !== null) {{{ row.character.itemLevel | number:'1.0-1' }}} @else {–}</td>
+                <td class="num">{{ row.character.traits }}</td>
+                <td class="num phone-hidden">{{ row.character.artifactKnowledge }}</td>
+                <td class="phone-hidden"><ng-container *ngTemplateOutlet="campaignCell; context: { $implicit: row }" /></td>
+                <td class="phone-hidden"><ng-container *ngTemplateOutlet="orderHallCell; context: { $implicit: row }" /></td>
+              </tr>
+              <tr class="phone-detail-row">
+                <td colspan="9">
+                  <span class="details">
+                    <ng-container *ngTemplateOutlet="tierCell; context: { $implicit: row }" />
+                    <span [class.low]="row.character.level < maxLevel"><span class="detail-label">Level</span>{{ row.character.level }}</span>
+                    <span><span class="detail-label">AK</span>{{ row.character.artifactKnowledge }}</span>
+                    <ng-container *ngTemplateOutlet="campaignCell; context: { $implicit: row, labelled: true }" />
+                    <ng-container *ngTemplateOutlet="orderHallCell; context: { $implicit: row, labelled: true }" />
+                  </span>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+
+      <p class="notes">
+        <strong>Tier</strong>: the share of the best spec's score in its role on Mythic.
+        <strong>Traits</strong>: the artifact with the most traits.
+        <strong>AK</strong>: Artifact Knowledge.
+        <strong>Class campaign</strong>: finishing it opens the third relic slot.
+        <strong>Order hall</strong>: Class Hall upgrades researched.
+      </p>
+    }
+  </section>
+</main>
+
+<ng-template #tierCell let-row>
+  @if (row.tier; as placed) {
+    <span class="tier"><span class="tier-letter" [style.background]="placed.tier.color">{{ placed.tier.label }}</span><span class="tier-share">{{ placed.percentOfBest }}%</span></span>
+  } @else {
+    <span class="muted">No Mythic logs</span>
+  }
+</ng-template>
+
+<ng-template #campaignCell let-row let-labelled="labelled">
+  <span>@if (labelled) {<span class="detail-label">Campaign</span>}@if (row.character.campaign) {<span class="done">Done</span>} @else {<span class="muted">Not yet</span>}</span>
+</ng-template>
+
+<ng-template #orderHallCell let-row let-labelled="labelled">
+  <span class="order-hall">@if (labelled) {<span class="detail-label">Order hall</span>}<span class="hall-bar" aria-hidden="true">@for (step of orderHallSteps; track step) {<i [class.on]="step < row.character.orderHall"></i>}</span><span [class.done]="row.character.orderHall >= orderHallUpgrades">{{ row.character.orderHall }}/{{ orderHallUpgrades }}</span></span>
+</ng-template>

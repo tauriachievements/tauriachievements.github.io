@@ -63,6 +63,11 @@ export const RAIDS_ROUTES: Routes = [
       .then(module => module.RaidLogsCharacterPageComponent)
   },
   {
+    path: 'xyhop-char-list-16f962fb-ee4b-40c9-8406-010c32293634',
+    loadComponent: () => import('./character-list-page.component')
+      .then(module => module.CharacterListPageComponent)
+  },
+  {
     path: 'emerald-nightmare',
     loadComponent: () => import('./emerald-nightmare-page.component')
       .then(module => module.EmeraldNightmarePageComponent)

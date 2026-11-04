@@ -42,6 +42,7 @@ export const VISUAL_PAGES: readonly VisualPage[] = [
   { name: 'raid-logs-guild', path: '/raid-logs/guild/evermoon/Miracle?difficulty=mythic' },
   { name: 'raid-logs-character', path: '/raid-logs/character/evermoon/Gankuh?difficulty=mythic&metric=dps' },
   { name: 'raid-logs-invalid', path: '/raid-logs/invalid' },
+  { name: 'character-list', path: '/xyhop-char-list-16f962fb-ee4b-40c9-8406-010c32293634', wide: true },
   { name: 'emerald-nightmare', path: '/emerald-nightmare' },
   { name: 'raid-history', path: '/raid-history' },
   { name: 'mythic-plus', path: '/mythic-plus' },

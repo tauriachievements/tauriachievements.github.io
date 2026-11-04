@@ -2,7 +2,8 @@ import { describe, expect, it } from 'vitest';
 import { specById } from '../../game/wow-specs';
 import { RaidCharacter, RaidSpec } from './raid-logs.types';
 import { SpecCharacterScore } from './raid-scores';
-import { FEW_PLAYERS, SPEC_TIERS, TIER_LIST_ROLES, describeTiers, percentOfBest, roleTierList, tierFor } from './raid-tier-list';
+import { index, kills } from './raid-logs.fixture';
+import { FEW_PLAYERS, SPEC_TIERS, TIER_LIST_ROLES, describeTiers, percentOfBest, roleTierList, tierFor, tierLists } from './raid-tier-list';
 
 function raidSpec(id: number): RaidSpec {
   const spec = specById(id)!;
@@ -108,5 +109,15 @@ describe('roleTierList', () => {
     expect(empty.rows.every(row => row.specs.length === 0)).toBe(true);
     expect(empty.characterCount).toBe(0);
     expect(empty.unplayed).toHaveLength(24);
+  });
+});
+
+describe('tierLists', () => {
+  it("builds the DPS, Heal and Tank lists from one difficulty's kills", () => {
+    const lists = tierLists(index.bosses, kills, 'mythic');
+
+    expect(lists.map(list => list.role)).toEqual(['dps', 'healer', 'tank']);
+    expect(lists.map(list => list.rows.flatMap(row => row.specs.map(spec => spec.id)).sort())).toEqual([[63, 64], [65], [66]]);
+    expect(lists[0].rows.flatMap(row => row.specs)[0].rankingsQuery['difficulty']).toBe('mythic');
   });
 });
