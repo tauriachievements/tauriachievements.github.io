@@ -486,6 +486,9 @@ Phones come first (see the product rules in [AGENTS.md](../AGENTS.md)).
   - A `visibility: hidden` tooltip still widens its scroll area. Use `display: none` on
     phones.
   - A grid column that should shrink needs `minmax(0, 1fr)`, not `1fr`.
+  - A grid with no `fr` column left (an optional item missing, like a teammate's guild)
+    stretches its `auto` columns to fill the spare width, pushing icons apart. Give it
+    `justify-content: start`.
   - A scrolling container becomes the sticky reference of what's inside it: a table header
     that sticks to the page stops sticking once its table sits in an `overflow-x: auto` box.
     The guild page wraps its roster in one only when the table is wider than its column
