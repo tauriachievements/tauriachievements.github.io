@@ -71,14 +71,22 @@ public sealed class GuildMemberExportService(
 
     private const int UnderlightAnglerId = 133755;
     private const int ExportedLevel = 110;
+    private const string ListedMemberRankName = "Member";
 
     private readonly string _outputDirectory = Path.GetFullPath(outputDirectory);
     private readonly ITauriApiClient _apiClient = apiClient;
     private readonly TauriShootItemClient _itemClient = itemClient;
 
+    public Task<GuildMemberExportResult> ExportAsync(
+        string realmName,
+        string guildName,
+        CancellationToken cancellationToken
+    ) => ExportAsync(realmName, guildName, null, cancellationToken);
+
     public async Task<GuildMemberExportResult> ExportAsync(
         string realmName,
         string guildName,
+        IReadOnlyList<string>? memberNames,
         CancellationToken cancellationToken
     )
     {
@@ -86,65 +94,22 @@ public sealed class GuildMemberExportService(
         ArgumentException.ThrowIfNullOrWhiteSpace(guildName);
 
         var apiRealmName = ResolveApiRealmName(realmName);
-        var result = await _apiClient.FetchResponseElementAsync(
-            "guild-info",
-            new { r = apiRealmName, gn = guildName },
-            $"guild '{guildName}' on {apiRealmName}",
-            cancellationToken
-        );
-
-        if (!result.Succeeded || result.ResponseElement is not { } response)
-        {
-            throw new InvalidOperationException(
-                result.FailureMessage ?? $"Could not load guild '{guildName}' on {realmName}."
-            );
-        }
-
-        if (
-            response.ValueKind != JsonValueKind.Object
-            || !response.TryGetProperty("guildList", out var guildList)
-            || guildList.ValueKind != JsonValueKind.Object
-        )
-        {
-            throw new InvalidDataException("The API response did not contain a guildList object.");
-        }
-
-        GuildInfoInner guildInfo;
-        try
-        {
-            guildInfo =
-                response.Deserialize<GuildInfoInner>()
-                ?? throw new InvalidDataException("The guild response was empty.");
-        }
-        catch (JsonException ex)
-        {
-            throw new InvalidDataException("The guild response could not be parsed.", ex);
-        }
-
-        var guildMembers = guildInfo
-            .guildList.Values.Where(member => !string.IsNullOrWhiteSpace(member.name))
-            .GroupBy(member => member.name.Trim(), StringComparer.OrdinalIgnoreCase)
-            .Select(group => group.First())
-            .OrderBy(member => member.name, StringComparer.OrdinalIgnoreCase)
-            .ToList();
-        var faction = ReadInt(response, "faction") switch
-        {
-            0 => "Alliance",
-            1 => "Horde",
-            _ => "Unknown",
-        };
-        var playerNames = guildMembers.Select(member => member.name.Trim()).ToList();
+        var roster = memberNames is null
+            ? await LoadGuildRosterAsync(apiRealmName, realmName, guildName, cancellationToken)
+            : ListedRoster(memberNames);
+        var guildMembers = roster.Members;
+        var playerNames = guildMembers.Select(member => member.Name).ToList();
         var guildRankNames = guildMembers.ToDictionary(
-            member => member.name.Trim(),
-            member => member.rank_name?.Trim() ?? string.Empty,
+            member => member.Name,
+            member => member.RankName,
             StringComparer.OrdinalIgnoreCase
         );
         var guildRanks = guildMembers
-            .GroupBy(member => member.rank)
+            .GroupBy(member => member.Rank)
             .Select(group => new GuildRankExport(
                 group.Key,
                 group
-                    .Select(member => member.rank_name?.Trim())
+                    .Select(member => member.RankName)
                     .FirstOrDefault(name => !string.IsNullOrWhiteSpace(name))
                     ?? $"Rank {group.Key}"
             ))
@@ -152,8 +117,8 @@ public sealed class GuildMemberExportService(
             .ThenBy(rank => rank.Name, StringComparer.OrdinalIgnoreCase)
             .ToList();
         var guildRankOrders = guildMembers.ToDictionary(
-            member => member.name.Trim(),
-            member => member.rank,
+            member => member.Name,
+            member => member.Rank,
             StringComparer.OrdinalIgnoreCase
         );
 
@@ -207,7 +172,7 @@ public sealed class GuildMemberExportService(
             outputPath,
             realmName.Trim(),
             guildName.Trim(),
-            faction,
+            roster.Faction ?? MostCommonFaction(characterResults.Values),
             guildRanks,
             sortedRows,
             cancellationToken
@@ -215,6 +180,91 @@ public sealed class GuildMemberExportService(
 
         return new GuildMemberExportResult(playerNames.Count, characterResults.Count, outputPath);
     }
+
+    private async Task<GuildRoster> LoadGuildRosterAsync(
+        string apiRealmName,
+        string realmName,
+        string guildName,
+        CancellationToken cancellationToken
+    )
+    {
+        var result = await _apiClient.FetchResponseElementAsync(
+            "guild-info",
+            new { r = apiRealmName, gn = guildName },
+            $"guild '{guildName}' on {apiRealmName}",
+            cancellationToken
+        );
+
+        if (!result.Succeeded || result.ResponseElement is not { } response)
+        {
+            throw new InvalidOperationException(
+                result.FailureMessage ?? $"Could not load guild '{guildName}' on {realmName}."
+            );
+        }
+
+        if (
+            response.ValueKind != JsonValueKind.Object
+            || !response.TryGetProperty("guildList", out var guildList)
+            || guildList.ValueKind != JsonValueKind.Object
+        )
+        {
+            throw new InvalidDataException("The API response did not contain a guildList object.");
+        }
+
+        GuildInfoInner guildInfo;
+        try
+        {
+            guildInfo =
+                response.Deserialize<GuildInfoInner>()
+                ?? throw new InvalidDataException("The guild response was empty.");
+        }
+        catch (JsonException ex)
+        {
+            throw new InvalidDataException("The guild response could not be parsed.", ex);
+        }
+
+        var members = guildInfo
+            .guildList.Values.Where(member => !string.IsNullOrWhiteSpace(member.name))
+            .GroupBy(member => member.name.Trim(), StringComparer.OrdinalIgnoreCase)
+            .Select(group => group.First())
+            .OrderBy(member => member.name, StringComparer.OrdinalIgnoreCase)
+            .Select(member => new RosterMember(
+                member.name.Trim(),
+                member.rank,
+                member.rank_name?.Trim() ?? string.Empty
+            ))
+            .ToList();
+        var faction = ReadInt(response, "faction") switch
+        {
+            0 => "Alliance",
+            1 => "Horde",
+            _ => "Unknown",
+        };
+        return new GuildRoster(members, faction);
+    }
+
+    private static GuildRoster ListedRoster(IReadOnlyList<string> memberNames) =>
+        new(
+            memberNames
+                .Select(name => name.Trim())
+                .Where(name => name.Length > 0)
+                .DistinctBy(name => name, StringComparer.OrdinalIgnoreCase)
+                .OrderBy(name => name, StringComparer.OrdinalIgnoreCase)
+                .Select(name => new RosterMember(name, 0, ListedMemberRankName))
+                .ToList(),
+            null
+        );
+
+    private static string MostCommonFaction(IEnumerable<CharacterScanResult> characters) =>
+        characters
+            .Select(character => character.Details.Faction)
+            .Where(faction => faction is "Alliance" or "Horde")
+            .GroupBy(faction => faction)
+            .OrderByDescending(group => group.Count())
+            .ThenBy(group => group.Key, StringComparer.Ordinal)
+            .Select(group => group.Key)
+            .FirstOrDefault()
+        ?? "Unknown";
 
     private async Task<ArtifactResult> LoadArtifactDetailsAsync(
         string realmName,
@@ -417,7 +467,8 @@ public sealed class GuildMemberExportService(
             ReadLong(response, "played_time"),
             ReadInt(response, "pts"),
             averageItemLevel,
-            legendaries
+            legendaries,
+            ReadString(response, "faction_string_class")
         );
     }
 
@@ -594,8 +645,13 @@ public sealed class GuildMemberExportService(
         long PlayedTime,
         int AchievementPoints,
         decimal? ItemLevel,
-        IReadOnlyList<LegendaryItem> Legendaries
+        IReadOnlyList<LegendaryItem> Legendaries,
+        string Faction
     );
+
+    private sealed record RosterMember(string Name, int Rank, string RankName);
+
+    private sealed record GuildRoster(IReadOnlyList<RosterMember> Members, string? Faction);
 
     private readonly record struct CharacterScanResult(
         ArtifactResult Artifact,

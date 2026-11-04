@@ -56,7 +56,9 @@ steps in order. The step names are the values `-From` accepts.
 8. `GuildCharacters`: GuildCharacterExporter
 9. `Ladder`: AchievementLadder
 10. `MissingPlayers`: MissingPlayerFinder
-11. `GuildAnalysis`: GuildAnalysisExporter, once for each guild in `$guildAnalysisGuilds`
+11. `GuildAnalysis`: GuildAnalysisExporter, once for each guild in `$guildAnalysisGuilds` (an
+    entry with `Members` scans those characters as the guild,
+    [guides/howto-add-guild-page.md](guides/howto-add-guild-page.md#a-guild-of-named-characters))
 12. `Publish`: one `sync data` commit of the paths in `$publishPaths`, then a push
 
 So a night's run is one commit and one Pages deploy, the guild pages included.

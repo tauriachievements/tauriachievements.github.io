@@ -43,3 +43,18 @@ architecture discussion.
 
 Don't add the page to `nav-sections.ts`. Give the owner the URL; they share it with the
 guild.
+
+## A guild of named characters
+
+A page can also show characters that aren't one guild in the game, such as the owner's own
+characters (the Xyhop page). Follow the same steps, with these differences:
+
+- In `$guildAnalysisGuilds`, give the entry a `Members` list:
+  `@{ Realm = 'Evermoon'; Name = 'Xyhop'; Members = @('Xyhop', 'Xyhopwarrior', …) }`. The
+  daily update passes it as `--members Xyhop,Xyhopwarrior,…`.
+- Scan it by hand the same way, adding `--members` with the names joined by commas.
+- With `--members`, GuildAnalysisExporter doesn't ask `guild-info`. The named characters are
+  the roster, all at one rank, "Member"; the guild's faction is the one most of them have
+  (`faction_string_class` on their character sheets). `Name` only names the page and its file.
+- Everything else is as for any guild: only level 110 characters are listed, and a name the
+  realm doesn't know is left out of that night's scan.
