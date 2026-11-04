@@ -51,7 +51,6 @@ export const VISUAL_PAGES: readonly VisualPage[] = [
   { name: 'mythic-plus-stats', path: '/mythic-plus/stats' },
   { name: 'mythic-plus-stats-week', path: '/mythic-plus/stats?period=week' },
   { name: 'mythic-plus-records', path: '/mythic-plus/records' },
-  { name: 'mythic-plus-compare', path: '/mythic-plus/compare?players=Pashao-Evermoon,Exkeito-Evermoon' },
   { name: 'mythic-plus-character', path: '/mythic-plus/character/evermoon/Pashao' },
   {
     name: 'mythic-plus-guild',
@@ -75,12 +74,12 @@ export const VISUAL_PAGES: readonly VisualPage[] = [
   { name: 'guild-insidious', path: '/insidious-9ef2392c-af98-45b4-94b2-e40495d1c489' },
   { name: 'redirect-old-arena', path: '/50-games-played-arenas' },
   { name: 'redirect-old-raid-history', path: '/guild-realm-firsts' },
+  { name: 'redirect-old-mythic-plus-compare', path: '/mythic-plus/compare?players=Pashao-Evermoon,Exkeito-Evermoon' },
   { name: 'state-menu-drawer', path: '/', clicks: ['.site-menu-toggle'], only: 'phone' },
   { name: 'state-menu-section', path: '/', clicks: ['.site-nav-trigger:has-text("Mythic+")'], only: 'desktop' },
   { name: 'state-ladder-row-details', path: '/', clicks: ['.row-toggle >> nth=0'], only: 'phone' },
   { name: 'state-ladder-search', path: '/?search=Lara' },
   { name: 'state-compare-two', path: '/compare?a=Tauri:Larahh&b=Tauri:Darkpaladino' },
-  { name: 'state-mythic-plus-compare-mode', path: '/mythic-plus?compare=Pashao-Evermoon,Exkeito-Evermoon' },
   { name: 'state-mythic-plus-dropdown', path: '/mythic-plus?view=players', clicks: ['#mythicPlusRealmTrigger'], only: 'desktop' },
   { name: 'state-mythic-plus-role-menu', path: '/mythic-plus?view=players&role=melee', clicks: ['#mythicPlusRoleTrigger'] },
   { name: 'state-mythic-plus-chart-role', path: '/mythic-plus?chartRole=ranged', only: 'desktop' },
@@ -175,7 +174,6 @@ export const WIDE_WIDTHS: readonly number[] = [641, 768, 1280];
 export const SIDEWAYS_BY_DESIGN: ReadonlyArray<{ readonly selector: string; readonly reason: string }> = [
   { selector: 'app-rated-battleground-page .match-tabs', reason: 'a swipe strip of match cards; the next card peeks in' },
   { selector: 'app-rated-battleground-page .activity-chart', reason: 'a day-by-day season chart that opens on the latest day' },
-  { selector: 'app-mythic-plus-compare-page .chart-scroll', reason: 'a week-by-week score chart that opens on the latest week' },
   { selector: 'app-mythic-plus-profile-page .chart-scroll', reason: 'a week-by-week score chart that opens on the latest week' },
   { selector: 'app-mythic-plus-stats-page .chart-scroll', reason: 'a day-by-day runs chart that opens on the latest day' },
   { selector: 'app-emerald-nightmare-page .timeline-scroll', reason: 'the race timeline, 18:00 to 22:00, scrolled by hand or played back' }

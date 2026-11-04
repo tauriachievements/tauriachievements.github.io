@@ -63,11 +63,7 @@ $gold: #f7b500;
 @keyframes mp-details-content-in { from { opacity: 0; transform: translateY(-6px); } }
 @keyframes mp-fade-out { to { opacity: 0; } }
 
-@keyframes mp-tray-in { from { opacity: 0; translate: 0 calc(100% + 24px); } }
-@keyframes mp-tray-out { to { opacity: 0; translate: 0 calc(100% + 24px); } }
 @keyframes mp-chip-in { from { opacity: 0; scale: .8; } }
-@keyframes mp-chip-out { to { opacity: 0; scale: .8; } }
-@keyframes mp-count-bump { from { color: $gold; scale: 1.5; } }
 
 @keyframes mp-drawer-in { from { translate: -100% 0; } }
 
@@ -116,8 +112,6 @@ $gold: #f7b500;
 
 @keyframes mp-rise { from { opacity: 0; translate: 0 8px; } }
 @keyframes mp-dot-pop { from { opacity: 0; scale: 0; } }
-@keyframes mp-panel-in { from { opacity: 0; translate: 0 -6px; } }
-@keyframes mp-panel-out { to { opacity: 0; translate: 0 -6px; } }
 
 @keyframes mp-score-land {
   0% { text-shadow: 0 0 0 transparent; }

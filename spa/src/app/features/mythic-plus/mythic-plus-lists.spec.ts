@@ -187,17 +187,6 @@ describe('MythicPlusPlayersListComponent', () => {
     }
   });
 
-  it('keeps the guild plain text while picking players to compare', () => {
-    const fixture = TestBed.createComponent(MythicPlusPlayersListComponent);
-    fixture.componentRef.setInput('rows', [playerRow('Alpha', 'Skill Issue')]);
-    fixture.componentRef.setInput('dungeons', [dungeon, otherDungeon]);
-    fixture.componentRef.setInput('pickMode', true);
-    fixture.detectChanges();
-
-    expect(fixture.nativeElement.querySelector('a.guild-link')).toBeNull();
-    expect(fixture.nativeElement.querySelector('td.col-guild').textContent.trim()).toBe('Skill Issue');
-  });
-
   it('shows the overall rank instead of the guild on a guild ladder', () => {
     for (const cards of [true, false]) {
       const fixture = TestBed.createComponent(MythicPlusPlayersListComponent);

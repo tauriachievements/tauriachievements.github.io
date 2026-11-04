@@ -52,7 +52,6 @@ import {
   toCharacterLink
 } from './mythic-plus-profile';
 import { MythicPlusCharacterSearchComponent } from './mythic-plus-character-search.component';
-import { compareParam } from './mythic-plus-compare';
 import { guildLadderLink, guildOf, inGuild } from './mythic-plus-guild';
 import { MythicPlusRunsListComponent } from './mythic-plus-runs-list.component';
 import {
@@ -81,7 +80,6 @@ import { mythicPlusProfileLink } from '../../core/page-links';
 
 const TEAMMATE_COUNT = 8;
 const SEARCH_RESULT_COUNT = 20;
-const COMPARE_RESULT_COUNT = 8;
 
 interface RankTile {
   scope: string;
@@ -400,28 +398,8 @@ export class MythicPlusProfilePageComponent implements OnInit {
   readonly searchResults = computed(() =>
     searchCharacters(this.ranking(), this.searchQuery(), { limit: SEARCH_RESULT_COUNT }));
 
-  readonly compareOpen = linkedSignal<string | undefined, boolean>({ source: this.key, computation: () => false });
-  readonly compareQuery = linkedSignal<string | undefined, string>({ source: this.key, computation: () => '' });
-  readonly compareResults = computed(() => {
-    const key = this.key();
-    return searchCharacters(this.ranking(), this.compareQuery(), { limit: COMPARE_RESULT_COUNT, exclude: key ? [key] : [] });
-  });
-  readonly comparePickParams = computed<Params>(() => {
-    const member = this.player()?.member;
-    return member ? { view: 'players', compare: characterParam(member) } : {};
-  });
-
-  compareParams(other: { name: string; realm: string }): Params {
-    const member = this.player()?.member;
-    return { players: compareParam(member ? [member, other] : [other]) };
-  }
-
   openProfile(member: MemberView): void {
     this.router.navigate(member.profileLink);
-  }
-
-  onCompareSearch(event: Event): void {
-    this.compareQuery.set((event.target as HTMLInputElement).value);
   }
 
   constructor() {

@@ -101,10 +101,6 @@ describe('searchCharacters', () => {
     expect(names(searchCharacters(ranking, 'x', { limit: 3 }))).toEqual(['Xyhop', 'Xyra', 'Maxyl']);
   });
 
-  it('leaves out the excluded characters', () => {
-    expect(names(searchCharacters(ranking, 'xy', { limit: 8, exclude: ['Xyhop|Evermoon'] }))).toEqual(['Xyra', 'Maxyl']);
-  });
-
   it('ignores case, accents and the spaces around the query', () => {
     expect(names(searchCharacters(ranking, ' SOSA ', { limit: 8 }))).toEqual(['Sósa']);
     expect(names(searchCharacters(ranking, 'sós', { limit: 8 }))).toEqual(['Sósa']);

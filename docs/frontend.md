@@ -102,7 +102,8 @@ the page's store. The component keeps the URL, the filters and the event handler
   The first navigation is the exception (`skipInitialTransition`): it replaces the
   [boot skeleton](#the-boot-skeleton), and a transition there would fade through an empty page.
 - Shared URLs never break. A renamed page keeps a `redirectTo` from its old path (as with
-  `guild-realm-firsts` and `50-games-played-arenas`). Guild pages are the exception: the GUID
+  `guild-realm-firsts` and `50-games-played-arenas`), and a removed page redirects to the page
+  it lived under (`mythic-plus/compare` goes to `mythic-plus`). Guild pages are the exception: the GUID
   in the address is the guild's access key, so a new GUID replaces the old address with no
   redirect, and the owner sends the guild its new link.
 - Unlisted routes are unlisted on purpose: the guild pages (`<key>-<guid>`) and the Rare Items
@@ -158,11 +159,10 @@ The query parameters each page reads:
 | Rare Items (unlisted) | `class`, `season` (a season key from `elite-pvp-items.json`: `malevolent`), `item` (a rare item's id) or `weapons` (a season key), `realm` (`evermoon`, `tauri`, `wod`), `page`. `item` and `weapons` replace `season`; a season the class has no pieces in, or an unknown item, is dropped |
 | `/arena` | `bracket`: `2v2` (default) or `3v3`; `games`: the minimum rated games for an active player, `50` (default), `45`, `40`, `35` or `30` ([scoring.md](scoring.md#arena-titles)); `class` (a class id); `spec` (a spec name, only with `class`); `page` |
 | `/rated-battleground` | `view`: `players` (default) or `matches`; `page` (the players view) |
-| `/mythic-plus` | `view` (`runs`, `players`), `sort` (`best`, `latest`), `period` (`season`, `week`), `dungeon`, `realm`, `class`, `spec`, `role` (the players view's Roles: `tank`, `healer`, `dps`, `melee`, `ranged`), `chartRole` (the spec chart's role), `page`, `character` (`Name-Realm`: the runs view shows only theirs, the players view picks out their row), `compare` (`Name-Realm,…`: opens compare mode with those picks) |
+| `/mythic-plus` | `view` (`runs`, `players`), `sort` (`best`, `latest`), `period` (`season`, `week`), `dungeon`, `realm`, `class`, `spec`, `role` (the players view's Roles: `tank`, `healer`, `dps`, `melee`, `ranged`), `chartRole` (the spec chart's role), `page`, `character` (`Name-Realm`: the runs view shows only theirs, the players view picks out their row) |
 | `/stats` | `realm` (`evermoon`, `tauri`, `wod`; all realms by default), `level` (`100`, `90`, `80`, `all`; 110 by default) |
 | `/mythic-plus/stats` | `period` |
 | `/mythic-plus/records` | `dungeon` (the server firsts' filter) |
-| `/mythic-plus/compare` | `players`: `Name-Realm,…`, at most four |
 | `/mythic-plus/character/:realm/:name` | `spec` |
 | `/mythic-plus/guild/:realm/:guild` | `period`, `dungeon`, `class`, `spec`, `role`, `character` |
 | a guild page (unlisted) | `role` |
@@ -178,11 +178,9 @@ Every box that suggests names as you type orders them with `searchByName`
 (`shared/search-suggestions.ts`): names that start with the query come first, then names that
 contain it, each group in list order, up to a limit.
 
-- On the Mythic+ pages, `searchCharacters` (`mythic-plus-profile.ts`) wraps it and leaves out
-  the characters it's told to exclude. It serves the character page's header search (8
-  suggestions that open the character's page), its Compare box (8, without the character
-  shown), its search on the "No Mythic+ runs this season" page (20), and the compare page's
-  "Add a player…" (8, without the characters picked).
+- On the Mythic+ pages, `searchCharacters` (`mythic-plus-profile.ts`) wraps it. It serves the
+  character page's header search (8 suggestions that open the character's page) and its
+  search on the "No Mythic+ runs this season" page (20).
 - On the Raids Guilds page, `searchGuilds` (`raid-progression.ts`) searches the list as it's
   shown: the difficulty, the period, Guilds or All groups, and the faction and realm filters.
   It leaves the pickup groups out (they have no name) and keeps each guild's rank in that list.
@@ -207,7 +205,7 @@ instead.
   `ObservableCache` (`core/observable-cache.ts`), which forgets a failed load so a retry
   fetches again.
 - `MythicPlusDataService` loads the Mythic+ files: `season()` (the index and every dungeon's
-  runs) for the stats, records, compare, profile and guild pages; `index()` and
+  runs) for the stats, records, profile and guild pages; `index()` and
   `dungeonRuns()` for the leaderboard (through `MythicPlusPageStore`), which loads only the
   dungeons its scope shows. Its errors go through `mythicPlusLoadError()` for the message.
   `hasScanChanges()` (`mythic-plus.ts`) says whether an index carries the previous scan's
@@ -365,7 +363,7 @@ decision (ask first).
 | `app-back-to-top-button` | the floating back-to-top button |
 | `app-pager` (`pager.component`) | every list split into pages: « First, ‹ Prev, Next ›, Last ». `<app-pager [page]="currentPage()" [pages]="pages()" [count]="(total() \| number) + ' characters'" [scrollTarget]="listSection" (pageChange)="goToPage($event)" />`. With `count`, it shows "Page 3 of 41 · 2,034 characters" after the buttons, and anything inside it (the M+ dungeon timer) sits there too. It emits only a page in range that differs from the current one, and the page writes it to `?page=`. Given a `scrollTarget`, the pager under a list scrolls back to the list's top after a change; give that element a `scroll-margin-top` that clears the header. `pageCount` and `pageSlice` (`pager.ts`) do the page maths. The Mythic+ leaderboard, the Raids Rankings, Guilds and boss pages, a Raids guild page's kill history, Arena, Rated Battlegrounds and Rare Items use it. On Arena a page that opens inside a title's players repeats that title's heading (`arenaGroupHeadings`). The kill history's pages hold whole raid weeks, so they differ in length: `weekPages` (`raid-kill-weeks.ts`) cuts them, not `pageSlice` ([scoring.md](scoring.md#raid-guild-progression-and-kill-speed)). A list that grows in place ("Show 50 more") isn't a pager |
 | `app-search-suggestions` (`search-suggestions.component`) | a search box that suggests as you type and opens the page you pick: the Mythic+ character page's header search (inside `app-mythic-plus-character-search`) and the Raids Guilds page's guild search. `<app-search-suggestions label="Find a guild" listLabel="Matching guilds" noMatchText="No guild by that name in this list." [suggestions]="guildSuggestions()" [ready]="pickupsReady()" [(query)]="guildQuery" />`. The page works out the suggestions from `query`, each a `SearchSuggestion` (`search-suggestions.ts`): its link and query parameters, then the row's cells, which are an `icon` image or a `mark` colour square, the `name` (in `color`), a grey `detail`, an optional `#rank`, and the `value` (in `valueColor`). Enter opens the top suggestion, Escape empties the box, and so does a pick. It shows `noMatchText` only while `ready` is true, so a list still loading never reads as "no match". The page sizes its host: 300 px in the Mythic+ header; on Guilds, whatever the toolbar row leaves after This week (about 170 px at full page width), or the next line when less than 160 px is left; the full row on phones. The list is as wide as the box, or as wide as `--search-suggestions-width` when that's wider, and then grows leftward from the box's right edge: Guilds sets 360 px above the phone breakpoint, so long guild names fit, and 0 on phones |
-| `appBottomBar` (`core/bottom-bar.directive.ts`) | a bar fixed to the bottom of the screen, such as the Mythic+ compare tray. It publishes its height as `--bottom-bar-height`, so on phones the page end and the back-to-top button stay above it ([below](#the-app-shell-and-the-header-height-contract)) |
+| `appBottomBar` (`core/bottom-bar.directive.ts`) | a bar fixed to the bottom of the screen. It publishes its height as `--bottom-bar-height`, so on phones the page end and the back-to-top button stay above it ([below](#the-app-shell-and-the-header-height-contract)) |
 | `app-load-state` | a page's loading skeleton and its error box with "Try again": `<app-load-state [loading]="isLoading()" [error]="loadError()" [skeleton]="['tiles:5', 'rows:10']" loadingText="Reading the logs..." (retry)="loadData()" />`. It renders nothing once loaded; content inside it shows in the error box (the character page's difficulty switch). Without `[skeleton]` it shows a spinner. The Mythic+ and Raids pages use it; the older pages and the themed Arena, Emerald Nightmare and Rare Items pages keep their own error boxes and use `app-skeleton` directly |
 | `app-skeleton` | the shape of a page while its data loads: `<app-skeleton [blocks]="['rows:12']" label="Loading guild rankings..." />`, `bare` inside a card that is already on screen ([Loading skeletons](#loading-skeletons)) |
 | `class-colors.ts` | the one class-colour table: `getClassColor()` in code, `var(--class-<id>)` in SCSS |
@@ -441,8 +439,8 @@ decision (ask first).
   `--bottom-bar-height`, so the last row clears the back-to-top button and any bottom bar.
 - A bar fixed to the bottom of the screen takes `appBottomBar`. It sets `--bottom-bar-height` on
   the document to its height plus the gap below it, and removes it when the bar goes. On phones
-  the back-to-top button sits that much higher. The Mythic+ compare tray is the one bottom bar;
-  on desktop that page keeps its own 110 px padding.
+  the back-to-top button sits that much higher. No page has a bottom bar at the moment; on
+  desktop a page with one adds its own bottom padding.
 - `.update-bar` has a `view-transition-name`, which makes it a backdrop root: a
   `backdrop-filter` inside the header never blurs the page. Use opaque backgrounds there.
 - At ≤960 px the sections give way to a menu button that opens a `<dialog>` drawer. At ≤640 px

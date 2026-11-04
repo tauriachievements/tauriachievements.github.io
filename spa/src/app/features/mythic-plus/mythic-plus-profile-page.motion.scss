@@ -53,9 +53,6 @@
   .profile-score-value { animation: mp-score-land 1.1s var(--ease-out) 1000ms backwards; }
   .profile-actions { animation: mp-rise 520ms var(--ease-out) 260ms backwards; }
   .action-link { transition: border-color var(--dur-fast) ease, color var(--dur-fast) ease; }
-
-  .compare-with { animation: mp-panel-in 320ms var(--ease-out); }
-  .compare-with.panel-leaving { animation: mp-panel-out var(--dur-fast) ease-in forwards; }
 }
 
 .rank-tile { @include spotlight-card; }

@@ -206,9 +206,6 @@ decision: ask first.** When a rule does change, change its tests first and see t
   only for the gaining rows the page shows, in one pass over the season's runs.
   The exporter stamps a scan when it has finished reading, so a key finished during the previous
   scan, after its dungeon was read, raises the score without being marked.
-- **Compare page** (`/mythic-plus/compare`): in each row the highest value is best (the lowest
-  for a rank); ties are all best, and 0 or a missing value never is. Up to 4 characters
-  (`COMPARE_LIMIT`), the most that fit side by side.
 - **The scoring page** `/mythic-plus/scoring` explains all this with worked examples.
   `Score_MatchesTheScoringPageExamples` in `api/tests/AchievementLadder.Tests/MythicPlusExportServiceTests.cs`
   pins those examples, so change the page and the test together.

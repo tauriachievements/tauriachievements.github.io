@@ -100,7 +100,7 @@ export const NAV_SECTIONS: readonly NavSection[] = [
       {
         label: 'Leaderboard',
         path: '/mythic-plus',
-        includes: ['/mythic-plus/character', '/mythic-plus/guild', '/mythic-plus/compare', '/mythic-plus/scoring']
+        includes: ['/mythic-plus/character', '/mythic-plus/guild', '/mythic-plus/scoring']
       },
       { label: 'Statistics', tab: 'Activity', path: '/mythic-plus/stats' },
       { label: 'Records', path: '/mythic-plus/records' },

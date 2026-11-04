@@ -55,10 +55,9 @@ export interface CharacterLink {
 export function searchCharacters(
   ranking: readonly PlayerScore[],
   query: string,
-  { limit, exclude = [] }: { limit: number; exclude?: readonly string[] }
+  { limit }: { limit: number }
 ): CharacterLink[] {
-  const excluded = new Set(exclude);
-  return searchByName(ranking, query, limit, player => excluded.has(player.key) ? undefined : foldedMemberName(player.member))
+  return searchByName(ranking, query, limit, player => foldedMemberName(player.member))
     .map(toCharacterLink);
 }
 

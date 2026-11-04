@@ -82,47 +82,10 @@
       </div>
       <div class="profile-actions">
         <a class="action-link" routerLink="/mythic-plus" [queryParams]="showRunsParams()">Show runs on the leaderboard</a>
-        <button type="button" class="action-link" [class.active]="compareOpen()" [attr.aria-expanded]="compareOpen()"
-          (click)="compareOpen.set(!compareOpen())">Compare</button>
         <a class="action-link" [href]="member.armoryUrl" target="_blank" rel="noopener noreferrer">
           Armory <span aria-hidden="true">↗</span>
         </a>
       </div>
-      @if (compareOpen()) {
-        <div class="compare-with" animate.leave="panel-leaving">
-          <label class="character-search">
-            <span>Compare {{ member.name }} with</span>
-            <input
-              type="search"
-              placeholder="Player name…"
-              autocomplete="off"
-              spellcheck="false"
-              [value]="compareQuery()"
-              (input)="onCompareSearch($event)"
-              (keydown.escape)="compareOpen.set(false)" />
-          </label>
-          @if (compareResults().length) {
-            <ol class="character-results">
-              @for (result of compareResults(); track result.key) {
-                <li>
-                  <a routerLink="/mythic-plus/compare" [queryParams]="compareParams(result.member)">
-                    <img [src]="result.member.classIcon" [alt]="result.member.className" />
-                    <span class="result-name" [style.color]="result.member.color">{{ result.member.name }}</span>
-                    <span class="result-realm">{{ result.member.realm }}</span>
-                    <span class="result-score">{{ result.score | number:'1.1-1' }}</span>
-                  </a>
-                </li>
-              }
-            </ol>
-          }
-          @if (compareQuery().trim() && !compareResults().length) {
-            <p class="search-empty">No player by that name.</p>
-          }
-          <a class="compare-pick-link" routerLink="/mythic-plus" [queryParams]="comparePickParams()">
-            Or pick up to 3 more on the leaderboard <span aria-hidden="true">›</span>
-          </a>
-        </div>
-      }
       <dl class="profile-summary">
         @for (item of summary(); track item.label; let index = $index) {
           <div>
@@ -270,7 +233,7 @@
         @if (teammates().length) {
           <ol class="teammates">
             @for (mate of teammates(); track mate.key) {
-              <li class="teammate-item">
+              <li>
                 <div class="teammate" [style.--class-color]="mate.member.color" (click)="openProfile(mate.member)">
                   <span class="teammate-identity">
                     <img class="teammate-icon" [src]="mate.member.classIcon" [alt]="mate.member.className" />
@@ -288,13 +251,6 @@
                     {{ mate.dungeon }} +{{ mate.keyLevel }}@if (mate.upgrades > 0) {<span class="level-star">{{ upgradeStars(mate.upgrades) }}</span>}
                   </span>
                 </div>
-              <a class="teammate-compare" routerLink="/mythic-plus/compare" [queryParams]="compareParams(mate.member)"
-                [attr.aria-label]="'Compare with ' + mate.member.name" [title]="'Compare with ' + mate.member.name">
-                <svg viewBox="0 0 16 16" aria-hidden="true" focusable="false">
-                  <rect x="1.5" y="3" width="5.5" height="10" rx="1" />
-                  <rect x="9" y="3" width="5.5" height="10" rx="1" />
-                </svg>
-              </a>
             </li>
           }
         </ol>
