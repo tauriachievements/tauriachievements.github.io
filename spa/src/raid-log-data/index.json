@@ -1,7 +1,7 @@
-{"version":4,"generatedAt":"2026-11-04T06:00:28Z","previousGeneratedAt":"2026-11-03T23:03:59Z","raid":{"id":1520,"slug":"emerald-nightmare","name":"The Emerald Nightmare"},"difficulties":[
+{"version":4,"generatedAt":"2026-11-04T10:13:56Z","previousGeneratedAt":"2026-11-04T06:00:28Z","raid":{"id":1520,"slug":"emerald-nightmare","name":"The Emerald Nightmare"},"difficulties":[
 {"id":17,"slug":"lfr","name":"Looking For Raid","shortName":"LFR","kills":0},
 {"id":14,"slug":"normal","name":"Normal","shortName":"N","kills":5257},
-{"id":15,"slug":"heroic","name":"Heroic","shortName":"HC","kills":5480},
+{"id":15,"slug":"heroic","name":"Heroic","shortName":"HC","kills":5486},
 {"id":16,"slug":"mythic","name":"Mythic","shortName":"M","kills":717}],"bosses":[
 {"id":1853,"slug":"nythendra","name":"Nythendra"},
 {"id":1873,"slug":"ilgynoth","name":"Il'gynoth, The Heart of Corruption"},
@@ -11638,22 +11638,19 @@
 ["Tauri",1809787,1,14,1793763133,164254,-1,0,0,0,17],
 ["Tauri",1809850,5,14,1793763803,180604,-1,0,0,1,17],
 ["Tauri",1809898,6,14,1793764304,259145,-1,0,0,1,17],
-["Tauri",1809988,5,15,1793765448,269824,-1,1,5,8,18]],"newLogs":[
-["Tauri",1808436],
-["Tauri",1809184],
-["Tauri",1809394],
-["Tauri",1809521],
-["Tauri",1809529],
-["Tauri",1809589],
-["Tauri",1809642],
-["Tauri",1809696],
-["Tauri",1809702],
-["Tauri",1809741],
-["Tauri",1809758],
-["Tauri",1809787],
-["Tauri",1809850],
-["Tauri",1809898],
-["Tauri",1809988]],"invalidLogs":[
+["Tauri",1809988,5,15,1793765448,269824,-1,1,5,8,18],
+["Tauri",1811419,0,15,1793783865,257209,-1,1,0,14,20],
+["Tauri",1811461,3,15,1793784574,184254,-1,1,0,7,20],
+["Tauri",1811496,4,15,1793785030,180358,-1,1,0,0,20],
+["Tauri",1811547,2,15,1793785482,188373,-1,1,0,4,20],
+["Tauri",1811593,1,15,1793785922,242877,-1,1,0,0,20],
+["Tauri",1811641,5,15,1793786426,196838,-1,1,0,0,20]],"newLogs":[
+["Tauri",1811419],
+["Tauri",1811461],
+["Tauri",1811496],
+["Tauri",1811547],
+["Tauri",1811593],
+["Tauri",1811641]],"invalidLogs":[
 ["Tauri",1565371,"Invalid log. Reason: Warlock Enslave Demon on Taintheart Tormenter"],
 ["Tauri",1684227,"Invalid log. Reason: Warlock Enslave Demon on Taintheart Tormenter"],
 ["Tauri",1684463,"Invalid log. Reason: Warlock Enslave Demon on Taintheart Tormenter"],
