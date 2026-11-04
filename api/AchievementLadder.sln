@@ -33,6 +33,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RaidLogGuildAndCharScan", "
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ArenaLadderExporter", "ArenaLadderExporter\ArenaLadderExporter.csproj", "{5F3635AF-A77B-4BEA-A30E-9913CB3FA756}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CharacterListExporter", "CharacterListExporter\CharacterListExporter.csproj", "{570406BF-E0B7-4FDA-8F1D-2424FA580C29}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -223,6 +225,18 @@ Global
 		{5F3635AF-A77B-4BEA-A30E-9913CB3FA756}.Release|x64.Build.0 = Release|Any CPU
 		{5F3635AF-A77B-4BEA-A30E-9913CB3FA756}.Release|x86.ActiveCfg = Release|Any CPU
 		{5F3635AF-A77B-4BEA-A30E-9913CB3FA756}.Release|x86.Build.0 = Release|Any CPU
+		{570406BF-E0B7-4FDA-8F1D-2424FA580C29}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{570406BF-E0B7-4FDA-8F1D-2424FA580C29}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{570406BF-E0B7-4FDA-8F1D-2424FA580C29}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{570406BF-E0B7-4FDA-8F1D-2424FA580C29}.Debug|x64.Build.0 = Debug|Any CPU
+		{570406BF-E0B7-4FDA-8F1D-2424FA580C29}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{570406BF-E0B7-4FDA-8F1D-2424FA580C29}.Debug|x86.Build.0 = Debug|Any CPU
+		{570406BF-E0B7-4FDA-8F1D-2424FA580C29}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{570406BF-E0B7-4FDA-8F1D-2424FA580C29}.Release|Any CPU.Build.0 = Release|Any CPU
+		{570406BF-E0B7-4FDA-8F1D-2424FA580C29}.Release|x64.ActiveCfg = Release|Any CPU
+		{570406BF-E0B7-4FDA-8F1D-2424FA580C29}.Release|x64.Build.0 = Release|Any CPU
+		{570406BF-E0B7-4FDA-8F1D-2424FA580C29}.Release|x86.ActiveCfg = Release|Any CPU
+		{570406BF-E0B7-4FDA-8F1D-2424FA580C29}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

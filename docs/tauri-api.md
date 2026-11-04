@@ -51,6 +51,23 @@ response first.
     no spec.
   - Observed 2026-10-14: `artifacts[].artifact.xp` is that weapon's unspent artifact power, not
     a lifetime total.
+  - The traits count lives in `ArtifactTraits` (`Tauri.Core`), which GuildAnalysisExporter and
+    CharacterListExporter share.
+- `character-sheet` `activeSpec` is the talent slot the character is in now, and
+  `talents_legion_<slot>` names its class and spec, lower case with hyphens
+  (`priest&shadow&cpHz`, `hunter&beast-mastery&…`). `treeName_<slot>` carries the same spec as
+  it reads ("Shadow"). Code: `CharacterSpecialization` in `Tauri.Core`.
+- `character-sheet` `talents_classhall` lists the Class Hall upgrades the character has
+  researched, one entry per upgrade, each with `id`, `name`, `desc`, `icon` and `order_index`
+  (0 or 1; probably which of the tier's two choices, not checked). Observed 2026-11-04: the two
+  characters with six entries both had Legendary Research (achievement 11223, "Research all
+  your Class Hall Upgrades"), so six is all of them; characters below 110 had `[]`. Code:
+  `CharacterListExporter`.
+- `character-achievements` `Achievements` holds the earned achievements as an object keyed by
+  id. A Glorious Campaign (10994, "Complete your class Order Campaign") ends the class campaign.
+  Observed 2026-11-04 on 12 characters: the 5 with it were exactly the ones with three relics in
+  an artifact (`SocketContainedMask` 7), the rest had two at most. CharacterListExporter reads
+  an empty `Achievements` array as nothing earned (not seen).
 - Observed 2026-10-17: deleted or transferred characters come back from
   `character-minimal-data` with no name and class 0.
 - `character-itemappearances` lists the owned appearances by item id, in groups

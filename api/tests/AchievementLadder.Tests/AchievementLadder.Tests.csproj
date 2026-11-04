@@ -25,5 +25,6 @@
     <ProjectReference Include="..\..\RaidLogGuildAndCharScan\RaidLogGuildAndCharScan.csproj" />
     <ProjectReference Include="..\..\ArenaLadderExporter\ArenaLadderExporter.csproj" />
     <ProjectReference Include="..\..\GuildAnalysisExporter\GuildAnalysisExporter.csproj" />
+    <ProjectReference Include="..\..\CharacterListExporter\CharacterListExporter.csproj" />
   </ItemGroup>
 </Project>

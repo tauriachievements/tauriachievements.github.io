@@ -26,6 +26,7 @@ Tauri API ──► api/ console apps ──► spa/src/ data files ──► co
 | `mythic-plus-data/` | `MythicPlusExporter` | `sync data`, `sync mythic plus data` from `Run-MythicPlus.cmd`, or the `Run-QuickUpdate.cmd` commit | `/mythic-plus/*` |
 | `raid-log-data/` | `RaidLogExporter` | `sync data`, `sync raid logs data` from `Run-RaidLogs.cmd`, or the `Run-QuickUpdate.cmd` commit | `/raid-logs/*` |
 | `guild-analysis/<key>.json` | `GuildAnalysisExporter`, once per guild in the daily update | `sync data` | the hidden guild pages |
+| `character-lists/<list>.json` | `CharacterListExporter`, only from `Run-CharacterList.cmd` ([below](#character-list-files)) | `sync character list data` | the hidden character list page |
 | `EmeraldNightmare.json`, `RealmFirstAchievements.json`, `ap-chest-looters.json` | edited by hand | `chore:` / `feat:` | Race to Emerald Nightmare, Realm First History, Hall of Fame |
 
 The scan inputs live under `api/AchievementLadder/Data/`. `BattlegroundCollector` (from the
@@ -88,6 +89,10 @@ So a night's run is one commit and one Pages deploy, the guild pages included.
 - `Run-MythicPlus.cmd`, `Run-RaidLogs.cmd` and `Run-Arena.cmd` refresh one dataset on its
   own. Their arguments go to the exporter (`Run-MythicPlus.cmd --allow-shrink` at a season
   reset).
+- `Run-CharacterList.cmd` refreshes the hidden character list page, and runs only when the
+  owner starts it: the daily update doesn't touch `character-lists/`. The script holds the
+  list's realm, name and characters; its arguments go to the exporter
+  (`Run-CharacterList.cmd --allow-shrink` after taking a character off the list).
 - `Run-QuickUpdate.cmd` is the refresh to run during the day. It runs MythicPlusExporter,
   RaidLogExporter and ArenaLadderExporter, in that order, and publishes what changed in one
   commit. The message names the changed datasets in the same order:
@@ -123,6 +128,10 @@ On top of that:
   real.
 - GuildCharacterExporter removes guilds the API reports as not found (error code 13), but no
   more than 5% of all guilds per run.
+- CharacterListExporter writes nothing unless every character's sheet, artifacts and
+  achievements loaded with every field it needs; a name the realm doesn't have stops it too. It
+  refuses to write a list more than 2% shorter than the file it replaces, which for a short
+  list is any character fewer; pass `--allow-shrink` when one was taken off on purpose.
 - RaidLogExporter is incremental: it re-reads its own boss files and fetches only new logs.
   `--full` refetches everything. A boss file with an older format version makes the next run
   re-read every log. A boss file it can't read, or one of a newer format, makes it start over
@@ -323,6 +332,29 @@ deploy on every run, even when no game was played since the last one.
 A ladder entry without a name, class, known realm or games is left out, and so is a second
 entry for the same realm and guid.
 
+## Character list files
+
+CharacterListExporter writes `character-lists/<list>.json` for a hand-picked list of
+characters on one realm; the hidden character list page reads `character-lists/xyhop.json`
+through `character-list.ts`. The file (format version 1) is
+`{ version, realm, generatedAt, characters }`, one character per line, in name order. A
+character is `{ name, class, spec, level, itemLevel, traits, artifactKnowledge, campaign, orderHall }`:
+
+- `name` as the armory spells it; `class` the class id.
+- `spec` the name of the spec the character is on now (`CharacterSpecialization` in
+  `Tauri.Core`, [tauri-api.md](tauri-api.md#characters-and-guilds)), which the page looks up
+  with `specFor`.
+- `itemLevel` the equipped item level as the guild pages count it
+  (`CharacterItemLevelCalculator`), `null` with nothing equipped.
+- `traits` and `artifactKnowledge` as on the guild pages: the artifact with the most purchased
+  traits (`ArtifactTraits`), and the Artifact Knowledge level.
+- `campaign` whether the character has A Glorious Campaign (achievement 10994), the end of the
+  class campaign, which opens the third relic slot.
+- `orderHall` how many Class Hall upgrades the character has researched, out of 6.
+- `generatedAt` (UTC) is when the characters were read, and the page header shows it.
+
+A file of another `version` makes the page show its error box rather than misread it.
+
 ## Rated battleground changes
 
 `rated-battlegrounds.json` is the archive of every rated battleground the collector has read,
@@ -482,6 +514,6 @@ tables, so they don't. The page code has its own guard for a code deploy
   many character and guild names are Cyrillic or accented.
 - GuildAnalysisExporter's `guild-analysis/` file names drop accents ("Témérité" becomes
   "Temerite"), so their URLs never need encoding.
-- MythicPlusExporter, RaidLogExporter and ArenaLadderExporter write LF. The root
+- MythicPlusExporter, RaidLogExporter, ArenaLadderExporter and CharacterListExporter write LF. The root
   `.gitattributes` keeps their files LF on checkout, so `core.autocrlf` doesn't warn on every
   commit. A new exporter that writes LF needs a line there too.
