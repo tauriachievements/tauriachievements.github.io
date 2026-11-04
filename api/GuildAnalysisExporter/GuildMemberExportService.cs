@@ -273,7 +273,7 @@ public sealed class GuildMemberExportService(
                 && gems.ValueKind == JsonValueKind.Array
                     ? gems.GetArrayLength()
                     : 0,
-                ReadArtifactTraitCount(artifact),
+                ArtifactTraits.Count(artifact),
                 ReadArtifactSpecialization(artifact),
                 ReadString(artifact, "name")
             );
@@ -320,7 +320,7 @@ public sealed class GuildMemberExportService(
             bestArtifact.TraitCount,
             knowledge,
             string.IsNullOrWhiteSpace(bestArtifact.Specialization)
-                ? ReadSpecialization(response)
+                ? CharacterSpecialization.Active(response)
                 : bestArtifact.Specialization,
             bestArtifact.Name,
             weaponsBySpecialization
@@ -348,34 +348,6 @@ public sealed class GuildMemberExportService(
         return ArtifactSpecializations.TryGetValue(itemId, out var mappedSpecialization)
             ? mappedSpecialization
             : string.Empty;
-    }
-
-    private static int ReadArtifactTraitCount(JsonElement artifact)
-    {
-        if (
-            !artifact.TryGetProperty("artifact", out var artifactInfo)
-            || artifactInfo.ValueKind != JsonValueKind.Object
-            || !artifactInfo.TryGetProperty("artifactpowers", out var artifactPowers)
-            || artifactPowers.ValueKind != JsonValueKind.Array
-        )
-        {
-            return 0;
-        }
-
-        var traitCount = 0;
-        foreach (var artifactPower in artifactPowers.EnumerateArray())
-        {
-            if (
-                artifactPower.ValueKind == JsonValueKind.Object
-                && artifactPower.TryGetProperty("purchasedrank", out var purchasedRank)
-                && purchasedRank.TryGetInt32(out var rank)
-            )
-            {
-                traitCount += rank;
-            }
-        }
-
-        return traitCount;
     }
 
     private async Task<CharacterDetailsResult?> LoadLevel110CharacterDetailsAsync(
@@ -413,39 +385,11 @@ public sealed class GuildMemberExportService(
             ReadInt(response, "race"),
             ReadInt(response, "gender"),
             ReadInt(response, "class"),
-            ReadSpecialization(response),
+            CharacterSpecialization.Active(response),
             ReadLong(response, "played_time"),
             ReadInt(response, "pts"),
             averageItemLevel,
             legendaries
-        );
-    }
-
-    private static string ReadSpecialization(JsonElement response)
-    {
-        var activeSpec = ReadInt(response, "activeSpec");
-        if (
-            !response.TryGetProperty($"talents_legion_{activeSpec}", out var specialization)
-            || specialization.ValueKind != JsonValueKind.String
-        )
-        {
-            return string.Empty;
-        }
-
-        var parts = (specialization.GetString() ?? string.Empty).Split(
-            '&',
-            StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries
-        );
-        if (parts.Length < 2)
-        {
-            return string.Empty;
-        }
-
-        return string.Join(
-            ' ',
-            parts[1]
-                .Split('-', StringSplitOptions.RemoveEmptyEntries)
-                .Select(word => char.ToUpperInvariant(word[0]) + word[1..])
         );
     }
 
