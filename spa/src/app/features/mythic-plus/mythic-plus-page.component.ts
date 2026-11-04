@@ -30,7 +30,6 @@ import {
   standingChanges
 } from './mythic-plus';
 import { MythicPlusPlayersListComponent } from './mythic-plus-players-list.component';
-import { COMPARE_LIMIT, compareParam, parseCompareParam } from './mythic-plus-compare';
 import { characterParam, findCharacters, parseCharacterParam } from './mythic-plus-profile';
 import { MythicPlusRunsListComponent } from './mythic-plus-runs-list.component';
 import { MythicPlusSpecChartComponent } from './mythic-plus-spec-chart.component';
@@ -64,7 +63,6 @@ import {
 } from './mythic-plus-leaderboard';
 import { getClassColor } from '../../game/class-colors';
 import { GlideDirective } from '../../shared/motion/glide.directive';
-import { characterTransitionName } from '../../shared/motion/motion';
 import { CLASS_FILTER_OPTIONS, CLASS_NAMES, RoleFilter, parseClassId, parseRoleFilter } from '../../game/wow';
 import { RoleFilterComponent } from '../../shared/role-filter.component';
 import { parseSpecName, specFilterOptions } from '../../game/wow-specs';
@@ -73,7 +71,6 @@ import { LoadStateComponent } from '../../shared/load-state.component';
 import { PagerComponent } from '../../shared/pager.component';
 import { pageCount, pageSlice } from '../../shared/pager';
 import { setPageHeader } from '../../core/page-header';
-import { BottomBarDirective } from '../../core/bottom-bar.directive';
 import { formatClock } from '../../shared/time-format';
 import { mythicPlusProfileLink } from '../../core/page-links';
 
@@ -102,7 +99,6 @@ interface CharacterFilter {
     RoleFilterComponent,
     MobileFilterToggleComponent,
     GlideDirective,
-    BottomBarDirective,
     DecimalPipe,
     LoadStateComponent,
     PagerComponent
@@ -367,61 +363,6 @@ export class MythicPlusPageComponent implements OnInit {
     this.store.load(this.route.snapshot.queryParamMap.get('dungeon') ?? undefined);
   }
 
-  readonly compareLimit = COMPARE_LIMIT;
-  readonly compareMode = signal(this.route.snapshot.queryParamMap.has('compare'));
-  private readonly comparePicks = signal(parseCompareParam(this.route.snapshot.queryParamMap.get('compare')));
-  private viewBeforeCompare: LeaderboardView = 'runs';
-  readonly picked = computed(() => {
-    const characters = this.indexCharacters();
-    return this.comparePicks().map(pick => {
-      const found = findCharacters(characters, pick.realm, pick.name)[0];
-      const character = found ?? pick;
-      const key = characterKey(character);
-      return {
-        key,
-        name: character.name,
-        realm: character.realm,
-        color: (found && getClassColor(found.classId)) ?? '#e0e0e0',
-        nameTransition: characterTransitionName(key, 'name')
-      };
-    });
-  });
-  readonly pickedKeys = computed(() => new Set(this.picked().map(pick => pick.key)));
-  readonly compareParams = computed(() => ({ players: compareParam(this.picked()) }));
-
-  toggleCompareMode(): void {
-    this.compareMode.update(on => !on);
-    if (this.compareMode()) {
-      this.viewBeforeCompare = this.view();
-      this.setView('players');
-    }
-    this.syncQueryParams();
-  }
-
-  togglePick(row: PlayerRow): void {
-    if (this.pickedKeys().has(row.key)) {
-      this.removePick(row.key);
-      return;
-    }
-    this.comparePicks.update(picks =>
-      picks.length < COMPARE_LIMIT ? [...picks, { name: row.member.name, realm: row.member.realm }] : picks);
-    this.syncQueryParams();
-  }
-
-  removePick(key: string): void {
-    const characters = this.indexCharacters();
-    this.comparePicks.update(picks => picks.filter(pick =>
-      characterKey(findCharacters(characters, pick.realm, pick.name)[0] ?? pick) !== key));
-    this.syncQueryParams();
-  }
-
-  cancelCompare(): void {
-    this.comparePicks.set([]);
-    this.compareMode.set(false);
-    this.setView(this.viewBeforeCompare);
-    this.syncQueryParams();
-  }
-
   retryLoad(): void {
     this.store.retry();
   }
@@ -579,8 +520,7 @@ export class MythicPlusPageComponent implements OnInit {
       role: players ? this.roleFilter() ?? null : null,
       chartRole: this.chartRole() ?? null,
       character: character ? characterParam(character) : null,
-      page: this.currentPage() > 1 ? this.currentPage() : null,
-      compare: this.compareMode() ? compareParam(this.picked()) || null : null
+      page: this.currentPage() > 1 ? this.currentPage() : null
     });
   }
 }

@@ -2,11 +2,8 @@
   @if (rows().length) {
     <ol class="player-cards" aria-label="Mythic+ players ranked by score: the sum of their best run in each dungeon">
       @for (row of rows(); track row.key) {
-        <li [class.highlighted]="row.key === highlightKey()" [class.picked]="pickedKeys().has(row.key)">
-          <div class="player-card" [class.picking]="pickMode()" (click)="openProfile(row)">
-            @if (pickMode()) {
-              <span class="pick-box" aria-hidden="true"></span>
-            }
+        <li [class.highlighted]="row.key === highlightKey()">
+          <div class="player-card" (click)="openProfile(row)">
             <span class="card-rank" [style.color]="row.color">
               <span class="rank-metric">
                 <span><span class="visually-hidden">Rank </span>{{ row.rank }}</span>
@@ -39,7 +36,7 @@
                   class="card-name"
                   [routerLink]="row.member.profileLink"
                   [style.color]="row.member.color"
-                  (click)="onLink($event, row)">{{ row.member.name }}</a>
+                  (click)="$event.stopPropagation()">{{ row.member.name }}</a>
                 <span class="card-realm">{{ row.member.realm }}</span>
               </span>
               @if (ladder() === 'guild') {
@@ -48,7 +45,7 @@
                 }
               } @else {
                 @if (row.member.guild) {
-                  @if (row.member.guildLink && !pickMode()) {
+                  @if (row.member.guildLink) {
                     <a
                       class="card-guild"
                       [routerLink]="row.member.guildLink"
@@ -109,9 +106,6 @@
       <caption class="visually-hidden">Mythic+ players ranked by score: the sum of their best run in each dungeon</caption>
       <thead>
         <tr>
-          @if (pickMode()) {
-            <th scope="col" class="col-pick"><span class="visually-hidden">Picked</span></th>
-          }
           <th scope="col">Rank</th>
           <th scope="col" class="col-player">Player</th>
           @if (ladder() === 'server') {
@@ -139,11 +133,7 @@
             class="player-row"
             [class.alt]="odd"
             [class.highlighted]="row.key === highlightKey()"
-            [class.picked]="pickedKeys().has(row.key)"
             (click)="openProfile(row)">
-            @if (pickMode()) {
-              <td class="col-pick"><span class="pick-box" aria-hidden="true"></span></td>
-            }
             <td class="col-rank" [style.color]="row.color">
               <span class="rank-metric">
                 <span class="metric-value">{{ row.rank }}</span>
@@ -177,15 +167,15 @@
                   [routerLink]="row.member.profileLink"
                   [style.color]="row.member.color"
                   [attr.aria-label]="'Open the profile of ' + row.member.name"
-                  (click)="onLink($event, row)">{{ row.member.name }}<span class="profile-tooltip" aria-hidden="true">
-                    {{ pickMode() ? 'Pick ' + row.member.name + ' to compare' : 'Open the profile of ' + row.member.name }}
+                  (click)="$event.stopPropagation()">{{ row.member.name }}<span class="profile-tooltip" aria-hidden="true">
+                    Open the profile of {{ row.member.name }}
                   </span></a>
                 <span class="player-realm">{{ row.member.realm }}</span>
               </span>
             </td>
             @if (ladder() === 'server') {
               <td class="col-guild">
-                @if (row.member.guildLink && !pickMode()) {
+                @if (row.member.guildLink) {
                   <a
                     class="guild-link"
                     [routerLink]="row.member.guildLink"
@@ -254,7 +244,7 @@
 
         @if (rows().length === 0) {
           <tr class="empty-row">
-            <td [attr.colspan]="(singleDungeon() ? 6 : dungeons().length + 4) + (pickMode() ? 1 : 0)">{{ emptyMessage() }}</td>
+            <td [attr.colspan]="singleDungeon() ? 6 : dungeons().length + 4">{{ emptyMessage() }}</td>
           </tr>
         }
       </tbody>

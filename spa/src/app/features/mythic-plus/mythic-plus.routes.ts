@@ -23,8 +23,8 @@ export const MYTHIC_PLUS_ROUTES: Routes = [
   },
   {
     path: 'mythic-plus/compare',
-    loadComponent: () => import('./mythic-plus-compare-page.component')
-      .then(module => module.MythicPlusComparePageComponent)
+    redirectTo: 'mythic-plus',
+    pathMatch: 'full'
   },
   {
     path: 'mythic-plus/character/:realm/:name',

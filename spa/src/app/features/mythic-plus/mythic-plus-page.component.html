@@ -92,14 +92,6 @@
                 (click)="setRunOrder('latest')">Latest</button>
             </div>
           }
-          <button type="button" class="scoring-link compare-toggle" [class.active]="compareMode()" [attr.aria-pressed]="compareMode()"
-            (click)="toggleCompareMode()">
-            <svg class="scoring-link-chart" viewBox="0 0 16 16" aria-hidden="true" focusable="false">
-              <rect x="1.5" y="3" width="5.5" height="10" rx="1" />
-              <rect x="9" y="3" width="5.5" height="10" rx="1" />
-            </svg>
-            {{ compareMode() ? 'Stop comparing' : 'Compare' }}
-          </button>
           <div class="view-switch" role="group" aria-label="Rank runs or players" appGlide>
             <button
               type="button"
@@ -245,10 +237,7 @@
           [singleDungeon]="!!selectedDungeon()"
           [emptyMessage]="emptyMessage()"
           [cards]="cards()"
-          [highlightKey]="characterFilter()?.key"
-          [pickMode]="compareMode()"
-          [pickedKeys]="pickedKeys()"
-          (pick)="togglePick($event)" />
+          [highlightKey]="characterFilter()?.key" />
       }
 
       <app-pager
@@ -260,32 +249,5 @@
         [scrollTarget]="leaderboard"
         (pageChange)="goToPage($event)" />
     }
-  }
-  @if (compareMode()) {
-    <aside class="compare-tray" appBottomBar aria-label="Players picked to compare" animate.leave="tray-leaving">
-      @if (!picked().length) {
-        <p class="compare-tray-hint">
-          Click up to {{ compareLimit }} players to compare@if (view() !== 'players') { on the Players view}.
-        </p>
-      }
-      @if (picked().length) {
-        <ul class="compare-picks">
-          @for (pick of picked(); track pick.key) {
-            <li animate.leave="chip-leaving">
-              <span class="compare-pick-name" [style.color]="pick.color" [style.view-transition-name]="pick.nameTransition">{{ pick.name }}</span>
-              <button type="button" (click)="removePick(pick.key)" [attr.aria-label]="'Remove ' + pick.name">×</button>
-            </li>
-          }
-        </ul>
-      }
-      <span class="compare-count">@for (count of [picked().length]; track count) {
-        <span class="compare-count-value">{{ count }}</span>
-      } / {{ compareLimit }}</span>
-      <button type="button" class="compare-cancel" (click)="cancelCompare()">Cancel</button>
-      <a class="compare-go" [class.disabled]="picked().length < 2" [attr.aria-disabled]="picked().length < 2"
-        routerLink="/mythic-plus/compare" [queryParams]="compareParams()">
-        Compare
-      </a>
-    </aside>
   }
 </main>

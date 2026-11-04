@@ -1,5 +1,5 @@
 import { DecimalPipe } from '@angular/common';
-import { ChangeDetectionStrategy, Component, ElementRef, afterRenderEffect, inject, input, output } from '@angular/core';
+import { ChangeDetectionStrategy, Component, ElementRef, afterRenderEffect, inject, input } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { MythicPlusDungeon, upgradeStars } from './mythic-plus';
 import { BestRunCell, PlayerRow } from './mythic-plus-views';
@@ -21,9 +21,6 @@ export class MythicPlusPlayersListComponent {
   readonly emptyMessage = input('');
   readonly cards = input(false);
   readonly highlightKey = input<string | undefined>();
-  readonly pickMode = input(false);
-  readonly pickedKeys = input<ReadonlySet<string>>(new Set());
-  readonly pick = output<PlayerRow>();
   readonly ladder = input<'server' | 'guild'>('server');
 
   readonly upgradeStars = upgradeStars;
@@ -59,19 +56,7 @@ export class MythicPlusPlayersListComponent {
   }
 
   openProfile(row: PlayerRow): void {
-    if (this.pickMode()) {
-      this.pick.emit(row);
-      return;
-    }
     this.router.navigate(row.member.profileLink);
-  }
-
-  onLink(event: Event, row: PlayerRow): void {
-    event.stopPropagation();
-    if (this.pickMode()) {
-      event.preventDefault();
-      this.pick.emit(row);
-    }
   }
 
   bestTitle(best: BestRunCell | undefined): string {
