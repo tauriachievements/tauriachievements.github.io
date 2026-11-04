@@ -47,6 +47,7 @@ internal static class Program
             var result = await exporter.ExportAsync(
                 arguments.RealmName,
                 arguments.GuildName,
+                arguments.MemberNames,
                 cancellationTokenSource.Token
             );
 
@@ -70,10 +71,16 @@ internal static class Program
     private static void PrintUsage()
     {
         Console.WriteLine(
-            "Usage: dotnet run --project GuildAnalysisExporter -- <realm> <guild> [--output-directory <folder>]"
+            "Usage: dotnet run --project GuildAnalysisExporter -- <realm> <guild> [--members <name,name,...>] [--output-directory <folder>]"
         );
         Console.WriteLine(
             "Example: dotnet run --project GuildAnalysisExporter -- Evermoon Endless"
+        );
+        Console.WriteLine(
+            "Example: dotnet run --project GuildAnalysisExporter -- Evermoon Xyhop --members Xyhop,Xyhopwarrior"
+        );
+        Console.WriteLine(
+            "With --members, the named characters are scanned as the guild instead of its guild-info roster."
         );
     }
 
@@ -82,7 +89,7 @@ internal static class Program
         out CommandArguments arguments
     )
     {
-        arguments = new CommandArguments(string.Empty, string.Empty, null);
+        arguments = new CommandArguments(string.Empty, string.Empty, null, null);
 
         if (args.Count < 2)
         {
@@ -91,14 +98,13 @@ internal static class Program
 
         var nameParts = new List<string>();
         string? outputDirectory = null;
+        List<string>? memberNames = null;
 
         for (var index = 0; index < args.Count; index++)
         {
-            if (
-                args[index] is not "--output-directory"
-                && args[index] is not "--output-dir"
-                && args[index] is not "-o"
-            )
+            var isOutputDirectory = args[index] is "--output-directory" or "--output-dir" or "-o";
+            var isMembers = args[index] is "--members";
+            if (!isOutputDirectory && !isMembers)
             {
                 nameParts.Add(args[index]);
                 continue;
@@ -109,7 +115,25 @@ internal static class Program
                 return false;
             }
 
-            outputDirectory = args[++index].Trim();
+            var value = args[++index].Trim();
+            if (isOutputDirectory)
+            {
+                outputDirectory = value;
+                continue;
+            }
+
+            memberNames = value
+                .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+                .ToList();
+            if (memberNames.Count == 0)
+            {
+                return false;
+            }
+        }
+
+        if (nameParts.Count == 0)
+        {
+            return false;
         }
 
         var realmPartCount = nameParts[0].StartsWith("[", StringComparison.Ordinal) ? 2 : 1;
@@ -120,7 +144,7 @@ internal static class Program
 
         var realmName = string.Join(' ', nameParts.Take(realmPartCount)).Trim();
         var guildName = string.Join(' ', nameParts.Skip(realmPartCount)).Trim();
-        arguments = new CommandArguments(realmName, guildName, outputDirectory);
+        arguments = new CommandArguments(realmName, guildName, outputDirectory, memberNames);
         return !string.IsNullOrWhiteSpace(realmName) && !string.IsNullOrWhiteSpace(guildName);
     }
 
@@ -151,6 +175,7 @@ internal static class Program
     private sealed record CommandArguments(
         string RealmName,
         string GuildName,
-        string? OutputDirectory
+        string? OutputDirectory,
+        IReadOnlyList<string>? MemberNames
     );
 }
