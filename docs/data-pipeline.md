@@ -22,9 +22,9 @@ Tauri API ──► api/ console apps ──► spa/src/ data files ──► co
 | `RareItems.json` | `AchievementLadder` | `sync data` | Rare Items page |
 | `elite-pvp-items.json` | built once from TauriShoot, then kept by hand ([below](#elite-pvp-items)) | `feat:` / `chore:` | Rare Items page, `AchievementLadder` |
 | `battlegrounds.json`, `battleground-collector-state.json`, `rated-battlegrounds.json` | `BattlegroundCollector` | `sync data` | Battleground and Rated Battleground pages |
-| `arena-ladder-2v2.json`, `arena-ladder-3v3.json` | `ArenaLadderExporter` | `sync data`, or `sync arena data` from `Run-Arena.cmd` | Arena page |
-| `mythic-plus-data/` | `MythicPlusExporter` | `sync data`, `sync mythic plus data` from `Run-MythicPlus.cmd`, or `sync mythic plus and raid logs data` from `Run-MythicPlusAndRaidLogs.cmd` | `/mythic-plus/*` |
-| `raid-log-data/` | `RaidLogExporter` | `sync data`, `sync raid logs data` from `Run-RaidLogs.cmd`, or `sync mythic plus and raid logs data` from `Run-MythicPlusAndRaidLogs.cmd` | `/raid-logs/*` |
+| `arena-ladder-2v2.json`, `arena-ladder-3v3.json` | `ArenaLadderExporter` | `sync data`, `sync arena data` from `Run-Arena.cmd`, or the `Run-QuickUpdate.cmd` commit ([below](#the-daily-update)) | Arena page |
+| `mythic-plus-data/` | `MythicPlusExporter` | `sync data`, `sync mythic plus data` from `Run-MythicPlus.cmd`, or the `Run-QuickUpdate.cmd` commit | `/mythic-plus/*` |
+| `raid-log-data/` | `RaidLogExporter` | `sync data`, `sync raid logs data` from `Run-RaidLogs.cmd`, or the `Run-QuickUpdate.cmd` commit | `/raid-logs/*` |
 | `guild-analysis/<key>.json` | `GuildAnalysisExporter`, once per guild in the daily update | `sync data` | the hidden guild pages |
 | `EmeraldNightmare.json`, `RealmFirstAchievements.json`, `ap-chest-looters.json` | edited by hand | `chore:` / `feat:` | Race to Emerald Nightmare, Realm First History, Hall of Fame |
 
@@ -88,11 +88,13 @@ So a night's run is one commit and one Pages deploy, the guild pages included.
 - `Run-MythicPlus.cmd`, `Run-RaidLogs.cmd` and `Run-Arena.cmd` refresh one dataset on its
   own. Their arguments go to the exporter (`Run-MythicPlus.cmd --allow-shrink` at a season
   reset).
-- `Run-MythicPlusAndRaidLogs.cmd` runs MythicPlusExporter, then RaidLogExporter, and publishes
-  both in one commit, `sync mythic plus and raid logs data`. When only one dataset changed, the
-  commit takes that dataset's own message. It takes no arguments: `--allow-shrink` and `--full`
-  go through the single scripts. When one exporter fails, its folder is left out of the commit
-  and the other's still goes out; the script then names the failed exporter and exits with 1.
+- `Run-QuickUpdate.cmd` is the refresh to run during the day. It runs MythicPlusExporter,
+  RaidLogExporter and ArenaLadderExporter, in that order, and publishes what changed in one
+  commit. The message names the changed datasets in the same order:
+  `sync mythic plus, raid logs and arena data`, `sync raid logs and arena data`,
+  `sync arena data`, and so on. It takes no arguments: `--allow-shrink` and `--full` go
+  through the single scripts. When an exporter fails, its data is left out of the commit and
+  the others' still goes out; the script then names the failed exporter and exits with 1.
 - Before the export, each of these scripts checks that the push at the end will be accepted:
   you're on `main` and level with `origin/main`. When you aren't, it asks you to type `1` to
   fix it, by switching to `main` (only when nothing is uncommitted) or by pulling with
@@ -313,10 +315,10 @@ taken straight from the ladder ([tauri-api.md](tauri-api.md#arena-ladder-arena-l
 
 The comparison is with the previous export, published or not: running the exporter twice
 (the whole daily update again after a failure, instead of `-From`) compares the second run with
-the first, and the day's changes shrink to whatever happened in between. `Run-Arena.cmd` during
-the day does the same to the night's run, which then shows only the changes since it.
-Every export writes a new `generatedAt`, so `Run-Arena.cmd` commits and deploys on every run,
-even when no game was played since the last one.
+the first, and the day's changes shrink to whatever happened in between. `Run-QuickUpdate.cmd`
+and `Run-Arena.cmd` do the same: each run's changes, the night's included, cover only the time
+since the export before it. Every export writes a new `generatedAt`, so both scripts commit and
+deploy on every run, even when no game was played since the last one.
 
 A ladder entry without a name, class, known realm or games is left out, and so is a second
 entry for the same realm and guid.
