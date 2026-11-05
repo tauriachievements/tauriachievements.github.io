@@ -1,8 +1,10 @@
 import { describe, expect, it } from 'vitest';
-import { MythicPlusIndex, MythicPlusMember, MythicPlusRun, characterKey, playerRanks, rankPlayers } from './mythic-plus';
+import { MythicPlusIndex, MythicPlusMember, MythicPlusRun, characterKey, playerRanks, rankPlayers, rankRuns } from './mythic-plus';
 import {
   characterParam,
   characterSuggestion,
+  dungeonRankLabel,
+  dungeonRanks,
   findCharacters,
   formatTopPercent,
   frequentTeammates,
@@ -205,6 +207,54 @@ describe('ranks', () => {
     expect(pageOfRank(50, 50)).toBe(1);
     expect(pageOfRank(51, 50)).toBe(2);
     expect(pageOfRank(51, 25)).toBe(3);
+  });
+});
+
+describe('dungeonRanks', () => {
+  const progtrix = member('Progtrix');
+
+  it('ranks a run among the runs of its own dungeon only', () => {
+    const best = run('nl', 250, [progtrix]);
+    const runs = [run('nl', 300, []), best, run('nl', 280, []), run('nl', 200, []), run('cos', 400, []), run('cos', 390, [])];
+
+    expect(dungeonRanks(runs, [best]).get(best.id)).toEqual({ rank: 3, total: 4 });
+  });
+
+  it('numbers the runs as the runs leaderboard does for that dungeon', () => {
+    const runs = [
+      run('nl', 250, [], at(9, 20), 1600),
+      run('nl', 250, [], at(9, 20), 1500),
+      run('nl', 250, [], at(9, 21), 1500),
+      run('nl', 310, [], at(9, 21), 1900),
+      run('cos', 250, [], at(9, 21), 1400)
+    ];
+    const leaderboard = rankRuns(runs.filter(entry => entry.dungeon === 'nl'));
+
+    const ranks = dungeonRanks(runs, leaderboard);
+
+    expect(leaderboard.map(entry => ranks.get(entry.id)?.rank)).toEqual([1, 2, 3, 4]);
+  });
+
+  it('ranks each best run in its own dungeon', () => {
+    const nl = run('nl', 250, [progtrix]);
+    const cos = run('cos', 250, [progtrix]);
+    const runs = [nl, cos, run('nl', 260, []), run('nl', 270, []), run('cos', 240, [])];
+
+    const ranks = dungeonRanks(runs, [nl, cos]);
+
+    expect(ranks.get(nl.id)).toEqual({ rank: 3, total: 3 });
+    expect(ranks.get(cos.id)).toEqual({ rank: 1, total: 2 });
+  });
+
+  it('ranks nothing without runs to rank', () => {
+    expect(dungeonRanks([run('nl', 250, [])], []).size).toBe(0);
+  });
+
+  it('describes a rank with the dungeon and its number of runs', () => {
+    expect(dungeonRankLabel({ rank: 1234, total: 10633 }, 'Court of Stars'))
+      .toBe('Rank 1,234 of 10,633 Court of Stars runs this season');
+    expect(dungeonRankLabel({ rank: 1, total: 1 }, 'Court of Stars'))
+      .toBe('Rank 1 of 1 Court of Stars run this season');
   });
 });
 

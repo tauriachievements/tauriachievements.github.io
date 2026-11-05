@@ -51,7 +51,7 @@ export const VISUAL_PAGES: readonly VisualPage[] = [
   { name: 'mythic-plus-stats', path: '/mythic-plus/stats' },
   { name: 'mythic-plus-stats-week', path: '/mythic-plus/stats?period=week' },
   { name: 'mythic-plus-records', path: '/mythic-plus/records' },
-  { name: 'mythic-plus-character', path: '/mythic-plus/character/evermoon/Pashao' },
+  { name: 'mythic-plus-character', path: '/mythic-plus/character/evermoon/Pashao', wide: true },
   {
     name: 'mythic-plus-guild',
     path: '/mythic-plus/guild/evermoon/%D0%A5%D1%80%D0%B0%D0%BD%D0%B8%D1%82%D0%B5%D0%BB%D0%B8%20%D0%92%D0%B5%D1%87%D0%BD%D0%BE%D1%81%D1%82%D0%B8'

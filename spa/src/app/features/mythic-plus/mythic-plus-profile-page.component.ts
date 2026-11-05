@@ -33,8 +33,11 @@ import {
 import { affixWeeks, localDay } from './mythic-plus-activity';
 import {
   CharacterLink,
+  DungeonRank,
   ScopeRank,
   characterParam,
+  dungeonRankLabel,
+  dungeonRanks,
   findCharacters,
   formatTopPercent,
   frequentTeammates,
@@ -98,6 +101,8 @@ interface RankTile {
 interface DungeonBest {
   dungeon: RunView['dungeon'];
   run?: RunView;
+  rank?: DungeonRank;
+  rankLabel: string;
 }
 
 interface TeammateView {
@@ -329,9 +334,16 @@ export class MythicPlusProfilePageComponent implements OnInit {
     const bestRuns = this.shownScore()?.bestRuns;
     const affixes = this.affixesById();
     const colors = this.scoreColors();
+    const ranks = dungeonRanks(this.allRuns(), bestRuns?.values() ?? []);
     return this.dungeons().map(dungeon => {
       const run = bestRuns?.get(dungeon.id);
-      return { dungeon, run: run && toRunView(run, dungeon, affixes, colors) };
+      const rank = run && ranks.get(run.id);
+      return {
+        dungeon,
+        run: run && toRunView(run, dungeon, affixes, colors),
+        rank,
+        rankLabel: rank ? dungeonRankLabel(rank, dungeon.name) : ''
+      };
     });
   });
 

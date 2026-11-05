@@ -314,11 +314,16 @@ export function upgradeStars(upgrades: number): string {
   return '★'.repeat(Math.max(0, Math.min(3, upgrades)));
 }
 
-export function rankRuns<T extends Pick<MythicPlusRun, 'id' | 'score' | 'clearTimeSeconds'>>(runs: readonly T[]): T[] {
-  return [...runs].sort((a, b) =>
-    b.score - a.score
+type RunOrderFields = Pick<MythicPlusRun, 'id' | 'score' | 'clearTimeSeconds'>;
+
+export function compareRuns(a: RunOrderFields, b: RunOrderFields): number {
+  return b.score - a.score
     || a.clearTimeSeconds - b.clearTimeSeconds
-    || (a.id < b.id ? -1 : a.id > b.id ? 1 : 0));
+    || (a.id < b.id ? -1 : a.id > b.id ? 1 : 0);
+}
+
+export function rankRuns<T extends RunOrderFields>(runs: readonly T[]): T[] {
+  return [...runs].sort(compareRuns);
 }
 
 export function scoreTiers(scores: readonly number[]): number[] | undefined {

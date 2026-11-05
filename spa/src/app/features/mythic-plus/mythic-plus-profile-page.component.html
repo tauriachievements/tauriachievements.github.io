@@ -162,6 +162,7 @@
                 <th scope="col" class="num">Key</th>
                 <th scope="col" class="num">Time</th>
                 <th scope="col" class="num">Points</th>
+                <th scope="col" class="num">Rank</th>
                 <th scope="col" class="num">Date</th>
               </tr>
             </thead>
@@ -169,7 +170,7 @@
               @for (best of dungeonBests(); track best.dungeon.id) {
                 <tr [class.not-played]="!best.run">
                   <th scope="row">
-                    <span class="dungeon-name">
+                    <span class="dungeon-name" [title]="best.dungeon.name">
                       <img [src]="best.dungeon.icon" alt="" loading="lazy" />{{ best.dungeon.name }}
                     </span>
                   </th>
@@ -187,9 +188,14 @@
                       <span class="timer-delta" [class.over]="run.upgrades === 0">{{ run.timerDelta }}</span>
                     </td>
                     <td class="num points" [style.color]="run.color">{{ run.score | number:'1.1-1' }}</td>
+                    <td class="num dungeon-rank" [title]="best.rankLabel">
+                      @if (best.rank; as rank) {
+                        #{{ rank.rank | number }}
+                      }
+                    </td>
                     <td class="num date"><time [attr.datetime]="run.completedAt">{{ run.completedAt | date:'d MMM' }}</time></td>
                   } @else {
-                    <td class="not-played-cell" colspan="4">{{ notPlayedLabel() }}</td>
+                    <td class="not-played-cell" colspan="5">{{ notPlayedLabel() }}</td>
                   }
                 </tr>
               }
@@ -217,7 +223,12 @@
                     <span class="level-value">+{{ run.keyLevel }}</span>
                     <span class="level-star">{{ upgradeStars(run.upgrades) }}@if (run.upgrades > 0) {<span class="visually-hidden"> timed +{{ run.upgrades }}</span>}</span>
                   </span>
-                  <span class="points" [style.color]="run.color"><span class="visually-hidden">Points </span>{{ run.score | number:'1.1-1' }}</span>
+                  <span class="best-card-score">
+                    <span class="points" [style.color]="run.color"><span class="visually-hidden">Points </span>{{ run.score | number:'1.1-1' }}</span>
+                    @if (best.rank; as rank) {
+                      <span class="best-card-rank" [title]="best.rankLabel"><span class="visually-hidden">Rank </span>#{{ rank.rank | number }}</span>
+                    }
+                  </span>
                 }
               </li>
             }

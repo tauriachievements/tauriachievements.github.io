@@ -98,6 +98,9 @@ async function open(url: string, dataFiles = new FakeDataFiles()) {
   return { harness, page, element: harness.routeNativeElement as HTMLElement };
 }
 
+const dungeonRankCells = (element: HTMLElement) =>
+  [...element.querySelectorAll('.bests .dungeon-rank')].map(cell => [cell.textContent?.trim(), cell.getAttribute('title')]);
+
 const searchBox = (element: HTMLElement) =>
   element.querySelector('app-mythic-plus-character-search input') as HTMLInputElement;
 
@@ -149,6 +152,10 @@ describe('MythicPlusProfilePageComponent', () => {
     expect(page.ranks()[1].queryParams).toEqual({ view: 'players', realm: 'evermoon', character: 'Progtrix-Evermoon', page: undefined });
 
     expect(page.dungeonBests().map(best => best.run?.score)).toEqual([150, 140, undefined]);
+    expect(dungeonRankCells(element)).toEqual([
+      ['#1', "Rank 1 of 2 Neltharion's Lair runs this season"],
+      ['#1', 'Rank 1 of 2 Darkheart Thicket runs this season']
+    ]);
     expect(element.textContent).toContain('Not played');
     expect(page.teammates().map(mate => [mate.member.name, mate.runs])).toEqual([['Tank', 2], ['Healer', 1], ['Lili', 1]]);
     expect(page.historyRows().map(row => row.completedAt.slice(0, 10))).toEqual(['2026-09-19', '2026-09-18', '2026-09-17']);
@@ -264,6 +271,7 @@ describe('MythicPlusProfilePageComponent', () => {
       view: 'players', class: 10, spec: 'Mistweaver', character: 'Progtrix-Evermoon', page: undefined
     });
     expect(page.dungeonBests().map(best => best.run?.score)).toEqual([120, undefined, undefined]);
+    expect(dungeonRankCells(element)).toEqual([['#2', "Rank 2 of 2 Neltharion's Lair runs this season"]]);
     expect(element.textContent).toContain('Not played as Mistweaver');
     expect(page.teammates().map(mate => mate.member.name)).toEqual(['Lili']);
     expect(page.historyRows().map(row => row.completedAt.slice(0, 10))).toEqual(['2026-09-18']);
