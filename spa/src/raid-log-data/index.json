@@ -1,7 +1,7 @@
-{"version":4,"generatedAt":"2026-11-05T21:17:59Z","previousGeneratedAt":"2026-11-05T20:02:40Z","raid":{"id":1520,"slug":"emerald-nightmare","name":"The Emerald Nightmare"},"difficulties":[
+{"version":4,"generatedAt":"2026-11-05T22:34:34Z","previousGeneratedAt":"2026-11-05T21:17:59Z","raid":{"id":1520,"slug":"emerald-nightmare","name":"The Emerald Nightmare"},"difficulties":[
 {"id":17,"slug":"lfr","name":"Looking For Raid","shortName":"LFR","kills":0},
-{"id":14,"slug":"normal","name":"Normal","shortName":"N","kills":5367},
-{"id":15,"slug":"heroic","name":"Heroic","shortName":"HC","kills":5673},
+{"id":14,"slug":"normal","name":"Normal","shortName":"N","kills":5370},
+{"id":15,"slug":"heroic","name":"Heroic","shortName":"HC","kills":5676},
 {"id":16,"slug":"mythic","name":"Mythic","shortName":"M","kills":775}],"bosses":[
 {"id":1853,"slug":"nythendra","name":"Nythendra"},
 {"id":1873,"slug":"ilgynoth","name":"Il'gynoth, The Heart of Corruption"},
@@ -12000,13 +12000,19 @@
 ["Tauri",1827617,6,14,1793910225,298373,19,0,0,1,12],
 ["Tauri",1827722,1,15,1793911089,253664,48,1,0,0,14],
 ["Tauri",1827735,5,15,1793911203,285362,112,1,1,4,13],
-["Tauri",1827838,2,15,1793911895,331394,48,1,0,10,14]],"newLogs":[
-["Tauri",1827570],
-["Tauri",1827604],
-["Tauri",1827617],
-["Tauri",1827722],
-["Tauri",1827735],
-["Tauri",1827838]],"invalidLogs":[
+["Tauri",1827838,2,15,1793911895,331394,48,1,0,10,14],
+["Tauri",1827918,4,15,1793912533,215631,48,1,0,3,14],
+["Tauri",1828024,6,15,1793913155,299070,112,1,2,2,13],
+["Tauri",1828261,3,15,1793914520,192661,48,1,3,6,12],
+["Tauri",1828283,0,14,1793914681,341719,-1,1,0,10,13],
+["Tauri",1828393,3,14,1793915621,152793,-1,1,0,2,14],
+["Tauri",1828550,4,14,1793916877,268296,-1,1,0,0,12]],"newLogs":[
+["Tauri",1827918],
+["Tauri",1828024],
+["Tauri",1828261],
+["Tauri",1828283],
+["Tauri",1828393],
+["Tauri",1828550]],"invalidLogs":[
 ["Tauri",1565371,"Invalid log. Reason: Warlock Enslave Demon on Taintheart Tormenter"],
 ["Tauri",1684227,"Invalid log. Reason: Warlock Enslave Demon on Taintheart Tormenter"],
 ["Tauri",1684463,"Invalid log. Reason: Warlock Enslave Demon on Taintheart Tormenter"],
@@ -13425,7 +13431,8 @@
 ["Tauri",14,"Evermoon",[1826338,143,75,83,105,131,111]],
 ["Tauri",15,"Tauri",[1826418,134,101,99,157,90,178]],
 ["Tauri",15,"Evermoon",[1826456,207,106,95,83,156,154]],
-["Tauri",14,"Evermoon",[1826446,261,138,208,130,241,193]]],"top":[
+["Tauri",14,"Evermoon",[1826446,261,138,208,130,241,193]],
+["Tauri",15,"Evermoon",[1827094,195,130,109,42,165,289]]],"top":[
 {"boss":"nythendra","difficulty":"normal","dps":["Электричка","Evermoon",7,263,594228,"Tauri",1507684],"hps":["Larahh","Tauri",11,105,356564,"Tauri",1333561]},
 {"boss":"nythendra","difficulty":"heroic","dps":["Exceptionrjw","Evermoon",10,269,740949,"Tauri",1818188],"hps":["Sunjaytzu","Evermoon",10,270,581470,"Tauri",1505655]},
 {"boss":"nythendra","difficulty":"mythic","dps":["Nuitjk","Evermoon",7,263,711020,"Tauri",1704050],"hps":["Dabelle","Evermoon",5,256,615776,"Tauri",1637783]},
