@@ -190,6 +190,12 @@ decision: ask first.** When a rule does change, change its tests first and see t
   because resets happen in the morning.
 - **Leaderboard ranks** are counted per dungeon filter, as on Raider.IO. The player search
   hides rows and never renumbers them, and "Latest" order keeps each run's score rank.
+  Runs are ordered by `compareRuns` (`mythic-plus.ts`): higher score, then the faster time,
+  then the run id, so no two runs share a place.
+- **Dungeon rank** (profile, "Best run per dungeon", `dungeonRanks` in
+  `mythic-plus-profile.ts`): the best run's place among every run of that dungeon this season,
+  in `compareRuns` order. It is the number the runs leaderboard shows with that dungeon picked.
+  A spec pill changes which run is the best, not the runs it is ranked against.
 - **Changes since the last scan** (rank and score arrows) describe the overall season ranking.
   They show only in that scope (season, all dungeons, no role, class or spec) and hide in any
   other, where they would compare different things. The page works them out

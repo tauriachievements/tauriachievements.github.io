@@ -358,7 +358,7 @@ button.spec-pill {
 
   th, td { height: 40px; padding: 0 8px; border-bottom: 1px solid #2a2a2a; text-align: left; white-space: nowrap; }
   thead th { height: auto; padding-bottom: 6px; color: #8a8a8a; font-size: .72rem; font-weight: 600; }
-  tbody th { font-weight: 600; }
+  tbody th { @include fluid-cell; font-weight: 600; }
   .num { text-align: right; font-variant-numeric: tabular-nums; }
   .level { color: #fff; font-size: .95rem; font-weight: 600; }
   .over-time .level { color: #8a8a8a; }
@@ -366,13 +366,7 @@ button.spec-pill {
   .date { color: #9a9a9a; }
 }
 
-.dungeon-name {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-
-  img { width: 24px; height: 24px; border-radius: 3px; }
-}
+.dungeon-name img { width: 24px; height: 24px; margin-right: 8px; border-radius: 3px; vertical-align: middle; }
 
 .not-played th { color: #8a8a8a; }
 .not-played img { opacity: .45; filter: grayscale(1); }
@@ -402,7 +396,8 @@ button.spec-pill {
 .best-card-icon { width: 28px; height: 28px; border-radius: 3px; }
 .best-card-body { display: flex; min-width: 0; flex-direction: column; gap: 1px; }
 .best-card-name { overflow: hidden; font-size: .85rem; font-weight: 700; text-overflow: ellipsis; white-space: nowrap; }
-.best-card-meta { color: #9a9a9a; font-size: .75rem; font-variant-numeric: tabular-nums; }
+.best-card-meta, .best-card-rank { color: #9a9a9a; font-size: .75rem; font-variant-numeric: tabular-nums; }
+.best-card-score { display: grid; text-align: right; }
 .best-cards .not-played .best-card-name { color: #8a8a8a; }
 
 .teammates {

@@ -8,6 +8,7 @@ import {
   MythicPlusRun,
   PlayerScore,
   characterKey,
+  compareRuns,
   currentPlayers,
   foldedMemberName,
   hasScanChanges,
@@ -122,6 +123,47 @@ export function formatTopPercent({ rank, total }: ScopeRank): string {
 
 export function pageOfRank(rank: number, pageSize: number): number {
   return Math.max(1, Math.ceil(rank / pageSize));
+}
+
+type RankedRunFields = Pick<MythicPlusRun, 'id' | 'dungeon' | 'score' | 'clearTimeSeconds'>;
+
+export interface DungeonRank {
+  rank: number;
+  total: number;
+}
+
+export function dungeonRanks(
+  runs: readonly RankedRunFields[],
+  targets: Iterable<RankedRunFields>
+): Map<string, DungeonRank> {
+  const byDungeon = new Map<string, Array<{ run: RankedRunFields; ahead: number; total: number }>>();
+  for (const run of targets) {
+    const entries = byDungeon.get(run.dungeon) ?? [];
+    entries.push({ run, ahead: 0, total: 0 });
+    byDungeon.set(run.dungeon, entries);
+  }
+
+  for (const run of runs) {
+    for (const entry of byDungeon.get(run.dungeon) ?? []) {
+      entry.total++;
+      if (compareRuns(run, entry.run) < 0) {
+        entry.ahead++;
+      }
+    }
+  }
+
+  const ranks = new Map<string, DungeonRank>();
+  for (const entries of byDungeon.values()) {
+    for (const { run, ahead, total } of entries) {
+      ranks.set(run.id, { rank: ahead + 1, total });
+    }
+  }
+  return ranks;
+}
+
+export function dungeonRankLabel({ rank, total }: DungeonRank, dungeonName: string): string {
+  const count = (value: number) => value.toLocaleString('en-GB');
+  return `Rank ${count(rank)} of ${count(total)} ${dungeonName} ${total === 1 ? 'run' : 'runs'} this season`;
 }
 
 export interface ScoreDay {
