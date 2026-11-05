@@ -53,6 +53,9 @@ characters (the Xyhop page). Follow the same steps, with these differences:
   `@{ Realm = 'Evermoon'; Name = 'Xyhop'; Members = @('Xyhop', 'Xyhopwarrior', …) }`. The
   daily update passes it as `--members Xyhop,Xyhopwarrior,…`.
 - Scan it by hand the same way, adding `--members` with the names joined by commas.
+- The Xyhop page also has `api/Run-Xyhop.cmd`, which scans just that page and pushes it as
+  `sync xyhop data`. It keeps its own copy of the names in `MEMBERS`, so a new character goes
+  into both lists.
 - With `--members`, GuildAnalysisExporter doesn't ask `guild-info`. The named characters are
   the roster, all at one rank, "Member"; the guild's faction is the one most of them have
   (`faction_string_class` on their character sheets). `Name` only names the page and its file.
