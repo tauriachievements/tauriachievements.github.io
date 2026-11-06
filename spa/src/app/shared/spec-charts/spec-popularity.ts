@@ -1,4 +1,5 @@
 import { getClassColor } from '../../game/class-colors';
+import { getClassIconPath } from '../../game/classIconHelper';
 import { CLASS_NAMES, DamageRange, Role, RoleFilter, matchesRoleFilter } from '../../game/wow';
 import { LEGION_SPECS, SpecDefinition, specFor } from '../../game/wow-specs';
 
@@ -103,6 +104,48 @@ export function specPopularity(
   classes.sort((a, b) => compareSpecLists(a.specs, b.specs, spec => spec.count) || a.classId - b.classId);
 
   return { total, runCount: runs.length, classes };
+}
+
+export interface PopularityBar extends SpecShare {
+  heightPercent: number;
+  shareLabel: string;
+  showValue: boolean;
+}
+
+export interface PopularityClassGroup extends Omit<ClassShare, 'specs'> {
+  classIcon: string;
+  shareLabel: string;
+  specs: PopularityBar[];
+}
+
+export interface PopularityGridline {
+  value: number;
+  position: number;
+}
+
+export interface PopularityChart {
+  gridlines: PopularityGridline[];
+  groups: PopularityClassGroup[];
+}
+
+export function popularityChart(popularity: SpecPopularity): PopularityChart {
+  const ticks = shareTicks(Math.max(0, ...popularity.classes.flatMap(group => group.specs.map(spec => spec.share))));
+  const topPercent = ticks[ticks.length - 1];
+
+  return {
+    gridlines: ticks.map(value => ({ value, position: (value / topPercent) * 100 })),
+    groups: popularity.classes.map(group => ({
+      ...group,
+      classIcon: getClassIconPath(group.classId),
+      shareLabel: formatShare(group.share),
+      specs: group.specs.map((spec, index) => ({
+        ...spec,
+        heightPercent: (spec.share * 100 / topPercent) * 100,
+        shareLabel: formatShare(spec.share),
+        showValue: index === 0 && spec.count > 0
+      }))
+    }))
+  };
 }
 
 export function compareSpecLists<T>(a: readonly T[], b: readonly T[], value: (spec: T) => number): number {

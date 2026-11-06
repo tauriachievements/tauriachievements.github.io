@@ -48,7 +48,11 @@ export function parseChartView(value: string | null | undefined): ChartView {
   selector: 'app-raid-spec-popularity-chart',
   imports: [TapTooltipDirective, GlideDirective, RevealDirective, FlipDirective, DecimalPipe, SkeletonComponent, RoleFilterComponent],
   templateUrl: './raid-spec-popularity-chart.component.html',
-  styleUrls: ['../../shared/spec-charts/spec-chart.scss', './raid-spec-popularity-chart.component.scss'],
+  styleUrls: [
+    '../../shared/spec-charts/spec-chart.scss',
+    '../../shared/spec-charts/spec-popularity-chart.component.scss',
+    './raid-spec-popularity-chart.component.scss'
+  ],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class RaidSpecPopularityChartComponent {

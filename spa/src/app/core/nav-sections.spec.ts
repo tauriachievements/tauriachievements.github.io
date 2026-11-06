@@ -38,6 +38,7 @@ describe('findNavLocation', () => {
     expect(locate('/raid-logs/tier-list?difficulty=normal')).toBe('Raids / Tier List');
     expect(locate('/mythic-plus/records')).toBe('Mythic+ / Records');
     expect(locate('/legion-key-history-addon')).toBe('Mythic+ / Addon');
+    expect(locate('/arena/stats?bracket=3v3')).toBe('PvP / Arena Statistics');
     expect(locate('/raid-logs-old')).toBeUndefined();
   });
 
@@ -50,6 +51,6 @@ describe('findNavLocation', () => {
     const paths = NAV_SECTIONS.flatMap((section) => section.pages.map((page) => page.path));
 
     expect(new Set(paths).size).toBe(paths.length);
-    expect(paths).toHaveLength(24);
+    expect(paths).toHaveLength(25);
   });
 });

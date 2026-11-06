@@ -22,7 +22,7 @@ Tauri API ──► api/ console apps ──► spa/src/ data files ──► co
 | `RareItems.json` | `AchievementLadder` | `sync data` | Rare Items page |
 | `elite-pvp-items.json` | built once from TauriShoot, then kept by hand ([below](#elite-pvp-items)) | `feat:` / `chore:` | Rare Items page, `AchievementLadder` |
 | `battlegrounds.json`, `battleground-collector-state.json`, `rated-battlegrounds.json` | `BattlegroundCollector` | `sync data` | Battleground and Rated Battleground pages |
-| `arena-ladder-2v2.json`, `arena-ladder-3v3.json` | `ArenaLadderExporter` | `sync data`, `sync arena data` from `Run-Arena.cmd`, or the `Run-QuickUpdate.cmd` commit ([below](#the-daily-update)) | Arena page |
+| `arena-ladder-2v2.json`, `arena-ladder-3v3.json` | `ArenaLadderExporter` | `sync data`, `sync arena data` from `Run-Arena.cmd`, or the `Run-QuickUpdate.cmd` commit ([below](#the-daily-update)) | Arena and Arena Statistics pages |
 | `mythic-plus-data/` | `MythicPlusExporter` | `sync data`, `sync mythic plus data` from `Run-MythicPlus.cmd`, or the `Run-QuickUpdate.cmd` commit | `/mythic-plus/*` |
 | `raid-log-data/` | `RaidLogExporter` | `sync data`, `sync raid logs data` from `Run-RaidLogs.cmd`, or the `Run-QuickUpdate.cmd` commit | `/raid-logs/*` |
 | `guild-analysis/<key>.json` | `GuildAnalysisExporter`, once per guild in the daily update | `sync data` | the hidden guild pages |
@@ -291,8 +291,8 @@ holds up the page.
 
 ## Arena ladder files
 
-ArenaLadderExporter writes `arena-ladder-2v2.json` and `arena-ladder-3v3.json` for `/arena`,
-which reads them through `arena-games.ts`. Each file (format version 2) is
+ArenaLadderExporter writes `arena-ladder-2v2.json` and `arena-ladder-3v3.json` for `/arena`
+and `/arena/stats`, which read them through `arena-games.ts` and `arena-stats.ts`. Each file (format version 2) is
 `{ version, bracket, seasonStart, generatedAt, previousGeneratedAt, players }`, one player per
 line, best rating first (then most games, name, realm and guid). A player is
 `{ guid, realm, name, class, race, gender, faction, guild, spec, games, wins, weekGames, weekWins, rating, peakRating, weekPeakRating, previousRating, previousGames }`,

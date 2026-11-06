@@ -1,0 +1,69 @@
+<div class="chart-scroll">
+  <div class="chart" appReveal>
+    <div class="y-axis" aria-hidden="true">
+      @for (line of chart().gridlines; track line.value) {
+        <span [style.bottom.%]="line.position">{{ line.value }}%</span>
+      }
+    </div>
+
+    <div class="plot" [appFlip]="chart().groups">
+      <div class="gridlines" aria-hidden="true">
+        @for (line of chart().gridlines; track line.value) {
+          <span [style.bottom.%]="line.position"></span>
+        }
+      </div>
+
+      @for (group of chart().groups; track group.classId; let index = $index) {
+        <div
+          class="class-group"
+          [attr.data-flip]="group.classId"
+          [style.--i]="index"
+          [style.--class-color]="group.color"
+          [class.flip]="index >= chart().groups.length / 2">
+          <div class="bars">
+            @for (spec of group.specs; track spec.spec; let specIndex = $index) {
+              <button
+                class="bar-slot"
+                type="button"
+                appTapTooltip
+                [style.--s]="specIndex"
+                [attr.aria-label]="barLabel(spec, group)">
+                <span
+                  class="bar"
+                  [class.empty]="spec.count === 0"
+                  [attr.data-flip-height]="group.classId + '-' + spec.spec"
+                  [style.--bar]="spec.heightPercent + '%'"
+                  [style.background-color]="group.color">
+                  @if (spec.showValue) {
+                    <span class="bar-value">{{ spec.shareLabel }}</span>
+                  }
+                  <span class="tooltip" aria-hidden="true">
+                    <strong>{{ spec.shareLabel }}</strong>
+                    <span>{{ spec.spec }} {{ group.className }}</span>
+                    <span class="tooltip-meta">{{ spec.count | number }} of {{ popularity().total | number }} {{ unit() }}</span>
+                  </span>
+                </span>
+              </button>
+            }
+          </div>
+
+          <div class="spec-icons" aria-hidden="true">
+            @for (spec of group.specs; track spec.spec) {
+              @if (spec.icon) {
+                <img [src]="spec.icon" alt="" [title]="spec.spec" [class.empty]="spec.count === 0" loading="lazy" />
+              } @else {
+                <span class="icon-placeholder" [title]="spec.spec"></span>
+              }
+            }
+          </div>
+
+          <div class="class-label">
+            <img [src]="group.classIcon" alt="" />
+            <span>{{ group.className }}</span>
+            <span class="class-share">{{ group.shareLabel }}</span>
+          </div>
+        </div>
+      }
+    </div>
+  </div>
+</div>

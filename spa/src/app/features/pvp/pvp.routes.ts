@@ -7,6 +7,11 @@ export const PVP_ROUTES: Routes = [
       .then(module => module.ArenaGamesPageComponent)
   },
   {
+    path: 'arena/stats',
+    loadComponent: () => import('./arena-stats-page.component')
+      .then(module => module.ArenaStatsPageComponent)
+  },
+  {
     path: '50-games-played-arenas',
     redirectTo: 'arena',
     pathMatch: 'full'

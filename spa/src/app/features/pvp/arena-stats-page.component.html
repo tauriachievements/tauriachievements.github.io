@@ -1,0 +1,63 @@
+<main class="arena-stats-page">
+  <h1 class="visually-hidden">Arena statistics, rated {{ bracket() }}</h1>
+
+  <section class="chart-card" aria-labelledby="arena-spec-chart-title">
+    <header class="chart-header">
+      <div class="chart-heading">
+        <h2 id="arena-spec-chart-title">Spec Popularity · Rated {{ bracket() }}</h2>
+        @if (dataset()) {
+          <p class="chart-subtitle">{{ subtitle() }}</p>
+        }
+      </div>
+
+      <div class="chart-filters">
+        <button
+          type="button"
+          class="filter-reset"
+          aria-label="Reset the chart filters to every rating and all roles"
+          [disabled]="!isFiltered()"
+          (click)="resetFilters()">
+          Reset
+        </button>
+        <div class="segmented" role="group" aria-label="Bracket" appGlide>
+          @for (option of brackets; track option) {
+            <button
+              type="button"
+              [class.active]="option === bracket()"
+              [attr.aria-pressed]="option === bracket()"
+              (click)="selectBracket(option)">{{ option }}</button>
+          }
+        </div>
+        <div class="segmented rating-filter" role="group" aria-label="Current rating" appGlide>
+          @for (option of ratingOptions; track option.label) {
+            <button
+              type="button"
+              [title]="option.title"
+              [class.active]="ratingFloor() === option.value"
+              [attr.aria-pressed]="ratingFloor() === option.value"
+              (click)="setRatingFloor(option.value)">{{ option.label }}</button>
+          }
+        </div>
+        <div class="role-slot">
+          <app-role-filter dropdownId="arenaStatsRole" [selected]="role()" (selectedChange)="setRole($event)" />
+        </div>
+      </div>
+    </header>
+
+    @if (isLoading()) {
+      <app-skeleton bare [blocks]="['chart']" [label]="'Reading the rated ' + bracket() + ' ladder…'" />
+    } @else if (loadError()) {
+      <app-load-state [loading]="false" [error]="loadError()" (retry)="loadData()" />
+    } @else if (popularity().total > 0) {
+      <app-spec-popularity-chart [popularity]="popularity()" unit="characters" />
+    } @else {
+      <p class="chart-empty">{{ emptyText() }}</p>
+    }
+  </section>
+
+  @if (isLoading() || samples().length) {
+    @for (raceRole of raceRoles; track raceRole) {
+      <app-race-by-spec [role]="raceRole" [samples]="samples()" [context]="raceContext()" [loading]="isLoading()" />
+    }
+  }
+</main>

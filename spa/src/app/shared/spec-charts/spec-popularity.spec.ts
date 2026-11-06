@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { formatShare, shareTicks, specPopularity } from './spec-popularity';
+import { formatShare, popularityChart, shareTicks, specPopularity } from './spec-popularity';
 import { Role } from '../../game/wow';
 import { specFor } from '../../game/wow-specs';
 
@@ -129,6 +129,36 @@ describe('shareTicks', () => {
 
   it('still draws a scale when nothing was seen', () => {
     expect(shareTicks(0)).toEqual([0, 1]);
+  });
+});
+
+describe('popularityChart', () => {
+  const chart = popularityChart(specPopularity(runs));
+  const group = (className: string) => chart.groups.find(entry => entry.className === className)!;
+
+  it('draws a gridline at every tick, the top tick at the top of the plot', () => {
+    expect(chart.gridlines.map(line => line.value)).toEqual([0, 10, 20, 30]);
+    expect(chart.gridlines.map(line => Math.round(line.position))).toEqual([0, 33, 67, 100]);
+  });
+
+  it('sizes each bar by its share against the top tick', () => {
+    expect(group('Mage').specs[0].heightPercent).toBeCloseTo(100);
+    expect(group('Monk').specs.map(spec => spec.heightPercent)).toEqual([
+      expect.closeTo(66.67, 1),
+      expect.closeTo(33.33, 1),
+      0
+    ]);
+  });
+
+  it('writes the value only over the most-seen spec of a class someone played', () => {
+    expect(group('Mage').specs.map(spec => spec.showValue)).toEqual([true, false, false]);
+    expect(group('Warrior').specs.every(spec => !spec.showValue)).toBe(true);
+  });
+
+  it('keeps the class order and gives each class its icon and share labels', () => {
+    expect(chart.groups.map(entry => entry.classId)).toEqual(specPopularity(runs).classes.map(entry => entry.classId));
+    expect(group('Mage')).toMatchObject({ classIcon: 'assets/class-icons/8.gif', shareLabel: '30.0%' });
+    expect(group('Mage').specs[0]).toMatchObject({ spec: 'Frost', count: 3, shareLabel: '30.0%' });
   });
 });
 

@@ -1,0 +1,26 @@
+@use '../../shared/mythic-plus-shared' as *;
+
+:host { display: block; width: 100%; }
+
+@include visually-hidden;
+
+.arena-stats-page {
+  display: flex;
+  width: min(1240px, 100%);
+  flex-direction: column;
+  gap: 16px;
+  margin: 0 auto;
+  padding: 48px 16px;
+}
+
+.chart-header { align-items: baseline; }
+
+.chart-heading { flex: 1 1 420px; }
+
+.chart-filters { justify-content: flex-end; }
+
+@media (max-width: $phone-breakpoint) {
+  .arena-stats-page { padding-top: 32px; }
+
+  .rating-filter button { flex: 1 1 auto; padding-inline: 2px; }
+}
