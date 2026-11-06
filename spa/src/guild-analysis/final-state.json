@@ -1,14 +1,18 @@
 {
-  "timestamp": "2026-11-06 02:47:39 CET",
+  "timestamp": "2026-11-06 15:16:34 CET",
   "guild": {
-    "name": "Xyhop",
+    "name": "Final State",
     "realm": "Evermoon",
     "faction": "Horde"
   },
   "ranks": [
     {
       "order": 0,
-      "name": "Member"
+      "name": "Guild Master"
+    },
+    {
+      "order": 4,
+      "name": "Alt"
     }
   ],
   "players": [
@@ -18,10 +22,10 @@
       "gender": 1,
       "class": 5,
       "guildRank": 0,
-      "guildRankName": "Member",
+      "guildRankName": "Guild Master",
       "specialization": "Shadow",
-      "playedTime": 21998424,
-      "achievementPoints": 20230,
+      "playedTime": 22001956,
+      "achievementPoints": 20240,
       "artifactWeapon": "Xal\u0027atath, Blade of the Black Empire",
       "artifactRelics": 3,
       "artifactTraits": 33,
@@ -64,10 +68,10 @@
       "race": 10,
       "gender": 1,
       "class": 2,
-      "guildRank": 0,
-      "guildRankName": "Member",
+      "guildRank": 4,
+      "guildRankName": "Alt",
       "specialization": "Retribution",
-      "playedTime": 204527,
+      "playedTime": 204553,
       "achievementPoints": 2000,
       "artifactWeapon": "Ashbringer",
       "artifactRelics": 2,
@@ -88,10 +92,10 @@
       "race": 10,
       "gender": 1,
       "class": 12,
-      "guildRank": 0,
-      "guildRankName": "Member",
+      "guildRank": 4,
+      "guildRankName": "Alt",
       "specialization": "Havoc",
-      "playedTime": 24864,
+      "playedTime": 24881,
       "achievementPoints": 240,
       "artifactWeapon": "Twinblades of the Deceiver",
       "artifactRelics": 2,
@@ -112,10 +116,10 @@
       "race": 8,
       "gender": 1,
       "class": 11,
-      "guildRank": 0,
-      "guildRankName": "Member",
+      "guildRank": 4,
+      "guildRankName": "Alt",
       "specialization": "Feral",
-      "playedTime": 145845,
+      "playedTime": 145899,
       "achievementPoints": 500,
       "artifactWeapon": "Fangs of Ashamane",
       "artifactRelics": 2,
@@ -141,19 +145,19 @@
       "race": 8,
       "gender": 0,
       "class": 3,
-      "guildRank": 0,
-      "guildRankName": "Member",
+      "guildRank": 4,
+      "guildRankName": "Alt",
       "specialization": "Marksmanship",
-      "playedTime": 1333778,
+      "playedTime": 1335292,
       "achievementPoints": 3675,
       "artifactWeapon": "Thas\u0027dorah, Legacy of the Windrunners",
       "artifactRelics": 3,
-      "artifactTraits": 24,
+      "artifactTraits": 25,
       "artifacts": [
         {
           "specialization": "Marksmanship",
           "name": "Thas\u0027dorah, Legacy of the Windrunners",
-          "traits": 24
+          "traits": 25
         }
       ],
       "artifactKnowledge": 18,
@@ -178,10 +182,10 @@
       "race": 10,
       "gender": 1,
       "class": 8,
-      "guildRank": 0,
-      "guildRankName": "Member",
+      "guildRank": 4,
+      "guildRankName": "Alt",
       "specialization": "Fire",
-      "playedTime": 454183,
+      "playedTime": 454779,
       "achievementPoints": 1735,
       "artifactWeapon": "Felo\u0027melorn",
       "artifactRelics": 2,
@@ -202,17 +206,23 @@
       "race": 10,
       "gender": 1,
       "class": 10,
-      "guildRank": 0,
-      "guildRankName": "Member",
+      "guildRank": 4,
+      "guildRankName": "Alt",
       "specialization": "Windwalker",
-      "playedTime": 108266,
-      "achievementPoints": 160,
-      "artifactWeapon": null,
-      "artifactRelics": 0,
-      "artifactTraits": 0,
-      "artifacts": [],
+      "playedTime": 110820,
+      "achievementPoints": 190,
+      "artifactWeapon": "Fists of the Heavens",
+      "artifactRelics": 1,
+      "artifactTraits": 1,
+      "artifacts": [
+        {
+          "specialization": "Windwalker",
+          "name": "Fists of the Heavens",
+          "traits": 1
+        }
+      ],
       "artifactKnowledge": 0,
-      "itemLevel": 548.36,
+      "itemLevel": 783.31,
       "legendaries": []
     },
     {
@@ -220,23 +230,23 @@
       "race": 10,
       "gender": 1,
       "class": 4,
-      "guildRank": 0,
-      "guildRankName": "Member",
+      "guildRank": 4,
+      "guildRankName": "Alt",
       "specialization": "Assassination",
-      "playedTime": 423739,
-      "achievementPoints": 1460,
+      "playedTime": 427414,
+      "achievementPoints": 1470,
       "artifactWeapon": "The Kingslayers",
       "artifactRelics": 3,
-      "artifactTraits": 24,
+      "artifactTraits": 25,
       "artifacts": [
         {
           "specialization": "Assassination",
           "name": "The Kingslayers",
-          "traits": 24
+          "traits": 25
         }
       ],
       "artifactKnowledge": 15,
-      "itemLevel": 848.56,
+      "itemLevel": 850.44,
       "legendaries": [
         {
           "id": 137021,
@@ -251,10 +261,10 @@
       "race": 8,
       "gender": 0,
       "class": 9,
-      "guildRank": 0,
-      "guildRankName": "Member",
+      "guildRank": 4,
+      "guildRankName": "Alt",
       "specialization": "Destruction",
-      "playedTime": 2314287,
+      "playedTime": 2315275,
       "achievementPoints": 4440,
       "artifactWeapon": "Scepter of Sargeras",
       "artifactRelics": 3,
@@ -287,10 +297,10 @@
       "race": 10,
       "gender": 1,
       "class": 1,
-      "guildRank": 0,
-      "guildRankName": "Member",
+      "guildRank": 4,
+      "guildRankName": "Alt",
       "specialization": "Arms",
-      "playedTime": 228591,
+      "playedTime": 230546,
       "achievementPoints": 1310,
       "artifactWeapon": "Strom\u0027kar, the Warbreaker",
       "artifactRelics": 2,
@@ -303,7 +313,7 @@
         }
       ],
       "artifactKnowledge": 5,
-      "itemLevel": 796.75,
+      "itemLevel": 798.31,
       "legendaries": []
     }
   ]

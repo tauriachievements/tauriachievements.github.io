@@ -72,7 +72,7 @@ export const GUILD_PAGES = [
   { key: 'skill-issue', guid: '3f7fe216-b578-47c4-b22b-ddf7c9e4e834', name: 'Skill Issue', realm: 'Evermoon' },
   { key: 'highly-regarded', guid: 'cedd1db9-e352-4c11-8f6f-e85937723121', name: 'Highly Regarded', realm: 'Evermoon' },
   { key: 'insidious', guid: '9ef2392c-af98-45b4-94b2-e40495d1c489', name: 'Insidious', realm: 'Evermoon' },
-  { key: 'xyhop', guid: '7d713dbb-c747-471a-8ff7-bc86c7348f12', name: 'Xyhop', realm: 'Evermoon' }
+  { key: 'final-state', guid: '5adbc9d2-ae4c-463f-b7fd-2cbd53f313b4', name: 'Final State', realm: 'Evermoon' }
 ] as const satisfies readonly GuildPage[];
 
 export function guildPagePath(page: GuildPage): string {
