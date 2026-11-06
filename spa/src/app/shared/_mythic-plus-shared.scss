@@ -255,6 +255,31 @@ $cards-breakpoint: 900px;
   transition-delay: 0s;
 }
 
+@mixin chart-tooltip {
+  position: absolute;
+  z-index: 2;
+  top: 0;
+  left: calc(100% + 6px);
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  padding: 6px 9px;
+  border: 1px solid #3a3a3a;
+  border-radius: 6px;
+  background: #0d0d0d;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, .6);
+  color: #bdbdbd;
+  font-size: .72rem;
+  white-space: nowrap;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity .12s ease;
+  @include tooltip-pop;
+
+  strong { color: #fff; font-size: .9rem; }
+}
+
 @mixin filter-reset {
   .filter-reset {
     display: inline-flex;

@@ -257,11 +257,19 @@ decision: ask first.** When a rule does change, change its tests first and see t
   ([Role filters](#role-filters)) limits both the counted slots and the listed specs to it.
 - **Raid spec popularity** counts player slots: a character who killed several bosses counts
   once per kill.
+- **Arena spec popularity** (`arenaSpecSamples` in `features/pvp/arena-stats.ts`, on
+  `/arena/stats`) counts characters: each character on the bracket's ladder once, by the spec
+  of their latest rated game there (the ladder's `spec`). A character with no spec, or a spec
+  of another class, is left out. The rating switch (`?rating=`: 1500, 1750, 2000, 2200 or
+  2500) keeps the characters whose current rating is at the floor or above; the season best
+  doesn't count. The race-by-spec boxes follow the bracket and the rating floor but not the
+  role filter, and they're hidden when nobody holds the floor.
 - **Race by spec** (`shared/spec-charts/race-popularity.ts`): a character counts once per
   spec, however many runs or kills they played it in. The three Pandaren race ids (24, and
   25 / 26 for the factions) are one race. Every spec of the role is listed in the game's order,
   also one nobody played, and a tie between races goes to the name.
-- **Tests:** `spec-popularity.spec.ts`, `race-popularity.spec.ts`.
+- **Tests:** `spec-popularity.spec.ts`, `race-popularity.spec.ts`, `arena-stats.spec.ts`,
+  `arena-stats-page.component.spec.ts`.
 
 ## Raid leaderboard
 

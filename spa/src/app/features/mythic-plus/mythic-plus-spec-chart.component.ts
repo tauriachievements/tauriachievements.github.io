@@ -29,7 +29,7 @@ interface ClassGroup extends Omit<ClassShare, 'specs'> {
   selector: 'app-mythic-plus-spec-chart',
   imports: [TapTooltipDirective, GlideDirective, RevealDirective, FlipDirective, RoleFilterComponent],
   templateUrl: './mythic-plus-spec-chart.component.html',
-  styleUrls: ['../../shared/spec-charts/spec-chart.scss'],
+  styleUrls: ['../../shared/spec-charts/spec-chart.scss', '../../shared/spec-charts/spec-popularity-chart.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class MythicPlusSpecChartComponent {
