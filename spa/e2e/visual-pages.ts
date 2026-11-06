@@ -72,7 +72,7 @@ export const VISUAL_PAGES: readonly VisualPage[] = [
   { name: 'guild-skill-issue', path: '/skill-issue-3f7fe216-b578-47c4-b22b-ddf7c9e4e834' },
   { name: 'guild-highly-regarded', path: '/highly-regarded-cedd1db9-e352-4c11-8f6f-e85937723121' },
   { name: 'guild-insidious', path: '/insidious-9ef2392c-af98-45b4-94b2-e40495d1c489' },
-  { name: 'guild-xyhop', path: '/xyhop-7d713dbb-c747-471a-8ff7-bc86c7348f12' },
+  { name: 'guild-final-state', path: '/final-state-5adbc9d2-ae4c-463f-b7fd-2cbd53f313b4' },
   { name: 'redirect-old-arena', path: '/50-games-played-arenas' },
   { name: 'redirect-old-raid-history', path: '/guild-realm-firsts' },
   { name: 'redirect-old-mythic-plus-compare', path: '/mythic-plus/compare?players=Pashao-Evermoon,Exkeito-Evermoon' },

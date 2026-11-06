@@ -25,7 +25,7 @@ Tauri API ──► api/ console apps ──► spa/src/ data files ──► co
 | `arena-ladder-2v2.json`, `arena-ladder-3v3.json` | `ArenaLadderExporter` | `sync data`, `sync arena data` from `Run-Arena.cmd`, or the `Run-QuickUpdate.cmd` commit ([below](#the-daily-update)) | Arena page |
 | `mythic-plus-data/` | `MythicPlusExporter` | `sync data`, `sync mythic plus data` from `Run-MythicPlus.cmd`, or the `Run-QuickUpdate.cmd` commit | `/mythic-plus/*` |
 | `raid-log-data/` | `RaidLogExporter` | `sync data`, `sync raid logs data` from `Run-RaidLogs.cmd`, or the `Run-QuickUpdate.cmd` commit | `/raid-logs/*` |
-| `guild-analysis/<key>.json` | `GuildAnalysisExporter`, once per guild in the daily update | `sync data`, or `sync xyhop data` from `Run-Xyhop.cmd` for `xyhop.json` | the hidden guild pages |
+| `guild-analysis/<key>.json` | `GuildAnalysisExporter`, once per guild in the daily update | `sync data` | the hidden guild pages |
 | `EmeraldNightmare.json`, `RealmFirstAchievements.json`, `ap-chest-looters.json` | edited by hand | `chore:` / `feat:` | Race to Emerald Nightmare, Realm First History, Hall of Fame |
 
 The scan inputs live under `api/AchievementLadder/Data/`. `BattlegroundCollector` (from the
@@ -56,9 +56,7 @@ steps in order. The step names are the values `-From` accepts.
 8. `GuildCharacters`: GuildCharacterExporter
 9. `Ladder`: AchievementLadder
 10. `MissingPlayers`: MissingPlayerFinder
-11. `GuildAnalysis`: GuildAnalysisExporter, once for each guild in `$guildAnalysisGuilds` (an
-    entry with `Members` scans those characters as the guild,
-    [guides/howto-add-guild-page.md](guides/howto-add-guild-page.md#a-guild-of-named-characters))
+11. `GuildAnalysis`: GuildAnalysisExporter, once for each guild in `$guildAnalysisGuilds`
 12. `Publish`: one `sync data` commit of the paths in `$publishPaths`, then a push
 
 So a night's run is one commit and one Pages deploy, the guild pages included.
@@ -90,10 +88,6 @@ So a night's run is one commit and one Pages deploy, the guild pages included.
 - `Run-MythicPlus.cmd`, `Run-RaidLogs.cmd` and `Run-Arena.cmd` refresh one dataset on its
   own. Their arguments go to the exporter (`Run-MythicPlus.cmd --allow-shrink` at a season
   reset).
-- `Run-Xyhop.cmd` rescans the Xyhop guild page (`guild-analysis/xyhop.json`) on its own and
-  takes no arguments. Its member list is a copy of the Xyhop entry in `$guildAnalysisGuilds`,
-  so a new character goes into both
-  ([guides/howto-add-guild-page.md](guides/howto-add-guild-page.md#a-guild-of-named-characters)).
 - `Run-QuickUpdate.cmd` is the refresh to run during the day. It runs MythicPlusExporter,
   RaidLogExporter and ArenaLadderExporter, in that order, and publishes what changed in one
   commit. The message names the changed datasets in the same order:

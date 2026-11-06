@@ -113,7 +113,6 @@ concurrency, timeouts, and retry behavior; see
 | Collect guilds and guildless characters from Mythic+ runs | `dotnet run --project MythicPlusGuildAndCharScan` |
 | Collect guilds and guildless characters from Emerald Nightmare raiders | `dotnet run --project RaidLogGuildAndCharScan` |
 | Export one guild's statistics | `dotnet run --project GuildAnalysisExporter -- Evermoon Endless` |
-| Export named characters as one guild page | `dotnet run --project GuildAnalysisExporter -- Evermoon Xyhop --members Xyhop,Xyhopwarrior` |
 | Export the Endless workbook | `dotnet run --project EndlessGuildExporter` |
 
 Commands with additional options expose usage through `--help` or document their arguments

@@ -62,7 +62,7 @@ $guildAnalysisGuilds = @(
     @{ Realm = 'Evermoon'; Name = 'Skill Issue' },
     @{ Realm = 'Evermoon'; Name = 'Highly Regarded' },
     @{ Realm = 'Evermoon'; Name = 'Insidious' },
-    @{ Realm = 'Evermoon'; Name = 'Xyhop'; Members = @('Xyhop', 'Xyhopwarrior', 'Xyhopaladin', 'Xyhophunter', 'Xyhoprogue', 'Xyhopdk', 'Xyhopshaman', 'Xyhopmage', 'Xyhopwarlock', 'Xyhopmonk', 'Xyhopdruid', 'Xyhopdh') }
+    @{ Realm = 'Evermoon'; Name = 'Final State' }
 )
 
 $steps = @(
@@ -201,11 +201,7 @@ for ($i = $startIndex; $i -lt $steps.Count; $i++) {
         foreach ($guild in $step.Guilds) {
             $guildLabel = "$($guild.Realm) - $($guild.Name)"
             Write-Log "Scanning $guildLabel"
-            $memberArguments = @()
-            if ($guild.Members) {
-                $memberArguments = @('--members', ($guild.Members -join ','))
-            }
-            & dotnet run --project (Join-Path $apiRoot $step.Project) -c Release --no-build -- $guild.Realm $guild.Name --output-directory $outputDirectory @memberArguments
+            & dotnet run --project (Join-Path $apiRoot $step.Project) -c Release --no-build -- $guild.Realm $guild.Name --output-directory $outputDirectory
             $exitCode = $LASTEXITCODE
             if ($exitCode -ne 0) {
                 $failedGuilds += $guildLabel

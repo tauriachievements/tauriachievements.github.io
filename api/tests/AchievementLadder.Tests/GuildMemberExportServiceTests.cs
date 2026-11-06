@@ -64,60 +64,14 @@ public sealed class GuildMemberExportServiceTests : IDisposable
         );
     }
 
-    [Fact]
-    public async Task ExportAsync_WithAMemberList_ScansThoseCharactersAsOneGuildWithoutGuildInfo()
-    {
-        var apiClient = new FakeGuildMemberApiClient(
-            [],
-            new Dictionary<string, int>
-            {
-                ["Xyhopwarlock"] = 110,
-                ["Xyhop"] = 110,
-                ["Xyhopdk"] = 101,
-            }
-        );
-
-        var result = await ExportAsync(
-            apiClient,
-            "Xyhop",
-            ["Xyhopwarlock", "Xyhop", "xyhop", " Xyhopdk "]
-        );
-
-        Assert.Equal(0, apiClient.GuildInfoRequests);
-        Assert.Equal(3, result.ScannedPlayerCount);
-        Assert.Equal(2, result.PlayerCount);
-        Assert.Equal(Path.Combine(_outputDirectory, "xyhop.json"), result.OutputPath);
-        using var document = JsonDocument.Parse(await File.ReadAllTextAsync(result.OutputPath));
-        var root = document.RootElement;
-        Assert.Equal("Xyhop", root.GetProperty("guild").GetProperty("name").GetString());
-        Assert.Equal("Evermoon", root.GetProperty("guild").GetProperty("realm").GetString());
-        Assert.Equal("Horde", root.GetProperty("guild").GetProperty("faction").GetString());
-        var rank = Assert.Single(root.GetProperty("ranks").EnumerateArray());
-        Assert.Equal(0, rank.GetProperty("order").GetInt32());
-        Assert.Equal("Member", rank.GetProperty("name").GetString());
-        var players = root.GetProperty("players").EnumerateArray().ToList();
-        Assert.Equal(
-            ["Xyhop", "Xyhopwarlock"],
-            players.Select(player => player.GetProperty("name").GetString())
-        );
-        Assert.All(
-            players,
-            player => Assert.Equal("Member", player.GetProperty("guildRankName").GetString())
-        );
-    }
-
-    private async Task<GuildMemberExportResult> ExportAsync(
-        ITauriApiClient apiClient,
-        string guildName = "Test Guild",
-        IReadOnlyList<string>? memberNames = null
-    )
+    private async Task<GuildMemberExportResult> ExportAsync(ITauriApiClient apiClient)
     {
         using var itemClient = new TauriShootItemClient();
         return await new GuildMemberExportService(
             _outputDirectory,
             apiClient,
             itemClient
-        ).ExportAsync("Evermoon", guildName, memberNames, CancellationToken.None);
+        ).ExportAsync("Evermoon", "Test Guild", CancellationToken.None);
     }
 
     private static async Task<IReadOnlyList<JsonElement>> ReadPlayersAsync(string outputPath)
@@ -136,9 +90,6 @@ public sealed class GuildMemberExportServiceTests : IDisposable
     ) : ITauriApiClient
     {
         private readonly ConcurrentQueue<(string Endpoint, string Character)> _requests = new();
-        private int _guildInfoRequests;
-
-        public int GuildInfoRequests => _guildInfoRequests;
 
         public IReadOnlyList<string> CharactersRequested(string endpoint) =>
             _requests
@@ -155,7 +106,6 @@ public sealed class GuildMemberExportServiceTests : IDisposable
         {
             if (endpoint == "guild-info")
             {
-                Interlocked.Increment(ref _guildInfoRequests);
                 return Task.FromResult(GuildInfo());
             }
 
@@ -176,7 +126,6 @@ public sealed class GuildMemberExportServiceTests : IDisposable
                                 race = 1,
                                 gender = 0,
                                 @class = 1,
-                                faction_string_class = "Horde",
                             }
                         ),
                     "character-artifact" => Success(new { artifacts = Array.Empty<object>() }),
