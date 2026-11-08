@@ -31,17 +31,12 @@ import {
 import { defaultDifficulty } from './raid-logs';
 import { scoresBySpecForKills, specMetric } from './raid-scores';
 import {
-  NOTABLE_DIFFERENCE,
-  NOTABLE_MIN_PICKS,
   SpecTalentSummary,
   TalentSample,
   agreementLabel,
   bossTalentShares,
-  formatShare,
-  sortByPerformance,
   specTalentSummaries,
   specTiers,
-  specsMatching,
   talentBuilds,
   talentLevels,
   talentPicks,
@@ -49,7 +44,14 @@ import {
   talentSwaps
 } from './raid-talents';
 import {
+  NOTABLE_DIFFERENCE,
+  NOTABLE_MIN_PICKS,
+  formatShare,
   heatColor,
+  sortByPerformance,
+  specsMatching
+} from './raid-analytics';
+import {
   talentBuildRows,
   talentHeatRows,
   talentInsights,

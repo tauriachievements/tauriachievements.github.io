@@ -85,6 +85,12 @@ export const NAV_SECTIONS: readonly NavSection[] = [
         queryParams: { difficulty: 'mythic' }
       },
       {
+        label: 'Trinket Analytics',
+        tab: 'Trinkets',
+        path: '/raid-logs/trinkets',
+        queryParams: { difficulty: 'mythic' }
+      },
+      {
         label: 'Character Rankings',
         tab: 'Rankings',
         path: '/raid-logs/leaderboard',

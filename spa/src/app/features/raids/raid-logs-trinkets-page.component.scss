@@ -1,0 +1,76 @@
+@use './raid-logs-shared' as *;
+
+:host { display: block; width: 100%; }
+
+@include visually-hidden;
+@include back-link;
+@include summary-tiles;
+@include sections;
+@include raid-table;
+@include filter-reset;
+
+.raid-page { @include raid-page; }
+
+app-icon-tips { display: flex; min-width: 0; flex-direction: column; gap: 16px; }
+
+@include analytics-controls;
+.boss-slot, .class-slot, .spec-slot { flex: none; }
+
+@include method-note;
+@include insights;
+@include spec-cards;
+@include meter;
+@include spec-header;
+@include share-legend;
+@include edge-chip;
+@include meter-share;
+@include heatmap;
+
+.card-trinkets { display: flex; flex-direction: column; gap: 6px; }
+
+.card-trinket {
+  display: grid;
+  grid-template-columns: 22px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 8px;
+  font-size: .8rem;
+
+  img { width: 22px; height: 22px; border: 1px solid var(--quality-color); border-radius: 3px; }
+}
+
+.card-trinket-name { overflow: hidden; color: var(--quality-color); font-weight: 600; text-overflow: ellipsis; white-space: nowrap; }
+.card-trinket-share { color: #bdbdbd; font-variant-numeric: tabular-nums; }
+.card-trinket:first-child .card-trinket-share { color: #fff; font-weight: 700; }
+.card-foot { margin-top: auto; color: $raid-muted; font-size: .72rem; }
+
+.trinket {
+  display: inline-flex;
+  min-width: 0;
+  max-width: 100%;
+  align-items: center;
+  gap: 8px;
+  color: var(--quality-color);
+  font-weight: 700;
+  text-decoration: none;
+}
+
+td a.trinket { color: var(--quality-color); }
+.trinket-icon { width: 24px; height: 24px; flex: none; border: 1px solid var(--quality-color); border-radius: 4px; }
+.trinket-name { overflow: hidden; text-overflow: ellipsis; }
+
+.pair { display: flex; min-width: 0; flex-direction: column; align-items: flex-start; gap: 5px; }
+
+.top-share {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+
+  b { min-width: 3ch; color: #fff; font-variant-numeric: tabular-nums; text-align: right; }
+  .edge { margin-left: 0; }
+}
+
+.insight-icons { display: flex; flex: none; align-items: flex-start; gap: 4px; }
+
+.heat-name { max-width: 260px; }
+.heat-name > span { max-width: 100%; }
+.heat-name-text { overflow: hidden; text-overflow: ellipsis; }

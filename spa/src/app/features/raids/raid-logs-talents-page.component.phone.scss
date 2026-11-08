@@ -2,13 +2,10 @@
 
 @media (max-width: 640px) {
   .raid-page { padding-top: 32px; }
-  .filters { width: 100%; }
+  @include analytics-controls-phone;
   .role-slot,
   .class-slot { width: auto; min-width: 0; max-width: none; flex: 1 1 0; }
-  .meta-title { font-size: 1.05rem; }
-  .spec-header { padding: 14px; }
-  .spec-header-icon { width: 44px; height: 44px; }
-  .spec-heading h2 { font-size: 1.25rem; }
+  @include spec-header-phone;
 
   .tier-choices { gap: 5px; }
   .talent { gap: 6px; padding: 7px; }
@@ -20,15 +17,9 @@
   .edge { margin-left: 0; }
 
   .consensus-pick img { width: 26px; height: 26px; }
-  .build-share .meter { width: 36px; }
+  .meter-share .meter { width: 36px; }
   app-raid-talent-icons { gap: 2px; --raid-icon-size: 18px; }
 
-  .heat-boss { min-width: 0; padding: 6px 2px; }
-  .heat-boss img { width: 22px; height: 22px; margin-bottom: 0; }
-  .heat-boss span, .heat-talent-name { @include hidden-visually; }
+  @include heatmap-phone;
   .heat-level { padding: 0 4px; }
-  .heat-talent { padding: 4px; }
-  .heat-talent > span { gap: 0; }
-  .heat-cell { position: relative; padding: 0 2px; font-size: .7rem; }
-  .notable-mark { position: absolute; top: 1px; right: 2px; margin: 0; font-size: .5rem; line-height: 1; }
 }

@@ -32,6 +32,11 @@ export const RAIDS_ROUTES: Routes = [
       .then(module => module.RaidLogsTalentsPageComponent)
   },
   {
+    path: 'raid-logs/trinkets',
+    loadComponent: () => import('./raid-logs-trinkets-page.component')
+      .then(module => module.RaidLogsTrinketsPageComponent)
+  },
+  {
     path: 'raid-logs/leaderboard',
     loadComponent: () => import('./raid-logs-leaderboard-page.component')
       .then(module => module.RaidLogsLeaderboardPageComponent)

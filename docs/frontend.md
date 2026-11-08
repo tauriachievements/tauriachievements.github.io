@@ -36,7 +36,7 @@ A file's name says what it is:
 |---|---|
 | `<name>-page.component.{ts,html,scss}` | a routed page |
 | `<name>.component.*` | a child or shared component |
-| `<feature>.ts` + `<feature>.spec.ts` | pure logic: types, parsing, ranking, formatting (e.g. `mythic-plus.ts`, `raid-scores.ts`, `arena-games.ts`). A big area splits it by job: the Raids keep the file formats in `raid-logs.types.ts`, decoding in `raid-logs.ts`, scores in `raid-scores.ts`, guild progression in `raid-progression.ts`, a character's kills of a boss over time in `raid-kill-history.ts` and display helpers in `raid-display.ts`, with their test fixtures in `raid-logs.fixture.ts` |
+| `<feature>.ts` + `<feature>.spec.ts` | pure logic: types, parsing, ranking, formatting (e.g. `mythic-plus.ts`, `raid-scores.ts`, `arena-games.ts`). A big area splits it by job: the Raids keep the file formats in `raid-logs.types.ts`, decoding in `raid-logs.ts`, scores in `raid-scores.ts`, guild progression in `raid-progression.ts`, a character's kills of a boss over time in `raid-kill-history.ts`, what Talent and Trinket Analytics share in `raid-analytics.ts` (each character's best kill per boss and spec, the top players, the notable-pick and edge thresholds, the spec order and the share formats), talents in `raid-talents.ts`, trinkets in `raid-trinkets.ts` and display helpers in `raid-display.ts`, with their test fixtures in `raid-logs.fixture.ts` |
 | `<feature>-views.ts` | pure functions that turn the logic's results into what a page shows: rows, tiles, labels, insight text (`mythic-plus-views.ts`, `raid-talents-views.ts`) |
 | `<name>.directive.ts` | an attribute directive (`app` prefix: `[appReveal]`) |
 | `<name>.service.ts` | data loading shared by several pages |
@@ -140,14 +140,16 @@ difficulty, the page number. Defaults are left out of it.
 - **Real navigation** is only for a change the Back button should undo. For example, on the
   Talent Analytics page, opening a spec's card navigates, while difficulty, boss, role and class
   use `replaceState`. On a spec's page, picking a role or a class, or pressing Reset, navigates
-  back to the overview.
+  back to the overview. Trinket Analytics works the same way, with a Spec dropdown beside its
+  card: picking a spec there navigates too, and "All specs" goes back to the class's overview.
 - The router never sees parameters written with `replaceState`. When you build a link or
   navigation from the current state, spell out every parameter you want kept.
 - For the same reason `route.queryParamMap` stays silent when the reader opens the address the
   router last opened, such as the page's own header link after a switch changed the URL. A page
   that its own link should reset reads its parameters through `injectQueryParamMap()`
   (`url-state.ts`), which hands over the route's parameters after every navigation. Raid
-  Statistics, Tier List, Talent Analytics, Realm Stats, Arena and Arena Statistics do this.
+  Statistics, Tier List, Talent Analytics, Trinket Analytics, Realm Stats, Arena and Arena
+  Statistics do this.
 
 The query parameters each page reads:
 
@@ -167,7 +169,7 @@ The query parameters each page reads:
 | `/mythic-plus/character/:realm/:name` | `spec` |
 | `/mythic-plus/guild/:realm/:guild` | `period`, `dungeon`, `class`, `spec`, `role`, `character` |
 | a guild page (unlisted) | `role` |
-| every `/raid-logs` page | `difficulty`, plus: Guilds `faction`, `realm`, `period` (`week`: this raid week), `groups` (`all`: pickup groups too; both in [scoring.md](scoring.md#raid-guild-progression-and-kill-speed)), `page`; Fastest Clears `faction`, `realm`, `groups` (`all`: pickup clears too; [scoring.md](scoring.md#raid-fastest-full-clears)), `page`; Statistics `view`, `role`; Talents `boss`, `role`, `class`, `spec`; Rankings `metric`, `class`, `spec`, `realm`, `q`, `page`; a guild `page` (its kill history); a boss `tab` (`hps`, `fastest`, `latest`; Damage is the default, and the old `ranged` and `melee` open Damage with that role), `role` (on Damage: `tank`, `dps`, `melee`, `ranged`), `class`, `spec`, `realm`, `q`, `page`; a character `metric`, `compare=class`, `spec` (with `compare=class`: a spec of the character's class the metric ranks), `class` (an earlier character with the name, by class id; [data-pipeline.md](data-pipeline.md#raid-log-files)) |
+| every `/raid-logs` page | `difficulty`, plus: Guilds `faction`, `realm`, `period` (`week`: this raid week), `groups` (`all`: pickup groups too; both in [scoring.md](scoring.md#raid-guild-progression-and-kill-speed)), `page`; Fastest Clears `faction`, `realm`, `groups` (`all`: pickup clears too; [scoring.md](scoring.md#raid-fastest-full-clears)), `page`; Statistics `view`, `role`; Talents `boss`, `role`, `class`, `spec`; Trinkets `boss`, `class`, `spec` (a spec id); Rankings `metric`, `class`, `spec`, `realm`, `q`, `page`; a guild `page` (its kill history); a boss `tab` (`hps`, `fastest`, `latest`; Damage is the default, and the old `ranged` and `melee` open Damage with that role), `role` (on Damage: `tank`, `dps`, `melee`, `ranged`), `class`, `spec`, `realm`, `q`, `page`; a character `metric`, `compare=class`, `spec` (with `compare=class`: a spec of the character's class the metric ranks), `class` (an earlier character with the name, by class id; [data-pipeline.md](data-pipeline.md#raid-log-files)) |
 
 On the Mythic+ leaderboard and guild ladder, a `spec` counts only when it belongs to the
 `class` in the same URL. A `Name-Realm` value splits on its last hyphen: character names can't
@@ -220,8 +222,8 @@ instead.
   that shows them also asks for `invalidBossKills()`. It keeps `lastDifficulty`, so the Raids tabs
   remember the difficulty within a session. A tab opened without `?difficulty=` starts on it,
   else on `defaultDifficulty`, the hardest one with a kill. The header's Raid Statistics, Tier
-  List and Talent Analytics links carry `?difficulty=mythic`, so those three always open on
-  Mythic, unless Mythic has no kill yet.
+  List, Talent Analytics and Trinket Analytics links carry `?difficulty=mythic`, so those four
+  always open on Mythic, unless Mythic has no kill yet.
 - Files only some icons or names depend on (raid genders, talent tables and tooltips) fail
   soft: a file that won't load is an empty table, not an error. So does the battleground
   collector's state on Rated Battlegrounds: without it the page shows no changes. A kill the raid index doesn't
@@ -378,8 +380,8 @@ decision (ask first).
 | `shared/scan-change.ts` | changes since the last scan on a leaderboard: `scanChanges(current, previous, key, value)` compares two rankings (each entry's place in its list is its rank) and gives each changed entry its ranks climbed, its value change and whether it's new; `signedChange` (`+24`, `−12`), `rankChangeLabel` and `valueChangeLabel` for the marks' titles. The raid leaderboard, Arena and Rated Battlegrounds use it, with the `scan-change-marks` mixin |
 | Raids helpers | in `raid-display.ts`: `nameMatches` for name search, `parseBossView` for a boss page's `?tab=` and `?role=`, `FACTION_FILTERS` for a faction dropdown and `?faction=` (`horde`, `alliance`), the links, icon URLs and number formats, `DIFFICULTY_COLORS` and `FACTION_COLORS` for code that draws (the same colours as `$difficulty-colors` and the `faction-marks` mixin in `_raid-logs-shared.scss`, so change both), `guildSuggestion`, a guild's row in the Guilds search, and `characterGuildLink`, the guild page of a character's Players.csv guild, or nothing when that guild has no guild kill on its realm (`guildsWithKills`, matched in any case as the guild page matches), so a pickup raider's guild never opens "This guild has no kills", and `raidRaceIcon`, a raid character's race icon with the gender from `raid-genders.json` when it lists the character (the leaderboard and the log page); in `raid-logs.ts`: `bossShortName` (a boss's `shortName`) for tiles, table cells and other tight spots: the name up to its first comma, or a shorter name from `BOSS_SHORT_NAMES` ("Elerethe", "Dragons"). A long boss name in a new raid gets an entry there |
 | `_tables.scss` (forwarded by `_mythic-plus-shared.scss`) | the phone rules every table shares: `table-scroll`, `phone-columns` (`phone-hidden`, `narrow-phone-hidden`, `phone-only`), `phone-detail-rows`, `fluid-cell`, `fluid-identity`, `truncate`, and `$phone-breakpoint` / `$narrow-phone-breakpoint` ([Tables on phones](#tables-on-phones)) |
-| `_mythic-plus-shared.scss` | mixins such as `tooltip-box`, `chart-tooltip` (the spec charts' tooltip, beside its bar), `quality-colors`, `visually-hidden` (and `hidden-visually`, its declarations alone), `motion-safe`, `glide-pill`, `week-bands` (a chart's affix-week bands), `details-reveal` ([motion](motion-and-rendering.md)), `filter-reset` (a toolbar's Reset button, greyed out while there's nothing to reset; the Raids Rankings, Guilds and Talent Analytics pages, Arena and Rare Items). `crest-glow` needs `isolation: isolate` on the crest's parent, so the glow sits under the crest and above the parent's background. `spotlight-card` takes the card's `::before` and `::after`. `scan-change-marks($drop-color)` styles the since-the-last-scan marks: `.rank-move` (with `.move-arrow`) beside a rank, `.value-change` beside a value, both green with `.up` and `$drop-color` without, and `.rank-new` (the `new-tag` mixin's gold "new"). The raid leaderboard's drops are grey, the PvP pages' red ([scoring.md](scoring.md#arena-changes-since-the-last-scan)) |
-| `_raid-logs-shared.scss` | forwards the M+ mixins, and adds `raid-table` (with the phone column rules, `phone-fluid` cells and `center` cells, for the leaderboard's columns and the log page's Per second and Item level), `boss-picker($count)`, `ranking-toolbar`, `difficulty-switch`, `segmented-switch` (the difficulty switch's pill look, for any other switch beside it), and `change-pill` (a guild's progress change, with `.positive` / `.negative`); `invalid-tag`, the red "Invalid" on a kill that doesn't count; `raid-icons`, the talent and trinket icons' look, for a component that draws a row of them |
+| `_mythic-plus-shared.scss` | mixins such as `tooltip-box`, `chart-tooltip` (the spec charts' tooltip, beside its bar), `quality-colors`, `visually-hidden` (and `hidden-visually`, its declarations alone), `motion-safe`, `glide-pill`, `week-bands` (a chart's affix-week bands), `details-reveal` ([motion](motion-and-rendering.md)), `filter-reset` (a toolbar's Reset button, greyed out while there's nothing to reset; the Raids Rankings, Guilds, Talent Analytics and Trinket Analytics pages, Arena and Rare Items). `crest-glow` needs `isolation: isolate` on the crest's parent, so the glow sits under the crest and above the parent's background. `spotlight-card` takes the card's `::before` and `::after`. `scan-change-marks($drop-color)` styles the since-the-last-scan marks: `.rank-move` (with `.move-arrow`) beside a rank, `.value-change` beside a value, both green with `.up` and `$drop-color` without, and `.rank-new` (the `new-tag` mixin's gold "new"). The raid leaderboard's drops are grey, the PvP pages' red ([scoring.md](scoring.md#arena-changes-since-the-last-scan)) |
+| `_raid-logs-shared.scss` | forwards the M+ mixins, and adds `raid-table` (with the phone column rules, `phone-fluid` cells and `center` cells, for the leaderboard's columns and the log page's Per second and Item level), `boss-picker($count)`, `ranking-toolbar`, `difficulty-switch`, `segmented-switch` (the difficulty switch's pill look, for any other switch beside it), and `change-pill` (a guild's progress change, with `.positive` / `.negative`); `invalid-tag`, the red "Invalid" on a kill that doesn't count; `raid-icons`, the talent and trinket icons' look, for a component that draws a row of them; and the look Talent Analytics and Trinket Analytics share: `analytics-controls` (the title, switch and filters row), `spec-cards` (the overview's spec cards), `spec-header`, `insights` ("What stands out"), `meter`, `meter-share` (a share with its bar, and the Best showing cell), `share-legend`, `share-bars`, `edge-chip` (the green or red top players' difference), `heatmap` (the boss by boss table), `method-note` and `analytics-motion`. `analytics-controls-phone`, `spec-header-phone` and `heatmap-phone` are their phone rules, without a media query, for the page's `.phone.scss` to include inside its own |
 | `.tap-area` (global) | an empty span inside a small link that grows its tap target |
 
 `app-filter-bar` and `app-leaderboard-table` belong to the ladder page.
@@ -585,7 +587,7 @@ the `tr` toggles, and the links and the toggle button inside it stop the click f
   a component stylesheet warns at 16 kB and errors at 24 kB. Several page stylesheets are
   close to theirs (`npm run build` lists any over it). Don't add to either. Move a page's
   motion into `<page>.motion.scss`, its phone rules into `<component>.phone.scss` (the ladder
-  table, Talent Analytics, the Mythic+ profile and Rated Battlegrounds do), shared rules into a mixin, and anything
+  table, Talent Analytics, Trinket Analytics, the Mythic+ profile and Rated Battlegrounds do), shared rules into a mixin, and anything
   a first visit doesn't need into a lazy route.
 
 ## Template and test gotchas
