@@ -1,7 +1,9 @@
 import { formatClock } from '../../shared/time-format';
 import { SearchSuggestion, foldName } from '../../shared/search-suggestions';
 import { parseRoleFilter, realmSlug, Role, RoleFilter } from '../../game/wow';
+import { getRaceIconPath } from '../../game/raceIconHelper';
 import { RaidBoss, RaidGuild, RaidKill, RaidCharacter } from './raid-logs.types';
+import { characterKey } from './raid-logs';
 import { RankedGuild } from './raid-progression';
 
 export const FACTION_FILTERS: ReadonlyArray<{ slug: string; id: number; label: string }> = [
@@ -88,6 +90,10 @@ export function characterGuildLink(character: Pick<RaidCharacter, 'guild' | 'rea
   return character.guild && guilds.has(guildPageKey(character.guild, character.realm))
     ? raidGuildLink({ name: character.guild, realm: character.realm })
     : undefined;
+}
+
+export function raidRaceIcon(character: Pick<RaidCharacter, 'name' | 'realm' | 'race' | 'gender'>, genders: ReadonlyMap<string, number>): string {
+  return getRaceIconPath(character.race, genders.get(characterKey(character)) ?? character.gender);
 }
 
 export function guildSuggestion(row: RankedGuild, difficulty: string): SearchSuggestion {

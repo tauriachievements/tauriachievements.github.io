@@ -275,26 +275,7 @@
                   @for (build of buildRows(); track build.talents) {
                     <tr>
                       <td class="rank">{{ build.rank }}</td>
-                      <td>
-                        <span class="icons">
-                          @for (talent of build.picked; track talent) {
-                            @if (talent) {
-                              <a
-                                class="icon"
-                                [href]="spellUrl(talent.id)"
-                                target="_blank"
-                                rel="noopener"
-                                [attr.aria-label]="talent.name"
-                                [attr.data-tip]="talent.name"
-                                [attr.data-tip-spell]="talent.id">
-                                <img [src]="icon(talent.icon, 'medium')" [srcset]="iconSrcset(talent.icon)" sizes="22px" width="22" height="22" alt="" loading="lazy" />
-                              </a>
-                            } @else {
-                              <span class="icon empty" data-tip="No talent picked"></span>
-                            }
-                          }
-                        </span>
-                      </td>
+                      <td><app-raid-talent-icons [talents]="build.picked" /></td>
                       <td>
                         <span class="build-share">
                           <span class="meter" aria-hidden="true"><span [style.width.%]="build.meter * 100"></span></span>

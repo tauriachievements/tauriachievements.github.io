@@ -6,20 +6,35 @@ import { Subscription } from 'rxjs';
 import { getClassIconPath } from '../../game/classIconHelper';
 import { getClassColor } from '../../game/class-colors';
 import { GlideDirective } from '../../shared/motion/glide.directive';
+import { IconTipsComponent } from '../../shared/icon-tips.component';
 import {
   ITEM_QUALITY_COLORS,
   ROLE_NAMES,
+  characterGuildLink,
   formatAmount,
   formatFightTime,
   formatPerSecond,
+  guildsWithKills,
   itemIconUrl,
   itemUrl,
   raidBossLink,
   raidCharacterLink,
-  raidGuildLink
+  raidGuildLink,
+  raidRaceIcon
 } from './raid-display';
-import { RaidItem, RaidKill, RaidKillDetails, RaidLogsIndex, RaidMember } from './raid-logs.types';
-import { characterKey } from './raid-logs';
+import {
+  RaidCharacter,
+  RaidItem,
+  RaidKill,
+  RaidKillDetails,
+  RaidLogsIndex,
+  RaidMember,
+  RaidTalent,
+  RaidTalentTable,
+  RaidTalentTooltips
+} from './raid-logs.types';
+import { characterKey, memberTalents } from './raid-logs';
+import { RaidTalentIconsComponent } from './raid-talent-icons.component';
 import { speedRank } from './raid-progression';
 import { clearEndedBy } from './raid-clears';
 import { RevealDirective } from '../../shared/motion/reveal.directive';
@@ -44,6 +59,7 @@ interface MemberRow {
   perSecond: number;
   share: number;
   bar: number;
+  talents: Array<RaidTalent | undefined>;
 }
 
 interface LootView {
@@ -60,7 +76,7 @@ interface SummaryTile {
 
 @Component({
   selector: 'app-raid-log-page',
-  imports: [RouterLink, GlideDirective, RevealDirective, DatePipe, DecimalPipe, LoadStateComponent],
+  imports: [RouterLink, GlideDirective, RevealDirective, IconTipsComponent, RaidTalentIconsComponent, DatePipe, DecimalPipe, LoadStateComponent],
   templateUrl: './raid-log-page.component.html',
   styleUrl: './raid-log-page.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush
@@ -79,6 +95,10 @@ export class RaidLogPageComponent {
   readonly index = signal<RaidLogsIndex | undefined>(undefined);
   readonly kill = signal<RaidKillDetails | undefined>(undefined);
   private readonly siblings = signal<RaidKill[]>([]);
+  private readonly talentTable = signal<RaidTalentTable>(new Map());
+  readonly talentTooltips = signal<RaidTalentTooltips>(new Map());
+  private readonly genders = toSignal(this.data.genders(), { initialValue: new Map<string, number>() as ReadonlyMap<string, number> });
+  private readonly guildsWithKills = computed(() => guildsWithKills(this.index()?.kills ?? []));
   readonly isLoading = signal(true);
   readonly loadError = signal<string | undefined>(undefined);
   readonly metric = signal<LogMetric>('damage');
@@ -96,6 +116,7 @@ export class RaidLogPageComponent {
     }
 
     const metric = this.metric();
+    const talents = this.talentTable();
     const seconds = kill.fightMs / 1000;
     const amounts = kill.members.map(member => ({ member, amount: amountOf(member, metric) }));
     const total = amounts.reduce((sum, entry) => sum + entry.amount, 0);
@@ -107,7 +128,8 @@ export class RaidLogPageComponent {
         amount,
         perSecond: seconds > 0 ? amount / seconds : 0,
         share: total > 0 ? (amount / total) * 100 : 0,
-        bar: (amount / top) * 100
+        bar: (amount / top) * 100,
+        talents: memberTalents(member, talents)
       }));
   });
 
@@ -165,6 +187,9 @@ export class RaidLogPageComponent {
 
   constructor() {
     setPageHeader(() => ({ lastEdited: this.lastEdited() }));
+    this.data.talents()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(table => this.talentTable.set(table));
     effect(() => {
       const params = this.params();
       untracked(() => this.load(params.get('realm') ?? '', Number(params.get('id'))));
@@ -182,6 +207,14 @@ export class RaidLogPageComponent {
 
   classColor(classId: number): string {
     return getClassColor(classId) ?? '#e0e0e0';
+  }
+
+  raceIcon(character: RaidCharacter): string {
+    return raidRaceIcon(character, this.genders());
+  }
+
+  memberGuildLink(character: RaidCharacter): string[] | undefined {
+    return characterGuildLink(character, this.guildsWithKills());
   }
 
   private load(realm: string, logId: number): void {
@@ -208,6 +241,7 @@ export class RaidLogPageComponent {
             this.loadError.set('This log is not in the raid logs. It may be from another raid, or too new to be listed yet.');
           }
           this.isLoading.set(false);
+          this.loadTalentTooltips();
         },
         error: error => {
           console.error('Failed to load the raid log:', error);
@@ -215,6 +249,12 @@ export class RaidLogPageComponent {
           this.isLoading.set(false);
         }
       });
+  }
+
+  private loadTalentTooltips(): void {
+    this.data.talentTooltips()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(tooltips => this.talentTooltips.set(tooltips));
   }
 }
 

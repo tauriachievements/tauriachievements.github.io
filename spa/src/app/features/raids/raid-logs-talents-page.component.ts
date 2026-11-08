@@ -10,6 +10,7 @@ import { FilterDropdownValue } from '../../shared/filter-dropdown.types';
 import { RoleFilterComponent } from '../../shared/role-filter.component';
 import { IconTipsComponent } from '../../shared/icon-tips.component';
 import { RaidDifficultySwitchComponent } from './raid-difficulty-switch.component';
+import { RaidTalentIconsComponent } from './raid-talent-icons.component';
 import {
   RaidBoss,
   RaidDifficulty,
@@ -103,6 +104,7 @@ interface SpecCard extends SpecTalentSummary {
     RouterLink,
     FilterDropdownComponent,
     RaidDifficultySwitchComponent,
+    RaidTalentIconsComponent,
     IconTipsComponent,
     RoleFilterComponent,
     DecimalPipe,
