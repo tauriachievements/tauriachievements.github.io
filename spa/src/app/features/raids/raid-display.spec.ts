@@ -10,7 +10,8 @@ import {
   formatPerSecond,
   nameMatches,
   parseBossView,
-  raidLogLink
+  raidLogLink,
+  raidRaceIcon
 } from './raid-display';
 
 describe('parseBossView', () => {
@@ -122,5 +123,17 @@ describe('characterGuildLink', () => {
     expect(characterGuildLink({ guild: 'Pickup Heroes', realm: 'Evermoon' }, guilds)).toBeUndefined();
     expect(characterGuildLink({ guild: 'Miracle', realm: 'Tauri' }, guilds)).toBeUndefined();
     expect(characterGuildLink({ guild: '', realm: 'Evermoon' }, guilds)).toBeUndefined();
+  });
+});
+
+describe('raidRaceIcon', () => {
+  const genders = new Map([['evermoon/Gankuh', 1]]);
+
+  it('takes the gender from the raid genders file', () => {
+    expect(raidRaceIcon({ name: 'Gankuh', realm: 'Evermoon', race: 10, gender: 0 }, genders)).toBe('assets/race-icons/10-1.gif');
+  });
+
+  it('keeps the gender from the raid logs for a character the file does not list', () => {
+    expect(raidRaceIcon({ name: 'Xyhop', realm: 'Tauri', race: 4, gender: 0 }, genders)).toBe('assets/race-icons/4-0.gif');
   });
 });

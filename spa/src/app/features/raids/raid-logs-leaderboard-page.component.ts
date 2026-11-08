@@ -4,7 +4,6 @@ import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { Subscription, forkJoin, of } from 'rxjs';
 import { getClassIconPath } from '../../game/classIconHelper';
-import { getRaceIconPath } from '../../game/raceIconHelper';
 import { getClassColor } from '../../game/class-colors';
 import { FilterDropdownComponent } from '../../shared/filter-dropdown.component';
 import { FilterDropdownCoordinatorService } from '../../shared/filter-dropdown-coordinator.service';
@@ -17,7 +16,8 @@ import {
   formatPerSecond,
   guildsWithKills,
   nameMatches,
-  raidCharacterLink
+  raidCharacterLink,
+  raidRaceIcon
 } from './raid-display';
 import {
   MAX_SCORE,
@@ -309,7 +309,7 @@ export class RaidLogsLeaderboardPageComponent {
   }
 
   raceIcon(character: RaidCharacter): string {
-    return getRaceIconPath(character.race, this.genders().get(characterKey(character)) ?? character.gender);
+    return raidRaceIcon(character, this.genders());
   }
 
   scoreTier(entry: RankedScore): RunQuality {

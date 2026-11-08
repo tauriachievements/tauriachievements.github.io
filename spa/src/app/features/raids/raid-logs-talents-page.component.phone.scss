@@ -21,8 +21,7 @@
 
   .consensus-pick img { width: 26px; height: 26px; }
   .build-share .meter { width: 36px; }
-  .icons { gap: 2px; }
-  .icon { width: 18px; height: 18px; }
+  app-raid-talent-icons { gap: 2px; --talent-icon-size: 18px; }
 
   .heat-boss { min-width: 0; padding: 6px 2px; }
   .heat-boss img { width: 22px; height: 22px; margin-bottom: 0; }

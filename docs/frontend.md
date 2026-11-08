@@ -359,6 +359,7 @@ decision (ask first).
 | `app-icon-tips` | one fixed tooltip for every talent or trinket icon inside it ([below](#app-icon-tips)) |
 | `app-raid-difficulty-switch` | the Raids pages' difficulty switch |
 | `app-raid-pickup-icon` | the group icon a pickup group shows in place of a faction square (Guilds and Fastest Clears) |
+| `app-raid-talent-icons` | a character's talents as a row of icons, one per tier, from `memberTalents`: `<app-raid-talent-icons [talents]="row.talents" />`. Each icon links to TauriShoot and carries the `data-tip` and `data-tip-spell` an `app-icon-tips` around it reads; a tier with no pick is a dashed empty square, and no talents at all is a grey "-". The icons are 22 px; a page shrinks them with `--talent-icon-size` and their gap with `gap` on the element (the boss rankings on narrow phones, Talent Analytics on phones). The log page's players, the boss rankings and Talent Analytics' builds use it |
 | `spec-charts/` | `app-race-by-spec` (the most-popular-race boxes); `app-spec-popularity-chart`, which draws a `specPopularity` result: `<app-spec-popularity-chart [popularity]="popularity()" unit="characters" />`. The page around it owns the card, its header, the filters and the empty, loading and error states (Arena Statistics). `specPopularity`, `shareTicks`, `formatShare` and `compareSpecLists` work out a spec popularity chart's numbers and order, and `popularityChart` turns them into gridlines and bars |
 | `app-mythic-plus-week-affixes` | this week's affixes with their descriptions (leaderboard and stats page). On phones it shows icons only and its tooltips position against the row around it, which needs `position: relative` |
 | `app-back-to-top-button` | the floating back-to-top button |
@@ -374,10 +375,10 @@ decision (ask first).
 | `formatClock()`, `formatDuration()` (`shared/time-format.ts`) | seconds as `29:07` / `1:02:05`, or the fixed-width `00:29:07` |
 | `scoreQuality()` (`shared/score-quality.ts`) | a score's item-quality tier against the best score (`artifact` down to `uncommon`), for the `quality-colors` mixin |
 | `shared/scan-change.ts` | changes since the last scan on a leaderboard: `scanChanges(current, previous, key, value)` compares two rankings (each entry's place in its list is its rank) and gives each changed entry its ranks climbed, its value change and whether it's new; `signedChange` (`+24`, `−12`), `rankChangeLabel` and `valueChangeLabel` for the marks' titles. The raid leaderboard, Arena and Rated Battlegrounds use it, with the `scan-change-marks` mixin |
-| Raids helpers | in `raid-display.ts`: `nameMatches` for name search, `parseBossView` for a boss page's `?tab=` and `?role=`, `FACTION_FILTERS` for a faction dropdown and `?faction=` (`horde`, `alliance`), the links, icon URLs and number formats, `DIFFICULTY_COLORS` and `FACTION_COLORS` for code that draws (the same colours as `$difficulty-colors` and the `faction-marks` mixin in `_raid-logs-shared.scss`, so change both), `guildSuggestion`, a guild's row in the Guilds search, and `characterGuildLink`, the guild page of a character's Players.csv guild, or nothing when that guild has no guild kill on its realm (`guildsWithKills`, matched in any case as the guild page matches), so a pickup raider's guild never opens "This guild has no kills"; in `raid-logs.ts`: `bossShortName` (a boss's `shortName`) for tiles, table cells and other tight spots: the name up to its first comma, or a shorter name from `BOSS_SHORT_NAMES` ("Elerethe", "Dragons"). A long boss name in a new raid gets an entry there |
+| Raids helpers | in `raid-display.ts`: `nameMatches` for name search, `parseBossView` for a boss page's `?tab=` and `?role=`, `FACTION_FILTERS` for a faction dropdown and `?faction=` (`horde`, `alliance`), the links, icon URLs and number formats, `DIFFICULTY_COLORS` and `FACTION_COLORS` for code that draws (the same colours as `$difficulty-colors` and the `faction-marks` mixin in `_raid-logs-shared.scss`, so change both), `guildSuggestion`, a guild's row in the Guilds search, and `characterGuildLink`, the guild page of a character's Players.csv guild, or nothing when that guild has no guild kill on its realm (`guildsWithKills`, matched in any case as the guild page matches), so a pickup raider's guild never opens "This guild has no kills", and `raidRaceIcon`, a raid character's race icon with the gender from `raid-genders.json` when it lists the character (the leaderboard and the log page); in `raid-logs.ts`: `bossShortName` (a boss's `shortName`) for tiles, table cells and other tight spots: the name up to its first comma, or a shorter name from `BOSS_SHORT_NAMES` ("Elerethe", "Dragons"). A long boss name in a new raid gets an entry there |
 | `_tables.scss` (forwarded by `_mythic-plus-shared.scss`) | the phone rules every table shares: `table-scroll`, `phone-columns` (`phone-hidden`, `narrow-phone-hidden`, `phone-only`), `phone-detail-rows`, `fluid-cell`, `fluid-identity`, `truncate`, and `$phone-breakpoint` / `$narrow-phone-breakpoint` ([Tables on phones](#tables-on-phones)) |
 | `_mythic-plus-shared.scss` | mixins such as `tooltip-box`, `chart-tooltip` (the spec charts' tooltip, beside its bar), `quality-colors`, `visually-hidden` (and `hidden-visually`, its declarations alone), `motion-safe`, `glide-pill`, `week-bands` (a chart's affix-week bands), `details-reveal` ([motion](motion-and-rendering.md)), `filter-reset` (a toolbar's Reset button, greyed out while there's nothing to reset; the Raids Rankings, Guilds and Talent Analytics pages, Arena and Rare Items). `crest-glow` needs `isolation: isolate` on the crest's parent, so the glow sits under the crest and above the parent's background. `spotlight-card` takes the card's `::before` and `::after`. `scan-change-marks($drop-color)` styles the since-the-last-scan marks: `.rank-move` (with `.move-arrow`) beside a rank, `.value-change` beside a value, both green with `.up` and `$drop-color` without, and `.rank-new` (the `new-tag` mixin's gold "new"). The raid leaderboard's drops are grey, the PvP pages' red ([scoring.md](scoring.md#arena-changes-since-the-last-scan)) |
-| `_raid-logs-shared.scss` | forwards the M+ mixins, and adds `raid-table` (with the phone column rules and `phone-fluid` cells), `boss-picker($count)`, `ranking-toolbar`, `difficulty-switch`, `segmented-switch` (the difficulty switch's pill look, for any other switch beside it), and `change-pill` (a guild's progress change, with `.positive` / `.negative`); `invalid-tag`, the red "Invalid" on a kill that doesn't count |
+| `_raid-logs-shared.scss` | forwards the M+ mixins, and adds `raid-table` (with the phone column rules, `phone-fluid` cells and `center` cells, for the leaderboard's columns and the log page's Per second and Item level), `boss-picker($count)`, `ranking-toolbar`, `difficulty-switch`, `segmented-switch` (the difficulty switch's pill look, for any other switch beside it), and `change-pill` (a guild's progress change, with `.positive` / `.negative`); `invalid-tag`, the red "Invalid" on a kill that doesn't count |
 | `.tap-area` (global) | an empty span inside a small link that grows its tap target |
 
 `app-filter-bar` and `app-leaderboard-table` belong to the ladder page.
@@ -391,7 +392,8 @@ decision (ask first).
   - for a talent, the element's `data-tip-spell` looked up in the `[spells]` input: its details
     line and description, from `talent-tooltips.json`
     ([data-pipeline.md](data-pipeline.md#talent-tooltips)).
-- Every talent icon on the Raids pages carries `data-tip-spell`. A page passes its
+- Every talent icon on the Raids pages carries `data-tip-spell` (`app-raid-talent-icons` sets
+  it on its icons). A page passes its
   `talentTooltips()` signal to `[spells]`; until the file loads, tooltips show the name only.
 - One element serves every icon, so a table of 25 rows doesn't carry hundreds of hidden
   tooltips.
@@ -517,8 +519,10 @@ steps in order, and stop when the table fits:
 3. **Move the rest under the name.** A `tr.phone-detail-row` after each row
    (`phone-detail-rows` mixin, `colspan` over every column) carries the moved values on one
    line, as the boss rankings do with talents and trinkets. Render the values from one
-   `ng-template` in both places instead of copying them. When the whole row is a button (Rated
-   Battlegrounds), put the line inside the name cell instead.
+   `ng-template` or component in both places instead of copying them. When the whole row is a
+   button (Rated Battlegrounds), put the line inside the name cell instead. The rows show from
+   640 px down; `phone-detail-rows(900px)` shows them from a wider breakpoint, for a table that
+   needs them above the phone breakpoint too (below).
 4. **Shorten labels.** Pair `<span class="phone-hidden">Shortest</span>` with
    `<span class="phone-only">Min</span>`, or the dungeon's `shortName` in an `<abbr>`.
 
@@ -527,7 +531,10 @@ width, so a table can scroll sideways on a tablet or a desktop too. The Arena ta
 and 3 up to 1031 px (the name gives way, the realm and guild move under it, cells keep 8 px a
 side) and fits all nine columns with 12 px a side from 1032 px, where the page grows to
 1000 px. Its entries in `e2e/visual-pages.ts` are marked `wide`, so the layout check covers
-those widths ([below](#phone-layout-check)).
+those widths ([below](#phone-layout-check)). The raid log page's players table takes steps 1
+and 3 up to 900 px: the name cell gives way (38% of the width from 641 px, so the damage bar
+grows with it) and the Talents column moves under the name. On narrow phones (≤359 px) it also
+hides the race icon, so the name keeps room. Its `raid-log` entry is marked `wide`.
 
 A few things scroll sideways by design: charts over time that open at the latest point
 (`appScrollToEnd`), a strip of cards you swipe through, and the Emerald Nightmare race

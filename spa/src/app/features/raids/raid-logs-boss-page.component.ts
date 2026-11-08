@@ -12,6 +12,7 @@ import { GlideDirective } from '../../shared/motion/glide.directive';
 import { IconTipsComponent } from '../../shared/icon-tips.component';
 import { RoleFilterComponent } from '../../shared/role-filter.component';
 import { RaidDifficultySwitchComponent } from './raid-difficulty-switch.component';
+import { RaidTalentIconsComponent } from './raid-talent-icons.component';
 import {
   BOSS_DAMAGE_ROLES,
   BossTab,
@@ -28,8 +29,7 @@ import {
   raidBossLink,
   raidCharacterLink,
   raidGuildLink,
-  raidLogLink,
-  spellUrl
+  raidLogLink
 } from './raid-display';
 import {
   RaidBoss,
@@ -102,6 +102,7 @@ interface SummaryTile {
     FilterDropdownComponent,
     RoleFilterComponent,
     RaidDifficultySwitchComponent,
+    RaidTalentIconsComponent,
     GlideDirective,
     IconTipsComponent,
     NgTemplateOutlet,
@@ -261,7 +262,6 @@ export class RaidLogsBossPageComponent {
   readonly icon = itemIconUrl;
   readonly iconSrcset = iconSrcset;
   readonly itemUrl = itemUrl;
-  readonly spellUrl = spellUrl;
 
   readonly bossQueryParams = computed(() => ({
     difficulty: this.difficulty()?.slug ?? null,

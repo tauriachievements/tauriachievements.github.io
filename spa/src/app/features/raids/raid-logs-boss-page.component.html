@@ -167,14 +167,14 @@
                     </a>
                   </td>
                   <td class="tablet-hidden muted">{{ entry.kill.killedAt | date:'d MMM' }}</td>
-                  <td class="phone-hidden"><ng-container *ngTemplateOutlet="talentIcons; context: { $implicit: entry }" /></td>
+                  <td class="phone-hidden"><app-raid-talent-icons [talents]="entry.talents" /></td>
                   <td class="phone-hidden"><ng-container *ngTemplateOutlet="trinketIcons; context: { $implicit: entry }" /></td>
                 </tr>
                 <tr class="phone-detail-row">
                   <td class="rank"></td>
                   <td colspan="7">
                     <span class="loadout">
-                      <ng-container *ngTemplateOutlet="talentIcons; context: { $implicit: entry }" />
+                      <app-raid-talent-icons [talents]="entry.talents" />
                       <ng-container *ngTemplateOutlet="trinketIcons; context: { $implicit: entry }" />
                     </span>
                   </td>
@@ -182,30 +182,6 @@
               }
             </tbody>
           </table>
-          <ng-template #talentIcons let-entry>
-            @if (entry.talents.length) {
-              <span class="icons">
-                @for (talent of entry.talents; track talent) {
-                  @if (talent) {
-                    <a
-                      class="icon"
-                      [href]="spellUrl(talent.id)"
-                      target="_blank"
-                      rel="noopener"
-                      [attr.aria-label]="talent.name"
-                      [attr.data-tip]="talent.name"
-                      [attr.data-tip-spell]="talent.id">
-                      <img [src]="icon(talent.icon, 'medium')" [srcset]="iconSrcset(talent.icon)" sizes="22px" width="22" height="22" alt="" loading="lazy" />
-                    </a>
-                  } @else {
-                    <span class="icon empty" data-tip="No talent picked"></span>
-                  }
-                }
-              </span>
-            } @else {
-              <span class="muted">-</span>
-            }
-          </ng-template>
           <ng-template #trinketIcons let-entry>
             @if (entry.member.trinkets.length) {
               <span class="icons">

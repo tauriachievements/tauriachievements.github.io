@@ -70,17 +70,16 @@
         </div>
       </header>
 
-      <div class="table-scroll">
+      <app-icon-tips class="table-scroll" [spells]="talentTooltips()">
         <table>
           <thead>
             <tr>
               <th class="rank" scope="col">#</th>
               <th scope="col">Character</th>
               <th scope="col" class="bar-col">{{ metric() === 'taken' ? 'Damage taken' : metric() === 'healing' ? 'Healing and absorbs' : 'Damage done' }}</th>
-              <th scope="col" class="num">Per second</th>
-              <th scope="col" class="num phone-hidden">Item level</th>
-              <th scope="col" class="num phone-hidden" title="Interrupts">Int.</th>
-              <th scope="col" class="num phone-hidden" title="Dispels">Disp.</th>
+              <th scope="col" class="num center">Per second</th>
+              <th scope="col" class="num center phone-hidden">Item level</th>
+              <th scope="col" class="narrow-hidden">Talents</th>
             </tr>
           </thead>
           <tbody [appReveal]="900">
@@ -89,14 +88,15 @@
                 <td class="rank">{{ position + 1 }}</td>
                 <td class="phone-fluid">
                   <span class="character">
-                    <img [src]="row.member.spec?.icon || classIcon(row.member.character.classId)" alt="" loading="lazy" />
+                    <img [src]="row.member.spec?.icon || classIcon(row.member.character.classId)" [title]="row.member.spec?.name ?? ''" alt="" loading="lazy" />
+                    <img class="race-icon" [src]="raceIcon(row.member.character)" alt="" loading="lazy" />
                     <span class="character-text">
                       <a
                         class="character-name"
                         [style.color]="classColor(row.member.character.classId)"
                         [routerLink]="characterLink(row.member.character)"
                         [queryParams]="{ difficulty: current.difficulty.slug, class: row.member.character.former ? row.member.character.classId : null }">{{ row.member.character.name }}</a>
-                      <span class="character-sub">{{ row.member.spec?.name || 'Unknown spec' }} · {{ row.member.character.realm }}</span>
+                      <span class="character-sub">@if (row.member.character.guild; as guild) {@if (memberGuildLink(row.member.character); as link) {<a [routerLink]="link" [queryParams]="{ difficulty: current.difficulty.slug }">&lt;{{ guild }}&gt;</a>} @else {&lt;{{ guild }}&gt;}} @else {{{ row.member.character.realm }}}</span>
                     </span>
                   </span>
                 </td>
@@ -106,15 +106,18 @@
                     <span class="bar-label">{{ formatAmount(row.amount) }} <span class="muted">{{ row.share | number:'1.1-1' }}%</span></span>
                   </span>
                 </td>
-                <td class="num strong">{{ formatPerSecond(row.perSecond) }}</td>
-                <td class="num phone-hidden">{{ row.member.itemLevel }}</td>
-                <td class="num phone-hidden">{{ row.member.interrupts }}</td>
-                <td class="num phone-hidden">{{ row.member.dispels }}</td>
+                <td class="num center strong">{{ formatPerSecond(row.perSecond) }}</td>
+                <td class="num center phone-hidden">{{ row.member.itemLevel }}</td>
+                <td class="narrow-hidden"><app-raid-talent-icons [talents]="row.talents" /></td>
+              </tr>
+              <tr class="phone-detail-row">
+                <td class="rank"></td>
+                <td class="loadout" colspan="5"><app-raid-talent-icons [talents]="row.talents" /></td>
               </tr>
             }
           </tbody>
         </table>
-      </div>
+      </app-icon-tips>
     </section>
 
     <section class="section" aria-labelledby="loot-title">

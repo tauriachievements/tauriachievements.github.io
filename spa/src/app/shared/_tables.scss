@@ -20,11 +20,11 @@ $narrow-phone-breakpoint: 359px;
   }
 }
 
-@mixin phone-detail-rows {
+@mixin phone-detail-rows($breakpoint: $phone-breakpoint) {
   .phone-detail-row { display: none; }
   tbody tr:nth-last-child(2):has(+ .phone-detail-row) > td { border-bottom: 0; }
 
-  @media (max-width: $phone-breakpoint) {
+  @media (max-width: $breakpoint) {
     .phone-detail-row { display: table-row; }
     tr:has(+ .phone-detail-row) > td { border-bottom: 0; padding-bottom: 2px; }
     .phone-detail-row > td { padding-top: 0; }
