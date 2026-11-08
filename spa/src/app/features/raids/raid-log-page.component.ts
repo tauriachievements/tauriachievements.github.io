@@ -35,6 +35,7 @@ import {
 } from './raid-logs.types';
 import { characterKey, memberTalents } from './raid-logs';
 import { RaidTalentIconsComponent } from './raid-talent-icons.component';
+import { RaidTrinketIconsComponent } from './raid-trinket-icons.component';
 import { speedRank } from './raid-progression';
 import { clearEndedBy } from './raid-clears';
 import { RevealDirective } from '../../shared/motion/reveal.directive';
@@ -76,7 +77,7 @@ interface SummaryTile {
 
 @Component({
   selector: 'app-raid-log-page',
-  imports: [RouterLink, GlideDirective, RevealDirective, IconTipsComponent, RaidTalentIconsComponent, DatePipe, DecimalPipe, LoadStateComponent],
+  imports: [RouterLink, GlideDirective, RevealDirective, IconTipsComponent, RaidTalentIconsComponent, RaidTrinketIconsComponent, DatePipe, DecimalPipe, LoadStateComponent],
   templateUrl: './raid-log-page.component.html',
   styleUrl: './raid-log-page.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush

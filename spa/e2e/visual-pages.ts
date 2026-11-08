@@ -128,6 +128,7 @@ export const VISUAL_PAGES: readonly VisualPage[] = [
   { name: 'state-raid-logs-guilds-week', path: '/raid-logs/guilds?period=week' },
   { name: 'state-raid-logs-clears-all', path: '/raid-logs/clears?difficulty=normal&groups=all' },
   { name: 'state-raid-log-clear', path: '/raid-logs/log/tauri/1753931' },
+  { name: 'state-raid-log-long-guild', path: '/raid-logs/log/wod/295450', wide: true },
   { name: 'state-raid-logs-character-class', path: '/raid-logs/character/evermoon/Gankuh?difficulty=mythic&metric=dps&compare=class' },
   { name: 'state-raid-logs-character-predict', path: '/raid-logs/character/evermoon/Gankuh?difficulty=mythic&metric=dps&predict=1', clicks: ['button.detail-toggle >> nth=0'] },
   { name: 'state-raid-logs-stats-performance', path: '/raid-logs/stats?view=performance&role=healer' },

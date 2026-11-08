@@ -1,4 +1,4 @@
-import { DatePipe, DecimalPipe, NgTemplateOutlet } from '@angular/common';
+import { DatePipe, DecimalPipe } from '@angular/common';
 import { ChangeDetectionStrategy, Component, DestroyRef, computed, effect, inject, signal, untracked } from '@angular/core';
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, RouterLink } from '@angular/router';
@@ -13,17 +13,14 @@ import { IconTipsComponent } from '../../shared/icon-tips.component';
 import { RoleFilterComponent } from '../../shared/role-filter.component';
 import { RaidDifficultySwitchComponent } from './raid-difficulty-switch.component';
 import { RaidTalentIconsComponent } from './raid-talent-icons.component';
+import { RaidTrinketIconsComponent } from './raid-trinket-icons.component';
 import {
   BOSS_DAMAGE_ROLES,
   BossTab,
-  ITEM_QUALITY_COLORS,
   RAID_PAGE_SIZE,
   formatAgo,
   formatFightTime,
   formatPerSecond,
-  iconSrcset,
-  itemIconUrl,
-  itemUrl,
   nameMatches,
   parseBossView,
   raidBossLink,
@@ -103,9 +100,9 @@ interface SummaryTile {
     RoleFilterComponent,
     RaidDifficultySwitchComponent,
     RaidTalentIconsComponent,
+    RaidTrinketIconsComponent,
     GlideDirective,
     IconTipsComponent,
-    NgTemplateOutlet,
     DatePipe,
     DecimalPipe,
     LoadStateComponent,
@@ -259,9 +256,6 @@ export class RaidLogsBossPageComponent {
   readonly formatFightTime = formatFightTime;
   readonly formatPerSecond = formatPerSecond;
   readonly classIcon = getClassIconPath;
-  readonly icon = itemIconUrl;
-  readonly iconSrcset = iconSrcset;
-  readonly itemUrl = itemUrl;
 
   readonly bossQueryParams = computed(() => ({
     difficulty: this.difficulty()?.slug ?? null,
@@ -393,10 +387,6 @@ export class RaidLogsBossPageComponent {
 
   classColor(classId: number): string {
     return getClassColor(classId) ?? '#e0e0e0';
-  }
-
-  qualityColor(quality: number): string {
-    return ITEM_QUALITY_COLORS[quality] ?? '#fff';
   }
 
   ago(kill: RaidKillDetails): string {

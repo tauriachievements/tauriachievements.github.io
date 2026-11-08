@@ -80,6 +80,7 @@
               <th scope="col" class="num center">Per second</th>
               <th scope="col" class="num center phone-hidden">Item level</th>
               <th scope="col" class="narrow-hidden">Talents</th>
+              <th scope="col" class="narrow-hidden">Trinkets</th>
             </tr>
           </thead>
           <tbody [appReveal]="900">
@@ -109,10 +110,11 @@
                 <td class="num center strong">{{ formatPerSecond(row.perSecond) }}</td>
                 <td class="num center phone-hidden">{{ row.member.itemLevel }}</td>
                 <td class="narrow-hidden"><app-raid-talent-icons [talents]="row.talents" /></td>
+                <td class="narrow-hidden"><app-raid-trinket-icons [trinkets]="row.member.trinkets" /></td>
               </tr>
               <tr class="phone-detail-row">
                 <td class="rank"></td>
-                <td class="loadout" colspan="5"><app-raid-talent-icons [talents]="row.talents" /></td>
+                <td class="loadout" colspan="6"><app-raid-talent-icons [talents]="row.talents" /><app-raid-trinket-icons [trinkets]="row.member.trinkets" /></td>
               </tr>
             }
           </tbody>

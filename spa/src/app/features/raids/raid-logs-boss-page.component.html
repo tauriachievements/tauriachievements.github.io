@@ -168,42 +168,20 @@
                   </td>
                   <td class="tablet-hidden muted">{{ entry.kill.killedAt | date:'d MMM' }}</td>
                   <td class="phone-hidden"><app-raid-talent-icons [talents]="entry.talents" /></td>
-                  <td class="phone-hidden"><ng-container *ngTemplateOutlet="trinketIcons; context: { $implicit: entry }" /></td>
+                  <td class="phone-hidden"><app-raid-trinket-icons [trinkets]="entry.member.trinkets" /></td>
                 </tr>
                 <tr class="phone-detail-row">
                   <td class="rank"></td>
                   <td colspan="7">
                     <span class="loadout">
                       <app-raid-talent-icons [talents]="entry.talents" />
-                      <ng-container *ngTemplateOutlet="trinketIcons; context: { $implicit: entry }" />
+                      <app-raid-trinket-icons [trinkets]="entry.member.trinkets" />
                     </span>
                   </td>
                 </tr>
               }
             </tbody>
           </table>
-          <ng-template #trinketIcons let-entry>
-            @if (entry.member.trinkets.length) {
-              <span class="icons">
-                @for (trinket of entry.member.trinkets; track trinket) {
-                  <a
-                    class="icon"
-                    [style.border-color]="qualityColor(trinket.quality)"
-                    [href]="itemUrl(trinket.id)"
-                    target="_blank"
-                    rel="noopener"
-                    [attr.aria-label]="trinket.name + ', item level ' + trinket.itemLevel"
-                    [attr.data-tip]="trinket.name"
-                    [attr.data-tip-color]="qualityColor(trinket.quality)"
-                    [attr.data-tip-note]="'Item level ' + trinket.itemLevel">
-                    <img [src]="icon(trinket.icon, 'medium')" [srcset]="iconSrcset(trinket.icon)" sizes="22px" width="22" height="22" alt="" loading="lazy" />
-                  </a>
-                }
-              </span>
-            } @else {
-              <span class="muted">-</span>
-            }
-          </ng-template>
         </app-icon-tips>
       }
       @if (!isRanking() && killRows().length) {

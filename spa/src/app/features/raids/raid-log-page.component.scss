@@ -10,9 +10,11 @@
 @include difficulty-colors;
 @include faction-marks;
 
+$loadout-breakpoint: 1100px;
+
 .raid-page { @include raid-page; }
 
-.table-scroll { @include phone-detail-rows(900px); }
+.table-scroll { @include phone-detail-rows($loadout-breakpoint); }
 
 .invalid-note {
   margin: 0;
@@ -178,14 +180,15 @@
   img { width: 32px; height: 32px; flex: none; border: 1px solid #000; border-radius: 4px; }
 }
 
-@media (max-width: 900px) {
+@media (max-width: $loadout-breakpoint) {
   .narrow-hidden { display: none; }
   .phone-fluid { @include fluid-identity; }
   .character-name, .character-sub { @include truncate; }
   .loadout { padding-left: 66px; }
+  .loadout app-raid-trinket-icons { margin-left: 12px; }
 }
 
-@media (min-width: 641px) and (max-width: 900px) {
+@media (min-width: 641px) and (max-width: $loadout-breakpoint) {
   .phone-fluid { width: 38%; }
 }
 
