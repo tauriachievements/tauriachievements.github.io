@@ -1,27 +1,21 @@
 import { describe, expect, it } from 'vitest';
 import { RaidBoss, RaidCharacter, RaidDifficulty, RaidKillDetails, RaidMember, RaidSpec, RaidTalentTable } from './raid-logs.types';
-import { RoleFilter } from '../../game/wow';
 import {
   TalentSample,
   agreementLabel,
   bossTalentShares,
   buildTalents,
-  formatPoints,
-  formatShare,
   mostContestedTier,
   mostSettledTier,
   notablePicks,
-  sortByPerformance,
   specTalentSummaries,
   specTiers,
-  specsMatching,
   talentAgreement,
   talentBuilds,
   talentLevels,
   talentPicks,
   talentSamples,
   talentSwaps,
-  topPlayerCount,
   topPlayerEdge
 } from './raid-talents';
 
@@ -107,9 +101,6 @@ describe('talentSamples', () => {
     expect(samples.map(sample => [sample.character.name, sample.rank, sample.relative])).toEqual([['Beta', 1, 1]]);
   });
 
-  it('counts a tenth of a ranking, rounded up, as its top players', () => {
-    expect([0, 1, 9, 10, 11, 25].map(topPlayerCount)).toEqual([0, 1, 1, 1, 2, 3]);
-  });
 });
 
 describe('talentPicks', () => {
@@ -252,57 +243,5 @@ describe('specTalentSummaries', () => {
     expect(fireSummary.agreement).toBeCloseTo((6 + .5) / 7);
     expect(holySummary.picks.picks).toBe(0);
     expect(holySummary.topBuild).toBeUndefined();
-  });
-});
-
-describe('specsMatching', () => {
-  const retribution: RaidSpec = { id: 70, classId: 2, name: 'Retribution', role: 'dps', range: 'melee' };
-  const specs = [fire, holy, retribution];
-  const names = (classId: number | undefined, role: RoleFilter | undefined) =>
-    specsMatching(specs, classId, role).map(spec => spec.name);
-
-  it('keeps every spec without a class or a role', () => {
-    expect(names(undefined, undefined)).toEqual(['Fire', 'Holy', 'Retribution']);
-  });
-
-  it('narrows by class, by role, and by both', () => {
-    expect(names(2, undefined)).toEqual(['Holy', 'Retribution']);
-    expect(names(undefined, 'dps')).toEqual(['Fire', 'Retribution']);
-    expect(names(2, 'healer')).toEqual(['Holy']);
-    expect(names(8, 'healer')).toEqual([]);
-  });
-
-  it('narrows to the melee or the ranged damage specs', () => {
-    expect(names(undefined, 'melee')).toEqual(['Retribution']);
-    expect(names(undefined, 'ranged')).toEqual(['Fire']);
-    expect(names(2, 'ranged')).toEqual([]);
-  });
-});
-
-describe('sortByPerformance', () => {
-  const retribution: RaidSpec = { id: 70, classId: 2, name: 'Retribution', role: 'dps' };
-  const arcane: RaidSpec = { id: 62, classId: 8, name: 'Arcane', role: 'dps' };
-  const frost: RaidSpec = { id: 64, classId: 8, name: 'Frost', role: 'dps' };
-  const scored = (...values: number[]) => values.map((score, index) => ({ character: character(`Scored${score}x${index}`), score }));
-  const names = (items: Array<{ spec: RaidSpec }>) => items.map(item => item.spec.name);
-
-  it('orders by the average of each spec\'s top ten scores, not its single best', () => {
-    const scores = new Map([
-      [fire, scored(6969, ...Array<number>(10).fill(1000))],
-      [retribution, scored(5000)]
-    ]);
-    expect(names(sortByPerformance([{ spec: fire }, { spec: retribution }], scores))).toEqual(['Retribution', 'Fire']);
-  });
-
-  it('puts unscored specs last and keeps the given order on a tie', () => {
-    const scores = new Map([[arcane, scored(3000)], [fire, scored(3000)]]);
-    expect(names(sortByPerformance([{ spec: frost }, { spec: arcane }, { spec: fire }], scores))).toEqual(['Arcane', 'Fire', 'Frost']);
-  });
-});
-
-describe('formatting', () => {
-  it('formats shares and differences', () => {
-    expect([0, .004, .005, .571, 1].map(formatShare)).toEqual(['0%', '<1%', '1%', '57%', '100%']);
-    expect([.234, -.08, .001].map(formatPoints)).toEqual(['+23', '−8', '0']);
   });
 });

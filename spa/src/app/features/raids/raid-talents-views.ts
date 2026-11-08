@@ -3,7 +3,6 @@ import { RaidBoss, RaidSpec, RaidTalent } from './raid-logs.types';
 import {
   BossTalentShares,
   BuildSummary,
-  NOTABLE_MIN_PICKS,
   TalentBuild,
   TalentChoice,
   TalentPicks,
@@ -11,20 +10,17 @@ import {
   TalentTiers,
   agreementLabel,
   buildTalents,
-  formatPoints,
-  formatShare,
   mostContestedTier,
   mostSettledTier,
   notablePicks,
   talentAgreement,
   topPlayerEdge
 } from './raid-talents';
+import { EDGE_MIN_TOP_PICKS, EDGE_POINTS, NOTABLE_MIN_PICKS, formatPoints, formatShare } from './raid-analytics';
 
 const SHOWN_BUILDS = 10;
 
 const MIN_SWAP_CHARACTERS = 5;
-
-const EDGE_POINTS = .05;
 
 export interface StatTile {
   label: string;
@@ -114,7 +110,7 @@ export function talentStats(picks: TalentPicks, builds: BuildSummary, boss: Raid
 }
 
 export function talentTierViews(picks: TalentPicks, swaps: TalentSwaps): TierView[] {
-  const showEdges = picks.topPicks >= 5;
+  const showEdges = picks.topPicks >= EDGE_MIN_TOP_PICKS;
   return picks.tiers.map(tier => {
     const changed = swaps.tiers[tier.tier] ?? 0;
     return {
@@ -271,8 +267,4 @@ export function talentHeatRows(shares: readonly BossTalentShares[], tiers: Talen
       };
     })
   })));
-}
-
-export function heatColor(share: number): string {
-  return `rgba(247, 181, 0, ${(.04 + share * .5).toFixed(3)})`;
 }

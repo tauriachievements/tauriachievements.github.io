@@ -2,7 +2,6 @@ import { describe, expect, it } from 'vitest';
 import { RaidBoss, RaidSpec } from './raid-logs.types';
 import { BossTalentShares, TalentBuild, TalentChoice, TalentPicks, TalentSample, TalentSwaps } from './raid-talents';
 import {
-  heatColor,
   talentBuildRows,
   talentHeatRows,
   talentInsights,
@@ -158,12 +157,5 @@ describe('talentHeatRows', () => {
     });
     expect(rows[1].cells[0].notable).toBe(false);
     expect(rows[0].cells[1]).toMatchObject({ label: '-', thin: true, tipNote: 'Nobody played the spec here' });
-  });
-});
-
-describe('heatColor', () => {
-  it('shades from faint to strong gold with the share', () => {
-    expect(heatColor(0)).toBe('rgba(247, 181, 0, 0.040)');
-    expect(heatColor(1)).toBe('rgba(247, 181, 0, 0.540)');
   });
 });

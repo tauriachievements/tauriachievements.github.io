@@ -287,7 +287,7 @@ decision: ask first.** When a rule does change, change its tests first and see t
 - A character is its realm and name (`characterKey`), and the name belongs to the class of its
   latest kill on any boss and difficulty. Kills logged on another class belong to a former
   character with that name ([data-pipeline.md](data-pipeline.md#raid-log-files)): they're left
-  out of the scores, boss rankings, spec performance and Talent Analytics, but each still sets
+  out of the scores, boss rankings, spec performance, Talent Analytics and Trinket Analytics, but each still sets
   the boss's best that every score is measured against, and still counts on the spec popularity
   and race charts. A former character's own view on the character page shows each boss's share
   of that best, but no score or rank.
@@ -463,7 +463,7 @@ decision: ask first.** When a rule does change, change its tests first and see t
 - A listed log counts nowhere, for any of its players: not in the leaderboard scores or the best
   on a boss they're measured against, the boss rankings, the fastest kills and speed ranks, the
   fastest full clears, the overview's best DPS and HPS, guild progression, the kill counts, spec performance, the tier
-  list, Talent Analytics, or the spec and race charts. The whole kill is out, not only the
+  list, Talent Analytics, Trinket Analytics, or the spec and race charts. The whole kill is out, not only the
   players who abused something.
 - It's still listed, tagged "Invalid" with the reason on hover, in the lists of latest kills:
   the overview's, a boss's Latest tab (without a number) and a guild's kill history. The
@@ -485,7 +485,7 @@ decision: ask first.** When a rule does change, change its tests first and see t
 
 - **Code:** `scoresBySpec` (`scoresBySpecForKills` takes one difficulty's kills), `topAverage`
   and `specPerformance` in `spa/src/app/features/raids/raid-scores.ts`; `sortByPerformance` in
-  `spa/src/app/features/raids/raid-talents.ts`.
+  `spa/src/app/features/raids/raid-analytics.ts`.
 - Every character gets the raid leaderboard score for each spec they played, as if that spec
   were picked on the leaderboard: HPS for a healer, DPS for everyone else, tanks too
   (`specMetric`). A healer's share of a boss is of the best HPS there, a tank's included, as on
@@ -497,10 +497,10 @@ decision: ask first.** When a rule does change, change its tests first and see t
   - Raid Stats → Performance draws it as bars, all specs or one role's
     ([Role filters](#role-filters)).
   - The Tier List page sorts it into tiers ([below](#raid-spec-tier-list)).
-  - Talent Analytics lists each role's specs by it, best first. A tie keeps the game's order,
-    the order is the same whichever boss is picked, and a picked class shows its specs in the
-    game's order instead.
-- **Tests:** `raid-scores.spec.ts`, `raid-talents.spec.ts`.
+  - Talent Analytics and Trinket Analytics list each role's specs by it, best first. A tie keeps
+    the game's order, the order is the same whichever boss is picked, and a picked class shows
+    its specs in the game's order instead.
+- **Tests:** `raid-scores.spec.ts`, `raid-analytics.spec.ts`.
 
 ## Raid spec tier list
 
@@ -520,10 +520,11 @@ decision: ask first.** When a rule does change, change its tests first and see t
 
 ## Talent Analytics
 
-- **Code:** `spa/src/app/features/raids/raid-talents.ts`.
+- **Code:** `spa/src/app/features/raids/raid-talents.ts`, on the rules both analytics pages
+  share in `raid-analytics.ts`.
 - Each character counts once per boss and spec, with the talents of their best kill there by the
   spec's metric (the earlier kill on a tie), so a guild farming a boss every week doesn't
-  outweigh everyone else. Members without a spec or talents are left out.
+  outweigh everyone else (`pickSamples`). Members without a spec or talents are left out.
 - **Top players** are the best tenth (`TOP_SHARE`) of the spec's ranking on that boss, the boss
   page's ranking filtered to the spec. The best player always counts.
 - A talent is marked as picked for a boss when it's picked `NOTABLE_DIFFERENCE` (10 points)
@@ -533,11 +534,41 @@ decision: ask first.** When a rule does change, change its tests first and see t
   tiers. It reads, on the whole percent shown: 80% and up "Settled", 65% and up "Mixed", below
   that "Wide open".
 - **The top players' edge:** the talent the top players pick furthest above (or below)
-  everyone else, shown only with at least five top picks and a difference of five points.
+  everyone else, shown only with at least `EDGE_MIN_TOP_PICKS` (5) top picks and a difference
+  of `EDGE_POINTS` (5 points).
 - **Talent changes between bosses:** without a boss, the characters with picks on two or more
   bosses who picked more than one talent on a tier; with a boss, those whose pick there isn't
   the one they made most often on the other bosses.
-- **Tests:** `raid-talents.spec.ts`.
+- **Tests:** `raid-talents.spec.ts`, `raid-analytics.spec.ts`.
+
+## Trinket Analytics
+
+- **Code:** `spa/src/app/features/raids/raid-trinkets.ts` and `raid-trinkets-views.ts`, on the
+  rules in `raid-analytics.ts`; the page is `/raid-logs/trinkets`.
+- Each character counts once per boss and spec, with the trinkets of their best kill there, and
+  the top players are the best tenth of that boss's ranking, as on Talent Analytics. Members
+  who wore no trinket are left out and take no place in the ranking.
+- A trinket is its name: the Alliance and Horde versions of a PvP trinket count as one, and
+  item levels don't matter. Its icon and link are those of its most worn item id (the lower id
+  on a tie). A character wearing two copies counts once.
+- **Worn by** is the share of the counted characters who wore it, so the shares add up to about
+  200%. The top 10 are ordered by that, then by the top players' count, then by name. A
+  **pair** is the two trinkets a character wore; its share is of every counted character, one
+  trinket or two.
+- **Beats** is a wearer's place in the spec's ranking on that boss, as the share of the others
+  they beat (`(size − rank) / (size − 1)`), averaged over the trinket's wearers. The middle of
+  every ranking is 50%, so the average over everyone is 50%. A ranking of one has no Beats.
+- **Strongest showing:** the trinket with the highest Beats above 50%, among those at least
+  `NOTABLE_MIN_PICKS` (10) different characters wore.
+- **The top players' edge and the boss marks** follow the Talent Analytics rules above
+  (`EDGE_MIN_TOP_PICKS`, `EDGE_POINTS`, `NOTABLE_DIFFERENCE`, `NOTABLE_MIN_PICKS`). The top
+  players' pair is the pair most of them wore, shown with at least five top players and two of
+  them wearing it.
+- There's no "changed between bosses" figure: a character's best kills on two bosses can be
+  weeks apart, so it would mostly count new loot. Measured on the same night instead (the data
+  of 8 November 2026), only 2–5% of boss-to-boss steps swapped to a trinket the character
+  already had, and what they swapped to was no particular boss's trinket.
+- **Tests:** `raid-trinkets.spec.ts`, `raid-trinkets-views.spec.ts`.
 
 ## Arena titles
 

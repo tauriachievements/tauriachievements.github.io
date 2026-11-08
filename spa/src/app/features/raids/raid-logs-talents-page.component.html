@@ -277,7 +277,7 @@
                       <td class="rank">{{ build.rank }}</td>
                       <td><app-raid-talent-icons [talents]="build.picked" /></td>
                       <td>
-                        <span class="build-share">
+                        <span class="meter-share">
                           <span class="meter" aria-hidden="true"><span [style.width.%]="build.meter * 100"></span></span>
                           <b>{{ formatShare(build.share) }}</b>
                           <span class="muted phone-hidden">{{ build.characters | number }} {{ build.characters === 1 ? 'character' : 'characters' }}</span>
@@ -326,14 +326,14 @@
                       @if (row.first) {
                         <th scope="rowgroup" class="heat-level" [attr.rowspan]="row.tierSize">{{ row.level }}</th>
                       }
-                      <th scope="row" class="heat-talent">
+                      <th scope="row" class="heat-name">
                         <span [attr.data-tip]="row.talent?.name" [attr.data-tip-spell]="row.talent?.id">
                           @if (row.talent) {
                             <img [src]="icon(row.talent.icon, 'medium')" [srcset]="iconSrcset(row.talent.icon)" sizes="20px" width="20" height="20" alt="" loading="lazy" />
                           } @else {
                             <span class="icon-placeholder" aria-hidden="true"></span>
                           }
-                          <span class="heat-talent-name">{{ row.talent?.name ?? 'Unknown talent' }}</span>
+                          <span class="heat-name-text">{{ row.talent?.name ?? 'Unknown talent' }}</span>
                         </span>
                       </th>
                       @for (cell of row.cells; track cell; let bossIndex = $index) {

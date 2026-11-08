@@ -232,7 +232,8 @@ character (below) never takes the Players.csv guild, which belongs to whoever ha
 
 A name belongs to the class of its latest kill on any boss and difficulty. A row of any other
 class is a former character with that name and ends with an extra `1`. The site leaves former
-characters out of the leaderboard, boss rankings, spec performance and Talent Analytics. Their
+characters out of the leaderboard, boss rankings, spec performance, Talent Analytics and Trinket
+Analytics. Their
 kills still count as player slots and still set a boss's best
 ([scoring.md](scoring.md#raid-leaderboard)). The character page shows the current character;
 a switch under the name (from `formerCharacters`) opens an earlier one at `?class=<classId>`,

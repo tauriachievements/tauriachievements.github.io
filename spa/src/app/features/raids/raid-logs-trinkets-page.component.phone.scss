@@ -1,0 +1,19 @@
+@use './raid-logs-shared' as *;
+
+@media (max-width: 640px) {
+  .raid-page { padding-top: 32px; }
+  @include analytics-controls-phone;
+  .filters { flex-wrap: wrap; }
+  .boss-slot { min-width: 0; flex: 1 1 calc(100% - 96px); }
+  .class-slot, .spec-slot { min-width: 0; flex: 1 1 calc(50% - 4px); }
+  @include spec-header-phone;
+
+  .meter-share .meter { width: 36px; }
+  .trinket-icon { width: 22px; height: 22px; }
+  .trinket { gap: 6px; font-size: .82rem; line-height: 1.2; }
+  .trinket-name { white-space: normal; }
+  .pair { gap: 4px; }
+  .insight-icon { width: 30px; height: 30px; }
+
+  @include heatmap-phone;
+}
