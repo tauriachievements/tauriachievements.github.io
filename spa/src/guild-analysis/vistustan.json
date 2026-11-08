@@ -1,5 +1,5 @@
 {
-  "timestamp": "2026-11-07 04:16:44 CET",
+  "timestamp": "2026-11-08 04:10:00 CET",
   "guild": {
     "name": "Vistustan",
     "realm": "Evermoon",
@@ -218,8 +218,8 @@
       "guildRank": 6,
       "guildRankName": "Bej",
       "specialization": "Frost",
-      "playedTime": 941482,
-      "achievementPoints": 2295,
+      "playedTime": 954972,
+      "achievementPoints": 2305,
       "artifactWeapon": "Blades of the Fallen Prince",
       "artifactRelics": 3,
       "artifactTraits": 21,
@@ -232,7 +232,7 @@
         {
           "specialization": "Blood",
           "name": "Maw of the Damned",
-          "traits": 17
+          "traits": 20
         },
         {
           "specialization": "Unholy",
@@ -241,13 +241,13 @@
         }
       ],
       "artifactKnowledge": 15,
-      "itemLevel": 856.75,
+      "itemLevel": 857.5,
       "legendaries": [
         {
-          "id": 132458,
-          "name": "Toravon\u0027s Whiteout Bindings",
-          "icon": "https://legion-static.tauri.hu/images/icons/large/inv_bracer_plate_raidpaladin_l_01.png",
-          "tooltipHtml": "\u003Ctable class=\u0022tooltip-table\u0022\u003E\u003Ctr\u003E\u003Ctd\u003E\u003Cb class=\u0022q5\u0022\u003EToravon\u0027s Whiteout Bindings\u003C/b\u003E\u003Cbr /\u003E\u003Cspan class=\u0022q i\u0022\u003EItem Level 910\u003C/span\u003E\u003Cbr /\u003EBinds when picked up\u003Cbr /\u003EUnique-Equipped: Legion Legendary (1)\u003Ctable width=\u0022100%\u0022\u003E\u003Ctr\u003E\u003Ctd\u003EWrist\u003C/td\u003E\u003Cth\u003EPlate\u003C/th\u003E\u003C/tr\u003E\u003C/table\u003E\u003Cspan class=\u0022ia\u0022\u003E341 Armor\u003C/span\u003E\u003Cbr /\u003E\u003Cspan class=\u0022s1\u0022\u003E\u002B2010 Stamina\u003C/span\u003E\u003Cbr /\u003E\u003Cspan class=\u0022s2\u0022\u003E\u002B1340 [Strength or Intellect]\u003C/span\u003E\u003Cbr /\u003E\u003C/td\u003E\u003C/tr\u003E\u003C/table\u003E\u003Ctable class=\u0022tooltip-table\u0022\u003E\u003Ctr\u003E\u003Ctd\u003E\u003Cspan class=\u0022q2 s3\u0022\u003E\u002B1019 Haste\u0026nbsp;\u003Csmall\u003E(\u003Ca href=\u0022javascript:;\u0022 onmousedown=\u0022return false\u0022 onclick=\u0022g_setRatingLevel(this,110,36,1019)\u0022\u003E2.4%\u0026nbsp;@\u0026nbsp;L110\u003C/a\u003E)\u003C/small\u003E\u003C/span\u003E\u003Cbr /\u003E\u003Cspan class=\u0022q2 s4\u0022\u003E\u002B764 Mastery\u0026nbsp;\u003Csmall\u003E(\u003Ca href=\u0022javascript:;\u0022 onmousedown=\u0022return false\u0022 onclick=\u0022g_setRatingLevel(this,110,49,764)\u0022\u003E1.27%\u0026nbsp;@\u0026nbsp;L110\u003C/a\u003E)\u003C/small\u003E\u003C/span\u003E\u003Cbr /\u003E\u003Cspan class=\u0022q2\u0022\u003EEquip: \u003Ca href=\u0022?spell=205658\u0022 class=\u0022q2\u0022\u003EWhile Pillar of Frost is active, you deal 15% increased Frost damage.\u003C/a\u003E\u003C/span\u003E\u003Cbr /\u003E\u003C!--sockets--\u003EDurability 70 / 70\u003Cbr /\u003EClasses: \u003Cspan class=\u0022c6\u0022\u003EDeath Knight\u003C/span\u003E\u003Cbr /\u003ERequires Level 101\u003Cbr /\u003E\u003Cspan class=\u0022q\u0022\u003E\u0022Deep within the vault protected by Wintergrasp, Toravon the Ice Watcher was relentless in smashing interlopers.\u0022\u003C/span\u003E\u003Cbr /\u003ESell Price: \u003Cspan class=\u0022moneygold\u0022\u003E46\u003C/span\u003E \u003Cspan class=\u0022moneysilver\u0022\u003E61\u003C/span\u003E \u003Cspan class=\u0022moneycopper\u0022\u003E45\u003C/span\u003E\u003C/td\u003E\u003C/tr\u003E\u003C/table\u003E"
+          "id": 132444,
+          "name": "Prydaz, Xavaric\u0027s Magnum Opus",
+          "icon": "https://legion-static.tauri.hu/images/icons/large/inv_misc_necklace15.png",
+          "tooltipHtml": "\u003Ctable class=\u0022tooltip-table\u0022\u003E\u003Ctr\u003E\u003Ctd\u003E\u003Cb class=\u0022q5\u0022\u003EPrydaz, Xavaric\u0027s Magnum Opus\u003C/b\u003E\u003Cbr /\u003E\u003Cspan class=\u0022q i\u0022\u003EItem Level 910\u003C/span\u003E\u003Cbr /\u003EBinds when picked up\u003Cbr /\u003EUnique-Equipped: Legion Legendary (1)\u003Ctable width=\u0022100%\u0022\u003E\u003Ctr\u003E\u003Ctd\u003ENeck\u003C/td\u003E\u003Cth\u003E\u003C/th\u003E\u003C/tr\u003E\u003C/table\u003E\u003Cspan class=\u0022s1\u0022\u003E\u002B2010 Stamina\u003C/span\u003E\u003Cbr /\u003E\u003C/td\u003E\u003C/tr\u003E\u003C/table\u003E\u003Ctable class=\u0022tooltip-table\u0022\u003E\u003Ctr\u003E\u003Ctd\u003E\u003Cspan class=\u0022q2 s2\u0022\u003E\u002B1784 Mastery\u0026nbsp;\u003Csmall\u003E(\u003Ca href=\u0022javascript:;\u0022 onmousedown=\u0022return false\u0022 onclick=\u0022g_setRatingLevel(this,110,49,1784)\u0022\u003E2.97%\u0026nbsp;@\u0026nbsp;L110\u003C/a\u003E)\u003C/small\u003E\u003C/span\u003E\u003Cbr /\u003E\u003Cspan class=\u0022q2 s3\u0022\u003E\u002B1784 Critical Strike\u0026nbsp;\u003Csmall\u003E(\u003Ca href=\u0022javascript:;\u0022 onmousedown=\u0022return false\u0022 onclick=\u0022g_setRatingLevel(this,110,32,1784)\u0022\u003E2.97%\u0026nbsp;@\u0026nbsp;L110\u003C/a\u003E)\u003C/small\u003E\u003C/span\u003E\u003Cbr /\u003E\u003Cspan class=\u0022q2 s4\u0022\u003E\u002B1784 Haste\u0026nbsp;\u003Csmall\u003E(\u003Ca href=\u0022javascript:;\u0022 onmousedown=\u0022return false\u0022 onclick=\u0022g_setRatingLevel(this,110,36,1784)\u0022\u003E4.2%\u0026nbsp;@\u0026nbsp;L110\u003C/a\u003E)\u003C/small\u003E\u003C/span\u003E\u003Cbr /\u003E\u003Cspan class=\u0022q2\u0022\u003EEquip: \u003Ca href=\u0022?spell=207428\u0022 class=\u0022q2\u0022\u003EEvery 0 sec1 sec, gain an absorb shield for 0% of your maximum health for 30 sec.\u003C/a\u003E\u003C/span\u003E\u003Cbr /\u003E\u003Cbr /\u003E\u003C!--sockets--\u003E\u003Cspan class=\u0022sc socket-prismatic q0\u0022\u003EPrismatic Socket\u003C/span\u003E\u003Cbr /\u003E\u003Cbr /\u003ERequires Level 101\u003Cbr /\u003E\u003Cspan class=\u0022q\u0022\u003E\u0022Bearers of this amulet whistle a haunting tune, and those nearby attest to a distant cry of anguish between the notes.\u0022\u003C/span\u003E\u003Cbr /\u003ESell Price: \u003Cspan class=\u0022moneygold\u0022\u003E40\u003C/span\u003E \u003Cspan class=\u0022moneysilver\u0022\u003E59\u003C/span\u003E \u003Cspan class=\u0022moneycopper\u0022\u003E90\u003C/span\u003E\u003C/td\u003E\u003C/tr\u003E\u003C/table\u003E"
         }
       ]
     },
@@ -306,16 +306,16 @@
       "guildRank": 5,
       "guildRankName": "Kerut",
       "specialization": "Beast Mastery",
-      "playedTime": 8834232,
-      "achievementPoints": 9515,
+      "playedTime": 8850435,
+      "achievementPoints": 9555,
       "artifactWeapon": "Titanstrike",
       "artifactRelics": 3,
-      "artifactTraits": 40,
+      "artifactTraits": 41,
       "artifacts": [
         {
           "specialization": "Beast Mastery",
           "name": "Titanstrike",
-          "traits": 40
+          "traits": 41
         },
         {
           "specialization": "Marksmanship",
@@ -441,8 +441,8 @@
       "guildRank": 5,
       "guildRankName": "Kerut",
       "specialization": "Unholy",
-      "playedTime": 1016650,
-      "achievementPoints": 2725,
+      "playedTime": 1034303,
+      "achievementPoints": 2755,
       "artifactWeapon": "Apocalypse",
       "artifactRelics": 3,
       "artifactTraits": 27,
@@ -479,6 +479,30 @@
           "tooltipHtml": "\u003Ctable class=\u0022tooltip-table\u0022\u003E\u003Ctr\u003E\u003Ctd\u003E\u003Cb class=\u0022q5\u0022\u003EDraugr, Girdle of the Everlasting King\u003C/b\u003E\u003Cbr /\u003E\u003Cspan class=\u0022q i\u0022\u003EItem Level 910\u003C/span\u003E\u003Cbr /\u003EBinds when picked up\u003Cbr /\u003EUnique-Equipped: Legion Legendary (1)\u003Ctable width=\u0022100%\u0022\u003E\u003Ctr\u003E\u003Ctd\u003EWaist\u003C/td\u003E\u003Cth\u003EPlate\u003C/th\u003E\u003C/tr\u003E\u003C/table\u003E\u003Cspan class=\u0022ia\u0022\u003E438 Armor\u003C/span\u003E\u003Cbr /\u003E\u003Cspan class=\u0022s1\u0022\u003E\u002B2680 Stamina\u003C/span\u003E\u003Cbr /\u003E\u003Cspan class=\u0022s2\u0022\u003E\u002B1786 [Strength or Intellect]\u003C/span\u003E\u003Cbr /\u003E\u003C/td\u003E\u003C/tr\u003E\u003C/table\u003E\u003Ctable class=\u0022tooltip-table\u0022\u003E\u003Ctr\u003E\u003Ctd\u003E\u003Cspan class=\u0022q2 s3\u0022\u003E\u002B1529 Haste\u0026nbsp;\u003Csmall\u003E(\u003Ca href=\u0022javascript:;\u0022 onmousedown=\u0022return false\u0022 onclick=\u0022g_setRatingLevel(this,110,36,1529)\u0022\u003E3.6%\u0026nbsp;@\u0026nbsp;L110\u003C/a\u003E)\u003C/small\u003E\u003C/span\u003E\u003Cbr /\u003E\u003Cspan class=\u0022q2 s4\u0022\u003E\u002B849 Mastery\u0026nbsp;\u003Csmall\u003E(\u003Ca href=\u0022javascript:;\u0022 onmousedown=\u0022return false\u0022 onclick=\u0022g_setRatingLevel(this,110,49,849)\u0022\u003E1.42%\u0026nbsp;@\u0026nbsp;L110\u003C/a\u003E)\u003C/small\u003E\u003C/span\u003E\u003Cbr /\u003E\u003Cspan class=\u0022q2\u0022\u003EEquip: \u003Ca href=\u0022?spell=208161\u0022 class=\u0022q2\u0022\u003EFestering Strike has a 30% chance to refund 1 runes.\u003C/a\u003E\u003C/span\u003E\u003Cbr /\u003E\u003C!--sockets--\u003EDurability 70 / 70\u003Cbr /\u003EClasses: \u003Cspan class=\u0022c6\u0022\u003EDeath Knight\u003C/span\u003E\u003Cbr /\u003ERequires Level 101\u003Cbr /\u003E\u003Cspan class=\u0022q\u0022\u003E\u0022Legend holds that the bodies of the titanspawn are so saturated with the energy of the creators that they leave behind fragments when the mortal host dies. This girdle is said to have been painstakingly sewn together from those fragments.\u0022\u003C/span\u003E\u003Cbr /\u003ESell Price: \u003Cspan class=\u0022moneygold\u0022\u003E47\u003C/span\u003E \u003Cspan class=\u0022moneysilver\u0022\u003E13\u003C/span\u003E \u003C/td\u003E\u003C/tr\u003E\u003C/table\u003E"
         }
       ]
+    },
+    {
+      "name": "Anulkka",
+      "race": 10,
+      "gender": 1,
+      "class": 3,
+      "guildRank": 7,
+      "guildRankName": "Swiezak",
+      "specialization": "Beast Mastery",
+      "playedTime": 216322,
+      "achievementPoints": 650,
+      "artifactWeapon": "Titanstrike",
+      "artifactRelics": 2,
+      "artifactTraits": 15,
+      "artifacts": [
+        {
+          "specialization": "Beast Mastery",
+          "name": "Titanstrike",
+          "traits": 15
+        }
+      ],
+      "artifactKnowledge": 2,
+      "itemLevel": 809.69,
+      "legendaries": []
     },
     {
       "name": "Apluzina",
@@ -564,7 +588,7 @@
       "guildRank": 5,
       "guildRankName": "Kerut",
       "specialization": "Shadow",
-      "playedTime": 1531969,
+      "playedTime": 1532359,
       "achievementPoints": 3955,
       "artifactWeapon": "Xal\u0027atath, Blade of the Black Empire",
       "artifactRelics": 2,
@@ -950,7 +974,7 @@
       "guildRank": 6,
       "guildRankName": "Bej",
       "specialization": "Protection",
-      "playedTime": 2441314,
+      "playedTime": 2449752,
       "achievementPoints": 3450,
       "artifactWeapon": "Truthguard",
       "artifactRelics": 3,
@@ -973,7 +997,7 @@
         }
       ],
       "artifactKnowledge": 19,
-      "itemLevel": 866.19,
+      "itemLevel": 865.56,
       "legendaries": [
         {
           "id": 132452,
@@ -1015,7 +1039,7 @@
       "guildRank": 5,
       "guildRankName": "Kerut",
       "specialization": "Frost",
-      "playedTime": 6614176,
+      "playedTime": 6627536,
       "achievementPoints": 7720,
       "artifactWeapon": "Blades of the Fallen Prince",
       "artifactRelics": 3,
@@ -1126,8 +1150,8 @@
       "guildRank": 7,
       "guildRankName": "Swiezak",
       "specialization": "Feral",
-      "playedTime": 261758,
-      "achievementPoints": 985,
+      "playedTime": 299004,
+      "achievementPoints": 1080,
       "artifactWeapon": "Fangs of Ashamane",
       "artifactRelics": 1,
       "artifactTraits": 8,
@@ -1138,13 +1162,13 @@
           "traits": 8
         },
         {
-          "specialization": "Balance",
-          "name": "Scythe of Elune",
-          "traits": 0
-        },
-        {
           "specialization": "Guardian",
           "name": "Claws of Ursoc",
+          "traits": 1
+        },
+        {
+          "specialization": "Balance",
+          "name": "Scythe of Elune",
           "traits": 0
         },
         {
@@ -1154,7 +1178,7 @@
         }
       ],
       "artifactKnowledge": 0,
-      "itemLevel": 784.31,
+      "itemLevel": 801.75,
       "legendaries": []
     },
     {
@@ -1259,7 +1283,7 @@
       "guildRank": 0,
       "guildRankName": "Sultan",
       "specialization": "Destruction",
-      "playedTime": 954521,
+      "playedTime": 955039,
       "achievementPoints": 2290,
       "artifactWeapon": "Scepter of Sargeras",
       "artifactRelics": 3,
@@ -1306,7 +1330,7 @@
       "guildRank": 1,
       "guildRankName": "Wezyr",
       "specialization": "Shadow",
-      "playedTime": 2648905,
+      "playedTime": 2653046,
       "achievementPoints": 3600,
       "artifactWeapon": "Xal\u0027atath, Blade of the Black Empire",
       "artifactRelics": 1,
@@ -1329,7 +1353,7 @@
         }
       ],
       "artifactKnowledge": 9,
-      "itemLevel": 784.13,
+      "itemLevel": 788.6,
       "legendaries": []
     },
     {
@@ -1340,7 +1364,7 @@
       "guildRank": 6,
       "guildRankName": "Bej",
       "specialization": "Enhancement",
-      "playedTime": 2273752,
+      "playedTime": 2274493,
       "achievementPoints": 7405,
       "artifactWeapon": "Doomhammer",
       "artifactRelics": 3,
@@ -1362,7 +1386,7 @@
           "traits": 1
         }
       ],
-      "artifactKnowledge": 22,
+      "artifactKnowledge": 23,
       "itemLevel": 873.31,
       "legendaries": [
         {
@@ -1480,7 +1504,7 @@
       "guildRank": 6,
       "guildRankName": "Bej",
       "specialization": "Elemental",
-      "playedTime": 658171,
+      "playedTime": 658732,
       "achievementPoints": 2895,
       "artifactWeapon": "The Fist of Ra-den",
       "artifactRelics": 2,
@@ -1561,7 +1585,7 @@
       "guildRank": 5,
       "guildRankName": "Kerut",
       "specialization": "Windwalker",
-      "playedTime": 1428697,
+      "playedTime": 1429288,
       "achievementPoints": 1465,
       "artifactWeapon": "Fists of the Heavens",
       "artifactRelics": 3,
@@ -1573,7 +1597,7 @@
           "traits": 33
         }
       ],
-      "artifactKnowledge": 21,
+      "artifactKnowledge": 22,
       "itemLevel": 871.63,
       "legendaries": [
         {
@@ -1632,16 +1656,16 @@
       "guildRank": 5,
       "guildRankName": "Kerut",
       "specialization": "Arms",
-      "playedTime": 5267974,
-      "achievementPoints": 12840,
+      "playedTime": 5291876,
+      "achievementPoints": 12860,
       "artifactWeapon": "Strom\u0027kar, the Warbreaker",
       "artifactRelics": 3,
-      "artifactTraits": 35,
+      "artifactTraits": 36,
       "artifacts": [
         {
           "specialization": "Arms",
           "name": "Strom\u0027kar, the Warbreaker",
-          "traits": 35
+          "traits": 36
         },
         {
           "specialization": "Protection",
@@ -1655,7 +1679,7 @@
         }
       ],
       "artifactKnowledge": 23,
-      "itemLevel": 873.31,
+      "itemLevel": 876.13,
       "legendaries": [
         {
           "id": 137060,
@@ -1679,7 +1703,7 @@
       "guildRank": 6,
       "guildRankName": "Bej",
       "specialization": "Retribution",
-      "playedTime": 6201470,
+      "playedTime": 6201659,
       "achievementPoints": 7820,
       "artifactWeapon": "Ashbringer",
       "artifactRelics": 3,
@@ -1716,16 +1740,16 @@
       "guildRank": 3,
       "guildRankName": "Janczar",
       "specialization": "Holy",
-      "playedTime": 3514220,
+      "playedTime": 3519703,
       "achievementPoints": 4735,
       "artifactWeapon": "The Silver Hand",
       "artifactRelics": 3,
-      "artifactTraits": 32,
+      "artifactTraits": 33,
       "artifacts": [
         {
           "specialization": "Holy",
           "name": "The Silver Hand",
-          "traits": 32
+          "traits": 33
         },
         {
           "specialization": "Retribution",
@@ -1763,7 +1787,7 @@
       "guildRank": 3,
       "guildRankName": "Janczar",
       "specialization": "Retribution",
-      "playedTime": 1103990,
+      "playedTime": 1104030,
       "achievementPoints": 2160,
       "artifactWeapon": "Ashbringer",
       "artifactRelics": 3,
@@ -1780,7 +1804,7 @@
           "traits": 29
         }
       ],
-      "artifactKnowledge": 22,
+      "artifactKnowledge": 23,
       "itemLevel": 868,
       "legendaries": [
         {
@@ -1870,7 +1894,7 @@
       "guildRank": 5,
       "guildRankName": "Kerut",
       "specialization": "Beast Mastery",
-      "playedTime": 8399653,
+      "playedTime": 8406419,
       "achievementPoints": 7525,
       "artifactWeapon": "Titanstrike",
       "artifactRelics": 2,
@@ -2139,8 +2163,8 @@
       "guildRank": 5,
       "guildRankName": "Kerut",
       "specialization": "Retribution",
-      "playedTime": 4881261,
-      "achievementPoints": 6165,
+      "playedTime": 4887708,
+      "achievementPoints": 6185,
       "artifactWeapon": "Ashbringer",
       "artifactRelics": 3,
       "artifactTraits": 31,
@@ -2335,7 +2359,7 @@
       "guildRank": 5,
       "guildRankName": "Kerut",
       "specialization": "Vengeance",
-      "playedTime": 318603,
+      "playedTime": 318757,
       "achievementPoints": 1290,
       "artifactWeapon": "Aldrachi Warblades",
       "artifactRelics": 3,
@@ -2371,16 +2395,16 @@
       "guildRank": 5,
       "guildRankName": "Kerut",
       "specialization": "Affliction",
-      "playedTime": 316391,
+      "playedTime": 316924,
       "achievementPoints": 915,
       "artifactWeapon": "Ulthalesh, the Deadwind Harvester",
       "artifactRelics": 2,
-      "artifactTraits": 6,
+      "artifactTraits": 7,
       "artifacts": [
         {
           "specialization": "Affliction",
           "name": "Ulthalesh, the Deadwind Harvester",
-          "traits": 6
+          "traits": 7
         },
         {
           "specialization": "Demonology",
@@ -2393,7 +2417,7 @@
           "traits": 0
         }
       ],
-      "artifactKnowledge": 1,
+      "artifactKnowledge": 2,
       "itemLevel": 774.2,
       "legendaries": []
     },
@@ -2499,16 +2523,16 @@
       "guildRank": 6,
       "guildRankName": "Bej",
       "specialization": "Arms",
-      "playedTime": 462973,
+      "playedTime": 463119,
       "achievementPoints": 1875,
       "artifactWeapon": "Strom\u0027kar, the Warbreaker",
       "artifactRelics": 0,
-      "artifactTraits": 23,
+      "artifactTraits": 24,
       "artifacts": [
         {
           "specialization": "Arms",
           "name": "Strom\u0027kar, the Warbreaker",
-          "traits": 23
+          "traits": 24
         },
         {
           "specialization": "Protection",
@@ -2533,8 +2557,8 @@
       "guildRank": 5,
       "guildRankName": "Kerut",
       "specialization": "Assassination",
-      "playedTime": 740355,
-      "achievementPoints": 865,
+      "playedTime": 740420,
+      "achievementPoints": 870,
       "artifactWeapon": "The Kingslayers",
       "artifactRelics": 3,
       "artifactTraits": 24,
@@ -2933,7 +2957,7 @@
       "guildRank": 3,
       "guildRankName": "Janczar",
       "specialization": "Frost",
-      "playedTime": 2801613,
+      "playedTime": 2801686,
       "achievementPoints": 4135,
       "artifactWeapon": "Ebonchill",
       "artifactRelics": 3,
@@ -2955,7 +2979,7 @@
           "traits": 19
         }
       ],
-      "artifactKnowledge": 22,
+      "artifactKnowledge": 23,
       "itemLevel": 883.25,
       "legendaries": [
         {
@@ -3022,8 +3046,8 @@
       "guildRank": 6,
       "guildRankName": "Bej",
       "specialization": "Arms",
-      "playedTime": 167811,
-      "achievementPoints": 760,
+      "playedTime": 170198,
+      "achievementPoints": 810,
       "artifactWeapon": "Strom\u0027kar, the Warbreaker",
       "artifactRelics": 3,
       "artifactTraits": 15,
@@ -3034,8 +3058,8 @@
           "traits": 15
         }
       ],
-      "artifactKnowledge": 9,
-      "itemLevel": 842.69,
+      "artifactKnowledge": 10,
+      "itemLevel": 844.25,
       "legendaries": [
         {
           "id": 137107,
@@ -3094,7 +3118,7 @@
       "guildRank": 6,
       "guildRankName": "Bej",
       "specialization": "Havoc",
-      "playedTime": 1001225,
+      "playedTime": 1002927,
       "achievementPoints": 2120,
       "artifactWeapon": "Twinblades of the Deceiver",
       "artifactRelics": 3,
@@ -3217,8 +3241,8 @@
       "guildRank": 7,
       "guildRankName": "Swiezak",
       "specialization": "Havoc",
-      "playedTime": 688394,
-      "achievementPoints": 1380,
+      "playedTime": 694596,
+      "achievementPoints": 1390,
       "artifactWeapon": "Twinblades of the Deceiver",
       "artifactRelics": 3,
       "artifactTraits": 24,
@@ -3235,7 +3259,7 @@
         }
       ],
       "artifactKnowledge": 17,
-      "itemLevel": 853.06,
+      "itemLevel": 854,
       "legendaries": [
         {
           "id": 132444,
@@ -3300,7 +3324,7 @@
       "guildRank": 6,
       "guildRankName": "Bej",
       "specialization": "Restoration",
-      "playedTime": 1301785,
+      "playedTime": 1302546,
       "achievementPoints": 3335,
       "artifactWeapon": "G\u0027Hanir, the Mother Tree",
       "artifactRelics": 3,
@@ -3436,8 +3460,8 @@
       "guildRank": 7,
       "guildRankName": "Swiezak",
       "specialization": "Fury",
-      "playedTime": 451851,
-      "achievementPoints": 815,
+      "playedTime": 461539,
+      "achievementPoints": 825,
       "artifactWeapon": "Warswords of the Valarjar",
       "artifactRelics": 2,
       "artifactTraits": 14,
@@ -3458,8 +3482,8 @@
           "traits": 0
         }
       ],
-      "artifactKnowledge": 3,
-      "itemLevel": 797.88,
+      "artifactKnowledge": 5,
+      "itemLevel": 801.71,
       "legendaries": []
     },
     {
@@ -3470,7 +3494,7 @@
       "guildRank": 7,
       "guildRankName": "Swiezak",
       "specialization": "Vengeance",
-      "playedTime": 96541,
+      "playedTime": 96997,
       "achievementPoints": 430,
       "artifactWeapon": "Aldrachi Warblades",
       "artifactRelics": 2,
@@ -3763,7 +3787,7 @@
       "guildRank": 6,
       "guildRankName": "Bej",
       "specialization": "Restoration",
-      "playedTime": 307081,
+      "playedTime": 307100,
       "achievementPoints": 1030,
       "artifactWeapon": "G\u0027Hanir, the Mother Tree",
       "artifactRelics": 3,
@@ -3850,7 +3874,7 @@
       "guildRank": 5,
       "guildRankName": "Kerut",
       "specialization": "Protection",
-      "playedTime": 356780,
+      "playedTime": 357266,
       "achievementPoints": 1230,
       "artifactWeapon": "Truthguard",
       "artifactRelics": 2,
@@ -4102,7 +4126,7 @@
       "guildRank": 6,
       "guildRankName": "Bej",
       "specialization": "Vengeance",
-      "playedTime": 877815,
+      "playedTime": 878451,
       "achievementPoints": 1275,
       "artifactWeapon": "Aldrachi Warblades",
       "artifactRelics": 3,
@@ -4119,7 +4143,7 @@
           "traits": 1
         }
       ],
-      "artifactKnowledge": 19,
+      "artifactKnowledge": 20,
       "itemLevel": 880.63,
       "legendaries": [
         {
@@ -4144,7 +4168,7 @@
       "guildRank": 5,
       "guildRankName": "Kerut",
       "specialization": "Retribution",
-      "playedTime": 645738,
+      "playedTime": 645836,
       "achievementPoints": 1325,
       "artifactWeapon": "Ashbringer",
       "artifactRelics": 3,
@@ -4156,7 +4180,7 @@
           "traits": 21
         }
       ],
-      "artifactKnowledge": 14,
+      "artifactKnowledge": 17,
       "itemLevel": 855.31,
       "legendaries": [
         {
@@ -4190,47 +4214,6 @@
       "artifactKnowledge": 0,
       "itemLevel": 779.75,
       "legendaries": []
-    },
-    {
-      "name": "Krowadynn",
-      "race": 6,
-      "gender": 0,
-      "class": 2,
-      "guildRank": 5,
-      "guildRankName": "Kerut",
-      "specialization": "Protection",
-      "playedTime": 689793,
-      "achievementPoints": 2460,
-      "artifactWeapon": "Truthguard",
-      "artifactRelics": 3,
-      "artifactTraits": 18,
-      "artifacts": [
-        {
-          "specialization": "Protection",
-          "name": "Truthguard",
-          "traits": 18
-        },
-        {
-          "specialization": "Retribution",
-          "name": "Ashbringer",
-          "traits": 13
-        },
-        {
-          "specialization": "Holy",
-          "name": "The Silver Hand",
-          "traits": 1
-        }
-      ],
-      "artifactKnowledge": 10,
-      "itemLevel": 846.25,
-      "legendaries": [
-        {
-          "id": 137048,
-          "name": "Liadrin\u0027s Fury Unleashed",
-          "icon": "https://legion-static.tauri.hu/images/icons/large/inv_jewelry_ring_61.png",
-          "tooltipHtml": "\u003Ctable class=\u0022tooltip-table\u0022\u003E\u003Ctr\u003E\u003Ctd\u003E\u003Cb class=\u0022q5\u0022\u003ELiadrin\u0027s Fury Unleashed\u003C/b\u003E\u003Cbr /\u003E\u003Cspan class=\u0022q i\u0022\u003EItem Level 910\u003C/span\u003E\u003Cbr /\u003EBinds when picked up\u003Cbr /\u003EUnique-Equipped\u003Cbr /\u003EUnique-Equipped: Legion Legendary (1)\u003Ctable width=\u0022100%\u0022\u003E\u003Ctr\u003E\u003Ctd\u003EFinger\u003C/td\u003E\u003Cth\u003E\u003C/th\u003E\u003C/tr\u003E\u003C/table\u003E\u003Cspan class=\u0022s1\u0022\u003E\u002B2010 Stamina\u003C/span\u003E\u003Cbr /\u003E\u003C/td\u003E\u003C/tr\u003E\u003C/table\u003E\u003Ctable class=\u0022tooltip-table\u0022\u003E\u003Ctr\u003E\u003Ctd\u003E\u003Cspan class=\u0022q2 s2\u0022\u003E\u002B2548 Critical Strike\u0026nbsp;\u003Csmall\u003E(\u003Ca href=\u0022javascript:;\u0022 onmousedown=\u0022return false\u0022 onclick=\u0022g_setRatingLevel(this,110,32,2548)\u0022\u003E4.25%\u0026nbsp;@\u0026nbsp;L110\u003C/a\u003E)\u003C/small\u003E\u003C/span\u003E\u003Cbr /\u003E\u003Cspan class=\u0022q2 s3\u0022\u003E\u002B1911 Haste\u0026nbsp;\u003Csmall\u003E(\u003Ca href=\u0022javascript:;\u0022 onmousedown=\u0022return false\u0022 onclick=\u0022g_setRatingLevel(this,110,36,1911)\u0022\u003E4.5%\u0026nbsp;@\u0026nbsp;L110\u003C/a\u003E)\u003C/small\u003E\u003C/span\u003E\u003Cbr /\u003E\u003Cspan class=\u0022q2\u0022\u003EEquip: \u003Ca href=\u0022?spell=208408\u0022 class=\u0022q2\u0022\u003EWhile Avenging Wrath is active, you gain 0 Holy Power every 25 days1 sec.\u003C/a\u003E\u003C/span\u003E\u003Cbr /\u003E\u003Cbr /\u003E\u003C!--sockets--\u003E\u003Cspan class=\u0022sc socket-prismatic q0\u0022\u003EPrismatic Socket\u003C/span\u003E\u003Cbr /\u003E\u003Cbr /\u003EClasses: \u003Cspan class=\u0022c2\u0022\u003EPaladin\u003C/span\u003E\u003Cbr /\u003ERequires Level 101\u003Cbr /\u003E\u003Cspan class=\u0022q\u0022\u003E\u0022We were betrayed by the man we called our prince. I pledge the blades of my Blood Knights to the defeat of Kil\u0027jaeden and the restoration of Silvermoon. We will fight beside you, A\u0027dal.\u0022\u003C/span\u003E\u003Cbr /\u003ESell Price: \u003Cspan class=\u0022moneygold\u0022\u003E57\u003C/span\u003E \u003Cspan class=\u0022moneysilver\u0022\u003E64\u003C/span\u003E \u003Cspan class=\u0022moneycopper\u0022\u003E69\u003C/span\u003E\u003C/td\u003E\u003C/tr\u003E\u003C/table\u003E"
-        }
-      ]
     },
     {
       "name": "Krufson",
@@ -4292,7 +4275,7 @@
       "guildRank": 6,
       "guildRankName": "Bej",
       "specialization": "Fury",
-      "playedTime": 1856807,
+      "playedTime": 1856910,
       "achievementPoints": 5695,
       "artifactWeapon": "Warswords of the Valarjar",
       "artifactRelics": 3,
@@ -4380,7 +4363,7 @@
       "guildRank": 6,
       "guildRankName": "Bej",
       "specialization": "Arms",
-      "playedTime": 2247269,
+      "playedTime": 2247345,
       "achievementPoints": 3285,
       "artifactWeapon": "Strom\u0027kar, the Warbreaker",
       "artifactRelics": 3,
@@ -4402,22 +4385,9 @@
           "traits": 0
         }
       ],
-      "artifactKnowledge": 22,
-      "itemLevel": 876.81,
-      "legendaries": [
-        {
-          "id": 137060,
-          "name": "Archavon\u0027s Heavy Hand",
-          "icon": "https://legion-static.tauri.hu/images/icons/large/inv_gloves_plate_raidwarrior_m_01.png",
-          "tooltipHtml": "\u003Ctable class=\u0022tooltip-table\u0022\u003E\u003Ctr\u003E\u003Ctd\u003E\u003Cb class=\u0022q5\u0022\u003EArchavon\u0027s Heavy Hand\u003C/b\u003E\u003Cbr /\u003E\u003Cspan class=\u0022q i\u0022\u003EItem Level 910\u003C/span\u003E\u003Cbr /\u003EBinds when picked up\u003Cbr /\u003EUnique-Equipped: Legion Legendary (1)\u003Ctable width=\u0022100%\u0022\u003E\u003Ctr\u003E\u003Ctd\u003EHands\u003C/td\u003E\u003Cth\u003EPlate\u003C/th\u003E\u003C/tr\u003E\u003C/table\u003E\u003Cspan class=\u0022ia\u0022\u003E487 Armor\u003C/span\u003E\u003Cbr /\u003E\u003Cspan class=\u0022s1\u0022\u003E\u002B2680 Stamina\u003C/span\u003E\u003Cbr /\u003E\u003Cspan class=\u0022s2\u0022\u003E\u002B1786 [Strength or Intellect]\u003C/span\u003E\u003Cbr /\u003E\u003C/td\u003E\u003C/tr\u003E\u003C/table\u003E\u003Ctable class=\u0022tooltip-table\u0022\u003E\u003Ctr\u003E\u003Ctd\u003E\u003Cspan class=\u0022q2 s3\u0022\u003E\u002B1019 Critical Strike\u0026nbsp;\u003Csmall\u003E(\u003Ca href=\u0022javascript:;\u0022 onmousedown=\u0022return false\u0022 onclick=\u0022g_setRatingLevel(this,110,32,1019)\u0022\u003E1.7%\u0026nbsp;@\u0026nbsp;L110\u003C/a\u003E)\u003C/small\u003E\u003C/span\u003E\u003Cbr /\u003E\u003Cspan class=\u0022q2 s4\u0022\u003E\u002B1359 Haste\u0026nbsp;\u003Csmall\u003E(\u003Ca href=\u0022javascript:;\u0022 onmousedown=\u0022return false\u0022 onclick=\u0022g_setRatingLevel(this,110,36,1359)\u0022\u003E3.2%\u0026nbsp;@\u0026nbsp;L110\u003C/a\u003E)\u003C/small\u003E\u003C/span\u003E\u003Cbr /\u003E\u003Cspan class=\u0022q2\u0022\u003EEquip: \u003Ca href=\u0022?spell=205144\u0022 class=\u0022q2\u0022\u003EMortal Strike costs -11 less Rage.\u003C/a\u003E\u003C/span\u003E\u003Cbr /\u003E\u003C!--sockets--\u003EDurability 70 / 70\u003Cbr /\u003EClasses: \u003Cspan class=\u0022c1\u0022\u003EWarrior\u003C/span\u003E\u003Cbr /\u003ERequires Level 101\u003Cbr /\u003E\u003Cspan class=\u0022q\u0022\u003E\u0022Deep within the vault protected by Wintergrasp, Archavon the Stone Watcher was hateful of all trespassers.\u0022\u003C/span\u003E\u003Cbr /\u003ESell Price: \u003Cspan class=\u0022moneygold\u0022\u003E44\u003C/span\u003E \u003Cspan class=\u0022moneysilver\u0022\u003E75\u003C/span\u003E \u003Cspan class=\u0022moneycopper\u0022\u003E99\u003C/span\u003E\u003C/td\u003E\u003C/tr\u003E\u003C/table\u003E"
-        },
-        {
-          "id": 137052,
-          "name": "Ayala\u0027s Stone Heart",
-          "icon": "https://legion-static.tauri.hu/images/icons/large/inv_misc_ring_firelands_1.png",
-          "tooltipHtml": "\u003Ctable class=\u0022tooltip-table\u0022\u003E\u003Ctr\u003E\u003Ctd\u003E\u003Cb class=\u0022q5\u0022\u003EAyala\u0027s Stone Heart\u003C/b\u003E\u003Cbr /\u003E\u003Cspan class=\u0022q i\u0022\u003EItem Level 910\u003C/span\u003E\u003Cbr /\u003EBinds when picked up\u003Cbr /\u003EUnique-Equipped\u003Cbr /\u003EUnique-Equipped: Legion Legendary (1)\u003Ctable width=\u0022100%\u0022\u003E\u003Ctr\u003E\u003Ctd\u003EFinger\u003C/td\u003E\u003Cth\u003E\u003C/th\u003E\u003C/tr\u003E\u003C/table\u003E\u003Cspan class=\u0022s1\u0022\u003E\u002B2010 Stamina\u003C/span\u003E\u003Cbr /\u003E\u003C/td\u003E\u003C/tr\u003E\u003C/table\u003E\u003Ctable class=\u0022tooltip-table\u0022\u003E\u003Ctr\u003E\u003Ctd\u003E\u003Cspan class=\u0022q2 s2\u0022\u003E\u002B2548 Critical Strike\u0026nbsp;\u003Csmall\u003E(\u003Ca href=\u0022javascript:;\u0022 onmousedown=\u0022return false\u0022 onclick=\u0022g_setRatingLevel(this,110,32,2548)\u0022\u003E4.25%\u0026nbsp;@\u0026nbsp;L110\u003C/a\u003E)\u003C/small\u003E\u003C/span\u003E\u003Cbr /\u003E\u003Cspan class=\u0022q2 s3\u0022\u003E\u002B1911 Mastery\u0026nbsp;\u003Csmall\u003E(\u003Ca href=\u0022javascript:;\u0022 onmousedown=\u0022return false\u0022 onclick=\u0022g_setRatingLevel(this,110,49,1911)\u0022\u003E3.19%\u0026nbsp;@\u0026nbsp;L110\u003C/a\u003E)\u003C/small\u003E\u003C/span\u003E\u003Cbr /\u003E\u003Cspan class=\u0022q2\u0022\u003EEquip: \u003Ca href=\u0022?spell=207767\u0022 class=\u0022q2\u0022\u003EYour attacks have a chance to make your next Execute cost no Rage and be usable on any target, regardless of health level.\u003C/a\u003E\u003C/span\u003E\u003Cbr /\u003E\u003Cbr /\u003E\u003C!--sockets--\u003E\u003Cspan class=\u0022sc socket-prismatic q0\u0022\u003EPrismatic Socket\u003C/span\u003E\u003Cbr /\u003E\u003Cbr /\u003EClasses: \u003Cspan class=\u0022c1\u0022\u003EWarrior\u003C/span\u003E\u003Cbr /\u003ERequires Level 101\u003Cbr /\u003E\u003Cspan class=\u0022q\u0022\u003E\u0022In the pits of Valhalas, Ayala the Relentless cut down foe after foe on his way to legend. Becoming more lethal as his opponents weakened, he was truly terrifying to spectate.\u0022\u003C/span\u003E\u003Cbr /\u003ESell Price: \u003Cspan class=\u0022moneygold\u0022\u003E58\u003C/span\u003E \u003Cspan class=\u0022moneysilver\u0022\u003E49\u003C/span\u003E \u003Cspan class=\u0022moneycopper\u0022\u003E25\u003C/span\u003E\u003C/td\u003E\u003C/tr\u003E\u003C/table\u003E"
-        }
-      ]
+      "artifactKnowledge": 23,
+      "itemLevel": 808.06,
+      "legendaries": []
     },
     {
       "name": "Lavaz",
@@ -4748,7 +4718,7 @@
       "guildRank": 3,
       "guildRankName": "Janczar",
       "specialization": "Enhancement",
-      "playedTime": 5445395,
+      "playedTime": 5448320,
       "achievementPoints": 8690,
       "artifactWeapon": "Doomhammer",
       "artifactRelics": 3,
@@ -5051,7 +5021,7 @@
       "guildRank": 6,
       "guildRankName": "Bej",
       "specialization": "Survival",
-      "playedTime": 1639881,
+      "playedTime": 1643864,
       "achievementPoints": 5260,
       "artifactWeapon": "Talonclaw",
       "artifactRelics": 3,
@@ -5063,7 +5033,7 @@
           "traits": 29
         }
       ],
-      "artifactKnowledge": 22,
+      "artifactKnowledge": 23,
       "itemLevel": 865.56,
       "legendaries": [
         {
@@ -5088,7 +5058,7 @@
       "guildRank": 5,
       "guildRankName": "Kerut",
       "specialization": "Blood",
-      "playedTime": 213405,
+      "playedTime": 213593,
       "achievementPoints": 1360,
       "artifactWeapon": "Maw of the Damned",
       "artifactRelics": 2,
@@ -5184,7 +5154,7 @@
       "guildRank": 3,
       "guildRankName": "Janczar",
       "specialization": "Blood",
-      "playedTime": 1935966,
+      "playedTime": 1936016,
       "achievementPoints": 4930,
       "artifactWeapon": "Maw of the Damned",
       "artifactRelics": 3,
@@ -5319,7 +5289,7 @@
       "guildRank": 3,
       "guildRankName": "Janczar",
       "specialization": "Restoration",
-      "playedTime": 1692785,
+      "playedTime": 1693072,
       "achievementPoints": 4200,
       "artifactWeapon": "G\u0027Hanir, the Mother Tree",
       "artifactRelics": 3,
@@ -5361,7 +5331,7 @@
       "guildRank": 7,
       "guildRankName": "Swiezak",
       "specialization": "Windwalker",
-      "playedTime": 269235,
+      "playedTime": 269261,
       "achievementPoints": 995,
       "artifactWeapon": "Fists of the Heavens",
       "artifactRelics": 3,
@@ -5449,8 +5419,8 @@
       "guildRank": 7,
       "guildRankName": "Swiezak",
       "specialization": "Shadow",
-      "playedTime": 1709915,
-      "achievementPoints": 5830,
+      "playedTime": 1722105,
+      "achievementPoints": 5840,
       "artifactWeapon": "Xal\u0027atath, Blade of the Black Empire",
       "artifactRelics": 3,
       "artifactTraits": 33,
@@ -5471,8 +5441,8 @@
           "traits": 0
         }
       ],
-      "artifactKnowledge": 19,
-      "itemLevel": 863.87,
+      "artifactKnowledge": 20,
+      "itemLevel": 864.27,
       "legendaries": [
         {
           "id": 132409,
@@ -5579,7 +5549,7 @@
       "guildRank": 5,
       "guildRankName": "Kerut",
       "specialization": "Frost",
-      "playedTime": 3520706,
+      "playedTime": 3524204,
       "achievementPoints": 7550,
       "artifactWeapon": "Blades of the Fallen Prince",
       "artifactRelics": 3,
@@ -5626,7 +5596,7 @@
       "guildRank": 6,
       "guildRankName": "Bej",
       "specialization": "Unholy",
-      "playedTime": 442440,
+      "playedTime": 444443,
       "achievementPoints": 1920,
       "artifactWeapon": "Apocalypse",
       "artifactRelics": 3,
@@ -5738,7 +5708,7 @@
       "guildRank": 5,
       "guildRankName": "Kerut",
       "specialization": "Fire",
-      "playedTime": 2093720,
+      "playedTime": 2093840,
       "achievementPoints": 3215,
       "artifactWeapon": "Felo\u0027melorn",
       "artifactRelics": 3,
@@ -5813,6 +5783,35 @@
           "tooltipHtml": "\u003Ctable class=\u0022tooltip-table\u0022\u003E\u003Ctr\u003E\u003Ctd\u003E\u003Cb class=\u0022q5\u0022\u003EZevrim\u0027s Hunger\u003C/b\u003E\u003Cbr /\u003E\u003Cspan class=\u0022q i\u0022\u003EItem Level 910\u003C/span\u003E\u003Cbr /\u003EBinds when picked up\u003Cbr /\u003EUnique-Equipped\u003Cbr /\u003EUnique-Equipped: Legion Legendary (1)\u003Ctable width=\u0022100%\u0022\u003E\u003Ctr\u003E\u003Ctd\u003EFinger\u003C/td\u003E\u003Cth\u003E\u003C/th\u003E\u003C/tr\u003E\u003C/table\u003E\u003Cspan class=\u0022s1\u0022\u003E\u002B2010 Stamina\u003C/span\u003E\u003Cbr /\u003E\u003C/td\u003E\u003C/tr\u003E\u003C/table\u003E\u003Ctable class=\u0022tooltip-table\u0022\u003E\u003Ctr\u003E\u003Ctd\u003E\u003Cspan class=\u0022q2 s2\u0022\u003E\u002B2867 Critical Strike\u0026nbsp;\u003Csmall\u003E(\u003Ca href=\u0022javascript:;\u0022 onmousedown=\u0022return false\u0022 onclick=\u0022g_setRatingLevel(this,110,32,2867)\u0022\u003E4.78%\u0026nbsp;@\u0026nbsp;L110\u003C/a\u003E)\u003C/small\u003E\u003C/span\u003E\u003Cbr /\u003E\u003Cspan class=\u0022q2 s3\u0022\u003E\u002B1593 Mastery\u0026nbsp;\u003Csmall\u003E(\u003Ca href=\u0022javascript:;\u0022 onmousedown=\u0022return false\u0022 onclick=\u0022g_setRatingLevel(this,110,49,1593)\u0022\u003E2.66%\u0026nbsp;@\u0026nbsp;L110\u003C/a\u003E)\u003C/small\u003E\u003C/span\u003E\u003Cbr /\u003E\u003Cspan class=\u0022q2\u0022\u003EEquip: \u003Ca href=\u0022?spell=224550\u0022 class=\u0022q2\u0022\u003EMarked Shot has a 15% chance to not remove Hunter\u0027s Mark.\u003C/a\u003E\u003C/span\u003E\u003Cbr /\u003E\u003Cbr /\u003E\u003C!--sockets--\u003E\u003Cspan class=\u0022sc socket-prismatic q0\u0022\u003EPrismatic Socket\u003C/span\u003E\u003Cbr /\u003E\u003Cbr /\u003EClasses: \u003Cspan class=\u0022c3\u0022\u003EHunter\u003C/span\u003E\u003Cbr /\u003ERequires Level 101\u003Cbr /\u003E\u003Cspan class=\u0022q\u0022\u003E\u0022Its power was extracted from hunters who were sacrificed in Dire Maul.\u0022\u003C/span\u003E\u003Cbr /\u003ESell Price: \u003Cspan class=\u0022moneygold\u0022\u003E54\u003C/span\u003E \u003Cspan class=\u0022moneysilver\u0022\u003E89\u003C/span\u003E \u003Cspan class=\u0022moneycopper\u0022\u003E14\u003C/span\u003E\u003C/td\u003E\u003C/tr\u003E\u003C/table\u003E"
         }
       ]
+    },
+    {
+      "name": "Numizmatyk",
+      "race": 10,
+      "gender": 1,
+      "class": 12,
+      "guildRank": 7,
+      "guildRankName": "Swiezak",
+      "specialization": "Vengeance",
+      "playedTime": 59594,
+      "achievementPoints": 390,
+      "artifactWeapon": "Aldrachi Warblades",
+      "artifactRelics": 2,
+      "artifactTraits": 7,
+      "artifacts": [
+        {
+          "specialization": "Vengeance",
+          "name": "Aldrachi Warblades",
+          "traits": 7
+        },
+        {
+          "specialization": "Havoc",
+          "name": "Twinblades of the Deceiver",
+          "traits": 0
+        }
+      ],
+      "artifactKnowledge": 0,
+      "itemLevel": 767.88,
+      "legendaries": []
     },
     {
       "name": "Nuum",
@@ -5905,16 +5904,16 @@
       "guildRank": 3,
       "guildRankName": "Janczar",
       "specialization": "Marksmanship",
-      "playedTime": 13380876,
+      "playedTime": 13393523,
       "achievementPoints": 17055,
       "artifactWeapon": "Thas\u0027dorah, Legacy of the Windrunners",
       "artifactRelics": 3,
-      "artifactTraits": 40,
+      "artifactTraits": 41,
       "artifacts": [
         {
           "specialization": "Marksmanship",
           "name": "Thas\u0027dorah, Legacy of the Windrunners",
-          "traits": 40
+          "traits": 41
         },
         {
           "specialization": "Beast Mastery",
@@ -5988,8 +5987,8 @@
       "guildRank": 7,
       "guildRankName": "Swiezak",
       "specialization": "Restoration",
-      "playedTime": 1170889,
-      "achievementPoints": 2510,
+      "playedTime": 1183732,
+      "achievementPoints": 2520,
       "artifactWeapon": "Sharas\u0027dal, Scepter of Tides",
       "artifactRelics": 3,
       "artifactTraits": 33,
@@ -6010,7 +6009,7 @@
           "traits": 0
         }
       ],
-      "artifactKnowledge": 19,
+      "artifactKnowledge": 20,
       "itemLevel": 867.94,
       "legendaries": [
         {
@@ -6076,7 +6075,7 @@
       "guildRank": 6,
       "guildRankName": "Bej",
       "specialization": "Frost",
-      "playedTime": 4436764,
+      "playedTime": 4436890,
       "achievementPoints": 13295,
       "artifactWeapon": "Blades of the Fallen Prince",
       "artifactRelics": 3,
@@ -6098,7 +6097,7 @@
           "traits": 1
         }
       ],
-      "artifactKnowledge": 16,
+      "artifactKnowledge": 17,
       "itemLevel": 852.88,
       "legendaries": [
         {
@@ -6123,7 +6122,7 @@
       "guildRank": 3,
       "guildRankName": "Janczar",
       "specialization": "Assassination",
-      "playedTime": 1345855,
+      "playedTime": 1348026,
       "achievementPoints": 2185,
       "artifactWeapon": "The Kingslayers",
       "artifactRelics": 3,
@@ -6145,7 +6144,7 @@
           "traits": 7
         }
       ],
-      "artifactKnowledge": 18,
+      "artifactKnowledge": 20,
       "itemLevel": 864.06,
       "legendaries": [
         {
@@ -6303,7 +6302,7 @@
       "guildRank": 6,
       "guildRankName": "Bej",
       "specialization": "Fire",
-      "playedTime": 1155839,
+      "playedTime": 1155945,
       "achievementPoints": 4030,
       "artifactWeapon": "Felo\u0027melorn",
       "artifactRelics": 3,
@@ -6325,7 +6324,7 @@
           "traits": 1
         }
       ],
-      "artifactKnowledge": 17,
+      "artifactKnowledge": 18,
       "itemLevel": 843.94,
       "legendaries": [
         {
@@ -6344,7 +6343,7 @@
       "guildRank": 6,
       "guildRankName": "Bej",
       "specialization": "Vengeance",
-      "playedTime": 92895,
+      "playedTime": 93067,
       "achievementPoints": 565,
       "artifactWeapon": "Aldrachi Warblades",
       "artifactRelics": 2,
@@ -6361,7 +6360,7 @@
           "traits": 1
         }
       ],
-      "artifactKnowledge": 5,
+      "artifactKnowledge": 7,
       "itemLevel": 841.31,
       "legendaries": []
     },
@@ -6535,7 +6534,7 @@
       "guildRank": 7,
       "guildRankName": "Swiezak",
       "specialization": "Beast Mastery",
-      "playedTime": 3045973,
+      "playedTime": 3046000,
       "achievementPoints": 5275,
       "artifactWeapon": "Titanstrike",
       "artifactRelics": 3,
@@ -6618,7 +6617,7 @@
       "guildRank": 5,
       "guildRankName": "Kerut",
       "specialization": "Balance",
-      "playedTime": 9610457,
+      "playedTime": 9626092,
       "achievementPoints": 17110,
       "artifactWeapon": "Scythe of Elune",
       "artifactRelics": 3,
@@ -6842,16 +6841,16 @@
       "guildRank": 5,
       "guildRankName": "Kerut",
       "specialization": "Marksmanship",
-      "playedTime": 2546399,
-      "achievementPoints": 8940,
+      "playedTime": 2553835,
+      "achievementPoints": 8970,
       "artifactWeapon": "Thas\u0027dorah, Legacy of the Windrunners",
       "artifactRelics": 3,
-      "artifactTraits": 29,
+      "artifactTraits": 30,
       "artifacts": [
         {
           "specialization": "Marksmanship",
           "name": "Thas\u0027dorah, Legacy of the Windrunners",
-          "traits": 29
+          "traits": 30
         },
         {
           "specialization": "Beast Mastery",
@@ -6865,7 +6864,7 @@
         }
       ],
       "artifactKnowledge": 22,
-      "itemLevel": 850.27,
+      "itemLevel": 850.33,
       "legendaries": [
         {
           "id": 137033,
@@ -6993,7 +6992,7 @@
       "guildRank": 5,
       "guildRankName": "Kerut",
       "specialization": "Fury",
-      "playedTime": 2263834,
+      "playedTime": 2266297,
       "achievementPoints": 4520,
       "artifactWeapon": "Warswords of the Valarjar",
       "artifactRelics": 3,
@@ -7010,7 +7009,7 @@
           "traits": 27
         }
       ],
-      "artifactKnowledge": 22,
+      "artifactKnowledge": 23,
       "itemLevel": 880.94,
       "legendaries": [
         {
@@ -7141,7 +7140,7 @@
       "guildRank": 5,
       "guildRankName": "Kerut",
       "specialization": "Frost",
-      "playedTime": 1422771,
+      "playedTime": 1423878,
       "achievementPoints": 3510,
       "artifactWeapon": "Ebonchill",
       "artifactRelics": 3,
@@ -7263,8 +7262,8 @@
       "guildRank": 6,
       "guildRankName": "Bej",
       "specialization": "Assassination",
-      "playedTime": 1211810,
-      "achievementPoints": 3255,
+      "playedTime": 1220073,
+      "achievementPoints": 3265,
       "artifactWeapon": "The Kingslayers",
       "artifactRelics": 2,
       "artifactTraits": 24,
@@ -7345,7 +7344,7 @@
       "guildRank": 5,
       "guildRankName": "Kerut",
       "specialization": "Windwalker",
-      "playedTime": 830722,
+      "playedTime": 833363,
       "achievementPoints": 3375,
       "artifactWeapon": "Fists of the Heavens",
       "artifactRelics": 3,
@@ -7367,7 +7366,7 @@
           "traits": 19
         }
       ],
-      "artifactKnowledge": 19,
+      "artifactKnowledge": 20,
       "itemLevel": 873.19,
       "legendaries": [
         {
@@ -7439,7 +7438,7 @@
       "guildRank": 5,
       "guildRankName": "Kerut",
       "specialization": "Affliction",
-      "playedTime": 960662,
+      "playedTime": 960799,
       "achievementPoints": 2400,
       "artifactWeapon": "Ulthalesh, the Deadwind Harvester",
       "artifactRelics": 3,
@@ -7582,7 +7581,7 @@
       "guildRank": 6,
       "guildRankName": "Bej",
       "specialization": "Unholy",
-      "playedTime": 728969,
+      "playedTime": 729077,
       "achievementPoints": 2600,
       "artifactWeapon": "Apocalypse",
       "artifactRelics": 3,
@@ -7604,7 +7603,7 @@
           "traits": 0
         }
       ],
-      "artifactKnowledge": 15,
+      "artifactKnowledge": 16,
       "itemLevel": 865.44,
       "legendaries": [
         {
@@ -7815,16 +7814,16 @@
       "guildRank": 5,
       "guildRankName": "Kerut",
       "specialization": "Havoc",
-      "playedTime": 110479,
+      "playedTime": 110738,
       "achievementPoints": 640,
       "artifactWeapon": "Twinblades of the Deceiver",
       "artifactRelics": 2,
-      "artifactTraits": 10,
+      "artifactTraits": 11,
       "artifacts": [
         {
           "specialization": "Havoc",
           "name": "Twinblades of the Deceiver",
-          "traits": 10
+          "traits": 11
         },
         {
           "specialization": "Vengeance",
@@ -7998,7 +7997,7 @@
       "guildRank": 3,
       "guildRankName": "Janczar",
       "specialization": "Restoration",
-      "playedTime": 7638289,
+      "playedTime": 7645745,
       "achievementPoints": 15220,
       "artifactWeapon": "Sharas\u0027dal, Scepter of Tides",
       "artifactRelics": 3,
@@ -8012,7 +8011,7 @@
         {
           "specialization": "Elemental",
           "name": "The Fist of Ra-den",
-          "traits": 13
+          "traits": 17
         },
         {
           "specialization": "Enhancement",
@@ -8020,7 +8019,7 @@
           "traits": 0
         }
       ],
-      "artifactKnowledge": 23,
+      "artifactKnowledge": 24,
       "itemLevel": 873.81,
       "legendaries": [
         {
@@ -8045,8 +8044,8 @@
       "guildRank": 6,
       "guildRankName": "Bej",
       "specialization": "Assassination",
-      "playedTime": 641729,
-      "achievementPoints": 1865,
+      "playedTime": 642873,
+      "achievementPoints": 1875,
       "artifactWeapon": "The Kingslayers",
       "artifactRelics": 3,
       "artifactTraits": 20,
@@ -8067,8 +8066,8 @@
           "traits": 1
         }
       ],
-      "artifactKnowledge": 17,
-      "itemLevel": 845.56,
+      "artifactKnowledge": 18,
+      "itemLevel": 847.13,
       "legendaries": [
         {
           "id": 137098,
@@ -8351,16 +8350,16 @@
       "guildRank": 5,
       "guildRankName": "Kerut",
       "specialization": "Marksmanship",
-      "playedTime": 3830369,
-      "achievementPoints": 4875,
+      "playedTime": 3844764,
+      "achievementPoints": 4880,
       "artifactWeapon": "Thas\u0027dorah, Legacy of the Windrunners",
       "artifactRelics": 3,
-      "artifactTraits": 31,
+      "artifactTraits": 32,
       "artifacts": [
         {
           "specialization": "Marksmanship",
           "name": "Thas\u0027dorah, Legacy of the Windrunners",
-          "traits": 31
+          "traits": 32
         },
         {
           "specialization": "Beast Mastery",
@@ -8369,7 +8368,7 @@
         }
       ],
       "artifactKnowledge": 20,
-      "itemLevel": 858,
+      "itemLevel": 858.67,
       "legendaries": [
         {
           "id": 137081,
@@ -8546,7 +8545,7 @@
       "guildRank": 5,
       "guildRankName": "Kerut",
       "specialization": "Beast Mastery",
-      "playedTime": 395710,
+      "playedTime": 396593,
       "achievementPoints": 930,
       "artifactWeapon": "Titanstrike",
       "artifactRelics": 2,
@@ -8609,8 +8608,8 @@
       "guildRank": 5,
       "guildRankName": "Kerut",
       "specialization": "Marksmanship",
-      "playedTime": 687598,
-      "achievementPoints": 860,
+      "playedTime": 700496,
+      "achievementPoints": 865,
       "artifactWeapon": "Thas\u0027dorah, Legacy of the Windrunners",
       "artifactRelics": 2,
       "artifactTraits": 1,
@@ -8622,7 +8621,7 @@
         }
       ],
       "artifactKnowledge": 1,
-      "itemLevel": 800.73,
+      "itemLevel": 805,
       "legendaries": []
     },
     {
@@ -8755,7 +8754,7 @@
       "guildRank": 6,
       "guildRankName": "Bej",
       "specialization": "Windwalker",
-      "playedTime": 615400,
+      "playedTime": 615896,
       "achievementPoints": 1595,
       "artifactWeapon": "Fists of the Heavens",
       "artifactRelics": 3,
@@ -8777,7 +8776,7 @@
           "traits": 1
         }
       ],
-      "artifactKnowledge": 17,
+      "artifactKnowledge": 18,
       "itemLevel": 845.69,
       "legendaries": [
         {
@@ -8796,7 +8795,7 @@
       "guildRank": 7,
       "guildRankName": "Swiezak",
       "specialization": "Havoc",
-      "playedTime": 1593523,
+      "playedTime": 1614331,
       "achievementPoints": 3570,
       "artifactWeapon": "Twinblades of the Deceiver",
       "artifactRelics": 3,
@@ -8814,7 +8813,7 @@
         }
       ],
       "artifactKnowledge": 22,
-      "itemLevel": 870.38,
+      "itemLevel": 871.63,
       "legendaries": [
         {
           "id": 137061,
@@ -9047,7 +9046,7 @@
       "guildRank": 3,
       "guildRankName": "Janczar",
       "specialization": "Destruction",
-      "playedTime": 3206303,
+      "playedTime": 3207993,
       "achievementPoints": 11380,
       "artifactWeapon": "Scepter of Sargeras",
       "artifactRelics": 3,
@@ -9094,7 +9093,7 @@
       "guildRank": 6,
       "guildRankName": "Bej",
       "specialization": "Blood",
-      "playedTime": 637292,
+      "playedTime": 637510,
       "achievementPoints": 1005,
       "artifactWeapon": "Maw of the Damned",
       "artifactRelics": 2,
@@ -9398,8 +9397,8 @@
       "guildRank": 5,
       "guildRankName": "Kerut",
       "specialization": "Elemental",
-      "playedTime": 1086978,
-      "achievementPoints": 2710,
+      "playedTime": 1100429,
+      "achievementPoints": 2765,
       "artifactWeapon": "The Fist of Ra-den",
       "artifactRelics": 3,
       "artifactTraits": 32,
@@ -9420,8 +9419,8 @@
           "traits": 0
         }
       ],
-      "artifactKnowledge": 20,
-      "itemLevel": 873.13,
+      "artifactKnowledge": 21,
+      "itemLevel": 874.38,
       "legendaries": [
         {
           "id": 137035,
