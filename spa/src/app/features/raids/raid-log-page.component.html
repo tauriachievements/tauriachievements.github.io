@@ -77,8 +77,8 @@
               <th class="rank" scope="col">#</th>
               <th scope="col">Character</th>
               <th scope="col" class="bar-col">{{ metric() === 'taken' ? 'Damage taken' : metric() === 'healing' ? 'Healing and absorbs' : 'Damage done' }}</th>
-              <th scope="col" class="num">Per second</th>
-              <th scope="col" class="num phone-hidden">Item level</th>
+              <th scope="col" class="num center">Per second</th>
+              <th scope="col" class="num center phone-hidden">Item level</th>
               <th scope="col" class="narrow-hidden">Talents</th>
             </tr>
           </thead>
@@ -106,8 +106,8 @@
                     <span class="bar-label">{{ formatAmount(row.amount) }} <span class="muted">{{ row.share | number:'1.1-1' }}%</span></span>
                   </span>
                 </td>
-                <td class="num strong">{{ formatPerSecond(row.perSecond) }}</td>
-                <td class="num phone-hidden">{{ row.member.itemLevel }}</td>
+                <td class="num center strong">{{ formatPerSecond(row.perSecond) }}</td>
+                <td class="num center phone-hidden">{{ row.member.itemLevel }}</td>
                 <td class="narrow-hidden"><app-raid-talent-icons [talents]="row.talents" /></td>
               </tr>
               <tr class="phone-detail-row">

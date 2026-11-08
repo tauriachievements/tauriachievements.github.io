@@ -102,6 +102,7 @@ $difficulty-colors: (
   tbody tr:hover td { background: rgba(255, 255, 255, .025); }
 
   .num { font-variant-numeric: tabular-nums; text-align: right; }
+  th.center, td.center { text-align: center; }
   .rank { width: 1%; color: $raid-muted; font-variant-numeric: tabular-nums; text-align: right; }
   .strong { color: #fff; font-weight: 700; }
   .muted { color: $raid-muted; }
