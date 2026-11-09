@@ -1,17 +1,32 @@
+using System.Globalization;
+
 namespace MythicPlusExporter;
 
-public sealed record MythicPlusSeason(string Id, string Name, string Raid, string StartDate);
+public sealed record MythicPlusSeason(string Id, string Name, string Raid, DateTimeOffset StartsAt)
+{
+    public string StartDate =>
+        StartsAt.UtcDateTime.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
+}
 
 public sealed record DungeonInfo(string Slug, string ShortName, string IconName);
 
 public static class MythicPlusCatalog
 {
-    public static readonly MythicPlusSeason Season = new(
-        "legion-s1",
-        "Legion Season 1",
-        "Emerald Nightmare",
-        "2026-09-16"
-    );
+    public static readonly IReadOnlyList<MythicPlusSeason> Seasons =
+    [
+        new(
+            "legion-s1-1",
+            "Season 1.1 - Pre fixes",
+            "Emerald Nightmare",
+            new DateTimeOffset(2026, 9, 16, 0, 0, 0, TimeSpan.Zero)
+        ),
+        new(
+            "legion-s1-2",
+            "Season 1.2 - Post fixes",
+            "Emerald Nightmare",
+            new DateTimeOffset(2026, 11, 9, 13, 35, 0, TimeSpan.Zero)
+        ),
+    ];
 
     private const string UnknownIconName = "inv_misc_questionmark";
 

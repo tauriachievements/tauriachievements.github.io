@@ -17,6 +17,8 @@ public static class MythicPlusFileWriter
 
     public static async Task WriteAsync(
         string outputDirectory,
+        MythicPlusSeason season,
+        IReadOnlyList<MythicPlusSeason>? seasons,
         MythicPlusDataset dataset,
         MythicPlusTables tables,
         IReadOnlyList<MythicPlusStanding> standings,
@@ -57,6 +59,8 @@ public static class MythicPlusFileWriter
             (stream, token) =>
                 WriteIndexAsync(
                     stream,
+                    season,
+                    seasons,
                     dataset,
                     tables,
                     standings,
@@ -74,6 +78,8 @@ public static class MythicPlusFileWriter
 
     private static async Task WriteIndexAsync(
         Stream stream,
+        MythicPlusSeason season,
+        IReadOnlyList<MythicPlusSeason>? seasons,
         MythicPlusDataset dataset,
         MythicPlusTables tables,
         IReadOnlyList<MythicPlusStanding> standings,
@@ -84,7 +90,6 @@ public static class MythicPlusFileWriter
         CancellationToken cancellationToken
     )
     {
-        var season = MythicPlusCatalog.Season;
         await using var writer = new Utf8JsonWriter(stream, WriterOptions);
         var line = new JsonLineWriter(WriterOptions);
 
@@ -102,6 +107,25 @@ public static class MythicPlusFileWriter
         writer.WriteString("raid", season.Raid);
         writer.WriteString("startDate", season.StartDate);
         writer.WriteEndObject();
+
+        if (seasons is not null)
+        {
+            writer.WriteStartArray("seasons");
+            foreach (var listed in seasons)
+            {
+                line.WriteTo(
+                    writer,
+                    item =>
+                    {
+                        item.WriteStartObject();
+                        item.WriteString("id", listed.Id);
+                        item.WriteString("name", listed.Name);
+                        item.WriteEndObject();
+                    }
+                );
+            }
+            writer.WriteEndArray();
+        }
 
         writer.WriteStartArray("dungeons");
         foreach (var dungeon in dataset.Dungeons)

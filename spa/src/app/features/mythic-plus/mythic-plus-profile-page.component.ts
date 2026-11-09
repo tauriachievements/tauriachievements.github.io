@@ -15,6 +15,7 @@ import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Params, Router, RouterLink } from '@angular/router';
 import { getClassCrestPath } from '../../game/classIconHelper';
 import { injectCompactViewport } from '../../shared/compact-viewport';
+import { FilterDropdownCoordinatorService } from '../../shared/filter-dropdown-coordinator.service';
 import {
   MythicPlusIndex,
   MythicPlusRun,
@@ -26,6 +27,7 @@ import {
   rankRuns,
   runIncludesCharacter,
   scoreColor,
+  seasonOptions,
   seasonScoreColors,
   upgradeStars,
   ROLE_LABELS
@@ -72,6 +74,8 @@ import { characterTransitionName } from '../../shared/motion/motion';
 import { RevealDirective } from '../../shared/motion/reveal.directive';
 import { ScrollToEndDirective } from '../../shared/motion/scroll-to-end.directive';
 import { MythicPlusDataService, mythicPlusLoadError } from './mythic-plus-data.service';
+import { injectSeasonSelection } from './mythic-plus-season-selection';
+import { MythicPlusSeasonSwitchComponent } from './mythic-plus-season-switch.component';
 import { SpotlightDirective } from '../../shared/motion/spotlight.directive';
 import { TapTooltipDirective } from '../../shared/tap-tooltip.directive';
 import { CLASS_NAMES, Role, realmSlug } from '../../game/wow';
@@ -123,6 +127,7 @@ interface TeammateView {
     ScrollToEndDirective,
     MythicPlusRunsListComponent,
     MythicPlusCharacterSearchComponent,
+    MythicPlusSeasonSwitchComponent,
     CountUpDirective,
     RevealDirective,
     SpotlightDirective,
@@ -133,6 +138,7 @@ interface TeammateView {
   ],
   templateUrl: './mythic-plus-profile-page.component.html',
   styleUrls: ['./mythic-plus-profile-page.component.scss', './mythic-plus-profile-page.component.phone.scss', './mythic-plus-profile-page.motion.scss'],
+  providers: [FilterDropdownCoordinatorService],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class MythicPlusProfilePageComponent implements OnInit {
@@ -141,12 +147,14 @@ export class MythicPlusProfilePageComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly replaceUrl = injectReplaceUrl();
+  private readonly season = injectSeasonSelection();
 
   readonly cards = injectCompactViewport(MYTHIC_PLUS_CARDS_QUERY);
   private readonly phone = injectCompactViewport();
   private readonly pageSize = computed(() => this.cards() ? MYTHIC_PLUS_CARDS_PAGE_SIZE : MYTHIC_PLUS_PAGE_SIZE);
 
   readonly index = signal<MythicPlusIndex | undefined>(undefined);
+  readonly seasonOptions = computed(() => seasonOptions(this.index()));
   readonly lastEdited = computed(() => exportedAt(this.index()));
   readonly allRuns = signal<readonly MythicPlusRun[]>([]);
   readonly isLoading = signal(true);
@@ -425,7 +433,9 @@ export class MythicPlusProfilePageComponent implements OnInit {
   }
 
   private writeUrl(member: { name: string; realm: string }): void {
-    this.replaceUrl({ spec: this.selectedSpec() ?? null }, { path: mythicPlusProfileLink(member) });
+    this.replaceUrl(
+      { season: this.season.selected() ?? null, spec: this.selectedSpec() ?? null },
+      { path: mythicPlusProfileLink(member) });
   }
 
   ngOnInit(): void {
@@ -444,6 +454,22 @@ export class MythicPlusProfilePageComponent implements OnInit {
     this.historyLimit.set(this.pageSize());
     this.expandedRunId.set(undefined);
     this.writeUrl(member);
+  }
+
+  setSeason(seasonId: string): void {
+    if (!this.season.select(seasonId, this.index())) {
+      return;
+    }
+    this.selectedDay.set(undefined);
+    this.historyLimit.set(this.pageSize());
+    this.expandedRunId.set(undefined);
+    this.loadData();
+    const member = this.player()?.member;
+    if (member) {
+      this.writeUrl(member);
+    } else {
+      this.replaceUrl({ season: this.season.selected() ?? null, spec: this.selectedSpec() ?? null });
+    }
   }
 
   toggleRun(runId: string): void {
@@ -479,12 +505,17 @@ export class MythicPlusProfilePageComponent implements OnInit {
   loadData(): void {
     this.isLoading.set(true);
     this.loadError.set(undefined);
-    this.mythicPlusData.season()
+    const seasonId = this.season.selected();
+    this.mythicPlusData.season(seasonId)
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: ({ index, runs }) => {
+          if (seasonId !== this.season.selected()) {
+            return;
+          }
           this.index.set(index);
           this.allRuns.set(runs);
+          this.season.loaded(index);
           this.isLoading.set(false);
         },
         error: error => {

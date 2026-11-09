@@ -1,0 +1,31 @@
+@if (week() || seasons().length > 1) {
+  <div class="season-switch" role="group" [attr.aria-label]="week() ? 'Show a season or this week' : 'Mythic+ season'" appGlide>
+    @if (seasons().length > 1) {
+      <app-filter-dropdown
+        class="season-dropdown"
+        [class.active]="!week() || period() === 'season'"
+        dropdownId="mythicPlusSeason"
+        triggerId="mythicPlusSeasonTrigger"
+        ariaLabel="Mythic+ season"
+        [options]="options()"
+        [selectedValue]="seasonId()"
+        [widthLabels]="labels()"
+        [compact]="true"
+        (selectionChange)="pickSeason($event)" />
+    } @else {
+      <button
+        type="button"
+        [class.active]="period() === 'season'"
+        [attr.aria-pressed]="period() === 'season'"
+        (click)="seasonChange.emit(seasonId())">Season</button>
+    }
+    @if (week()) {
+      <button
+        type="button"
+        [class.active]="period() === 'week'"
+        [attr.aria-pressed]="period() === 'week'"
+        [disabled]="weekDisabled()"
+        (click)="weekSelect.emit()">This week</button>
+    }
+  </div>
+}

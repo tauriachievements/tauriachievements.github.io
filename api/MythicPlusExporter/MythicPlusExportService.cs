@@ -4,8 +4,16 @@ using Tauri.Core.Infrastructure;
 namespace MythicPlusExporter;
 
 public sealed record MythicPlusExportResult(
+    MythicPlusSeason Season,
     MythicPlusDataset Dataset,
     int PreviousRunCount,
+    string OutputDirectory,
+    IReadOnlyList<MythicPlusArchive> Archived
+);
+
+public sealed record MythicPlusArchive(
+    MythicPlusSeason Season,
+    int RunCount,
     string OutputDirectory
 );
 
@@ -20,13 +28,16 @@ internal sealed record PreviousMythicPlusSnapshot(
 public sealed class MythicPlusExportService(
     string outputDirectory,
     ITauriApiClient apiClient,
-    TimeProvider? timeProvider = null
+    TimeProvider? timeProvider = null,
+    IReadOnlyList<MythicPlusSeason>? seasons = null
 )
 {
     private const double MaxShrinkFraction = 0.02;
 
     private readonly ChallengeLeaderboardReader _reader = new(apiClient);
     private readonly TimeProvider _timeProvider = timeProvider ?? TimeProvider.System;
+    private readonly IReadOnlyList<MythicPlusSeason> _seasons =
+        seasons ?? MythicPlusCatalog.Seasons;
 
     public async Task<MythicPlusExportResult> ExportAsync(
         MythicPlusExporterOptions options,
@@ -50,24 +61,25 @@ public sealed class MythicPlusExportService(
             );
         }
 
-        var dataset = MythicPlusDatasetBuilder.Build(index, leaderboards.RunsByChallengeId);
-        var previous = ReadPreviousSnapshot();
-        var previousRunCount = previous.RunCount;
+        var started = StartedSeasons(scannedAt);
+        var season = started[^1];
+        var runsBySeason = SplitBySeason(leaderboards.RunsByChallengeId, started);
+        var archives = PlanArchives(index, started, runsBySeason, options.AllowShrink);
 
-        if (
-            !options.AllowShrink
-            && previousRunCount > 0
-            && dataset.RunCount < previousRunCount * (1 - MaxShrinkFraction)
-        )
+        var dataset = MythicPlusDatasetBuilder.Build(index, runsBySeason[^1]);
+        var previous = ReadPreviousSnapshot();
+        var sameSeason = previous.SeasonId == season.Id;
+        var previousRunCount = sameSeason || previous.SeasonId is null ? previous.RunCount : 0;
+
+        if (!options.AllowShrink && HasShrunk(previousRunCount, dataset.RunCount))
         {
             throw new InvalidOperationException(
                 $"The leaderboards shrank from {previousRunCount} to {dataset.RunCount} runs, "
                     + "so the API probably answered only in part. Nothing was written. "
-                    + "Run again later, or pass --allow-shrink if the drop is real (a new season)."
+                    + "Run again later, or pass --allow-shrink if the drop is real."
             );
         }
 
-        var sameSeason = previous.SeasonId == MythicPlusCatalog.Season.Id;
         var tables = MythicPlusTables.Extend(sameSeason ? previous.Tables : null, dataset);
         var currentStandings = MythicPlusStandings.Build(dataset);
         var comparable =
@@ -79,8 +91,26 @@ public sealed class MythicPlusExportService(
             ? MythicPlusStandings.Departed(currentStandings, previous.Standings)
             : [];
 
+        foreach (var archive in archives)
+        {
+            await MythicPlusFileWriter.WriteAsync(
+                archive.OutputDirectory,
+                archive.Season,
+                null,
+                archive.Dataset,
+                MythicPlusTables.Extend(null, archive.Dataset),
+                MythicPlusStandings.Build(archive.Dataset),
+                [],
+                scannedAt,
+                null,
+                cancellationToken
+            );
+        }
+
         await MythicPlusFileWriter.WriteAsync(
             outputDirectory,
+            season,
+            started,
             dataset,
             tables,
             standings,
@@ -89,7 +119,162 @@ public sealed class MythicPlusExportService(
             comparable ? previous.GeneratedAt : null,
             cancellationToken
         );
-        return new MythicPlusExportResult(dataset, previousRunCount, outputDirectory);
+        return new MythicPlusExportResult(
+            season,
+            dataset,
+            previousRunCount,
+            outputDirectory,
+            [
+                .. archives.Select(archive => new MythicPlusArchive(
+                    archive.Season,
+                    archive.Dataset.RunCount,
+                    archive.OutputDirectory
+                )),
+            ]
+        );
+    }
+
+    private sealed record PlannedArchive(
+        MythicPlusSeason Season,
+        MythicPlusDataset Dataset,
+        string OutputDirectory
+    );
+
+    private List<MythicPlusSeason> StartedSeasons(DateTimeOffset scannedAt) =>
+        [.. _seasons.Where((season, position) => position == 0 || season.StartsAt <= scannedAt)];
+
+    private static List<Dictionary<int, IReadOnlyList<ChallengeRun>>> SplitBySeason(
+        IReadOnlyDictionary<int, IReadOnlyList<ChallengeRun>> runsByChallengeId,
+        IReadOnlyList<MythicPlusSeason> seasons
+    )
+    {
+        var starts = seasons.Select(season => season.StartsAt.ToUnixTimeSeconds()).ToArray();
+        var split = seasons
+            .Select(_ => new Dictionary<int, IReadOnlyList<ChallengeRun>>())
+            .ToList();
+
+        foreach (var (challengeId, runs) in runsByChallengeId)
+        {
+            var parts = seasons.Select(_ => new List<ChallengeRun>()).ToList();
+            foreach (var run in runs)
+            {
+                parts[SeasonOf(run.CompletedAt, starts)].Add(run);
+            }
+
+            for (var position = 0; position < seasons.Count; position++)
+            {
+                split[position][challengeId] = parts[position];
+            }
+        }
+
+        return split;
+    }
+
+    private static int SeasonOf(long completedAt, long[] starts)
+    {
+        var position = 0;
+        while (position + 1 < starts.Length && completedAt >= starts[position + 1])
+        {
+            position++;
+        }
+        return position;
+    }
+
+    private List<PlannedArchive> PlanArchives(
+        ChallengeIndex index,
+        IReadOnlyList<MythicPlusSeason> started,
+        IReadOnlyList<Dictionary<int, IReadOnlyList<ChallengeRun>>> runsBySeason,
+        bool allowShrink
+    )
+    {
+        var archives = new List<PlannedArchive>();
+        for (var position = 0; position < started.Count - 1; position++)
+        {
+            var season = started[position];
+            var directory = Path.Combine(outputDirectory, season.Id);
+            if (File.Exists(Path.Combine(directory, MythicPlusFileWriter.IndexFileName)))
+            {
+                continue;
+            }
+
+            var dataset = MythicPlusDatasetBuilder.Build(index, runsBySeason[position]);
+            var previousRunCount = CountPreviousRuns(
+                position == 0 ? long.MinValue : season.StartsAt.ToUnixTimeSeconds(),
+                started[position + 1].StartsAt.ToUnixTimeSeconds()
+            );
+            if (!allowShrink && HasShrunk(previousRunCount, dataset.RunCount))
+            {
+                throw new InvalidOperationException(
+                    $"{season.Name} shrank from {previousRunCount} to {dataset.RunCount} runs "
+                        + "since the last export, so the API probably no longer lists all of them. "
+                        + "Nothing was written. Pass --allow-shrink to archive it anyway."
+                );
+            }
+
+            archives.Add(new PlannedArchive(season, dataset, directory));
+        }
+
+        return archives;
+    }
+
+    private static bool HasShrunk(int previousRunCount, int runCount) =>
+        previousRunCount > 0 && runCount < previousRunCount * (1 - MaxShrinkFraction);
+
+    private int CountPreviousRuns(long fromUnix, long untilUnix)
+    {
+        var indexPath = Path.Combine(outputDirectory, MythicPlusFileWriter.IndexFileName);
+        if (!File.Exists(indexPath))
+        {
+            return 0;
+        }
+
+        try
+        {
+            using var document = JsonDocument.Parse(File.ReadAllBytes(indexPath));
+            if (
+                !document.RootElement.TryGetProperty("dungeons", out var dungeons)
+                || dungeons.ValueKind != JsonValueKind.Array
+            )
+            {
+                return 0;
+            }
+
+            var count = 0;
+            foreach (var dungeon in dungeons.EnumerateArray())
+            {
+                var slug = dungeon.TryGetProperty("id", out var id) ? id.GetString() : null;
+                var path = Path.Combine(outputDirectory, slug + ".json");
+                if (string.IsNullOrWhiteSpace(slug) || !File.Exists(path))
+                {
+                    continue;
+                }
+
+                using var file = JsonDocument.Parse(File.ReadAllBytes(path));
+                if (
+                    !file.RootElement.TryGetProperty("runs", out var runs)
+                    || runs.ValueKind != JsonValueKind.Array
+                )
+                {
+                    continue;
+                }
+
+                count += runs.EnumerateArray()
+                    .Count(run =>
+                        run.ValueKind == JsonValueKind.Array
+                        && run.GetArrayLength() > 2
+                        && run[2].TryGetInt64(out var completedAt)
+                        && completedAt >= fromUnix
+                        && completedAt < untilUnix
+                    );
+            }
+
+            return count;
+        }
+        catch (Exception error)
+            when (error is JsonException or IOException or InvalidOperationException)
+        {
+            return 0;
+        }
     }
 
     private PreviousMythicPlusSnapshot ReadPreviousSnapshot()

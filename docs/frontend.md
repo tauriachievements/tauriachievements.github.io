@@ -162,14 +162,23 @@ The query parameters each page reads:
 | `/arena` | `bracket`: `2v2` (default) or `3v3`; `games`: the minimum rated games for an active player, `50` (default), `45`, `40`, `35` or `30` ([scoring.md](scoring.md#arena-titles)); `class` (a class id); `spec` (a spec name, only with `class`); `page` |
 | `/arena/stats` | `bracket`: `2v2` (default) or `3v3`; `rating`: a current-rating floor, `1500`, `1750`, `2000`, `2200` or `2500` (every character by default; [scoring.md](scoring.md#spec-and-race-popularity)); `role` |
 | `/rated-battleground` | `view`: `players` (default) or `matches`; `page` (the players view) |
-| `/mythic-plus` | `view` (`runs`, `players`), `sort` (`best`, `latest`), `period` (`season`, `week`), `dungeon`, `realm`, `class`, `spec`, `role` (the players view's Roles: `tank`, `healer`, `dps`, `melee`, `ranged`), `chartRole` (the spec chart's role), `page`, `character` (`Name-Realm`: the runs view shows only theirs, the players view picks out their row) |
+| `/mythic-plus` | `season` (below), `view` (`runs`, `players`), `sort` (`best`, `latest`), `period` (`season`, `week`), `dungeon`, `realm`, `class`, `spec`, `role` (the players view's Roles: `tank`, `healer`, `dps`, `melee`, `ranged`), `chartRole` (the spec chart's role), `page`, `character` (`Name-Realm`: the runs view shows only theirs, the players view picks out their row) |
 | `/stats` | `realm` (`evermoon`, `tauri`, `wod`; all realms by default), `level` (`100`, `90`, `80`, `all`; 110 by default) |
-| `/mythic-plus/stats` | `period` |
-| `/mythic-plus/records` | `dungeon` (the server firsts' filter) |
-| `/mythic-plus/character/:realm/:name` | `spec` |
-| `/mythic-plus/guild/:realm/:guild` | `period`, `dungeon`, `class`, `spec`, `role`, `character` |
+| `/mythic-plus/stats` | `season`, `period` |
+| `/mythic-plus/records` | `season`, `dungeon` (the server firsts' filter) |
+| `/mythic-plus/character/:realm/:name` | `season`, `spec` |
+| `/mythic-plus/guild/:realm/:guild` | `season`, `period`, `dungeon`, `class`, `spec`, `role`, `character` |
 | a guild page (unlisted) | `role` |
 | every `/raid-logs` page | `difficulty`, plus: Guilds `faction`, `realm`, `period` (`week`: this raid week), `groups` (`all`: pickup groups too; both in [scoring.md](scoring.md#raid-guild-progression-and-kill-speed)), `page`; Fastest Clears `faction`, `realm`, `groups` (`all`: pickup clears too; [scoring.md](scoring.md#raid-fastest-full-clears)), `page`; Statistics `view`, `role`; Talents `boss`, `role`, `class`, `spec`; Trinkets `boss`, `class`, `spec` (a spec id); Rankings `metric`, `class`, `spec`, `realm`, `q`, `page`; a guild `page` (its kill history); a boss `tab` (`hps`, `fastest`, `latest`; Damage is the default, and the old `ranged` and `melee` open Damage with that role), `role` (on Damage: `tank`, `dps`, `melee`, `ranged`), `class`, `spec`, `realm`, `q`, `page`; a character `metric`, `compare=class`, `spec` (with `compare=class`: a spec of the character's class the metric ranks), `class` (an earlier character with the name, by class id; [data-pipeline.md](data-pipeline.md#raid-log-files)) |
+
+Every Mythic+ page takes `season`, the id of a finished season (`legion-s1-1`); the live
+season has none, and an id the live index doesn't list opens the live season and drops it. The
+season picked last stays picked for the session (`MythicPlusDataService.selectedSeason`), so a
+Mythic+ page opened from the menu or a link shows it too and writes it into its own address.
+`injectSeasonSelection()` (`mythic-plus-season-selection.ts`) does this for a page: `selected()`
+is the season to load, `select()` picks one and says whether it changed, and `loaded()`, called
+with each loaded index, settles the choice and fixes the address once. `period=week` always
+shows the live season.
 
 On the Mythic+ leaderboard and guild ladder, a `spec` counts only when it belongs to the
 `class` in the same URL. A `Name-Realm` value splits on its last hyphen: character names can't
@@ -207,10 +216,15 @@ instead.
   once per session, so moving between its pages reads nothing twice. Services memoize with
   `ObservableCache` (`core/observable-cache.ts`), which forgets a failed load so a retry
   fetches again.
-- `MythicPlusDataService` loads the Mythic+ files: `season()` (the index and every dungeon's
-  runs) for the stats, records, profile and guild pages; `index()` and
+- `MythicPlusDataService` loads the Mythic+ files: `season(seasonId)` (the index and every
+  dungeon's runs) for the stats, records, profile and guild pages; `index(seasonId)` and
   `dungeonRuns()` for the leaderboard (through `MythicPlusPageStore`), which loads only the
-  dungeons its scope shows. Its errors go through `mythicPlusLoadError()` for the message.
+  dungeons its scope shows. It always reads the live `index.json` first: a finished season
+  that index lists (`archivedSeasonId`) loads from its own folder (`seasonDataDir`,
+  [data-pipeline.md](data-pipeline.md#mythic-seasons)) and comes back with the live `seasons`
+  list, so the Season dropdown works on it; anything else loads the live season.
+  `isLiveSeason()` tells them apart, and `liveAffixWeek()` gives a week only for the live
+  season. Its errors go through `mythicPlusLoadError()` for the message.
   `hasScanChanges()` (`mythic-plus.ts`) says whether an index carries the previous scan's
   changes for every player, and `standingChanges()` turns them into each character's score
   change, rank change and previous rank, worked out once per index, for the movement arrows on
@@ -365,6 +379,7 @@ decision (ask first).
 | `app-raid-trinket-icons` | a character's trinkets as icons: `<app-raid-trinket-icons [trinkets]="row.member.trinkets" />`. Each icon is framed in its item quality colour, links to the item on TauriShoot, and carries the `data-tip` (the name, in the quality colour) and `data-tip-note` (the item level) an `app-icon-tips` around it reads; no trinkets is a grey "-". It shares its size, `--raid-icon-size`, and its look with `app-raid-talent-icons` (the `raid-icons` mixin). The log page's players and the boss rankings use it |
 | `spec-charts/` | `app-race-by-spec` (the most-popular-race boxes); `app-spec-popularity-chart`, which draws a `specPopularity` result: `<app-spec-popularity-chart [popularity]="popularity()" unit="characters" />`. The page around it owns the card, its header, the filters and the empty, loading and error states (Arena Statistics). `specPopularity`, `shareTicks`, `formatShare` and `compareSpecLists` work out a spec popularity chart's numbers and order, and `popularityChart` turns them into gridlines and bars |
 | `app-mythic-plus-week-affixes` | this week's affixes with their descriptions (leaderboard and stats page). On phones it shows icons only and its tooltips position against the row around it, which needs `position: relative` |
+| `app-mythic-plus-season-switch` | the Season dropdown and This week switch of the leaderboard, guild ladder and stats page: `<app-mythic-plus-season-switch [seasons]="seasonOptions()" [seasonId]="current.season.id" [period]="period()" [weekDisabled]="weekDisabled()" (seasonChange)="setSeason($event)" (weekSelect)="setPeriod('week')" />`. Picking a season, even the one shown, shows that whole season; This week switches to the live season. With one season it's the plain Season button. The records and character pages pass `[week]="false"`: the season dropdown alone, which shows nothing while there's only one season. It's an `app-filter-dropdown`, so the page lists `FilterDropdownCoordinatorService` |
 | `app-back-to-top-button` | the floating back-to-top button |
 | `app-pager` (`pager.component`) | every list split into pages: « First, ‹ Prev, Next ›, Last ». `<app-pager [page]="currentPage()" [pages]="pages()" [count]="(total() \| number) + ' characters'" [scrollTarget]="listSection" (pageChange)="goToPage($event)" />`. With `count`, it shows "Page 3 of 41 · 2,034 characters" after the buttons, and anything inside it (the M+ dungeon timer) sits there too. It emits only a page in range that differs from the current one, and the page writes it to `?page=`. Given a `scrollTarget`, the pager under a list scrolls back to the list's top after a change; give that element a `scroll-margin-top` that clears the header. `pageCount` and `pageSlice` (`pager.ts`) do the page maths. The Mythic+ leaderboard, the Raids Rankings, Guilds and boss pages, a Raids guild page's kill history, Arena, Rated Battlegrounds and Rare Items use it. On Arena a page that opens inside a title's players repeats that title's heading (`arenaGroupHeadings`). The kill history's pages hold whole raid weeks, so they differ in length: `weekPages` (`raid-kill-weeks.ts`) cuts them, not `pageSlice` ([scoring.md](scoring.md#raid-guild-progression-and-kill-speed)). A list that grows in place ("Show 50 more") isn't a pager |
 | `app-search-suggestions` (`search-suggestions.component`) | a search box that suggests as you type and opens the page you pick: the Mythic+ character page's header search (inside `app-mythic-plus-character-search`) and the Raids Guilds page's guild search. `<app-search-suggestions label="Find a guild" listLabel="Matching guilds" noMatchText="No guild by that name in this list." [suggestions]="guildSuggestions()" [ready]="pickupsReady()" [(query)]="guildQuery" />`. The page works out the suggestions from `query`, each a `SearchSuggestion` (`search-suggestions.ts`): its link and query parameters, then the row's cells, which are an `icon` image or a `mark` colour square, the `name` (in `color`), a grey `detail`, an optional `#rank`, and the `value` (in `valueColor`). Enter opens the top suggestion, Escape empties the box, and so does a pick. It shows `noMatchText` only while `ready` is true, so a list still loading never reads as "no match". The page sizes its host: 300 px in the Mythic+ header; on Guilds, whatever the toolbar row leaves after This week (about 170 px at full page width), or the next line when less than 160 px is left; the full row on phones. The list is as wide as the box, or as wide as `--search-suggestions-width` when that's wider, and then grows leftward from the box's right edge: Guilds sets 360 px above the phone breakpoint, so long guild names fit, and 0 on phones |
@@ -652,7 +667,9 @@ How it stays deterministic:
 - Each page is compared in viewport-sized slices, not as one full-page image. Chromium
   sometimes leaves images unpainted in a very tall full-page capture.
 
-To cover a new page or a new URL state, add it to `e2e/visual-pages.ts`.
+To cover a new page or a new URL state, add it to `e2e/visual-pages.ts`. A Mythic+ entry that
+needs a particular character, guild or a full season of runs opens `?season=legion-s1-1`: a
+finished season never changes, while the live one starts nearly empty.
 
 ## Phone layout check
 

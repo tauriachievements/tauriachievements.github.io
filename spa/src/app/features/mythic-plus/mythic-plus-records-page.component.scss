@@ -41,6 +41,8 @@ $depleted: #e06666;
   p { display: inline; color: #bdbdbd; line-height: 1.55; }
 }
 
+.page-season { margin-top: 12px; }
+
 .summary {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
