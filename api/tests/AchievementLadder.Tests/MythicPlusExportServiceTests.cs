@@ -11,26 +11,6 @@ public sealed class MythicPlusExportServiceTests
     internal const string Evermoon = "[EN] Evermoon";
     internal const string WoD = "[HU] Warriors of Darkness";
 
-    internal static readonly MythicPlusSeason WholeSeason = new(
-        "test-s1",
-        "Test Season 1",
-        "Test Raid",
-        DateTimeOffset.UnixEpoch
-    );
-    private static readonly MythicPlusSeason PreFixes = new(
-        "test-s1-1",
-        "Season 1.1 - Pre fixes",
-        "Test Raid",
-        DateTimeOffset.UnixEpoch
-    );
-    private static readonly MythicPlusSeason PostFixes = new(
-        "test-s1-2",
-        "Season 1.2 - Post fixes",
-        "Test Raid",
-        DateTimeOffset.FromUnixTimeSeconds(1000)
-    );
-    private static readonly DateTimeOffset ScannedAt = new(2026, 11, 10, 9, 0, 0, TimeSpan.Zero);
-
     [Theory]
     [InlineData(18, 1_245_000, 1440, 186.7)]
     [InlineData(16, 982_000, 1440, 174.0)]
@@ -154,8 +134,7 @@ public sealed class MythicPlusExportServiceTests
             var service = new MythicPlusExportService(
                 outputDirectory,
                 apiClient,
-                new FixedTimeProvider(scannedAt),
-                [WholeSeason]
+                new FixedTimeProvider(scannedAt)
             );
 
             var result = await service.ExportAsync(
@@ -303,8 +282,7 @@ public sealed class MythicPlusExportServiceTests
                         ),
                     }
                 ),
-                new FixedTimeProvider(new DateTimeOffset(2026, 10, 7, 9, 30, 0, TimeSpan.Zero)),
-                [WholeSeason]
+                new FixedTimeProvider(new DateTimeOffset(2026, 10, 7, 9, 30, 0, TimeSpan.Zero))
             );
             await service.ExportAsync(
                 new MythicPlusExporterOptions([Evermoon], AllowShrink: false),
@@ -321,6 +299,86 @@ public sealed class MythicPlusExportServiceTests
                 ],
                 Values(ScoresOf(index, "Alpha"))
             );
+        }
+        finally
+        {
+            Directory.Delete(outputDirectory, recursive: true);
+        }
+    }
+
+    [Fact]
+    public async Task ExportAsync_MarksInvalidRunsAndLeavesThemOutOfScoresAndCounts()
+    {
+        var outputDirectory = CreateTempDirectory();
+        try
+        {
+            var service = new MythicPlusExportService(
+                outputDirectory,
+                new FakeChallengeApiClient(
+                    IndexJson(),
+                    new()
+                    {
+                        [(Evermoon, 197)] = LeaderboardJson(
+                            Run(
+                                15,
+                                1_800_000,
+                                1_794_000_000,
+                                [],
+                                Member("Alpha", Evermoon, 11, "Guardian", 0, "")
+                            ),
+                            Run(
+                                18,
+                                1_700_000,
+                                1_794_000_100,
+                                [],
+                                Member("Alpha", Evermoon, 11, "Guardian", 0, ""),
+                                Member("Beta", Evermoon, 1, "Fury", 2, "")
+                            )
+                        ),
+                        [(Evermoon, 200)] = LeaderboardJson(
+                            Run(
+                                18,
+                                2_000_000,
+                                1_794_000_200,
+                                [],
+                                Member("Gamma", Evermoon, 1, "Fury", 2, "")
+                            )
+                        ),
+                    }
+                ),
+                new FixedTimeProvider(new DateTimeOffset(2026, 11, 9, 9, 30, 0, TimeSpan.Zero))
+            );
+            var result = await service.ExportAsync(
+                new MythicPlusExporterOptions([Evermoon], AllowShrink: false),
+                CancellationToken.None
+            );
+
+            Assert.Equal(3, result.Dataset.RunCount);
+
+            var eoa = ReadJson(outputDirectory, "eoa.json").GetProperty("runs");
+            Assert.Equal(
+                "Eye of Azshara +17 or higher with a Demon Hunter, Monk, Warlock, Warrior or Hunter, before the 9 November fixes",
+                eoa[0][6].GetString()
+            );
+            Assert.Equal(6, eoa[1].GetArrayLength());
+
+            var index = ReadJson(outputDirectory, "index.json");
+            var dungeons = index.GetProperty("dungeons");
+            var eoaEntry = dungeons[0];
+            Assert.Equal("eoa", eoaEntry.GetProperty("id").GetString());
+            Assert.Equal(1, eoaEntry.GetProperty("runCount").GetInt32());
+            Assert.Equal(1, eoaEntry.GetProperty("invalidRunCount").GetInt32());
+            Assert.Equal(
+                MythicPlusScore.Calculate(15, 1_800_000, 2100),
+                eoaEntry.GetProperty("bestScore").GetDouble()
+            );
+            Assert.False(dungeons[1].TryGetProperty("invalidRunCount", out _));
+
+            Assert.Equal(
+                [RoundScore(MythicPlusScore.Calculate(15, 1_800_000, 2100)), 1_800_000],
+                Values(ScoresOf(index, "Alpha"))
+            );
+            Assert.Equal([0, 0], Values(ScoresOf(index, "Beta")));
         }
         finally
         {
@@ -431,7 +489,7 @@ public sealed class MythicPlusExportServiceTests
                 Path.Combine(outputDirectory, "index.json"),
                 $$"""
                 {"version":1,"generatedAt":"2026-10-07T09:30:00Z","tables":"0123456789ab",
-                "season":{"id":"{{WholeSeason.Id}}"},
+                "season":{"id":"{{MythicPlusCatalog.Season.Id}}"},
                 "dungeons":[{"id":"hov","runCount":2}],
                 "specs":[{"class":6,"name":"Blood","role":"tank"},{"class":10,"name":"Brewmaster","role":"tank"}],
                 "players":[["Beta","Evermoon","",6,1,0],["Zeta","Evermoon","",10,1,0]],
@@ -490,7 +548,7 @@ public sealed class MythicPlusExportServiceTests
         var outputDirectory = CreateTempDirectory();
         try
         {
-            var seasonId = newSeason ? "legion-s0" : WholeSeason.Id;
+            var seasonId = newSeason ? "legion-s0" : MythicPlusCatalog.Season.Id;
             File.WriteAllText(
                 Path.Combine(outputDirectory, "index.json"),
                 $$"""
@@ -551,11 +609,7 @@ public sealed class MythicPlusExportServiceTests
                 IndexJson(),
                 new() { [(Evermoon, 197)] = LeaderboardJson() }
             );
-            var service = new MythicPlusExportService(
-                outputDirectory,
-                apiClient,
-                seasons: [WholeSeason]
-            );
+            var service = new MythicPlusExportService(outputDirectory, apiClient);
 
             var error = await Assert.ThrowsAsync<InvalidOperationException>(() =>
                 service.ExportAsync(
@@ -593,11 +647,7 @@ public sealed class MythicPlusExportServiceTests
                     ),
                 }
             );
-            var service = new MythicPlusExportService(
-                outputDirectory,
-                apiClient,
-                seasons: [WholeSeason]
-            );
+            var service = new MythicPlusExportService(outputDirectory, apiClient);
 
             await Assert.ThrowsAsync<InvalidOperationException>(() =>
                 service.ExportAsync(
@@ -619,252 +669,6 @@ public sealed class MythicPlusExportServiceTests
         }
     }
 
-    [Fact]
-    public async Task ExportAsync_ArchivesTheRunsOfAFinishedSeasonAndKeepsTheNewSeasonLive()
-    {
-        var outputDirectory = CreateTempDirectory();
-        try
-        {
-            var result = await ExportHallsAsync(
-                outputDirectory,
-                ScannedAt,
-                [PreFixes, PostFixes],
-                allowShrink: false,
-                Run(10, 2_000_000, 100, [], Member("Alpha", Evermoon, 6, "Blood", 0, "")),
-                Run(9, 2_000_000, 999, [], Member("Beta", Evermoon, 6, "Blood", 0, "")),
-                Run(8, 2_000_000, 1000, [], Member("Gamma", Evermoon, 6, "Blood", 0, ""))
-            );
-
-            var live = ReadJson(outputDirectory, "index.json");
-            Assert.Equal(PostFixes.Id, live.GetProperty("season").GetProperty("id").GetString());
-            Assert.Equal(
-                "Season 1.2 - Post fixes",
-                live.GetProperty("season").GetProperty("name").GetString()
-            );
-            Assert.Equal(
-                [
-                    (PreFixes.Id, "Season 1.1 - Pre fixes"),
-                    (PostFixes.Id, "Season 1.2 - Post fixes"),
-                ],
-                live.GetProperty("seasons")
-                    .EnumerateArray()
-                    .Select(season =>
-                        (
-                            season.GetProperty("id").GetString(),
-                            season.GetProperty("name").GetString()
-                        )
-                    )
-            );
-            Assert.Equal(["Gamma"], PlayerNames(live));
-
-            var archiveDirectory = Path.Combine(outputDirectory, PreFixes.Id);
-            var archive = ReadJson(archiveDirectory, "index.json");
-            Assert.Equal(PreFixes.Id, archive.GetProperty("season").GetProperty("id").GetString());
-            Assert.Equal(
-                "1970-01-01",
-                archive.GetProperty("season").GetProperty("startDate").GetString()
-            );
-            Assert.False(archive.TryGetProperty("seasons", out _));
-            Assert.False(archive.TryGetProperty("previousGeneratedAt", out _));
-            Assert.Equal(["Alpha", "Beta"], PlayerNames(archive));
-            Assert.Equal(
-                [100L, 999L],
-                ReadJson(archiveDirectory, "hov.json")
-                    .GetProperty("runs")
-                    .EnumerateArray()
-                    .Select(run => run[2].GetInt64())
-            );
-
-            Assert.Equal(PostFixes, result.Season);
-            var archived = Assert.Single(result.Archived);
-            Assert.Equal(
-                (PreFixes, 2, archiveDirectory),
-                (archived.Season, archived.RunCount, archived.OutputDirectory)
-            );
-        }
-        finally
-        {
-            Directory.Delete(outputDirectory, recursive: true);
-        }
-    }
-
-    [Fact]
-    public async Task ExportAsync_NeverRewritesAnArchivedSeason()
-    {
-        var outputDirectory = CreateTempDirectory();
-        try
-        {
-            var alpha = Run(10, 2_000_000, 100, [], Member("Alpha", Evermoon, 6, "Blood", 0, ""));
-            var gamma = Run(8, 2_000_000, 1000, [], Member("Gamma", Evermoon, 6, "Blood", 0, ""));
-            await ExportHallsAsync(
-                outputDirectory,
-                ScannedAt,
-                [PreFixes, PostFixes],
-                allowShrink: false,
-                alpha,
-                gamma
-            );
-            var archiveIndex = Path.Combine(outputDirectory, PreFixes.Id, "index.json");
-            var archived = File.ReadAllText(archiveIndex);
-
-            var result = await ExportHallsAsync(
-                outputDirectory,
-                ScannedAt.AddHours(1),
-                [PreFixes, PostFixes],
-                allowShrink: false,
-                alpha,
-                Run(12, 2_000_000, 500, [], Member("Beta", Evermoon, 6, "Blood", 0, "")),
-                gamma
-            );
-
-            Assert.Equal(archived, File.ReadAllText(archiveIndex));
-            Assert.Empty(result.Archived);
-            Assert.Equal(["Gamma"], PlayerNames(ReadJson(outputDirectory, "index.json")));
-        }
-        finally
-        {
-            Directory.Delete(outputDirectory, recursive: true);
-        }
-    }
-
-    [Fact]
-    public async Task ExportAsync_SplitsALiveSeasonWithoutTheShrinkGuardOfTheNewOne()
-    {
-        var outputDirectory = CreateTempDirectory();
-        try
-        {
-            string[] runs =
-            [
-                Run(10, 2_000_000, 100, [], Member("Alpha", Evermoon, 6, "Blood", 0, "")),
-                Run(9, 2_000_000, 200, [], Member("Beta", Evermoon, 6, "Blood", 0, "")),
-                Run(8, 2_000_000, 300, [], Member("Gamma", Evermoon, 6, "Blood", 0, "")),
-            ];
-            await ExportHallsAsync(outputDirectory, ScannedAt, [WholeSeason], false, runs);
-
-            var result = await ExportHallsAsync(
-                outputDirectory,
-                ScannedAt.AddHours(1),
-                [PreFixes, PostFixes],
-                false,
-                runs
-            );
-
-            var live = ReadJson(outputDirectory, "index.json");
-            Assert.Equal(PostFixes.Id, live.GetProperty("season").GetProperty("id").GetString());
-            Assert.Empty(live.GetProperty("dungeons").EnumerateArray());
-            Assert.Empty(PlayerNames(live));
-            Assert.False(live.TryGetProperty("previousGeneratedAt", out _));
-            Assert.Equal(
-                ["index.json"],
-                Directory.EnumerateFiles(outputDirectory).Select(Path.GetFileName)
-            );
-            Assert.Equal(0, result.PreviousRunCount);
-            Assert.Equal(3, Assert.Single(result.Archived).RunCount);
-        }
-        finally
-        {
-            Directory.Delete(outputDirectory, recursive: true);
-        }
-    }
-
-    [Fact]
-    public async Task ExportAsync_RefusesToArchiveASeasonWhoseRunsTheLeaderboardsLost()
-    {
-        var outputDirectory = CreateTempDirectory();
-        try
-        {
-            var alpha = Run(10, 2_000_000, 100, [], Member("Alpha", Evermoon, 6, "Blood", 0, ""));
-            await ExportHallsAsync(
-                outputDirectory,
-                ScannedAt,
-                [WholeSeason],
-                false,
-                alpha,
-                Run(9, 2_000_000, 200, [], Member("Beta", Evermoon, 6, "Blood", 0, "")),
-                Run(7, 2_000_000, 1500, [], Member("Delta", Evermoon, 6, "Blood", 0, ""))
-            );
-            var liveIndex = File.ReadAllText(Path.Combine(outputDirectory, "index.json"));
-
-            var error = await Assert.ThrowsAsync<InvalidOperationException>(() =>
-                ExportHallsAsync(
-                    outputDirectory,
-                    ScannedAt.AddHours(1),
-                    [PreFixes, PostFixes],
-                    false,
-                    alpha
-                )
-            );
-
-            Assert.Contains("Season 1.1 - Pre fixes", error.Message);
-            Assert.Contains("from 2 to 1 runs", error.Message);
-            Assert.False(Directory.Exists(Path.Combine(outputDirectory, PreFixes.Id)));
-            Assert.Equal(liveIndex, File.ReadAllText(Path.Combine(outputDirectory, "index.json")));
-
-            var result = await ExportHallsAsync(
-                outputDirectory,
-                ScannedAt.AddHours(2),
-                [PreFixes, PostFixes],
-                true,
-                alpha
-            );
-            Assert.Equal(1, Assert.Single(result.Archived).RunCount);
-        }
-        finally
-        {
-            Directory.Delete(outputDirectory, recursive: true);
-        }
-    }
-
-    [Fact]
-    public async Task ExportAsync_KeepsASeasonLiveUntilTheNextOneStarts()
-    {
-        var outputDirectory = CreateTempDirectory();
-        try
-        {
-            var later = new MythicPlusSeason(
-                "test-s2",
-                "Test Season 2",
-                "Test Raid",
-                ScannedAt.AddDays(1)
-            );
-
-            var result = await ExportHallsAsync(
-                outputDirectory,
-                ScannedAt,
-                [WholeSeason, later],
-                false,
-                Run(10, 2_000_000, 100, [], Member("Alpha", Evermoon, 6, "Blood", 0, ""))
-            );
-
-            Assert.Equal(WholeSeason, result.Season);
-            Assert.Empty(result.Archived);
-            var live = ReadJson(outputDirectory, "index.json");
-            Assert.Equal(
-                [WholeSeason.Id],
-                live.GetProperty("seasons")
-                    .EnumerateArray()
-                    .Select(season => season.GetProperty("id").GetString())
-            );
-        }
-        finally
-        {
-            Directory.Delete(outputDirectory, recursive: true);
-        }
-    }
-
-    [Fact]
-    public void Catalog_ListsItsSeasonsInStartOrderWithUniqueIds()
-    {
-        var seasons = MythicPlusCatalog.Seasons;
-
-        Assert.Equal(seasons.OrderBy(season => season.StartsAt), seasons);
-        Assert.Equal(seasons.Count, seasons.Select(season => season.Id).Distinct().Count());
-        Assert.Equal(
-            new DateTimeOffset(2026, 11, 9, 14, 35, 0, TimeSpan.FromHours(1)),
-            Assert.Single(seasons, season => season.Id == "legion-s1-2").StartsAt
-        );
-    }
-
     private static Task<MythicPlusExportResult> ExportHallsAsync(
         string outputDirectory,
         DateTimeOffset scannedAt,
@@ -874,14 +678,6 @@ public sealed class MythicPlusExportServiceTests
     private static Task<MythicPlusExportResult> ExportHallsAsync(
         string outputDirectory,
         DateTimeOffset scannedAt,
-        bool allowShrink,
-        params string[] hallsRuns
-    ) => ExportHallsAsync(outputDirectory, scannedAt, [WholeSeason], allowShrink, hallsRuns);
-
-    private static Task<MythicPlusExportResult> ExportHallsAsync(
-        string outputDirectory,
-        DateTimeOffset scannedAt,
-        IReadOnlyList<MythicPlusSeason> seasons,
         bool allowShrink,
         params string[] hallsRuns
     ) =>
@@ -895,8 +691,7 @@ public sealed class MythicPlusExportServiceTests
                     [(Evermoon, 200)] = LeaderboardJson(hallsRuns),
                 }
             ),
-            new FixedTimeProvider(scannedAt),
-            seasons
+            new FixedTimeProvider(scannedAt)
         ).ExportAsync(
             new MythicPlusExporterOptions([Evermoon], AllowShrink: allowShrink),
             CancellationToken.None

@@ -73,10 +73,8 @@ response first.
   `MythicPlusCatalog.IconUrl`.
 - Some dungeons are listed but not open yet. `MythicPlusCatalog.UnreleasedChallengeIds` skips
   them (227, 233, 234, 239). Remove an id when that dungeon opens.
-- The leaderboards carry no season: on 2026-11-09 they held every run since 2026-09-16, the
-  season's first day. `completedtime` (Unix seconds) is when a run finished; the exporter
-  splits the runs into the seasons in `MythicPlusCatalog.Seasons` by it
-  ([data-pipeline.md](data-pipeline.md#mythic-seasons)).
+- The season's name and start date are constants in `MythicPlusCatalog`. Edit them for a new
+  season, and run the exporter with `--allow-shrink`.
 - Observed 2026-10-05: `medal` matches the timer cutoffs exactly (a bronze time equals the
   timer).
 

@@ -61,23 +61,12 @@ const runs: Record<string, MythicPlusRunEntry[]> = {
   ]
 };
 
-const liveIndex: MythicPlusIndex = {
-  ...index,
-  season: { id: 'legion-s1-2', name: 'Season 1.2 - Post fixes', raid: 'Emerald Nightmare', startDate: '2026-11-09' },
-  seasons: [
-    { id: 'legion-s1-1', name: 'Season 1.1 - Pre fixes' },
-    { id: 'legion-s1-2', name: 'Season 1.2 - Post fixes' }
-  ]
-};
-
-const preFixes = { id: 'legion-s1-1', name: 'Season 1.1 - Pre fixes', raid: 'Emerald Nightmare', startDate: '2026-09-16' };
-
 class FakeDataFiles {
   refreshes = 0;
-  constructor(private staleTables?: string, private readonly staysStale = false, private readonly servedIndex = index) {}
+  constructor(private staleTables?: string, private readonly staysStale = false) {}
 
-  getJson<T>(path?: string): Observable<T> {
-    return of((path?.includes('/legion-s1-1/') ? { ...this.servedIndex, season: preFixes } : this.servedIndex) as T);
+  getJson<T>(): Observable<T> {
+    return of(index as T);
   }
 
   fetchJson<T>(path: string): Observable<T> {
@@ -215,27 +204,6 @@ describe('MythicPlusGuildPageComponent', () => {
     page.setClassFilter(10);
     page.selectDungeon('nl');
     expect(location.path()).toBe('/mythic-plus/guild/evermoon/Skill%20Issue?dungeon=nl&class=10');
-  });
-
-  it('ranks the guild in the season the address names, and This week goes back to the live season', async () => {
-    const { page } = await open(
-      '/mythic-plus/guild/evermoon/Skill%20Issue?season=legion-s1-1',
-      new FakeDataFiles(undefined, false, liveIndex)
-    );
-    const location = TestBed.inject(Location);
-
-    expect(page.index()?.season.id).toBe('legion-s1-1');
-    expect(page.seasonOptions().map(season => season.id)).toEqual(['legion-s1-1', 'legion-s1-2']);
-
-    page.setSeason('legion-s1-2');
-    expect(page.index()?.season.id).toBe('legion-s1-2');
-    expect(location.path()).toBe('/mythic-plus/guild/evermoon/Skill%20Issue');
-
-    page.setSeason('legion-s1-1');
-    expect(location.path()).toBe('/mythic-plus/guild/evermoon/Skill%20Issue?season=legion-s1-1');
-    page.setPeriod('week');
-    expect(page.index()?.season.id).toBe('legion-s1-2');
-    expect(location.path()).toBe('/mythic-plus/guild/evermoon/Skill%20Issue?period=week');
   });
 
   it('finds the guild typed in another case and puts its own name in the address bar', async () => {

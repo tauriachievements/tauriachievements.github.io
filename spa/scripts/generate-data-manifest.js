@@ -27,26 +27,18 @@ function listDataFiles() {
     .map((asset) => path.relative(srcDir, path.join(spaRoot, asset)).split(path.sep).join("/"))
     .filter((publicPath) => fs.existsSync(path.join(srcDir, publicPath)))
     .flatMap((publicPath) => fs.statSync(path.join(srcDir, publicPath)).isDirectory()
-      ? listFolderFiles(srcDir, publicPath)
-      : [publicPath]);
+      ? fs.readdirSync(path.join(srcDir, publicPath))
+        .filter((fileName) => fs.statSync(path.join(srcDir, publicPath, fileName)).isFile())
+        .map((fileName) => `${publicPath}/${fileName}`)
+      : [publicPath])
+    .filter((publicPath) => DATA_FILE_PATTERN.test(publicPath));
   const generatedFiles = fs.existsSync(generatedDataDir)
-    ? listFolderFiles(srcDir, "assets/data")
+    ? fs.readdirSync(generatedDataDir)
+      .filter((fileName) => DATA_FILE_PATTERN.test(fileName) && path.join(generatedDataDir, fileName) !== outputPath)
+      .map((fileName) => `assets/data/${fileName}`)
     : [];
 
-  return [...new Set([...assetFiles, ...generatedFiles])]
-    .filter((publicPath) => DATA_FILE_PATTERN.test(publicPath) && path.join(srcDir, publicPath) !== outputPath)
-    .sort();
-}
-
-function listFolderFiles(root, publicPath) {
-  return fs.readdirSync(path.join(root, publicPath), { withFileTypes: true })
-    .flatMap((entry) => {
-      const entryPath = `${publicPath}/${entry.name}`;
-      if (entry.isDirectory()) {
-        return listFolderFiles(root, entryPath);
-      }
-      return entry.isFile() ? [entryPath] : [];
-    });
+  return [...assetFiles, ...generatedFiles].sort();
 }
 
 function generateDataManifest() {
@@ -57,4 +49,4 @@ function generateDataManifest() {
   console.log(`Generated ${path.relative(process.cwd(), outputPath)} (${Object.keys(manifest.files).length} files)`);
 }
 
-module.exports = { buildDataManifest, generateDataManifest, listFolderFiles };
+module.exports = { buildDataManifest, generateDataManifest };

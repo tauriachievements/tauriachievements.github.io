@@ -22,6 +22,11 @@ export const MYTHIC_PLUS_ROUTES: Routes = [
       .then(module => module.MythicPlusRecordsPageComponent)
   },
   {
+    path: 'mythic-plus/invalid',
+    loadComponent: () => import('./mythic-plus-invalid-page.component')
+      .then(module => module.MythicPlusInvalidPageComponent)
+  },
+  {
     path: 'mythic-plus/compare',
     redirectTo: 'mythic-plus',
     pathMatch: 'full'

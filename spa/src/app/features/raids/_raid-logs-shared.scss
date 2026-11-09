@@ -25,24 +25,6 @@ $difficulty-colors: (
   color: $raid-text;
 }
 
-@mixin back-link {
-  .back-link {
-    display: inline-flex;
-    align-self: flex-start;
-    align-items: center;
-    gap: 6px;
-    color: #bdbdbd;
-    font-size: .85rem;
-    font-weight: 600;
-    text-decoration: none;
-
-    span { color: $gold; font-size: 1.1rem; }
-
-    &:hover { color: #fff; }
-    &:focus-visible { outline: 2px solid $gold; outline-offset: 2px; }
-  }
-}
-
 @mixin summary-tiles {
   .summary {
     display: grid;
@@ -284,23 +266,6 @@ $difficulty-colors: (
 
   &.positive { border-color: rgba(140, 232, 155, .34); background: rgba(140, 232, 155, .12); color: #8ce89b; }
   &.negative { border-color: rgba(255, 154, 154, .34); background: rgba(255, 154, 154, .12); color: #ff9a9a; }
-}
-
-@mixin invalid-tag {
-  display: inline-block;
-  flex: none;
-
-  padding: 1px 6px;
-  border: 1px solid rgba(255, 154, 154, .34);
-  border-radius: 999px;
-  background: rgba(255, 154, 154, .12);
-  color: #ff9a9a;
-  font-size: .62rem;
-  font-weight: 800;
-  letter-spacing: .04em;
-  line-height: 1.4;
-  text-transform: uppercase;
-  white-space: nowrap;
 }
 
 @mixin ranking-toolbar {

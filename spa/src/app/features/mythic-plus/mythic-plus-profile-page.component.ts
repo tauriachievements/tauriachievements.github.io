@@ -15,7 +15,6 @@ import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Params, Router, RouterLink } from '@angular/router';
 import { getClassCrestPath } from '../../game/classIconHelper';
 import { injectCompactViewport } from '../../shared/compact-viewport';
-import { FilterDropdownCoordinatorService } from '../../shared/filter-dropdown-coordinator.service';
 import {
   MythicPlusIndex,
   MythicPlusRun,
@@ -23,11 +22,11 @@ import {
   characterKey,
   exportedAt,
   keystoneUpgrades,
+  latestFirst,
   rankPlayers,
   rankRuns,
   runIncludesCharacter,
   scoreColor,
-  seasonOptions,
   seasonScoreColors,
   upgradeStars,
   ROLE_LABELS
@@ -74,8 +73,6 @@ import { characterTransitionName } from '../../shared/motion/motion';
 import { RevealDirective } from '../../shared/motion/reveal.directive';
 import { ScrollToEndDirective } from '../../shared/motion/scroll-to-end.directive';
 import { MythicPlusDataService, mythicPlusLoadError } from './mythic-plus-data.service';
-import { injectSeasonSelection } from './mythic-plus-season-selection';
-import { MythicPlusSeasonSwitchComponent } from './mythic-plus-season-switch.component';
 import { SpotlightDirective } from '../../shared/motion/spotlight.directive';
 import { TapTooltipDirective } from '../../shared/tap-tooltip.directive';
 import { CLASS_NAMES, Role, realmSlug } from '../../game/wow';
@@ -127,7 +124,6 @@ interface TeammateView {
     ScrollToEndDirective,
     MythicPlusRunsListComponent,
     MythicPlusCharacterSearchComponent,
-    MythicPlusSeasonSwitchComponent,
     CountUpDirective,
     RevealDirective,
     SpotlightDirective,
@@ -138,7 +134,6 @@ interface TeammateView {
   ],
   templateUrl: './mythic-plus-profile-page.component.html',
   styleUrls: ['./mythic-plus-profile-page.component.scss', './mythic-plus-profile-page.component.phone.scss', './mythic-plus-profile-page.motion.scss'],
-  providers: [FilterDropdownCoordinatorService],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class MythicPlusProfilePageComponent implements OnInit {
@@ -147,16 +142,15 @@ export class MythicPlusProfilePageComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly replaceUrl = injectReplaceUrl();
-  private readonly season = injectSeasonSelection();
 
   readonly cards = injectCompactViewport(MYTHIC_PLUS_CARDS_QUERY);
   private readonly phone = injectCompactViewport();
   private readonly pageSize = computed(() => this.cards() ? MYTHIC_PLUS_CARDS_PAGE_SIZE : MYTHIC_PLUS_PAGE_SIZE);
 
   readonly index = signal<MythicPlusIndex | undefined>(undefined);
-  readonly seasonOptions = computed(() => seasonOptions(this.index()));
   readonly lastEdited = computed(() => exportedAt(this.index()));
   readonly allRuns = signal<readonly MythicPlusRun[]>([]);
+  private readonly allInvalidRuns = signal<readonly MythicPlusRun[]>([]);
   readonly isLoading = signal(true);
   readonly loadError = signal<string | undefined>(undefined);
 
@@ -211,13 +205,8 @@ export class MythicPlusProfilePageComponent implements OnInit {
   readonly ambiguous = computed<CharacterLink[]>(() =>
     this.matches().length > 1 ? this.matches().map(toCharacterLink) : []);
 
-  readonly runs = computed(() => {
-    const key = this.key();
-    return key
-      ? this.allRuns().filter(run => runIncludesCharacter(run, key))
-        .sort((a, b) => a.completedAt < b.completedAt ? 1 : a.completedAt > b.completedAt ? -1 : 0)
-      : [];
-  });
+  readonly runs = computed(() => this.characterRuns(this.allRuns()));
+  private readonly invalidRuns = computed(() => this.characterRuns(this.allInvalidRuns()));
 
   readonly scanChange = computed(() => profileScanChange(this.index(), this.key()));
 
@@ -239,12 +228,10 @@ export class MythicPlusProfilePageComponent implements OnInit {
     return specs.length > 1 && specs.some(played => played.spec === spec) ? spec : undefined;
   });
 
-  readonly specRuns = computed(() => {
-    const spec = this.selectedSpec();
-    const key = this.key();
-    return spec
-      ? this.runs().filter(run => run.roster.some(member => member.spec === spec && characterKey(member) === key))
-      : this.runs();
+  readonly specRuns = computed(() => this.inSelectedSpec(this.runs()));
+  private readonly listedRuns = computed(() => {
+    const invalid = this.inSelectedSpec(this.invalidRuns());
+    return invalid.length ? [...this.specRuns(), ...invalid].sort(latestFirst) : this.specRuns();
   });
 
   private readonly specRanking = computed(() => {
@@ -378,7 +365,7 @@ export class MythicPlusProfilePageComponent implements OnInit {
   });
   readonly historyRuns = computed(() => {
     const day = this.selectedDay();
-    const runs = day ? this.specRuns().filter(run => localDay(new Date(run.completedAt)) === day) : this.specRuns();
+    const runs = day ? this.listedRuns().filter(run => localDay(new Date(run.completedAt)) === day) : this.listedRuns();
     const ranks = this.runRanks();
     const rankOf = (id: string) => ranks.get(id) || Number.MAX_SAFE_INTEGER;
     return this.historyOrder() === 'best' ? [...runs].sort((a, b) => rankOf(a.id) - rankOf(b.id)) : runs;
@@ -433,9 +420,7 @@ export class MythicPlusProfilePageComponent implements OnInit {
   }
 
   private writeUrl(member: { name: string; realm: string }): void {
-    this.replaceUrl(
-      { season: this.season.selected() ?? null, spec: this.selectedSpec() ?? null },
-      { path: mythicPlusProfileLink(member) });
+    this.replaceUrl({ spec: this.selectedSpec() ?? null }, { path: mythicPlusProfileLink(member) });
   }
 
   ngOnInit(): void {
@@ -454,22 +439,6 @@ export class MythicPlusProfilePageComponent implements OnInit {
     this.historyLimit.set(this.pageSize());
     this.expandedRunId.set(undefined);
     this.writeUrl(member);
-  }
-
-  setSeason(seasonId: string): void {
-    if (!this.season.select(seasonId, this.index())) {
-      return;
-    }
-    this.selectedDay.set(undefined);
-    this.historyLimit.set(this.pageSize());
-    this.expandedRunId.set(undefined);
-    this.loadData();
-    const member = this.player()?.member;
-    if (member) {
-      this.writeUrl(member);
-    } else {
-      this.replaceUrl({ season: this.season.selected() ?? null, spec: this.selectedSpec() ?? null });
-    }
   }
 
   toggleRun(runId: string): void {
@@ -502,20 +471,29 @@ export class MythicPlusProfilePageComponent implements OnInit {
     this.searchQuery.set((event.target as HTMLInputElement).value);
   }
 
+  private characterRuns(runs: readonly MythicPlusRun[]): MythicPlusRun[] {
+    const key = this.key();
+    return key ? runs.filter(run => runIncludesCharacter(run, key)).sort(latestFirst) : [];
+  }
+
+  private inSelectedSpec(runs: MythicPlusRun[]): MythicPlusRun[] {
+    const spec = this.selectedSpec();
+    const key = this.key();
+    return spec
+      ? runs.filter(run => run.roster.some(member => member.spec === spec && characterKey(member) === key))
+      : runs;
+  }
+
   loadData(): void {
     this.isLoading.set(true);
     this.loadError.set(undefined);
-    const seasonId = this.season.selected();
-    this.mythicPlusData.season(seasonId)
+    this.mythicPlusData.season()
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
-        next: ({ index, runs }) => {
-          if (seasonId !== this.season.selected()) {
-            return;
-          }
+        next: ({ index, runs, invalidRuns }) => {
           this.index.set(index);
           this.allRuns.set(runs);
-          this.season.loaded(index);
+          this.allInvalidRuns.set(invalidRuns);
           this.isLoading.set(false);
         },
         error: error => {

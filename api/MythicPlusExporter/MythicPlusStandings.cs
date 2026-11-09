@@ -21,7 +21,7 @@ public static class MythicPlusStandings
         foreach (var dungeon in dataset.Dungeons)
         {
             best.StartDungeon();
-            foreach (var scored in dungeon.Runs)
+            foreach (var scored in dungeon.Runs.Where(run => run.IsValid))
             {
                 foreach (var member in scored.Run.Members)
                 {

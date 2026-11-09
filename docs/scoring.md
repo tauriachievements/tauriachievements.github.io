@@ -146,12 +146,6 @@ decision: ask first.** When a rule does change, change its tests first and see t
 
 ## Mythic+
 
-- **Seasons:** every score, rank, record, chart and "since the last scan" change counts only
-  the runs of the season shown. Season 1 is split at the server fixes of 9 November 2026,
-  14:35 Budapest time, into Season 1.1 - Pre fixes and Season 1.2 - Post fixes, so 1.2 starts
-  every character from zero ([data-pipeline.md](data-pipeline.md#mythic-seasons)). The pages
-  open on the live season; "This week" always means the live season's week, and a finished
-  season shows no affix week.
 - **Run score** (`api/MythicPlusExporter/MythicPlusScore.cs`), modelled on Raider.IO:
   - timed: `50 + 7.5 × level + 12.5 × (1 − time / timer)`;
   - over time: `50 + 7.5 × (level − 1) − 20 × (time / timer − 1)`;
@@ -218,6 +212,7 @@ decision: ask first.** When a rule does change, change its tests first and see t
   only for the gaining rows the page shows, in one pass over the season's runs.
   The exporter stamps a scan when it has finished reading, so a key finished during the previous
   scan, after its dungeon was read, raises the score without being marked.
+- An invalid run counts nowhere ([below](#invalid-mythic-runs)).
 - **The scoring page** `/mythic-plus/scoring` explains all this with worked examples.
   `Score_MatchesTheScoringPageExamples` in `api/tests/AchievementLadder.Tests/MythicPlusExportServiceTests.cs`
   pins those examples, so change the page and the test together.
@@ -253,6 +248,38 @@ decision: ask first.** When a rule does change, change its tests first and see t
 - **Most runs:** every finished run counts, timed or not; ties go to more timed runs, then the
   name. A character shows in their most-played spec.
 - **Tests:** `mythic-plus-records.spec.ts`.
+
+## Invalid Mythic+ runs
+
+- **Code:** `MythicPlusInvalidRuns` in MythicPlusExporter
+  ([data-pipeline.md](data-pipeline.md#invalid-mythic-runs)); `splitInvalidRuns`
+  (`mythic-plus.ts`) and `MythicPlusDataService` on the site.
+- The owner's rules (9 November 2026) cover keys of +17 and higher finished before the server
+  fixes went live, 9 November 2026 14:35 Budapest time (13:35 UTC), by the run's finish time. Such
+  a run is invalid when:
+  1. it's Black Rook Hold with a Death Knight in the group;
+  2. it's Eye of Azshara with a Demon Hunter, Monk, Warlock, Warrior or Hunter (any one of them);
+  3. it's Vault of the Wardens, Court of Stars or Darkheart Thicket with a Warlock;
+  4. a Brewmaster Monk is in the group, in any dungeon;
+  5. it's Court of Stars.
+
+  A run that breaks several rules shows the reason of the first one.
+- An invalid run counts nowhere, for any of its players: not in the scores, the leaderboard's
+  runs and players, the guild ladder, the records, bounties, server firsts and most runs, the
+  stats page, the dungeons' run counts and best scores, the dungeon ranks on the profile, or the
+  rank and score changes since the last scan. The whole run is out, not only the players who
+  abused something.
+- The profile's run history still lists it, tagged "Invalid" in place of its score with the
+  reason on hover, a dash in place of its rank, and the reason in its details. Best rank first
+  puts it last. It's left out of the profile's score, best runs, spec pills, teammates and
+  chart.
+- `/mythic-plus/invalid` lists every invalid run, latest first, under a count of the runs
+  each reason set aside. It has no menu entry: the "List of invalid runs" button left of "How
+  scores work" on the leaderboard, shown only while there are any, leads to it.
+- **Tests:** `MythicPlusInvalidRunsTests`, `MythicPlusExportServiceTests`
+  (`ExportAsync_MarksInvalidRuns…`), `mythic-plus.spec.ts`, `mythic-plus-data.service.spec.ts`,
+  `mythic-plus-invalid.spec.ts`, `mythic-plus-invalid-page.component.spec.ts`,
+  `mythic-plus-profile-page.component.spec.ts`, `mythic-plus-page.component.spec.ts`.
 
 ## Spec and race popularity
 

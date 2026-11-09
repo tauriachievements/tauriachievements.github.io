@@ -64,6 +64,7 @@ export interface RunView {
   healers: MemberView[];
   dps: MemberView[];
   roster: MemberView[];
+  invalid?: string;
 }
 
 export interface RunRow extends RunView {
@@ -212,6 +213,7 @@ export function toRunView(
     tanks: roster.filter(member => member.role === 'tank'),
     healers: roster.filter(member => member.role === 'healer'),
     dps: roster.filter(member => member.role === 'dps'),
-    roster
+    roster,
+    ...(run.invalid === undefined ? {} : { invalid: run.invalid })
   };
 }

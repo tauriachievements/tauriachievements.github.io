@@ -29,6 +29,8 @@
 .details-result { color: #7fdc8f; font-size: .85rem; font-weight: 700; }
 .details-result.depleted { color: #e06666; }
 .details-date { color: #9a9a9a; font-size: .8rem; }
+.run-invalid { margin-top: 6px; color: #ff9a9a; font-size: .8rem; }
+.invalid-tag { @include invalid-tag; margin-right: 4px; }
 
 .timer-values {
   display: flex;

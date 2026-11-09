@@ -6,13 +6,9 @@ import {
   MythicPlusAffix,
   MythicPlusIndex,
   MythicPlusRun,
-  exportedAt,
-  isLiveSeason,
-  liveAffixWeek,
-  seasonOptions
+  currentAffixWeek,
+  exportedAt
 } from './mythic-plus';
-import { MythicPlusSeasonSwitchComponent } from './mythic-plus-season-switch.component';
-import { injectSeasonSelection } from './mythic-plus-season-selection';
 import {
   DayActivity,
   LEVEL_BANDS,
@@ -96,7 +92,6 @@ const isMiddle = (position: number, count: number) => position >= count / 3 && p
     RouterLink,
     TapTooltipDirective,
     FilterDropdownComponent,
-    MythicPlusSeasonSwitchComponent,
     MythicPlusWeekAffixesComponent,
     RaceBySpecComponent,
     ScrollToEndDirective,
@@ -117,7 +112,6 @@ export class MythicPlusStatsPageComponent implements OnInit {
   private readonly destroyRef = inject(DestroyRef);
   private readonly route = inject(ActivatedRoute);
   private readonly replaceUrl = injectReplaceUrl();
-  private readonly season = injectSeasonSelection();
 
   readonly levelBands = LEVEL_BANDS;
   readonly resultSegments = RESULT_SEGMENTS;
@@ -148,12 +142,7 @@ export class MythicPlusStatsPageComponent implements OnInit {
   private readonly affixesById = computed(() =>
     new Map((this.index()?.affixes ?? []).map(affix => [affix.id, affix])));
   readonly weeks = computed(() => affixWeeks(this.allRuns()));
-  readonly currentWeek = computed(() => liveAffixWeek(this.index(), this.allRuns()));
-  readonly seasonOptions = computed(() => seasonOptions(this.index()));
-  readonly weekDisabled = computed(() => {
-    const index = this.index();
-    return !index || (isLiveSeason(index) && !this.currentWeek());
-  });
+  readonly currentWeek = computed(() => currentAffixWeek(this.allRuns()));
   readonly weekAffixes = computed(() => this.affixList(this.currentWeek()?.affixes ?? []));
 
   readonly runs = computed(() => {
@@ -301,9 +290,6 @@ export class MythicPlusStatsPageComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    if (this.period() === 'week') {
-      this.season.select(undefined, undefined);
-    }
     this.loadData();
   }
 
@@ -329,47 +315,23 @@ export class MythicPlusStatsPageComponent implements OnInit {
     this.levelDungeon.set(typeof value === 'string' ? value : undefined);
   }
 
-  setSeason(seasonId: string): void {
-    const changed = this.season.select(seasonId, this.index());
-    if (!changed && this.period() === 'season') {
-      return;
-    }
-    this.period.set('season');
-    if (changed) {
-      this.loadData();
-    }
-    this.writeUrl();
-  }
-
   setPeriod(period: StatsPeriod): void {
     if (period === this.period()) {
       return;
     }
     this.period.set(period);
-    if (period === 'week' && this.season.select(undefined, this.index())) {
-      this.loadData();
-    }
-    this.writeUrl();
-  }
-
-  private writeUrl(): void {
-    this.replaceUrl({ season: this.season.selected() ?? null, period: this.period() === 'week' ? 'week' : null });
+    this.replaceUrl({ period: period === 'week' ? 'week' : null });
   }
 
   loadData(): void {
     this.isLoading.set(true);
     this.loadError.set(undefined);
-    const seasonId = this.season.selected();
-    this.mythicPlusData.season(seasonId)
+    this.mythicPlusData.season()
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: ({ index, runs }) => {
-          if (seasonId !== this.season.selected()) {
-            return;
-          }
           this.index.set(index);
           this.allRuns.set(runs);
-          this.season.loaded(index);
           this.isLoading.set(false);
         },
         error: error => {

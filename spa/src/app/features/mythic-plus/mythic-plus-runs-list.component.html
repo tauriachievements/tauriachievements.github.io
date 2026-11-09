@@ -12,7 +12,11 @@
             [attr.aria-expanded]="isExpanded(row.id)"
             [attr.aria-controls]="'run-details-' + row.id"
             (click)="toggleRun.emit(row.id)">
-            <span class="card-rank" [style.color]="row.color"><span class="visually-hidden">Rank </span>{{ row.rank }}</span>
+            @if (row.invalid) {
+              <span class="card-rank unranked" aria-hidden="true">–</span>
+            } @else {
+              <span class="card-rank" [style.color]="row.color"><span class="visually-hidden">Rank </span>{{ row.rank }}</span>
+            }
             <span class="card-body">
               <span class="card-line">
                 <img class="card-dungeon-icon" [src]="row.dungeon.icon" alt="" loading="lazy" />
@@ -34,7 +38,11 @@
                 }
               </span>
             </span>
-            <span class="card-score"><span class="visually-hidden">Score </span>{{ row.score | number:'1.1-1' }}</span>
+            @if (row.invalid; as reason) {
+              <span class="card-score"><span class="invalid-tag" [title]="reason">Invalid</span></span>
+            } @else {
+              <span class="card-score"><span class="visually-hidden">Score </span>{{ row.score | number:'1.1-1' }}</span>
+            }
             <span class="caret" aria-hidden="true"></span>
           </button>
           @if (isExpanded(row.id)) {
@@ -122,12 +130,16 @@
                 class="row-toggle"
                 [attr.aria-expanded]="isExpanded(row.id)"
                 [attr.aria-controls]="'run-details-' + row.id"
-                [attr.aria-label]="(isExpanded(row.id) ? 'Hide' : 'Show') + ' details for rank ' + row.rank"
+                [attr.aria-label]="(isExpanded(row.id) ? 'Hide' : 'Show') + ' details for ' + (row.invalid ? 'this invalid run' : 'rank ' + row.rank)"
                 (click)="$event.stopPropagation(); toggleRun.emit(row.id)">
                 <span class="caret" aria-hidden="true"></span>
               </button>
             </td>
-            <td class="col-rank" [style.color]="row.color">{{ row.rank }}</td>
+            @if (row.invalid) {
+              <td class="col-rank unranked"><span aria-hidden="true">–</span><span class="visually-hidden">Not ranked</span></td>
+            } @else {
+              <td class="col-rank" [style.color]="row.color">{{ row.rank }}</td>
+            }
             <td class="col-dungeon" [title]="row.dungeon.name">{{ row.dungeon.shortName }}</td>
             <td class="col-level">
               <span class="level">
@@ -157,7 +169,11 @@
                 <ng-container *ngTemplateOutlet="memberLink; context: { $implicit: member }"></ng-container>
               }
             </td>
-            <td class="col-score">{{ row.score | number:'1.1-1' }}</td>
+            @if (row.invalid; as reason) {
+              <td class="col-score"><span class="invalid-tag" [title]="reason">Invalid</span></td>
+            } @else {
+              <td class="col-score">{{ row.score | number:'1.1-1' }}</td>
+            }
             @if (completed()) {
               <td class="col-completed" [title]="row.completedAt | date:'EEE, d MMM y · HH:mm'">
                 <time [attr.datetime]="row.completedAt">{{ completedAgo(row.completedAt) }}</time>

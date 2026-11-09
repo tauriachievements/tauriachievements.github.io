@@ -86,8 +86,8 @@ So a night's run is one commit and one Pages deploy, the guild pages included.
   the realm fail every time. A character already in Players.csv only gets its rare achievements
   refreshed, which needs `character-achievements` alone.
 - `Run-MythicPlus.cmd`, `Run-RaidLogs.cmd` and `Run-Arena.cmd` refresh one dataset on its
-  own. Their arguments go to the exporter (`Run-MythicPlus.cmd --allow-shrink` when the
-  leaderboards really did lose runs).
+  own. Their arguments go to the exporter (`Run-MythicPlus.cmd --allow-shrink` at a season
+  reset).
 - `Run-QuickUpdate.cmd` is the refresh to run during the day. It runs MythicPlusExporter,
   RaidLogExporter and ArenaLadderExporter, in that order, and publishes what changed in one
   commit. The message names the changed datasets in the same order:
@@ -112,11 +112,7 @@ On top of that:
 - The daily update won't publish when Players.csv has shrunk by more than `-MaxShrinkPercent`
   compared with the last commit. That usually means the API was unstable.
 - MythicPlusExporter and RaidLogExporter refuse to write when the run or kill count shrinks by
-  more than 2%. Pass `--allow-shrink` when the drop is real. MythicPlusExporter compares a
-  season only with itself, so a new season starts without the check. Before it archives a
-  finished season ([Mythic+ seasons](#mythic-seasons)) it compares that season's runs with the
-  runs the last export held in the same stretch of time, and refuses when the API now lists
-  more than 2% fewer: the archive is written once, so it must not miss them.
+  more than 2%. Pass `--allow-shrink` when the drop is real, such as a new season.
 - MythicPlusExporter writes nothing unless it read every leaderboard.
 - MythicPlusExporter and RaidLogExporter write the dungeon or boss files first and `index.json`
   last: the index is what makes new dungeons and kills visible.
@@ -150,9 +146,10 @@ whose score changed, not the whole dataset.
 
 - `index.json`: `version`, when the leaderboards were read (`generatedAt`, UTC ISO 8601),
   `previousGeneratedAt` once there is an earlier export, the `tables` fingerprint (below), the
-  `season` (`id`, `name`, `raid`, `startDate`), in the live folder `seasons` (below),
-  `dungeons` and `affixes`, and the tables the dungeon files point into: `specs` as objects
-  and `players` as `[name, realm, guild, class, race, gender]`.
+  `season`, `dungeons` and `affixes`, and the tables the dungeon files point into: `specs` as
+  objects and `players` as `[name, realm, guild, class, race, gender]`. A dungeon's `runCount`
+  and `bestScore` count only the valid runs; `invalidRunCount` is there when it has invalid ones
+  ([below](#invalid-mythic-runs)).
 - The two tables keep the order of the export that started them (specs by class, then name;
   players by realm, then name) and add each new entry at the end, sorted the same way among the
   export's new ones. A known character's row never moves: a new guild, class, race or gender is
@@ -172,7 +169,8 @@ whose score changed, not the whole dataset.
 - `<dungeon>.json`, named by the dungeon's slug: `version`, `dungeon`, `tables` and the
   dungeon's `runs`, best first (the higher score, then the faster clear, then the earlier
   finish), each `[keyLevel, clearTimeMs, completedAtUnix, score, [affixId, ...], [[player, spec], ...]]`
-  with player and spec as positions in the index's tables. A dungeon nobody has run yet has no
+  with player and spec as positions in the index's tables, and an invalid run's reason as a
+  seventh element ([below](#invalid-mythic-runs)). A dungeon nobody has run yet has no
   file and no tile.
 - `tables` is a short hash of the spec table and the players' realms and names, in order, taken
   when the tables started (`MythicPlusTables.FingerprintOf`). Every export that only adds to them
@@ -187,29 +185,22 @@ whose score changed, not the whole dataset.
   in format 2 rewrote `index.json` once; its dungeon files changed only by their new runs and the
   version line.
 
-### Mythic+ seasons
+## Invalid Mythic+ runs
 
-The leaderboards have no season field: they list every run since the season began. The
-exporter splits them by when each run finished (`completedAt`) into the seasons in
-`MythicPlusCatalog.Seasons`, each with the moment it starts (`StartsAt`). A run belongs to the
-last season that had started when it finished.
+`MythicPlusInvalidRuns` in MythicPlusExporter holds the rules that make a run invalid, such as
+a key won by abusing a bug that the server has since fixed. What they are is in
+[scoring.md](scoring.md#invalid-mythic-runs).
 
-- Season 1 is split in two at the server fixes of 9 November 2026, 14:35 Budapest time
-  (13:35 UTC): `legion-s1-1` "Season 1.1 - Pre fixes" and `legion-s1-2` "Season 1.2 - Post
-  fixes". Each season's runs, scores, ranks and records stand on their own
-  ([scoring.md](scoring.md#mythic)).
-- `mythic-plus-data/` holds the live season, the last one that has started. Its `index.json`
-  lists `seasons`, `[{ "id", "name" }]` for every season that has started, oldest first; the
-  last one is the live season. The site builds its Season dropdown from this list.
-- A finished season sits in `mythic-plus-data/<season id>/`, in the same format. The first
-  export after the season ends writes it, and no export touches it again: an existing
-  `index.json` there means it's done. It has no `previousGeneratedAt`, `departed` or
-  `seasons`.
-- To start a season, add it to `MythicPlusCatalog.Seasons` with its start. The next export
-  archives the season before it and starts the live folder again with new tables. Archiving
-  reads the finished season's runs from the API, so add the new season while the leaderboards
-  still list them; the archive guard ([Publishing safety](#publishing-safety)) stops an export
-  that would archive fewer.
+- The exporter checks every run on every export, so a change to the rules needs no format bump
+  and no extra API reads: it shows on the site after the next export (the daily update,
+  `Run-MythicPlus.cmd` or `Run-QuickUpdate.cmd`).
+- An invalid run stays in its dungeon file, in its place by score, with the first broken rule's
+  reason as its seventh element. The exporter leaves it out of `scores`, the dungeon's `runCount`
+  and `bestScore`, and counts it in `invalidRunCount`. The summary at the end of an export says
+  how many runs were invalid. The shrink check and "New runs since last export" still count every
+  run the API listed.
+- On the site, `createRunDecoder` puts the reason in `invalid`, and `MythicPlusDataService`
+  sets those runs apart (`splitInvalidRuns`) before any page sees them.
 
 ## Raid log files
 
@@ -479,8 +470,8 @@ fails.
 `DataFileService` is the only way the app loads a data file. It requests `file?v=<hash>`, with
 the hash taken from `data-manifest.json`, so a browser caches each file until a deploy changes
 it. The manifest itself is fetched fresh once per session. Its file list comes from the
-`assets` entries in `angular.json` plus everything in `assets/data/`, subfolders included (the
-archived Mythic+ seasons). A new data file only needs adding to `angular.json`.
+`assets` entries in `angular.json` plus everything in `assets/data/`. A new data file only
+needs adding to `angular.json`.
 
 GitHub Pages ignores `?v=`, so a tab left open across a deploy can mix old and new files. The
 Mythic+ files guard against this: `index.json` and every dungeon file carry a `tables`

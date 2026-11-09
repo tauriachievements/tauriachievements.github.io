@@ -14,21 +14,7 @@
   color: #e0e0e0;
 }
 
-.back-link {
-  display: inline-flex;
-  align-self: flex-start;
-  align-items: center;
-  gap: 6px;
-  color: #bdbdbd;
-  font-size: .85rem;
-  font-weight: 600;
-  text-decoration: none;
-
-  span { color: $gold; font-size: 1.1rem; }
-
-  &:hover { color: #fff; }
-  &:focus-visible { outline: 2px solid $gold; outline-offset: 2px; }
-}
+@include back-link;
 
 .guild-header {
   display: grid;
@@ -119,6 +105,8 @@ a.summary-note {
   flex-wrap: wrap;
   align-items: center;
   gap: 8px 16px;
+
+  .view-switch button:disabled { opacity: .45; cursor: not-allowed; }
 }
 
 .scores-link {

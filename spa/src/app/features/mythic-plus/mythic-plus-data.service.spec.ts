@@ -19,43 +19,25 @@ const index = {
   scores: [[100, 1500000]]
 } as unknown as MythicPlusIndex;
 
-const seasons = [
-  { id: 'legion-s1-1', name: 'Season 1.1 - Pre fixes' },
-  { id: 'legion-s1-2', name: 'Season 1.2 - Post fixes' }
-];
-
-const liveIndex = {
-  ...index,
-  season: { id: 'legion-s1-2', name: 'Season 1.2 - Post fixes', raid: 'Emerald Nightmare', startDate: '2026-11-09' },
-  seasons
-} as MythicPlusIndex;
-
-const archivedIndex = {
-  ...index,
-  season: { id: 'legion-s1-1', name: 'Season 1.1 - Pre fixes', raid: 'Emerald Nightmare', startDate: '2026-09-16' },
-  dungeons: [index.dungeons[0]]
-} as MythicPlusIndex;
-
 class FakeDataFiles {
   fetches: string[] = [];
-  indexReads: string[] = [];
   refreshes = 0;
 
-  constructor(private tables: string[] = [], private indexes: Record<string, MythicPlusIndex> = {}) {}
+  constructor(private tables: string[] = [], private invalidReasons: Record<string, string> = {}) {}
 
-  getJson<T>(path: string): Observable<T> {
-    this.indexReads.push(path);
-    return of((this.indexes[path] ?? index) as T);
+  getJson<T>(): Observable<T> {
+    return of(index as T);
   }
 
   fetchJson<T>(path: string): Observable<T> {
     this.fetches.push(path);
     const dungeon = path.replace(/^.*\//, '').replace('.json', '');
+    const reason = this.invalidReasons[dungeon];
     const file: MythicPlusDungeonFile = {
       version: 1,
       dungeon,
       tables: this.tables[0] ?? index.tables,
-      runs: [[15, 1500000, 1790000000, 100, [], [[0, 0]]]]
+      runs: [reason ? [18, 1500000, 1790000000, 120, [], [[0, 0]], reason] : [15, 1500000, 1790000000, 100, [], [[0, 0]]]]
     };
     return of(file as T);
   }
@@ -84,6 +66,17 @@ describe('MythicPlusDataService', () => {
     expect(dataFiles.fetches).toEqual(['mythic-plus-data/cos.json', 'mythic-plus-data/arc.json']);
   });
 
+  it('sets invalid runs apart from the season and the dungeon runs every ranking reads', async () => {
+    const reason = 'Court of Stars +17 or higher, before the 9 November fixes';
+    const service = serviceWith(new FakeDataFiles([], { cos: reason }));
+
+    const season = await firstValueFrom(service.season());
+
+    expect(season.runs.map(run => run.dungeon)).toEqual(['arc']);
+    expect(season.invalidRuns.map(run => [run.dungeon, run.invalid])).toEqual([['cos', reason]]);
+    expect(await firstValueFrom(service.dungeonRuns(index, 'cos'))).toEqual([]);
+  });
+
   it('shares one member object between the dungeons a character played', async () => {
     const service = serviceWith(new FakeDataFiles());
 
@@ -100,37 +93,6 @@ describe('MythicPlusDataService', () => {
 
     expect(dataFiles.refreshes).toBe(1);
     expect(runs).toHaveLength(2);
-  });
-
-  it('loads a finished season from its own folder and lists the live seasons with it', async () => {
-    const dataFiles = new FakeDataFiles([], {
-      'mythic-plus-data/index.json': liveIndex,
-      'mythic-plus-data/legion-s1-1/index.json': archivedIndex
-    });
-    const service = serviceWith(dataFiles);
-
-    const live = await firstValueFrom(service.season());
-    const archived = await firstValueFrom(service.season('legion-s1-1'));
-
-    expect(live.index.season.id).toBe('legion-s1-2');
-    expect(archived.index.season.id).toBe('legion-s1-1');
-    expect(archived.index.seasons).toEqual(seasons);
-    expect(archived.runs).toHaveLength(1);
-    expect(dataFiles.fetches).toEqual([
-      'mythic-plus-data/cos.json',
-      'mythic-plus-data/arc.json',
-      'mythic-plus-data/legion-s1-1/cos.json'
-    ]);
-  });
-
-  it('loads the live season for a season the live index does not list', async () => {
-    const dataFiles = new FakeDataFiles([], { 'mythic-plus-data/index.json': liveIndex });
-    const service = serviceWith(dataFiles);
-
-    const { index: loaded } = await firstValueFrom(service.season('legion-s0'));
-
-    expect(loaded.season.id).toBe('legion-s1-2');
-    expect(dataFiles.indexReads).toEqual(['mythic-plus-data/index.json']);
   });
 
   it('gives up when a fresh load still mixes exports', async () => {

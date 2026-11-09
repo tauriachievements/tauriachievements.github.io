@@ -197,102 +197,6 @@ describe('MythicPlusPageComponent character and realm in the URL', () => {
   });
 });
 
-describe('MythicPlusPageComponent seasons', () => {
-  const seasons = [
-    { id: 'legion-s1-1', name: 'Season 1.1 - Pre fixes' },
-    { id: 'legion-s1-2', name: 'Season 1.2 - Post fixes' }
-  ];
-  const live = exportOf('hhhhhhhhhhhh', [['Exkeito', 'Evermoon', '', 11, 4, 0]]);
-  live.index.season = { id: 'legion-s1-2', name: 'Season 1.2 - Post fixes', raid: 'Emerald Nightmare', startDate: '2026-11-09' };
-  live.index.seasons = seasons;
-  live.cos.runs = [[16, 1297289, Date.now() / 1000, 170, [], [[0, 0]]]];
-  const archived = exportOf('iiiiiiiiiiii', [['Napim', 'Tauri', '', 11, 4, 0]]);
-  archived.index.season = { id: 'legion-s1-1', name: 'Season 1.1 - Pre fixes', raid: 'Emerald Nightmare', startDate: '2026-09-16' };
-
-  class SeasonDataFiles {
-    getJson<T>(path: string): Observable<T> {
-      return of((path.includes('legion-s1-1/') ? archived.index : live.index) as T);
-    }
-
-    fetchJson<T>(path: string): Observable<T> {
-      return of((path.includes('legion-s1-1/') ? archived.cos : live.cos) as T);
-    }
-
-    refresh(): void {}
-  }
-
-  async function open(url: string) {
-    TestBed.configureTestingModule({
-      providers: [
-        provideRouter([
-          { path: 'mythic-plus', component: MythicPlusPageComponent },
-          { path: 'mythic-plus/again', component: MythicPlusPageComponent }
-        ]),
-        { provide: DataFileService, useValue: new SeasonDataFiles() }
-      ]
-    });
-    const harness = await RouterTestingHarness.create();
-    const page = await harness.navigateByUrl(url, MythicPlusPageComponent);
-    return { harness, page, location: TestBed.inject(Location) };
-  }
-
-  const rosterNames = (page: MythicPlusPageComponent) => page.filteredRows().map(row => row.run.roster[0].name);
-
-  it('opens on the live season and offers every season', async () => {
-    const { page } = await open('/mythic-plus');
-
-    expect(page.index()?.season.id).toBe('legion-s1-2');
-    expect(page.seasonOptions()).toEqual(seasons);
-    expect(rosterNames(page)).toEqual(['Exkeito']);
-  });
-
-  it('opens the season the address names', async () => {
-    const { page } = await open('/mythic-plus?season=legion-s1-1');
-
-    expect(page.index()?.season.id).toBe('legion-s1-1');
-    expect(rosterNames(page)).toEqual(['Napim']);
-  });
-
-  it('loads a picked season and names it in the address, and This week goes back to the live season', async () => {
-    const { page, location } = await open('/mythic-plus?view=players');
-
-    page.setSeason('legion-s1-1');
-    expect(page.index()?.season.id).toBe('legion-s1-1');
-    expect(page.period()).toBe('season');
-    expect(location.path()).toBe('/mythic-plus?season=legion-s1-1&view=players');
-
-    page.setPeriod('week');
-    expect(page.index()?.season.id).toBe('legion-s1-2');
-    expect(location.path()).toBe('/mythic-plus?period=week&view=players');
-  });
-
-  it('picks the season from This week and shows the whole season again', async () => {
-    const { page, location } = await open('/mythic-plus?period=week');
-
-    page.setSeason('legion-s1-2');
-    expect(page.period()).toBe('season');
-    expect(page.index()?.season.id).toBe('legion-s1-2');
-    expect(location.path()).toBe('/mythic-plus');
-  });
-
-  it('keeps the picked season on the next Mythic+ page and writes it into that address', async () => {
-    const { harness, page, location } = await open('/mythic-plus');
-    page.setSeason('legion-s1-1');
-
-    const next = await harness.navigateByUrl('/mythic-plus/again', MythicPlusPageComponent);
-
-    expect(next.index()?.season.id).toBe('legion-s1-1');
-    expect(location.path()).toBe('/mythic-plus/again?season=legion-s1-1');
-  });
-
-  it('shows the live season for a season it does not know and drops it from the address', async () => {
-    const { page, location } = await open('/mythic-plus?season=legion-s0');
-
-    expect(page.index()?.season.id).toBe('legion-s1-2');
-    expect(location.path()).toBe('/mythic-plus');
-  });
-});
-
 describe('MythicPlusPageComponent roles', () => {
   const roles = exportOf('dddddddddddd', [['Exkeito', 'Evermoon', '', 11, 4, 0], ['Napim', 'Tauri', '', 11, 4, 0]]);
   roles.index.specs = [
@@ -362,5 +266,44 @@ describe('MythicPlusPageComponent roles', () => {
     page.setView('players');
     expect(page.roleFilter()).toBeUndefined();
     expect(ladder(page)).toEqual([['Exkeito', 196], ['Napim', 196]]);
+  });
+});
+
+describe('MythicPlusPageComponent invalid runs', () => {
+  const reason = 'Court of Stars +17 or higher, before the 9 November fixes';
+
+  async function open(data: ReturnType<typeof exportOf>) {
+    TestBed.configureTestingModule({
+      providers: [
+        provideRouter([{ path: 'mythic-plus', component: MythicPlusPageComponent }]),
+        { provide: DataFileService, useValue: new FakeDataFiles(data.index, data) }
+      ]
+    });
+    const harness = await RouterTestingHarness.create();
+    const page = await harness.navigateByUrl('/mythic-plus', MythicPlusPageComponent);
+    harness.detectChanges();
+    return { page, element: harness.routeNativeElement as HTMLElement };
+  }
+
+  it('ranks without the invalid runs and links to their list', async () => {
+    const data = exportOf('dddddddddddd', [['Exkeito', 'Evermoon', '', 11, 4, 0]]);
+    data.index.dungeons[0] = { ...data.index.dungeons[0], invalidRunCount: 1 };
+    data.cos.runs = [
+      [20, 1297289, 1791293804, 205, [], [[0, 0]], reason],
+      [15, 1297289, 1791293904, 160, [], [[0, 0]]]
+    ];
+
+    const { page, element } = await open(data);
+
+    expect(page.filteredRows().map(row => [row.rank, row.run.score])).toEqual([[1, 160]]);
+    const link = element.querySelector('.period-bar a.invalid-link');
+    expect(link?.getAttribute('href')).toBe('/mythic-plus/invalid');
+    expect(link?.nextElementSibling?.classList).toContain('scores-link');
+  });
+
+  it('has no link while every run counts', async () => {
+    const { element } = await open(exportOf('eeeeeeeeeeee', [['Exkeito', 'Evermoon', '', 11, 4, 0]]));
+
+    expect(element.querySelector('a.invalid-link')).toBeNull();
   });
 });
