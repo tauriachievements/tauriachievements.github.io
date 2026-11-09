@@ -6,11 +6,6 @@
   <header class="page-header">
     <h1>Mythic+ records@if (index()?.season?.name; as season) { · {{ season }}}</h1>
     <p>Dungeon records, server firsts, untimed keys, and the players with the most runs.</p>
-    @if (index(); as current) {
-      <div class="page-season">
-        <app-mythic-plus-season-switch [seasons]="seasonOptions()" [seasonId]="current.season.id" [week]="false" (seasonChange)="setSeason($event)" />
-      </div>
-    }
   </header>
 
   <app-load-state [loading]="isLoading()" [error]="loadError()" [skeleton]="['tiles:3', 'cards:6']" loadingText="Polishing the trophies..." (retry)="loadData()" />

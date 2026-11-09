@@ -5,15 +5,19 @@
 
   @if (!isLoading() && !loadError()) {
     <div class="period-bar">
-      @if (index(); as current) {
-        <app-mythic-plus-season-switch
-          [seasons]="seasonOptions()"
-          [seasonId]="current.season.id"
-          [period]="period()"
-          [weekDisabled]="weekDisabled()"
-          (seasonChange)="setSeason($event)"
-          (weekSelect)="setPeriod('week')" />
-      }
+      <div class="view-switch" role="group" aria-label="Show the whole season or this week" appGlide>
+        <button
+          type="button"
+          [class.active]="period() === 'season'"
+          [attr.aria-pressed]="period() === 'season'"
+          (click)="setPeriod('season')">Season</button>
+        <button
+          type="button"
+          [class.active]="period() === 'week'"
+          [attr.aria-pressed]="period() === 'week'"
+          [disabled]="!affixWeek()"
+          (click)="setPeriod('week')">This week</button>
+      </div>
       @if (weekAffixes().length) {
         <app-mythic-plus-week-affixes [affixes]="weekAffixes()" [compact]="true" />
       }

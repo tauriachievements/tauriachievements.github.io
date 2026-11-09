@@ -24,22 +24,18 @@ import {
   MythicPlusIndex,
   MythicPlusRun,
   characterKey,
+  currentAffixWeek,
   currentPlayers,
   exportedAt,
   hasScanChanges,
-  isLiveSeason,
-  liveAffixWeek,
   memberNameMatches,
   rankPlayers,
   runScoreColor,
   scoreColor,
   scoreTiers,
-  seasonOptions,
   seasonScoreColors,
   standingChanges
 } from './mythic-plus';
-import { MythicPlusSeasonSwitchComponent } from './mythic-plus-season-switch.component';
-import { injectSeasonSelection } from './mythic-plus-season-selection';
 import {
   GuildLadderEntry,
   findGuild,
@@ -92,7 +88,6 @@ const TOP_OVERALL = 100;
   imports: [
     RouterLink,
     MythicPlusPlayersListComponent,
-    MythicPlusSeasonSwitchComponent,
     MythicPlusWeekAffixesComponent,
     FilterDropdownComponent,
     RoleFilterComponent,
@@ -111,7 +106,6 @@ export class MythicPlusGuildPageComponent implements OnInit {
   private readonly destroyRef = inject(DestroyRef);
   private readonly route = inject(ActivatedRoute);
   private readonly replaceUrl = injectReplaceUrl();
-  private readonly season = injectSeasonSelection();
 
   readonly cards = injectCompactViewport(MYTHIC_PLUS_CARDS_QUERY);
   private readonly pageSize = computed(() => this.cards() ? MYTHIC_PLUS_CARDS_PAGE_SIZE : MYTHIC_PLUS_PAGE_SIZE);
@@ -179,12 +173,7 @@ export class MythicPlusGuildPageComponent implements OnInit {
   });
 
   private readonly affixesById = computed(() => new Map((this.index()?.affixes ?? []).map(affix => [affix.id, affix])));
-  readonly affixWeek = computed(() => liveAffixWeek(this.index(), this.allRuns()));
-  readonly seasonOptions = computed(() => seasonOptions(this.index()));
-  readonly weekDisabled = computed(() => {
-    const index = this.index();
-    return !index || (isLiveSeason(index) && !this.affixWeek());
-  });
+  readonly affixWeek = computed(() => currentAffixWeek(this.allRuns()));
   readonly weekAffixes = computed(() => {
     const affixes = this.affixesById();
     return (this.affixWeek()?.affixes ?? [])
@@ -366,22 +355,7 @@ export class MythicPlusGuildPageComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    if (this.period() === 'week') {
-      this.season.select(undefined, undefined);
-    }
     this.loadData();
-  }
-
-  setSeason(seasonId: string): void {
-    const changed = this.season.select(seasonId, this.index());
-    if (!changed && this.period() === 'season') {
-      return;
-    }
-    this.period.set('season');
-    if (changed) {
-      this.loadData();
-    }
-    this.resetRows();
   }
 
   setPeriod(period: LadderPeriod): void {
@@ -389,9 +363,6 @@ export class MythicPlusGuildPageComponent implements OnInit {
       return;
     }
     this.period.set(period);
-    if (period === 'week' && this.season.select(undefined, this.index())) {
-      this.loadData();
-    }
     this.resetRows();
   }
 
@@ -468,7 +439,6 @@ export class MythicPlusGuildPageComponent implements OnInit {
 
     const highlight = this.highlightParam();
     this.replaceUrl({
-      season: this.season.selected() ?? null,
       period: this.period() === 'week' ? 'week' : null,
       dungeon: this.selectedDungeon()?.id ?? null,
       role: this.roleFilter() ?? null,
@@ -481,17 +451,12 @@ export class MythicPlusGuildPageComponent implements OnInit {
   loadData(): void {
     this.isLoading.set(true);
     this.loadError.set(undefined);
-    const seasonId = this.season.selected();
-    this.mythicPlusData.season(seasonId)
+    this.mythicPlusData.season()
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: ({ index, runs }) => {
-          if (seasonId !== this.season.selected()) {
-            return;
-          }
           this.index.set(index);
           this.allRuns.set(runs);
-          this.season.loaded(index);
           this.isLoading.set(false);
         },
         error: error => {

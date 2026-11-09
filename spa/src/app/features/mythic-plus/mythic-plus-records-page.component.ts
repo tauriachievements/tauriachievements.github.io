@@ -11,12 +11,8 @@ import {
   MythicPlusRun,
   currentAffixWeek,
   exportedAt,
-  isLiveSeason,
-  seasonOptions,
   seasonScoreColors
 } from './mythic-plus';
-import { MythicPlusSeasonSwitchComponent } from './mythic-plus-season-switch.component';
-import { injectSeasonSelection } from './mythic-plus-season-selection';
 import { dungeonTimers } from './mythic-plus-activity';
 import {
   Bounty,
@@ -90,7 +86,6 @@ interface SummaryTile {
     RouterLink,
     FilterDropdownComponent,
     MythicPlusRunDetailsComponent,
-    MythicPlusSeasonSwitchComponent,
     RevealDirective,
     CountUpDirective,
     SpotlightDirective,
@@ -110,7 +105,6 @@ export class MythicPlusRecordsPageComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly replaceUrl = injectReplaceUrl();
-  private readonly season = injectSeasonSelection();
 
   readonly firstsFromLevel = FIRSTS_FROM_LEVEL;
 
@@ -133,11 +127,6 @@ export class MythicPlusRecordsPageComponent implements OnInit {
   readonly expanded = signal<Partial<Record<RecordsSection, string>>>({});
 
   readonly dungeons = computed(() => this.index()?.dungeons ?? []);
-  readonly seasonOptions = computed(() => seasonOptions(this.index()));
-  private readonly isLive = computed(() => {
-    const index = this.index();
-    return !index || isLiveSeason(index);
-  });
   private readonly dungeonsById = computed(() => new Map(this.dungeons().map(dungeon => [dungeon.id, dungeon])));
   private readonly timers = computed(() => dungeonTimers(this.dungeons()));
   private readonly affixesById = computed(() => new Map((this.index()?.affixes ?? []).map(affix => [affix.id, affix])));
@@ -208,7 +197,7 @@ export class MythicPlusRecordsPageComponent implements OnInit {
         note: bounty.closest ? `Closest: ${bounty.closest.dungeon.shortName}, ${bounty.missedBy} over` : 'No attempts yet'
       },
       {
-        label: this.isLive() ? "This week's highest key" : "Final week's highest key",
+        label: "This week's highest key",
         value: weekBest ? `+${weekBest.keyLevel}` : '-',
         note: weekBest ? this.dungeonsById().get(weekBest.dungeon)?.shortName ?? weekBest.dungeon : 'Nothing timed yet'
       }
@@ -217,15 +206,6 @@ export class MythicPlusRecordsPageComponent implements OnInit {
 
   ngOnInit(): void {
     this.loadData();
-  }
-
-  setSeason(seasonId: string): void {
-    if (!this.season.select(seasonId, this.index())) {
-      return;
-    }
-    this.expanded.set({});
-    this.loadData();
-    this.writeUrl();
   }
 
   setFirstsDungeon(value: FilterDropdownValue): void {
@@ -248,18 +228,13 @@ export class MythicPlusRecordsPageComponent implements OnInit {
   loadData(): void {
     this.isLoading.set(true);
     this.loadError.set(undefined);
-    const seasonId = this.season.selected();
-    this.mythicPlusData.season(seasonId)
+    this.mythicPlusData.season()
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: ({ index, runs }) => {
-          if (seasonId !== this.season.selected()) {
-            return;
-          }
           this.index.set(index);
           this.runs.set(runs);
           this.now.set(Date.now());
-          this.season.loaded(index);
           this.isLoading.set(false);
         },
         error: error => {
@@ -293,7 +268,6 @@ export class MythicPlusRecordsPageComponent implements OnInit {
 
   private writeUrl(): void {
     this.replaceUrl({
-      season: this.season.selected() ?? null,
       realm: null,
       dungeon: this.firstsDungeonId() ?? null
     });

@@ -78,51 +78,18 @@ export type MythicPlusRunEntry = [
   roster: Array<[player: number, spec: number]>
 ];
 
-export interface MythicPlusSeasonOption {
-  id: string;
-  name: string;
-}
-
 export interface MythicPlusIndex {
   version: number;
   generatedAt?: string;
   previousGeneratedAt?: string;
   tables?: string;
   season: MythicPlusSeason;
-  seasons?: MythicPlusSeasonOption[];
   dungeons: MythicPlusDungeon[];
   affixes: MythicPlusAffix[];
   specs: MythicPlusSpecEntry[];
   players: MythicPlusPlayerEntry[];
   scores?: MythicPlusScoreEntry[];
   departed?: MythicPlusDepartedEntry[];
-}
-
-type SeasonIndex = Pick<MythicPlusIndex, 'season' | 'seasons'>;
-
-export function isLiveSeason(index: SeasonIndex): boolean {
-  const listed = index.seasons;
-  return !listed?.length || listed[listed.length - 1].id === index.season.id;
-}
-
-export function seasonDataDir(index: SeasonIndex): string {
-  return isLiveSeason(index) ? MYTHIC_PLUS_DATA_DIR : `${MYTHIC_PLUS_DATA_DIR}/${index.season.id}`;
-}
-
-export function seasonParam(index: SeasonIndex): string | undefined {
-  return isLiveSeason(index) ? undefined : index.season.id;
-}
-
-export function archivedSeasonId(index: SeasonIndex, requested: string | undefined): string | undefined {
-  const finished = index.seasons?.slice(0, -1) ?? [];
-  return finished.some(season => season.id === requested) ? requested : undefined;
-}
-
-export function seasonOptions(index: SeasonIndex | undefined): MythicPlusSeasonOption[] {
-  if (!index) {
-    return [];
-  }
-  return index.seasons?.length ? index.seasons : [{ id: index.season.id, name: index.season.name }];
 }
 
 export function hasScanChanges(
@@ -316,13 +283,6 @@ export function formatTimerDelta(clearTimeSeconds: number, timerSeconds: number)
 export interface AffixWeek {
   affixes: number[];
   since: number;
-}
-
-export function liveAffixWeek(
-  index: SeasonIndex | undefined,
-  runs: readonly Pick<MythicPlusRun, 'affixes' | 'completedAt'>[]
-): AffixWeek | undefined {
-  return index && isLiveSeason(index) ? currentAffixWeek(runs) : undefined;
 }
 
 export function currentAffixWeek(runs: readonly Pick<MythicPlusRun, 'affixes' | 'completedAt'>[]): AffixWeek | undefined {

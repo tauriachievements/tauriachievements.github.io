@@ -15,11 +15,10 @@ import {
   MythicPlusAffix,
   StandingChange,
   characterKey,
+  currentAffixWeek,
   currentPlayers,
   exportedAt,
   hasScanChanges,
-  isLiveSeason,
-  liveAffixWeek,
   memberNameMatches,
   PlayerScore,
   playerRanks,
@@ -27,11 +26,9 @@ import {
   runScoreColor,
   scoreColor,
   scoreTiers,
-  seasonOptions,
   seasonScoreColors,
   standingChanges
 } from './mythic-plus';
-import { MythicPlusSeasonSwitchComponent } from './mythic-plus-season-switch.component';
 import { MythicPlusPlayersListComponent } from './mythic-plus-players-list.component';
 import { characterParam, findCharacters, parseCharacterParam } from './mythic-plus-profile';
 import { MythicPlusRunsListComponent } from './mythic-plus-runs-list.component';
@@ -95,7 +92,6 @@ interface CharacterFilter {
   imports: [
     RouterLink,
     MythicPlusSpecChartComponent,
-    MythicPlusSeasonSwitchComponent,
     MythicPlusWeekAffixesComponent,
     MythicPlusRunsListComponent,
     MythicPlusPlayersListComponent,
@@ -199,12 +195,7 @@ export class MythicPlusPageComponent implements OnInit {
     new Map(this.dungeons().map(dungeon => [dungeon.id, dungeon])));
   private readonly affixesById = computed(() =>
     new Map((this.index()?.affixes ?? []).map(affix => [affix.id, affix])));
-  readonly seasonOptions = computed(() => seasonOptions(this.index()));
-  readonly affixWeek = computed(() => liveAffixWeek(this.index(), [...this.runsByDungeon().values()].flat()));
-  readonly weekDisabled = computed(() => {
-    const index = this.index();
-    return !index || (isLiveSeason(index) && !this.affixWeek());
-  });
+  readonly affixWeek = computed(() => currentAffixWeek([...this.runsByDungeon().values()].flat()));
   readonly weekAffixes = computed(() => {
     const affixes = this.affixesById();
     return (this.affixWeek()?.affixes ?? [])
@@ -369,9 +360,6 @@ export class MythicPlusPageComponent implements OnInit {
   }));
 
   ngOnInit(): void {
-    if (this.period() === 'week') {
-      this.store.season.select(undefined, undefined);
-    }
     this.store.load(this.route.snapshot.queryParamMap.get('dungeon') ?? undefined);
   }
 
@@ -431,21 +419,6 @@ export class MythicPlusPageComponent implements OnInit {
     this.syncQueryParams();
   }
 
-  setSeason(seasonId: string): void {
-    const changed = this.store.season.select(seasonId, this.index());
-    if (!changed && this.period() === 'season') {
-      return;
-    }
-
-    this.period.set('season');
-    this.page.set(1);
-    this.expandedRunId.set(undefined);
-    if (changed) {
-      this.store.reloadSeason();
-    }
-    this.syncQueryParams();
-  }
-
   setPeriod(period: LeaderboardPeriod): void {
     if (period === this.period()) {
       return;
@@ -454,9 +427,6 @@ export class MythicPlusPageComponent implements OnInit {
     this.period.set(period);
     this.page.set(1);
     this.expandedRunId.set(undefined);
-    if (period === 'week' && this.store.season.select(undefined, this.index())) {
-      this.store.reloadSeason();
-    }
     this.syncQueryParams();
   }
 
@@ -540,7 +510,6 @@ export class MythicPlusPageComponent implements OnInit {
     const players = this.view() === 'players';
     const character = this.characterFilter();
     this.replaceUrl({
-      season: this.store.season.selected() ?? null,
       dungeon: this.selectedDungeon()?.id ?? null,
       period: this.period() === 'week' ? 'week' : null,
       view: players ? 'players' : null,

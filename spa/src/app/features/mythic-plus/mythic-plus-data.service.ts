@@ -1,14 +1,12 @@
-import { Injectable, inject, signal } from '@angular/core';
-import { Observable, catchError, forkJoin, map, of, switchMap, throwError } from 'rxjs';
+import { Injectable, inject } from '@angular/core';
+import { Observable, catchError, forkJoin, map, switchMap, throwError } from 'rxjs';
 import {
   MYTHIC_PLUS_DATA_DIR,
   MythicPlusDungeonFile,
   MythicPlusIndex,
   MythicPlusRun,
   NEWER_DATA_MESSAGE,
-  archivedSeasonId,
   createRunDecoder,
-  seasonDataDir,
   sharesTables
 } from './mythic-plus';
 import { DataFileService } from '../../core/data-file.service';
@@ -35,21 +33,13 @@ export class MythicPlusDataService {
   private readonly cache = new ObservableCache();
   private readonly decoders = new WeakMap<MythicPlusIndex, (file: MythicPlusDungeonFile) => MythicPlusRun[]>();
 
-  readonly selectedSeason = signal<string | undefined>(undefined);
-
-  index(seasonId?: string): Observable<MythicPlusIndex> {
-    return this.liveIndex().pipe(
-      switchMap(live => {
-        const archived = archivedSeasonId(live, seasonId);
-        return archived === undefined ? of(live) : this.archivedIndex(live, archived);
-      })
-    );
+  index(): Observable<MythicPlusIndex> {
+    return this.cache.get('index', () => this.dataFiles.getJson<MythicPlusIndex>(`${MYTHIC_PLUS_DATA_DIR}/index.json`));
   }
 
   dungeonRuns(index: MythicPlusIndex, dungeonId: string): Observable<readonly MythicPlusRun[]> {
-    const dir = seasonDataDir(index);
-    return this.cache.get(`dungeon:${dir}/${dungeonId}`, () =>
-      this.dataFiles.fetchJson<MythicPlusDungeonFile>(`${dir}/${dungeonId}.json`).pipe(
+    return this.cache.get(`dungeon:${dungeonId}`, () =>
+      this.dataFiles.fetchJson<MythicPlusDungeonFile>(`${MYTHIC_PLUS_DATA_DIR}/${dungeonId}.json`).pipe(
         map(file => {
           if (!sharesTables(index, file)) {
             throw new NewerExportError(dungeonId);
@@ -59,14 +49,14 @@ export class MythicPlusDataService {
       ));
   }
 
-  season(seasonId?: string): Observable<MythicPlusSeason> {
-    return this.loadSeason(seasonId).pipe(
+  season(): Observable<MythicPlusSeason> {
+    return this.loadSeason().pipe(
       catchError((error: unknown) => {
         if (!(error instanceof NewerExportError)) {
           return throwError(() => error);
         }
         this.refresh();
-        return this.loadSeason(seasonId);
+        return this.loadSeason();
       })
     );
   }
@@ -76,19 +66,8 @@ export class MythicPlusDataService {
     this.cache.clear();
   }
 
-  private liveIndex(): Observable<MythicPlusIndex> {
-    return this.cache.get('index', () => this.dataFiles.getJson<MythicPlusIndex>(`${MYTHIC_PLUS_DATA_DIR}/index.json`));
-  }
-
-  private archivedIndex(live: MythicPlusIndex, seasonId: string): Observable<MythicPlusIndex> {
-    return this.cache.get(`index:${seasonId}`, () =>
-      this.dataFiles.getJson<MythicPlusIndex>(`${MYTHIC_PLUS_DATA_DIR}/${seasonId}/index.json`).pipe(
-        map(index => ({ ...index, seasons: live.seasons }))
-      ));
-  }
-
-  private loadSeason(seasonId: string | undefined): Observable<MythicPlusSeason> {
-    return this.index(seasonId).pipe(
+  private loadSeason(): Observable<MythicPlusSeason> {
+    return this.index().pipe(
       switchMap(index => forkJoin(index.dungeons.map(dungeon => this.dungeonRuns(index, dungeon.id))).pipe(
         map(runsByDungeon => ({ index, runs: runsByDungeon.flat() }))
       ))

@@ -18,17 +18,14 @@ public sealed record MythicPlusExporterOptions(IReadOnlyList<string> Realms, boo
               dotnet run --project MythicPlusExporter
               dotnet run --project MythicPlusExporter -- --realm Evermoon
 
-            Writes the live season to spa/src/mythic-plus-data/ (index.json and one
-            <dungeon>.json per dungeon), and each finished season once, to
-            spa/src/mythic-plus-data/<season id>/.
+            Writes spa/src/mythic-plus-data/index.json and one <dungeon>.json per dungeon.
 
             Options:
               --realm <name>   Realm whose leaderboard to read; repeat for several.
                                Accepts Evermoon, Tauri, WoD or the full API realm name.
                                Defaults to Evermoon (shared with Tauri) and WoD.
               --allow-shrink   Publish even if there are fewer runs than last time,
-                               or archive a finished season with fewer runs than
-                               the last export had for it.
+                               e.g. after a season reset.
               --help           Show this help text.
             """;
 

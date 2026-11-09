@@ -1,14 +1,8 @@
 import { describe, it, expect } from 'vitest';
 import {
-  archivedSeasonId,
-  isLiveSeason,
-  liveAffixWeek,
   runScoreColor,
   scoreColor,
   scoreTiers,
-  seasonDataDir,
-  seasonOptions,
-  seasonParam,
   characterKey,
   createRunDecoder,
   currentAffixWeek,
@@ -138,67 +132,6 @@ const emptyIndex: MythicPlusIndex = {
   specs: [],
   players: []
 };
-
-describe('seasons', () => {
-  const seasons = [
-    { id: 'legion-s1-1', name: 'Season 1.1 - Pre fixes' },
-    { id: 'legion-s1-2', name: 'Season 1.2 - Post fixes' }
-  ];
-  const live: MythicPlusIndex = {
-    ...emptyIndex,
-    season: { id: 'legion-s1-2', name: 'Season 1.2 - Post fixes', raid: 'Emerald Nightmare', startDate: '2026-11-09' },
-    seasons
-  };
-  const archived: MythicPlusIndex = {
-    ...emptyIndex,
-    season: { id: 'legion-s1-1', name: 'Season 1.1 - Pre fixes', raid: 'Emerald Nightmare', startDate: '2026-09-16' },
-    seasons
-  };
-
-  it('treats the last listed season as the live one, and an index without a list as live', () => {
-    expect(isLiveSeason(live)).toBe(true);
-    expect(isLiveSeason(archived)).toBe(false);
-    expect(isLiveSeason(emptyIndex)).toBe(true);
-  });
-
-  it('reads the live season from the data folder and a finished one from its own folder', () => {
-    expect(seasonDataDir(live)).toBe('mythic-plus-data');
-    expect(seasonDataDir(archived)).toBe('mythic-plus-data/legion-s1-1');
-    expect(seasonDataDir(emptyIndex)).toBe('mythic-plus-data');
-  });
-
-  it('names a finished season in the URL and leaves the live one out', () => {
-    expect(seasonParam(archived)).toBe('legion-s1-1');
-    expect(seasonParam(live)).toBeUndefined();
-  });
-
-  it('finds the finished season a URL asks for, and the live one for anything else', () => {
-    expect(archivedSeasonId(live, 'legion-s1-1')).toBe('legion-s1-1');
-    expect(archivedSeasonId(live, 'legion-s1-2')).toBeUndefined();
-    expect(archivedSeasonId(live, 'legion-s0')).toBeUndefined();
-    expect(archivedSeasonId(live, undefined)).toBeUndefined();
-    expect(archivedSeasonId(emptyIndex, 'legion-s1-1')).toBeUndefined();
-  });
-
-  it('finds the finished season from a finished season too, taking the last listed one as live', () => {
-    expect(archivedSeasonId(archived, 'legion-s1-1')).toBe('legion-s1-1');
-    expect(archivedSeasonId(archived, 'legion-s1-2')).toBeUndefined();
-  });
-
-  it('has an affix week only in the live season', () => {
-    const runs = [{ completedAt: '2026-11-09T14:00:00Z', affixes: [7, 1, 9] }];
-
-    expect(liveAffixWeek(live, runs)).toEqual({ affixes: [7, 1, 9], since: 1 });
-    expect(liveAffixWeek(archived, runs)).toBeUndefined();
-    expect(liveAffixWeek(undefined, runs)).toBeUndefined();
-  });
-
-  it('offers every listed season, or just the one an older index names', () => {
-    expect(seasonOptions(archived)).toEqual(seasons);
-    expect(seasonOptions(emptyIndex)).toEqual([{ id: 'legion-s1', name: 'Legion Season 1' }]);
-    expect(seasonOptions(undefined)).toEqual([]);
-  });
-});
 
 const scanIndex = (rows: Array<[name: string, score: MythicPlusScoreEntry]>, departed: MythicPlusDepartedEntry[] = []): MythicPlusIndex => ({
   ...emptyIndex,

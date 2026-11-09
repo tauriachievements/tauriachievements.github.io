@@ -66,11 +66,9 @@ public sealed class MythicPlusConsoleReportTests
     {
         var repoRoot = Path.Combine(Path.GetTempPath(), "repo");
         var result = new MythicPlusExportResult(
-            WholeSeason,
             Dataset(),
             PreviousRunCount: 1,
-            Path.Combine(repoRoot, "spa", "src", "mythic-plus-data"),
-            []
+            Path.Combine(repoRoot, "spa", "src", "mythic-plus-data")
         );
 
         Assert.Equal(
@@ -81,7 +79,6 @@ public sealed class MythicPlusConsoleReportTests
                 "  HOV   Halls of Valor                  1       160.6",
                 "  Total                                 2",
                 "",
-                "  Season                      Test Season 1",
                 "  New runs since last export  1",
                 "  Players                     2",
                 $"  Saved to                    {Path.Combine("spa", "src", "mythic-plus-data")}",
@@ -93,51 +90,11 @@ public sealed class MythicPlusConsoleReportTests
     [Fact]
     public void Summary_SaysWhenThereIsNoEarlierExportToCompareWith()
     {
-        var result = new MythicPlusExportResult(
-            WholeSeason,
-            Dataset(),
-            PreviousRunCount: 0,
-            "out",
-            []
-        );
+        var result = new MythicPlusExportResult(Dataset(), PreviousRunCount: 0, "out");
 
         Assert.Contains(
             "  New runs since last export  2 (first export)",
             MythicPlusConsoleReport.Summary(result, ".")
-        );
-    }
-
-    [Fact]
-    public void Summary_EndsWithEachSeasonItArchived()
-    {
-        var repoRoot = Path.Combine(Path.GetTempPath(), "repo");
-        var archiveDirectory = Path.Combine(
-            repoRoot,
-            "spa",
-            "src",
-            "mythic-plus-data",
-            "legion-s1-1"
-        );
-        var result = new MythicPlusExportResult(
-            WholeSeason,
-            Dataset(),
-            PreviousRunCount: 0,
-            Path.Combine(repoRoot, "spa", "src", "mythic-plus-data"),
-            [
-                new MythicPlusArchive(
-                    WholeSeason with
-                    {
-                        Name = "Season 1.1 - Pre fixes",
-                    },
-                    89_777,
-                    archiveDirectory
-                ),
-            ]
-        );
-
-        Assert.Equal(
-            $"  Archived                    Season 1.1 - Pre fixes, 89,777 runs, to {Path.Combine("spa", "src", "mythic-plus-data", "legion-s1-1")}",
-            MythicPlusConsoleReport.Summary(result, repoRoot)[^1]
         );
     }
 

@@ -55,17 +55,6 @@ const runs: Record<string, MythicPlusRunEntry[]> = {
   cos: []
 };
 
-const preFixes = { id: 'legion-s1-1', name: 'Season 1.1 - Pre fixes', raid: 'Emerald Nightmare', startDate: '2026-09-16' };
-
-const liveIndex: MythicPlusIndex = {
-  ...index,
-  season: { id: 'legion-s1-2', name: 'Season 1.2 - Post fixes', raid: 'Emerald Nightmare', startDate: '2026-11-09' },
-  seasons: [
-    { id: 'legion-s1-1', name: 'Season 1.1 - Pre fixes' },
-    { id: 'legion-s1-2', name: 'Season 1.2 - Post fixes' }
-  ]
-};
-
 const fileFor = (path: string, tables = index.tables, servedRuns = runs): MythicPlusDungeonFile => {
   const dungeon = path.replace(/^.*\//, '').replace('.json', '');
   return { version: 1, dungeon, tables, runs: servedRuns[dungeon] };
@@ -80,8 +69,8 @@ class FakeDataFiles {
     private readonly servedRuns = runs
   ) {}
 
-  getJson<T>(path?: string): Observable<T> {
-    return of((path?.includes('/legion-s1-1/') ? { ...this.servedIndex, season: preFixes } : this.servedIndex) as T);
+  getJson<T>(): Observable<T> {
+    return of(this.servedIndex as T);
   }
 
   fetchJson<T>(path: string): Observable<T> {
@@ -309,42 +298,6 @@ describe('MythicPlusProfilePageComponent', () => {
     expect(page.selectedSpec()).toBe('Mistweaver');
     expect(element.querySelector('.profile-score-value')?.textContent).toBe('120.0');
     expect(TestBed.inject(Location).path()).toBe('/mythic-plus/character/evermoon/Progtrix?spec=Mistweaver');
-  });
-
-  it('shows the character in the season the address names and keeps it when fixing the name', async () => {
-    const { page, element } = await open(
-      '/mythic-plus/character/evermoon/progtrix?season=legion-s1-1',
-      new FakeDataFiles(undefined, false, liveIndex)
-    );
-
-    expect(page.index()?.season.id).toBe('legion-s1-1');
-    expect(element.textContent).toContain('score · Season 1.1 - Pre fixes');
-    expect(TestBed.inject(Location).path()).toBe('/mythic-plus/character/evermoon/Progtrix?season=legion-s1-1');
-  });
-
-  it('opens on the live season and switches the character\'s season from its own dropdown', async () => {
-    const { page, harness, element } = await open(
-      '/mythic-plus/character/evermoon/Progtrix',
-      new FakeDataFiles(undefined, false, liveIndex)
-    );
-    const location = TestBed.inject(Location);
-
-    expect(page.index()?.season.id).toBe('legion-s1-2');
-    expect(element.textContent).toContain('score · Season 1.2 - Post fixes');
-    expect(element.querySelector('.profile-top app-mythic-plus-season-switch')).not.toBeNull();
-
-    page.setSeason('legion-s1-1');
-    harness.detectChanges();
-    expect(page.index()?.season.id).toBe('legion-s1-1');
-    expect(element.textContent).toContain('score · Season 1.1 - Pre fixes');
-    expect(location.path()).toBe('/mythic-plus/character/evermoon/Progtrix?season=legion-s1-1');
-  });
-
-  it('keeps the season dropdown on the page of a character without runs that season', async () => {
-    const { element } = await open('/mythic-plus/character/tauri/Progtrix', new FakeDataFiles(undefined, false, liveIndex));
-
-    expect(element.querySelector('.not-found h1')?.textContent).toBe('No Mythic+ runs this season');
-    expect(element.querySelector('.profile-top app-mythic-plus-season-switch')).not.toBeNull();
   });
 
   it('ignores a ?spec= the character has not played', async () => {
