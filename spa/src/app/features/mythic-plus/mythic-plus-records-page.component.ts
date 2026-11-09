@@ -12,8 +12,10 @@ import {
   currentAffixWeek,
   exportedAt,
   isLiveSeason,
+  seasonOptions,
   seasonScoreColors
 } from './mythic-plus';
+import { MythicPlusSeasonSwitchComponent } from './mythic-plus-season-switch.component';
 import { injectSeasonSelection } from './mythic-plus-season-selection';
 import { dungeonTimers } from './mythic-plus-activity';
 import {
@@ -88,6 +90,7 @@ interface SummaryTile {
     RouterLink,
     FilterDropdownComponent,
     MythicPlusRunDetailsComponent,
+    MythicPlusSeasonSwitchComponent,
     RevealDirective,
     CountUpDirective,
     SpotlightDirective,
@@ -130,6 +133,7 @@ export class MythicPlusRecordsPageComponent implements OnInit {
   readonly expanded = signal<Partial<Record<RecordsSection, string>>>({});
 
   readonly dungeons = computed(() => this.index()?.dungeons ?? []);
+  readonly seasonOptions = computed(() => seasonOptions(this.index()));
   private readonly isLive = computed(() => {
     const index = this.index();
     return !index || isLiveSeason(index);
@@ -215,6 +219,15 @@ export class MythicPlusRecordsPageComponent implements OnInit {
     this.loadData();
   }
 
+  setSeason(seasonId: string): void {
+    if (!this.season.select(seasonId, this.index())) {
+      return;
+    }
+    this.expanded.set({});
+    this.loadData();
+    this.writeUrl();
+  }
+
   setFirstsDungeon(value: FilterDropdownValue): void {
     this.firstsDungeon.set(typeof value === 'string' ? value : undefined);
     this.writeUrl();
@@ -235,10 +248,14 @@ export class MythicPlusRecordsPageComponent implements OnInit {
   loadData(): void {
     this.isLoading.set(true);
     this.loadError.set(undefined);
-    this.mythicPlusData.season(this.season.selected())
+    const seasonId = this.season.selected();
+    this.mythicPlusData.season(seasonId)
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: ({ index, runs }) => {
+          if (seasonId !== this.season.selected()) {
+            return;
+          }
           this.index.set(index);
           this.runs.set(runs);
           this.now.set(Date.now());

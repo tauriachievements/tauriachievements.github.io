@@ -322,6 +322,31 @@ describe('MythicPlusProfilePageComponent', () => {
     expect(TestBed.inject(Location).path()).toBe('/mythic-plus/character/evermoon/Progtrix?season=legion-s1-1');
   });
 
+  it('opens on the live season and switches the character\'s season from its own dropdown', async () => {
+    const { page, harness, element } = await open(
+      '/mythic-plus/character/evermoon/Progtrix',
+      new FakeDataFiles(undefined, false, liveIndex)
+    );
+    const location = TestBed.inject(Location);
+
+    expect(page.index()?.season.id).toBe('legion-s1-2');
+    expect(element.textContent).toContain('score · Season 1.2 - Post fixes');
+    expect(element.querySelector('.profile-top app-mythic-plus-season-switch')).not.toBeNull();
+
+    page.setSeason('legion-s1-1');
+    harness.detectChanges();
+    expect(page.index()?.season.id).toBe('legion-s1-1');
+    expect(element.textContent).toContain('score · Season 1.1 - Pre fixes');
+    expect(location.path()).toBe('/mythic-plus/character/evermoon/Progtrix?season=legion-s1-1');
+  });
+
+  it('keeps the season dropdown on the page of a character without runs that season', async () => {
+    const { element } = await open('/mythic-plus/character/tauri/Progtrix', new FakeDataFiles(undefined, false, liveIndex));
+
+    expect(element.querySelector('.not-found h1')?.textContent).toBe('No Mythic+ runs this season');
+    expect(element.querySelector('.profile-top app-mythic-plus-season-switch')).not.toBeNull();
+  });
+
   it('ignores a ?spec= the character has not played', async () => {
     const { page } = await open('/mythic-plus/character/evermoon/Progtrix?spec=Blood');
 

@@ -14,7 +14,8 @@ import { MythicPlusSeasonOption } from './mythic-plus';
 export class MythicPlusSeasonSwitchComponent {
   readonly seasons = input.required<readonly MythicPlusSeasonOption[]>();
   readonly seasonId = input.required<string>();
-  readonly period = input.required<'season' | 'week'>();
+  readonly period = input<'season' | 'week'>('season');
+  readonly week = input(true);
   readonly weekDisabled = input(false);
 
   readonly seasonChange = output<string>();

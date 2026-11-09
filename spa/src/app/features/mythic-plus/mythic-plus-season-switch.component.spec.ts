@@ -70,6 +70,24 @@ describe('MythicPlusSeasonSwitchComponent', () => {
     expect(disabled.week()?.disabled).toBe(true);
   });
 
+  it('offers just the seasons, always active, on a page without a week', async () => {
+    const { element, options, week, pick, seasonsPicked } = await renderSwitch({ seasons, seasonId: 'legion-s1-2', week: false });
+
+    expect(options()).toEqual(['Season 1.1 - Pre fixes', 'Season 1.2 - Post fixes']);
+    expect(week()).toBeUndefined();
+    expect(element.querySelector('app-filter-dropdown')?.classList.contains('active')).toBe(true);
+
+    pick('Season 1.1 - Pre fixes');
+    expect(seasonsPicked).toEqual(['legion-s1-1']);
+  });
+
+  it('shows nothing on a page without a week while there is only one season', async () => {
+    const { element } = await renderSwitch({ seasons: [seasons[1]], seasonId: 'legion-s1-2', week: false });
+
+    expect(element.querySelector('button')).toBeNull();
+    expect(element.querySelector('app-filter-dropdown')).toBeNull();
+  });
+
   it('keeps the plain Season button when there is only one season', async () => {
     const { element, seasonsPicked } = await renderSwitch({
       seasons: [seasons[1]],

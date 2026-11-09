@@ -261,6 +261,25 @@ describe('MythicPlusRecordsPageComponent', () => {
     expect(TestBed.inject(Location).path()).toBe('/mythic-plus/records?dungeon=mos');
   });
 
+  it('opens on the live season and switches season from its own dropdown', async () => {
+    const dataFiles = new FakeDataFiles(undefined, false, seasonIndexes);
+    const { page, element, harness } = await open('/mythic-plus/records', dataFiles);
+    const location = TestBed.inject(Location);
+
+    expect(page.index()?.season.id).toBe('legion-s1-2');
+    expect(element.querySelector('.page-header app-mythic-plus-season-switch')).not.toBeNull();
+
+    page.setSeason('legion-s1-1');
+    harness.detectChanges();
+    expect(page.index()?.season.id).toBe('legion-s1-1');
+    expect(texts(element, 'h1')).toEqual(['Mythic+ records · Season 1.1 - Pre fixes']);
+    expect(location.path()).toBe('/mythic-plus/records?season=legion-s1-1');
+
+    page.setSeason('legion-s1-2');
+    expect(page.index()?.season.id).toBe('legion-s1-2');
+    expect(location.path()).toBe('/mythic-plus/records');
+  });
+
   it('ignores a dungeon the index does not list', async () => {
     const { page } = await open('/mythic-plus/records?dungeon=kara');
 

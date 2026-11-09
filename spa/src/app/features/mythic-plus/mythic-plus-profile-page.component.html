@@ -3,6 +3,9 @@
     <a class="back-link" routerLink="/mythic-plus">
       <span aria-hidden="true">‹</span> Back to the M+ Leaderboard
     </a>
+    @if (index(); as current) {
+      <app-mythic-plus-season-switch class="profile-season" [seasons]="seasonOptions()" [seasonId]="current.season.id" [week]="false" (seasonChange)="setSeason($event)" />
+    }
     @if (!loadError()) {
       <app-mythic-plus-character-search [ranking]="ranking()" [character]="key()" />
     }

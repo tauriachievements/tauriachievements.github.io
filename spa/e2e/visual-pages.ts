@@ -87,6 +87,8 @@ export const VISUAL_PAGES: readonly VisualPage[] = [
   { name: 'state-ladder-search', path: '/?search=Lara' },
   { name: 'state-compare-two', path: '/compare?a=Tauri:Larahh&b=Tauri:Darkpaladino' },
   { name: 'state-mythic-plus-season-menu', path: '/mythic-plus', clicks: ['#mythicPlusSeasonTrigger'] },
+  { name: 'state-mythic-plus-character-season-menu', path: '/mythic-plus/character/evermoon/Pashao?season=legion-s1-1', clicks: ['#mythicPlusSeasonTrigger'] },
+  { name: 'state-mythic-plus-records-season-menu', path: '/mythic-plus/records?season=legion-s1-1', clicks: ['#mythicPlusSeasonTrigger'] },
   { name: 'state-mythic-plus-dropdown', path: '/mythic-plus?view=players', clicks: ['#mythicPlusRealmTrigger'], only: 'desktop' },
   { name: 'state-mythic-plus-role-menu', path: '/mythic-plus?view=players&role=melee', clicks: ['#mythicPlusRoleTrigger'] },
   { name: 'state-mythic-plus-chart-role', path: '/mythic-plus?chartRole=ranged', only: 'desktop' },
