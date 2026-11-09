@@ -55,6 +55,7 @@ export const VISUAL_PAGES: readonly VisualPage[] = [
   { name: 'mythic-plus-stats', path: '/mythic-plus/stats' },
   { name: 'mythic-plus-stats-week', path: '/mythic-plus/stats?period=week' },
   { name: 'mythic-plus-records', path: '/mythic-plus/records' },
+  { name: 'mythic-plus-invalid', path: '/mythic-plus/invalid', wide: true },
   { name: 'mythic-plus-character', path: '/mythic-plus/character/evermoon/Pashao', wide: true },
   {
     name: 'mythic-plus-guild',
@@ -92,6 +93,8 @@ export const VISUAL_PAGES: readonly VisualPage[] = [
   { name: 'state-mythic-plus-guild-week', path: '/mythic-plus/guild/evermoon/Miracle?period=week&role=healer' },
   { name: 'state-mythic-plus-guild-role-menu', path: '/mythic-plus/guild/evermoon/Miracle?role=ranged', clicks: ['#guildLadderRoleTrigger'] },
   { name: 'state-mythic-plus-records-dungeon', path: '/mythic-plus/records?dungeon=brh' },
+  { name: 'state-mythic-plus-invalid-details', path: '/mythic-plus/invalid', clicks: ['.run-card-summary, .run-row >> nth=0'] },
+  { name: 'state-mythic-plus-character-invalid', path: '/mythic-plus/character/evermoon/Pretz', wide: true },
   {
     name: 'state-mythic-plus-character-search',
     path: '/mythic-plus/character/evermoon/Pashao',

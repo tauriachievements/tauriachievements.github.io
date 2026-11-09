@@ -19,6 +19,7 @@ import {
   currentPlayers,
   exportedAt,
   hasScanChanges,
+  invalidRunCount,
   memberNameMatches,
   PlayerScore,
   playerRanks,
@@ -121,6 +122,7 @@ export class MythicPlusPageComponent implements OnInit {
 
   readonly index = this.store.index;
   readonly lastEdited = computed(() => exportedAt(this.index()));
+  readonly invalidRuns = computed(() => invalidRunCount(this.index()));
   readonly runsByDungeon = this.store.runsByDungeon;
   readonly isLoading = this.store.isLoading;
   readonly loadError = this.store.loadError;

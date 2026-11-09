@@ -11,6 +11,9 @@
           Completed
           <time [attr.datetime]="row.completedAt">{{ row.completedAt | date:'EEE, d MMM y · HH:mm' }}</time>
         </p>
+        @if (row.invalid; as reason) {
+          <p class="run-invalid"><span class="invalid-tag">Invalid</span> {{ reason }}. It counts toward no score, ranking or record.</p>
+        }
       </div>
     </section>
 

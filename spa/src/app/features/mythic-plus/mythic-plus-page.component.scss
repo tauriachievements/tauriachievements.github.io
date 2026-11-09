@@ -278,6 +278,22 @@
 
 .bottom-pager { margin-top: 12px; }
 
+.invalid-link {
+  display: table;
+  margin: 16px 0 0 auto;
+  padding: 10px 14px;
+  border: 1px solid #333;
+  border-radius: 7px;
+  background: #111;
+  color: #bdbdbd;
+  font-size: .85rem;
+  font-weight: 600;
+  text-decoration: none;
+
+  &:hover { border-color: rgba(255, 154, 154, .34); color: #fff; }
+  &:focus-visible { outline: 2px solid $gold; outline-offset: 2px; }
+}
+
 .pager-timer {
   color: #9a9a9a;
   font-size: .8rem;

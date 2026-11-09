@@ -162,6 +162,31 @@ describe('MythicPlusProfilePageComponent', () => {
     expect(page.timeline().at(-1)?.score).toBe(290);
   });
 
+  it('lists an invalid run in the history, tagged with its reason, without counting it anywhere else', async () => {
+    const reason = 'Court of Stars +17 or higher, before the 9 November fixes';
+    const withInvalid = { ...runs, cos: [[20, 1500000, unix('2026-09-21T18:00:00Z'), 200, [], [[1, 1], [0, 0]], reason] as MythicPlusRunEntry] };
+    const { page, harness, element } = await open('/mythic-plus/character/evermoon/Progtrix', new FakeDataFiles(undefined, false, index, withInvalid));
+
+    expect(element.querySelector('.profile-score-value')?.textContent).toBe('290.0');
+    expect(page.dungeonBests().map(best => best.run?.score)).toEqual([150, 140, undefined]);
+    expect(page.specs().map(spec => [spec.spec, spec.runs])).toEqual([['Windwalker', 2], ['Mistweaver', 1]]);
+    expect(page.teammates().map(mate => [mate.member.name, mate.runs])).toEqual([['Tank', 2], ['Healer', 1], ['Lili', 1]]);
+    expect(page.historyRows().map(row => [row.completedAt.slice(0, 10), row.invalid])).toEqual([
+      ['2026-09-21', reason], ['2026-09-19', undefined], ['2026-09-18', undefined], ['2026-09-17', undefined]
+    ]);
+
+    const tag = element.querySelector('.run-row .invalid-tag');
+    expect([tag?.textContent?.trim(), tag?.getAttribute('title')]).toEqual(['Invalid', reason]);
+
+    page.toggleRun(page.historyRows()[0].id);
+    harness.detectChanges();
+    expect(element.querySelector('.details-row .run-invalid')?.textContent).toContain(reason);
+
+    page.setHistoryOrder('best');
+    harness.detectChanges();
+    expect(page.historyRows().map(row => row.invalid)).toEqual([undefined, undefined, undefined, reason]);
+  });
+
   it('links the guild in the header and ranks the character in it, linking to the guild ladder', async () => {
     const { element } = await open('/mythic-plus/character/evermoon/Progtrix');
 

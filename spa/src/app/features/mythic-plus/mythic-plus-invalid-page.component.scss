@@ -1,0 +1,43 @@
+@use '../../shared/mythic-plus-shared' as *;
+
+:host { display: block; width: 100%; }
+
+@include visually-hidden;
+@include back-link;
+
+.invalid-page {
+  display: flex;
+  width: min(1240px, 100%);
+  flex-direction: column;
+  gap: 16px;
+  margin: 0 auto;
+  padding: 48px 16px;
+  color: #e0e0e0;
+}
+
+.section { display: flex; min-width: 0; flex-direction: column; gap: 12px; }
+
+.section-header {
+  h2 { margin: 0; color: #fff; font-size: 1.15rem; }
+  p { margin: 4px 0 0; color: #9a9a9a; font-size: .85rem; line-height: 1.5; }
+}
+
+.reason-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  li { color: #ff9a9a; font-size: .85rem; line-height: 1.4; }
+}
+
+.reason-count { margin-right: 6px; color: #fff; font-variant-numeric: tabular-nums; font-weight: 700; }
+
+.empty-note { margin: 0; padding: 18px; border-radius: 4px; background: #111; color: #9a9a9a; text-align: center; }
+
+@media (max-width: 640px) {
+  .invalid-page { padding-top: 32px; }
+  .back-link { min-height: 40px; }
+}

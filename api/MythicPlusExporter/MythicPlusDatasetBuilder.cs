@@ -1,6 +1,9 @@
 namespace MythicPlusExporter;
 
-public sealed record ScoredRun(ChallengeRun Run, double Score);
+public sealed record ScoredRun(ChallengeRun Run, double Score, string? InvalidReason = null)
+{
+    public bool IsValid => InvalidReason is null;
+}
 
 public sealed record MythicPlusDungeon(
     ChallengeMap Map,
@@ -8,7 +11,11 @@ public sealed record MythicPlusDungeon(
     IReadOnlyList<ScoredRun> Runs
 )
 {
-    public double BestScore => Runs.Count > 0 ? Runs[0].Score : 0;
+    public double BestScore => Runs.FirstOrDefault(run => run.IsValid)?.Score ?? 0;
+
+    public int ValidRunCount => Runs.Count(run => run.IsValid);
+
+    public int InvalidRunCount => Runs.Count - ValidRunCount;
 }
 
 public sealed record MythicPlusPlayer(
@@ -32,6 +39,8 @@ public sealed record MythicPlusDataset(
 )
 {
     public int RunCount => Dungeons.Sum(dungeon => dungeon.Runs.Count);
+
+    public int InvalidRunCount => Dungeons.Sum(dungeon => dungeon.InvalidRunCount);
 }
 
 public static class MythicPlusDatasetBuilder
@@ -51,6 +60,7 @@ public static class MythicPlusDatasetBuilder
                 continue;
             }
 
+            var info = MythicPlusCatalog.GetDungeon(map.ChallengeId, map.Name);
             var seen = new HashSet<string>(StringComparer.Ordinal);
             var ranked = new List<ScoredRun>(runs.Count);
             foreach (var run in runs)
@@ -68,19 +78,14 @@ public static class MythicPlusDatasetBuilder
                             run.KeyLevel,
                             run.ClearTimeMilliseconds,
                             map.TimerSeconds
-                        )
+                        ),
+                        MythicPlusInvalidRuns.ReasonFor(info.Slug, run)
                     )
                 );
             }
 
             ranked.Sort(CompareRanked);
-            dungeons.Add(
-                new MythicPlusDungeon(
-                    map,
-                    MythicPlusCatalog.GetDungeon(map.ChallengeId, map.Name),
-                    ranked
-                )
-            );
+            dungeons.Add(new MythicPlusDungeon(map, info, ranked));
         }
 
         var members = dungeons

@@ -307,6 +307,86 @@ public sealed class MythicPlusExportServiceTests
     }
 
     [Fact]
+    public async Task ExportAsync_MarksInvalidRunsAndLeavesThemOutOfScoresAndCounts()
+    {
+        var outputDirectory = CreateTempDirectory();
+        try
+        {
+            var service = new MythicPlusExportService(
+                outputDirectory,
+                new FakeChallengeApiClient(
+                    IndexJson(),
+                    new()
+                    {
+                        [(Evermoon, 197)] = LeaderboardJson(
+                            Run(
+                                15,
+                                1_800_000,
+                                1_794_000_000,
+                                [],
+                                Member("Alpha", Evermoon, 11, "Guardian", 0, "")
+                            ),
+                            Run(
+                                18,
+                                1_700_000,
+                                1_794_000_100,
+                                [],
+                                Member("Alpha", Evermoon, 11, "Guardian", 0, ""),
+                                Member("Beta", Evermoon, 1, "Fury", 2, "")
+                            )
+                        ),
+                        [(Evermoon, 200)] = LeaderboardJson(
+                            Run(
+                                18,
+                                2_000_000,
+                                1_794_000_200,
+                                [],
+                                Member("Gamma", Evermoon, 1, "Fury", 2, "")
+                            )
+                        ),
+                    }
+                ),
+                new FixedTimeProvider(new DateTimeOffset(2026, 11, 9, 9, 30, 0, TimeSpan.Zero))
+            );
+            var result = await service.ExportAsync(
+                new MythicPlusExporterOptions([Evermoon], AllowShrink: false),
+                CancellationToken.None
+            );
+
+            Assert.Equal(3, result.Dataset.RunCount);
+
+            var eoa = ReadJson(outputDirectory, "eoa.json").GetProperty("runs");
+            Assert.Equal(
+                "Eye of Azshara +17 or higher with a Demon Hunter, Monk, Warlock, Warrior or Hunter, before the 9 November fixes",
+                eoa[0][6].GetString()
+            );
+            Assert.Equal(6, eoa[1].GetArrayLength());
+
+            var index = ReadJson(outputDirectory, "index.json");
+            var dungeons = index.GetProperty("dungeons");
+            var eoaEntry = dungeons[0];
+            Assert.Equal("eoa", eoaEntry.GetProperty("id").GetString());
+            Assert.Equal(1, eoaEntry.GetProperty("runCount").GetInt32());
+            Assert.Equal(1, eoaEntry.GetProperty("invalidRunCount").GetInt32());
+            Assert.Equal(
+                MythicPlusScore.Calculate(15, 1_800_000, 2100),
+                eoaEntry.GetProperty("bestScore").GetDouble()
+            );
+            Assert.False(dungeons[1].TryGetProperty("invalidRunCount", out _));
+
+            Assert.Equal(
+                [RoundScore(MythicPlusScore.Calculate(15, 1_800_000, 2100)), 1_800_000],
+                Values(ScoresOf(index, "Alpha"))
+            );
+            Assert.Equal([0, 0], Values(ScoresOf(index, "Beta")));
+        }
+        finally
+        {
+            Directory.Delete(outputDirectory, recursive: true);
+        }
+    }
+
+    [Fact]
     public async Task ExportAsync_KeepsEveryPlayerInPlaceAndAddsNewPlayersAtTheEnd()
     {
         var outputDirectory = CreateTempDirectory();

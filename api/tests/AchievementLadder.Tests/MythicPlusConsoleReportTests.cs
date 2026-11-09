@@ -99,6 +99,34 @@ public sealed class MythicPlusConsoleReportTests
     }
 
     [Fact]
+    public void Summary_CountsTheInvalidRunsOnlyWhenThereAreAny()
+    {
+        var dataset = MythicPlusDatasetBuilder.Build(
+            new ChallengeIndex("legion-", [new ChallengeMap(197, "Eye of Azshara", 1440)]),
+            new Dictionary<int, IReadOnlyList<ChallengeRun>>
+            {
+                [197] = ChallengeResponseParser.ParseLeaderboard(
+                    Parse(
+                        LeaderboardJson(
+                            Run(17, 1_440_000, 1, [], Member("Alpha", Evermoon, 1, "Fury", 2, "")),
+                            Run(16, 1_440_000, 2, [], Member("Alpha", Evermoon, 1, "Fury", 2, ""))
+                        )
+                    )
+                ),
+            }
+        );
+
+        Assert.Contains(
+            "  Invalid runs                1",
+            MythicPlusConsoleReport.Summary(new MythicPlusExportResult(dataset, 0, "out"), ".")
+        );
+        Assert.DoesNotContain(
+            MythicPlusConsoleReport.Summary(new MythicPlusExportResult(Dataset(), 0, "out"), "."),
+            line => line.Contains("Invalid runs")
+        );
+    }
+
+    [Fact]
     public async Task ReadLeaderboards_ReportsEachDungeonAsItFinishesWithoutListingSkippedOnes()
     {
         var progress = new StringWriter();

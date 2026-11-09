@@ -22,6 +22,7 @@ import {
   characterKey,
   exportedAt,
   keystoneUpgrades,
+  latestFirst,
   rankPlayers,
   rankRuns,
   runIncludesCharacter,
@@ -149,6 +150,7 @@ export class MythicPlusProfilePageComponent implements OnInit {
   readonly index = signal<MythicPlusIndex | undefined>(undefined);
   readonly lastEdited = computed(() => exportedAt(this.index()));
   readonly allRuns = signal<readonly MythicPlusRun[]>([]);
+  private readonly allInvalidRuns = signal<readonly MythicPlusRun[]>([]);
   readonly isLoading = signal(true);
   readonly loadError = signal<string | undefined>(undefined);
 
@@ -203,13 +205,8 @@ export class MythicPlusProfilePageComponent implements OnInit {
   readonly ambiguous = computed<CharacterLink[]>(() =>
     this.matches().length > 1 ? this.matches().map(toCharacterLink) : []);
 
-  readonly runs = computed(() => {
-    const key = this.key();
-    return key
-      ? this.allRuns().filter(run => runIncludesCharacter(run, key))
-        .sort((a, b) => a.completedAt < b.completedAt ? 1 : a.completedAt > b.completedAt ? -1 : 0)
-      : [];
-  });
+  readonly runs = computed(() => this.characterRuns(this.allRuns()));
+  private readonly invalidRuns = computed(() => this.characterRuns(this.allInvalidRuns()));
 
   readonly scanChange = computed(() => profileScanChange(this.index(), this.key()));
 
@@ -231,12 +228,10 @@ export class MythicPlusProfilePageComponent implements OnInit {
     return specs.length > 1 && specs.some(played => played.spec === spec) ? spec : undefined;
   });
 
-  readonly specRuns = computed(() => {
-    const spec = this.selectedSpec();
-    const key = this.key();
-    return spec
-      ? this.runs().filter(run => run.roster.some(member => member.spec === spec && characterKey(member) === key))
-      : this.runs();
+  readonly specRuns = computed(() => this.inSelectedSpec(this.runs()));
+  private readonly listedRuns = computed(() => {
+    const invalid = this.inSelectedSpec(this.invalidRuns());
+    return invalid.length ? [...this.specRuns(), ...invalid].sort(latestFirst) : this.specRuns();
   });
 
   private readonly specRanking = computed(() => {
@@ -370,7 +365,7 @@ export class MythicPlusProfilePageComponent implements OnInit {
   });
   readonly historyRuns = computed(() => {
     const day = this.selectedDay();
-    const runs = day ? this.specRuns().filter(run => localDay(new Date(run.completedAt)) === day) : this.specRuns();
+    const runs = day ? this.listedRuns().filter(run => localDay(new Date(run.completedAt)) === day) : this.listedRuns();
     const ranks = this.runRanks();
     const rankOf = (id: string) => ranks.get(id) || Number.MAX_SAFE_INTEGER;
     return this.historyOrder() === 'best' ? [...runs].sort((a, b) => rankOf(a.id) - rankOf(b.id)) : runs;
@@ -476,15 +471,29 @@ export class MythicPlusProfilePageComponent implements OnInit {
     this.searchQuery.set((event.target as HTMLInputElement).value);
   }
 
+  private characterRuns(runs: readonly MythicPlusRun[]): MythicPlusRun[] {
+    const key = this.key();
+    return key ? runs.filter(run => runIncludesCharacter(run, key)).sort(latestFirst) : [];
+  }
+
+  private inSelectedSpec(runs: MythicPlusRun[]): MythicPlusRun[] {
+    const spec = this.selectedSpec();
+    const key = this.key();
+    return spec
+      ? runs.filter(run => run.roster.some(member => member.spec === spec && characterKey(member) === key))
+      : runs;
+  }
+
   loadData(): void {
     this.isLoading.set(true);
     this.loadError.set(undefined);
     this.mythicPlusData.season()
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
-        next: ({ index, runs }) => {
+        next: ({ index, runs, invalidRuns }) => {
           this.index.set(index);
           this.allRuns.set(runs);
+          this.allInvalidRuns.set(invalidRuns);
           this.isLoading.set(false);
         },
         error: error => {

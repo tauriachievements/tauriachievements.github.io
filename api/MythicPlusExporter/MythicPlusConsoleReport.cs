@@ -59,6 +59,9 @@ public static class MythicPlusConsoleReport
             Invariant($"  {"Total", -(DungeonWidth + 6)}{dataset.RunCount, 7:N0}"),
             "",
             Field("New runs since last export", newRuns),
+            .. dataset.InvalidRunCount > 0
+                ? [Field("Invalid runs", Invariant($"{dataset.InvalidRunCount:N0}"))]
+                : Array.Empty<string>(),
             Field("Players", Invariant($"{dataset.Players.Count:N0}")),
             Field("Saved to", Path.GetRelativePath(repoRoot, result.OutputDirectory)),
         ];

@@ -23,7 +23,7 @@ class FakeDataFiles {
   fetches: string[] = [];
   refreshes = 0;
 
-  constructor(private tables: string[] = []) {}
+  constructor(private tables: string[] = [], private invalidReasons: Record<string, string> = {}) {}
 
   getJson<T>(): Observable<T> {
     return of(index as T);
@@ -32,11 +32,12 @@ class FakeDataFiles {
   fetchJson<T>(path: string): Observable<T> {
     this.fetches.push(path);
     const dungeon = path.replace(/^.*\//, '').replace('.json', '');
+    const reason = this.invalidReasons[dungeon];
     const file: MythicPlusDungeonFile = {
       version: 1,
       dungeon,
       tables: this.tables[0] ?? index.tables,
-      runs: [[15, 1500000, 1790000000, 100, [], [[0, 0]]]]
+      runs: [reason ? [18, 1500000, 1790000000, 120, [], [[0, 0]], reason] : [15, 1500000, 1790000000, 100, [], [[0, 0]]]]
     };
     return of(file as T);
   }
@@ -63,6 +64,17 @@ describe('MythicPlusDataService', () => {
     expect(first.runs).toHaveLength(2);
     expect(second.runs[0]).toBe(first.runs[0]);
     expect(dataFiles.fetches).toEqual(['mythic-plus-data/cos.json', 'mythic-plus-data/arc.json']);
+  });
+
+  it('sets invalid runs apart from the season and the dungeon runs every ranking reads', async () => {
+    const reason = 'Court of Stars +17 or higher, before the 9 November fixes';
+    const service = serviceWith(new FakeDataFiles([], { cos: reason }));
+
+    const season = await firstValueFrom(service.season());
+
+    expect(season.runs.map(run => run.dungeon)).toEqual(['arc']);
+    expect(season.invalidRuns.map(run => [run.dungeon, run.invalid])).toEqual([['cos', reason]]);
+    expect(await firstValueFrom(service.dungeonRuns(index, 'cos'))).toEqual([]);
   });
 
   it('shares one member object between the dungeons a character played', async () => {

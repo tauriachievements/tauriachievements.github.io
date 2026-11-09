@@ -147,7 +147,9 @@ whose score changed, not the whole dataset.
 - `index.json`: `version`, when the leaderboards were read (`generatedAt`, UTC ISO 8601),
   `previousGeneratedAt` once there is an earlier export, the `tables` fingerprint (below), the
   `season`, `dungeons` and `affixes`, and the tables the dungeon files point into: `specs` as
-  objects and `players` as `[name, realm, guild, class, race, gender]`.
+  objects and `players` as `[name, realm, guild, class, race, gender]`. A dungeon's `runCount`
+  and `bestScore` count only the valid runs; `invalidRunCount` is there when it has invalid ones
+  ([below](#invalid-mythic-runs)).
 - The two tables keep the order of the export that started them (specs by class, then name;
   players by realm, then name) and add each new entry at the end, sorted the same way among the
   export's new ones. A known character's row never moves: a new guild, class, race or gender is
@@ -167,7 +169,8 @@ whose score changed, not the whole dataset.
 - `<dungeon>.json`, named by the dungeon's slug: `version`, `dungeon`, `tables` and the
   dungeon's `runs`, best first (the higher score, then the faster clear, then the earlier
   finish), each `[keyLevel, clearTimeMs, completedAtUnix, score, [affixId, ...], [[player, spec], ...]]`
-  with player and spec as positions in the index's tables. A dungeon nobody has run yet has no
+  with player and spec as positions in the index's tables, and an invalid run's reason as a
+  seventh element ([below](#invalid-mythic-runs)). A dungeon nobody has run yet has no
   file and no tile.
 - `tables` is a short hash of the spec table and the players' realms and names, in order, taken
   when the tables started (`MythicPlusTables.FingerprintOf`). Every export that only adds to them
@@ -181,6 +184,23 @@ whose score changed, not the whole dataset.
   season, or an index of a newer format, starts new tables with a new `tables`. The first export
   in format 2 rewrote `index.json` once; its dungeon files changed only by their new runs and the
   version line.
+
+## Invalid Mythic+ runs
+
+`MythicPlusInvalidRuns` in MythicPlusExporter holds the rules that make a run invalid, such as
+a key won by abusing a bug that the server has since fixed. What they are is in
+[scoring.md](scoring.md#invalid-mythic-runs).
+
+- The exporter checks every run on every export, so a change to the rules needs no format bump
+  and no extra API reads: it shows on the site after the next export (the daily update,
+  `Run-MythicPlus.cmd` or `Run-QuickUpdate.cmd`).
+- An invalid run stays in its dungeon file, in its place by score, with the first broken rule's
+  reason as its seventh element. The exporter leaves it out of `scores`, the dungeon's `runCount`
+  and `bestScore`, and counts it in `invalidRunCount`. The summary at the end of an export says
+  how many runs were invalid. The shrink check and "New runs since last export" still count every
+  run the API listed.
+- On the site, `createRunDecoder` puts the reason in `invalid`, and `MythicPlusDataService`
+  sets those runs apart (`splitInvalidRuns`) before any page sees them.
 
 ## Raid log files
 

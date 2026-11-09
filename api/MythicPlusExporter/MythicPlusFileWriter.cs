@@ -120,8 +120,12 @@ public static class MythicPlusFileWriter
                         "icon",
                         MythicPlusCatalog.IconUrl(dataset.DataUrlPrefix, dungeon.Info.IconName)
                     );
-                    item.WriteNumber("runCount", dungeon.Runs.Count);
+                    item.WriteNumber("runCount", dungeon.ValidRunCount);
                     item.WriteNumber("bestScore", dungeon.BestScore);
+                    if (dungeon.InvalidRunCount > 0)
+                    {
+                        item.WriteNumber("invalidRunCount", dungeon.InvalidRunCount);
+                    }
                     item.WriteEndObject();
                 }
             );
@@ -264,7 +268,7 @@ public static class MythicPlusFileWriter
         writer.WriteString("tables", tables);
         writer.WriteStartArray("runs");
 
-        foreach (var (run, score) in dungeon.Runs)
+        foreach (var (run, score, invalidReason) in dungeon.Runs)
         {
             line.WriteTo(
                 writer,
@@ -296,6 +300,11 @@ public static class MythicPlusFileWriter
                         item.WriteEndArray();
                     }
                     item.WriteEndArray();
+
+                    if (invalidReason is not null)
+                    {
+                        item.WriteStringValue(invalidReason);
+                    }
 
                     item.WriteEndArray();
                 }

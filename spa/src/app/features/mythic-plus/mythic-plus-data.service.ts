@@ -6,8 +6,10 @@ import {
   MythicPlusIndex,
   MythicPlusRun,
   NEWER_DATA_MESSAGE,
+  SplitRuns,
   createRunDecoder,
-  sharesTables
+  sharesTables,
+  splitInvalidRuns
 } from './mythic-plus';
 import { DataFileService } from '../../core/data-file.service';
 import { ObservableCache } from '../../core/observable-cache';
@@ -15,6 +17,7 @@ import { ObservableCache } from '../../core/observable-cache';
 export interface MythicPlusSeason {
   readonly index: MythicPlusIndex;
   readonly runs: readonly MythicPlusRun[];
+  readonly invalidRuns: readonly MythicPlusRun[];
 }
 
 export class NewerExportError extends Error {
@@ -38,15 +41,7 @@ export class MythicPlusDataService {
   }
 
   dungeonRuns(index: MythicPlusIndex, dungeonId: string): Observable<readonly MythicPlusRun[]> {
-    return this.cache.get(`dungeon:${dungeonId}`, () =>
-      this.dataFiles.fetchJson<MythicPlusDungeonFile>(`${MYTHIC_PLUS_DATA_DIR}/${dungeonId}.json`).pipe(
-        map(file => {
-          if (!sharesTables(index, file)) {
-            throw new NewerExportError(dungeonId);
-          }
-          return this.decoderFor(index)(file);
-        })
-      ));
+    return this.dungeon(index, dungeonId).pipe(map(dungeon => dungeon.runs));
   }
 
   season(): Observable<MythicPlusSeason> {
@@ -68,10 +63,26 @@ export class MythicPlusDataService {
 
   private loadSeason(): Observable<MythicPlusSeason> {
     return this.index().pipe(
-      switchMap(index => forkJoin(index.dungeons.map(dungeon => this.dungeonRuns(index, dungeon.id))).pipe(
-        map(runsByDungeon => ({ index, runs: runsByDungeon.flat() }))
+      switchMap(index => forkJoin(index.dungeons.map(dungeon => this.dungeon(index, dungeon.id))).pipe(
+        map(dungeons => ({
+          index,
+          runs: dungeons.flatMap(dungeon => dungeon.runs),
+          invalidRuns: dungeons.flatMap(dungeon => dungeon.invalidRuns)
+        }))
       ))
     );
+  }
+
+  private dungeon(index: MythicPlusIndex, dungeonId: string): Observable<SplitRuns> {
+    return this.cache.get(`dungeon:${dungeonId}`, () =>
+      this.dataFiles.fetchJson<MythicPlusDungeonFile>(`${MYTHIC_PLUS_DATA_DIR}/${dungeonId}.json`).pipe(
+        map(file => {
+          if (!sharesTables(index, file)) {
+            throw new NewerExportError(dungeonId);
+          }
+          return splitInvalidRuns(this.decoderFor(index)(file));
+        })
+      ));
   }
 
   private decoderFor(index: MythicPlusIndex): (file: MythicPlusDungeonFile) => MythicPlusRun[] {

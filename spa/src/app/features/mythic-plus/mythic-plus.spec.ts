@@ -10,9 +10,12 @@ import {
   exportedAt,
   formatTimerDelta,
   hasScanChanges,
+  invalidRunCount,
   MythicPlusDepartedEntry,
+  MythicPlusDungeon,
   MythicPlusIndex,
   MythicPlusPlayerEntry,
+  MythicPlusRun,
   MythicPlusRunEntry,
   MythicPlusScoreEntry,
   keystoneUpgrades,
@@ -24,6 +27,7 @@ import {
   runIncludesPlayer,
   seasonScoreColors,
   sortRoster,
+  splitInvalidRuns,
   standingChanges,
   upgradeCutoffs,
   upgradeStars
@@ -333,6 +337,41 @@ describe('createRunDecoder', () => {
 
     expect(first.roster).toHaveLength(1);
     expect(second.roster[0]).toBe(first.roster[0]);
+  });
+
+  it('carries the reason an invalid run does not count, numbering it with the rest of the file', () => {
+    const reason = 'Black Rook Hold +17 or higher with a Death Knight, before the 9 November fixes';
+    const [invalid, valid] = createRunDecoder(index)({
+      version: 2,
+      dungeon: 'brh',
+      runs: [[18, 1, 0, 200, [], [[0, 1]], reason], [10, 1, 0, 100, [], [[0, 1]]]]
+    });
+
+    expect([invalid.id, invalid.invalid]).toEqual(['brh-1', reason]);
+    expect(valid.id).toBe('brh-2');
+    expect('invalid' in valid).toBe(false);
+  });
+});
+
+describe('splitInvalidRuns', () => {
+  const run = (id: string, invalid?: string) =>
+    ({ id, ...(invalid ? { invalid } : {}) }) as MythicPlusRun;
+
+  it('keeps the runs that count in their order and sets the invalid ones aside', () => {
+    const { runs, invalidRuns } = splitInvalidRuns([run('a'), run('b', 'Court of Stars +17 or higher'), run('c')]);
+
+    expect(runs.map(entry => entry.id)).toEqual(['a', 'c']);
+    expect(invalidRuns.map(entry => entry.id)).toEqual(['b']);
+  });
+});
+
+describe('invalidRunCount', () => {
+  it('adds up the invalid runs of every dungeon, none for an index without them', () => {
+    const dungeon = (invalidRunCount?: number) => ({ id: 'x', ...(invalidRunCount ? { invalidRunCount } : {}) }) as MythicPlusDungeon;
+
+    expect(invalidRunCount({ dungeons: [dungeon(3), dungeon(), dungeon(2)] })).toBe(5);
+    expect(invalidRunCount({ dungeons: [dungeon()] })).toBe(0);
+    expect(invalidRunCount(undefined)).toBe(0);
   });
 });
 

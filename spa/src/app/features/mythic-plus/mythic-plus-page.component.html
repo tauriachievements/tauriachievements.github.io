@@ -248,6 +248,10 @@
         label="Leaderboard pages, bottom"
         [scrollTarget]="leaderboard"
         (pageChange)="goToPage($event)" />
+
+      @if (invalidRuns()) {
+        <a class="invalid-link" routerLink="/mythic-plus/invalid">List of invalid runs</a>
+      }
     }
   }
 </main>

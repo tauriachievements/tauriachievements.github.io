@@ -65,6 +65,8 @@
 }
 
 .col-rank { font-size: 1.1rem; font-weight: 600; }
+.col-rank.unranked, .card-rank.unranked { color: #8a8a8a; }
+.invalid-tag { @include invalid-tag; }
 .col-dungeon { font-size: .8rem; font-weight: 700; }
 .col-level { color: #fff; font-size: 1rem; font-weight: 600; }
 .col-time, .col-score { font-variant-numeric: tabular-nums; }

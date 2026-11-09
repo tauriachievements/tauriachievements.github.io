@@ -268,3 +268,40 @@ describe('MythicPlusPageComponent roles', () => {
     expect(ladder(page)).toEqual([['Exkeito', 196], ['Napim', 196]]);
   });
 });
+
+describe('MythicPlusPageComponent invalid runs', () => {
+  const reason = 'Court of Stars +17 or higher, before the 9 November fixes';
+
+  async function open(data: ReturnType<typeof exportOf>) {
+    TestBed.configureTestingModule({
+      providers: [
+        provideRouter([{ path: 'mythic-plus', component: MythicPlusPageComponent }]),
+        { provide: DataFileService, useValue: new FakeDataFiles(data.index, data) }
+      ]
+    });
+    const harness = await RouterTestingHarness.create();
+    const page = await harness.navigateByUrl('/mythic-plus', MythicPlusPageComponent);
+    harness.detectChanges();
+    return { page, element: harness.routeNativeElement as HTMLElement };
+  }
+
+  it('ranks without the invalid runs and links to their list', async () => {
+    const data = exportOf('dddddddddddd', [['Exkeito', 'Evermoon', '', 11, 4, 0]]);
+    data.index.dungeons[0] = { ...data.index.dungeons[0], invalidRunCount: 1 };
+    data.cos.runs = [
+      [20, 1297289, 1791293804, 205, [], [[0, 0]], reason],
+      [15, 1297289, 1791293904, 160, [], [[0, 0]]]
+    ];
+
+    const { page, element } = await open(data);
+
+    expect(page.filteredRows().map(row => [row.rank, row.run.score])).toEqual([[1, 160]]);
+    expect(element.querySelector('a.invalid-link')?.getAttribute('href')).toBe('/mythic-plus/invalid');
+  });
+
+  it('has no link while every run counts', async () => {
+    const { element } = await open(exportOf('eeeeeeeeeeee', [['Exkeito', 'Evermoon', '', 11, 4, 0]]));
+
+    expect(element.querySelector('a.invalid-link')).toBeNull();
+  });
+});

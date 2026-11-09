@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { MythicPlusDungeon, MythicPlusMember, MythicPlusRun } from './mythic-plus';
-import { bestRunCells, scoreGains, toMemberView } from './mythic-plus-views';
+import { bestRunCells, scoreGains, toMemberView, toRunView } from './mythic-plus-views';
 
 function dungeon(id: string): MythicPlusDungeon {
   return { id, challengeId: 1, shortName: id.toUpperCase(), name: id, timerSeconds: 1800, icon: '', runCount: 1, bestScore: 0 };
@@ -33,6 +33,19 @@ function run(
     completedAt, affixes: [], roster
   };
 }
+
+describe('toRunView', () => {
+  const colors = { tiers: undefined, dungeons: 9 };
+
+  it('carries the reason an invalid run does not count, and none for a valid run', () => {
+    const reason = 'Court of Stars +17 or higher, before the 9 November fixes';
+
+    expect(toRunView({ ...run('cos', 18, '2026-11-01T20:00:00.000Z'), invalid: reason }, dungeon('cos'), new Map(), colors).invalid)
+      .toBe(reason);
+    expect(toRunView(run('cos', 12, '2026-11-01T20:00:00.000Z'), dungeon('cos'), new Map(), colors).invalid)
+      .toBeUndefined();
+  });
+});
 
 describe('bestRunCells', () => {
   const dungeons = [dungeon('nl'), dungeon('dht'), dungeon('cos')];

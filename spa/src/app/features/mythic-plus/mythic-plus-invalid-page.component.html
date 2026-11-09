@@ -1,0 +1,34 @@
+<main class="invalid-page">
+  <h1 class="visually-hidden">Invalid Mythic+ runs</h1>
+
+  <a class="back-link" routerLink="/mythic-plus"><span aria-hidden="true">‹</span> Back to Mythic+</a>
+
+  <app-load-state [loading]="isLoading()" [error]="loadError()" [skeleton]="['rows:10']" loadingText="Charging the keystones..." (retry)="loadData()" />
+
+  @if (!isLoading() && !loadError()) {
+    <section class="section" aria-labelledby="invalid-title">
+      <header class="section-header">
+        <h2 id="invalid-title">Invalid runs</h2>
+        <p>These runs count toward no score, leaderboard, record or statistic. Latest first.</p>
+      </header>
+
+      @if (rows().length) {
+        <ul class="reason-list">
+          @for (entry of reasons(); track entry.reason) {
+            <li><span class="reason-count">{{ entry.runs | number }} {{ entry.runs === 1 ? 'run' : 'runs' }}</span> {{ entry.reason }}</li>
+          }
+        </ul>
+
+        <app-mythic-plus-runs-list
+          caption="Invalid Mythic+ runs, newest first"
+          [rows]="rows()"
+          [expandedRunId]="expandedRunId()"
+          [cards]="cards()"
+          [completed]="true"
+          (toggleRun)="toggleRun($event)" />
+      } @else {
+        <p class="empty-note">No run is marked invalid.</p>
+      }
+    </section>
+  }
+</main>
