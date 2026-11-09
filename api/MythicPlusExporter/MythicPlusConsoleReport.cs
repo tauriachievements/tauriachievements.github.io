@@ -58,9 +58,18 @@ public static class MythicPlusConsoleReport
             ),
             Invariant($"  {"Total", -(DungeonWidth + 6)}{dataset.RunCount, 7:N0}"),
             "",
+            Field("Season", result.Season.Name),
             Field("New runs since last export", newRuns),
             Field("Players", Invariant($"{dataset.Players.Count:N0}")),
             Field("Saved to", Path.GetRelativePath(repoRoot, result.OutputDirectory)),
+            .. result.Archived.Select(archive =>
+                Field(
+                    "Archived",
+                    Invariant(
+                        $"{archive.Season.Name}, {archive.RunCount:N0} runs, to {Path.GetRelativePath(repoRoot, archive.OutputDirectory)}"
+                    )
+                )
+            ),
         ];
     }
 

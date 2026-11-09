@@ -72,6 +72,7 @@ import { characterTransitionName } from '../../shared/motion/motion';
 import { RevealDirective } from '../../shared/motion/reveal.directive';
 import { ScrollToEndDirective } from '../../shared/motion/scroll-to-end.directive';
 import { MythicPlusDataService, mythicPlusLoadError } from './mythic-plus-data.service';
+import { injectSeasonSelection } from './mythic-plus-season-selection';
 import { SpotlightDirective } from '../../shared/motion/spotlight.directive';
 import { TapTooltipDirective } from '../../shared/tap-tooltip.directive';
 import { CLASS_NAMES, Role, realmSlug } from '../../game/wow';
@@ -141,6 +142,7 @@ export class MythicPlusProfilePageComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly replaceUrl = injectReplaceUrl();
+  private readonly season = injectSeasonSelection();
 
   readonly cards = injectCompactViewport(MYTHIC_PLUS_CARDS_QUERY);
   private readonly phone = injectCompactViewport();
@@ -425,7 +427,9 @@ export class MythicPlusProfilePageComponent implements OnInit {
   }
 
   private writeUrl(member: { name: string; realm: string }): void {
-    this.replaceUrl({ spec: this.selectedSpec() ?? null }, { path: mythicPlusProfileLink(member) });
+    this.replaceUrl(
+      { season: this.season.selected() ?? null, spec: this.selectedSpec() ?? null },
+      { path: mythicPlusProfileLink(member) });
   }
 
   ngOnInit(): void {
@@ -479,12 +483,13 @@ export class MythicPlusProfilePageComponent implements OnInit {
   loadData(): void {
     this.isLoading.set(true);
     this.loadError.set(undefined);
-    this.mythicPlusData.season()
+    this.mythicPlusData.season(this.season.selected())
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: ({ index, runs }) => {
           this.index.set(index);
           this.allRuns.set(runs);
+          this.season.loaded(index);
           this.isLoading.set(false);
         },
         error: error => {

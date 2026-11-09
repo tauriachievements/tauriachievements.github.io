@@ -50,15 +50,16 @@ export const VISUAL_PAGES: readonly VisualPage[] = [
   { name: 'raid-history', path: '/raid-history' },
   { name: 'mythic-plus', path: '/mythic-plus' },
   { name: 'mythic-plus-players', path: '/mythic-plus?view=players' },
+  { name: 'mythic-plus-season-1-1', path: '/mythic-plus?season=legion-s1-1&view=players' },
   { name: 'mythic-plus-filtered', path: '/mythic-plus?dungeon=arc&class=8&period=week' },
   { name: 'mythic-plus-scoring', path: '/mythic-plus/scoring' },
-  { name: 'mythic-plus-stats', path: '/mythic-plus/stats' },
+  { name: 'mythic-plus-stats', path: '/mythic-plus/stats?season=legion-s1-1' },
   { name: 'mythic-plus-stats-week', path: '/mythic-plus/stats?period=week' },
-  { name: 'mythic-plus-records', path: '/mythic-plus/records' },
-  { name: 'mythic-plus-character', path: '/mythic-plus/character/evermoon/Pashao', wide: true },
+  { name: 'mythic-plus-records', path: '/mythic-plus/records?season=legion-s1-1' },
+  { name: 'mythic-plus-character', path: '/mythic-plus/character/evermoon/Pashao?season=legion-s1-1', wide: true },
   {
     name: 'mythic-plus-guild',
-    path: '/mythic-plus/guild/evermoon/%D0%A5%D1%80%D0%B0%D0%BD%D0%B8%D1%82%D0%B5%D0%BB%D0%B8%20%D0%92%D0%B5%D1%87%D0%BD%D0%BE%D1%81%D1%82%D0%B8'
+    path: '/mythic-plus/guild/evermoon/%D0%A5%D1%80%D0%B0%D0%BD%D0%B8%D1%82%D0%B5%D0%BB%D0%B8%20%D0%92%D0%B5%D1%87%D0%BD%D0%BE%D1%81%D1%82%D0%B8?season=legion-s1-1'
   },
   { name: 'addon', path: '/legion-key-history-addon' },
   { name: 'stats', path: '/stats' },
@@ -85,21 +86,22 @@ export const VISUAL_PAGES: readonly VisualPage[] = [
   { name: 'state-ladder-row-details', path: '/', clicks: ['.row-toggle >> nth=0'], only: 'phone' },
   { name: 'state-ladder-search', path: '/?search=Lara' },
   { name: 'state-compare-two', path: '/compare?a=Tauri:Larahh&b=Tauri:Darkpaladino' },
+  { name: 'state-mythic-plus-season-menu', path: '/mythic-plus', clicks: ['#mythicPlusSeasonTrigger'] },
   { name: 'state-mythic-plus-dropdown', path: '/mythic-plus?view=players', clicks: ['#mythicPlusRealmTrigger'], only: 'desktop' },
   { name: 'state-mythic-plus-role-menu', path: '/mythic-plus?view=players&role=melee', clicks: ['#mythicPlusRoleTrigger'] },
   { name: 'state-mythic-plus-chart-role', path: '/mythic-plus?chartRole=ranged', only: 'desktop' },
   { name: 'state-mythic-plus-filters-open', path: '/mythic-plus?view=players', clicks: ['.mobile-filter-toggle'], only: 'phone' },
   { name: 'state-mythic-plus-guild-week', path: '/mythic-plus/guild/evermoon/Miracle?period=week&role=healer' },
-  { name: 'state-mythic-plus-guild-role-menu', path: '/mythic-plus/guild/evermoon/Miracle?role=ranged', clicks: ['#guildLadderRoleTrigger'] },
-  { name: 'state-mythic-plus-records-dungeon', path: '/mythic-plus/records?dungeon=brh' },
+  { name: 'state-mythic-plus-guild-role-menu', path: '/mythic-plus/guild/evermoon/Miracle?season=legion-s1-1&role=ranged', clicks: ['#guildLadderRoleTrigger'] },
+  { name: 'state-mythic-plus-records-dungeon', path: '/mythic-plus/records?season=legion-s1-1&dungeon=brh' },
   {
     name: 'state-mythic-plus-character-search',
-    path: '/mythic-plus/character/evermoon/Pashao',
+    path: '/mythic-plus/character/evermoon/Pashao?season=legion-s1-1',
     fill: { selector: 'app-mythic-plus-character-search input', value: 'm' }
   },
   {
     name: 'state-mythic-plus-character-search-none',
-    path: '/mythic-plus/character/evermoon/Pashao',
+    path: '/mythic-plus/character/evermoon/Pashao?season=legion-s1-1',
     fill: { selector: 'app-mythic-plus-character-search input', value: 'zzqx' }
   },
   {

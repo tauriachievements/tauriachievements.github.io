@@ -55,6 +55,17 @@ const runs: Record<string, MythicPlusRunEntry[]> = {
   cos: []
 };
 
+const preFixes = { id: 'legion-s1-1', name: 'Season 1.1 - Pre fixes', raid: 'Emerald Nightmare', startDate: '2026-09-16' };
+
+const liveIndex: MythicPlusIndex = {
+  ...index,
+  season: { id: 'legion-s1-2', name: 'Season 1.2 - Post fixes', raid: 'Emerald Nightmare', startDate: '2026-11-09' },
+  seasons: [
+    { id: 'legion-s1-1', name: 'Season 1.1 - Pre fixes' },
+    { id: 'legion-s1-2', name: 'Season 1.2 - Post fixes' }
+  ]
+};
+
 const fileFor = (path: string, tables = index.tables, servedRuns = runs): MythicPlusDungeonFile => {
   const dungeon = path.replace(/^.*\//, '').replace('.json', '');
   return { version: 1, dungeon, tables, runs: servedRuns[dungeon] };
@@ -69,8 +80,8 @@ class FakeDataFiles {
     private readonly servedRuns = runs
   ) {}
 
-  getJson<T>(): Observable<T> {
-    return of(this.servedIndex as T);
+  getJson<T>(path?: string): Observable<T> {
+    return of((path?.includes('/legion-s1-1/') ? { ...this.servedIndex, season: preFixes } : this.servedIndex) as T);
   }
 
   fetchJson<T>(path: string): Observable<T> {
@@ -298,6 +309,17 @@ describe('MythicPlusProfilePageComponent', () => {
     expect(page.selectedSpec()).toBe('Mistweaver');
     expect(element.querySelector('.profile-score-value')?.textContent).toBe('120.0');
     expect(TestBed.inject(Location).path()).toBe('/mythic-plus/character/evermoon/Progtrix?spec=Mistweaver');
+  });
+
+  it('shows the character in the season the address names and keeps it when fixing the name', async () => {
+    const { page, element } = await open(
+      '/mythic-plus/character/evermoon/progtrix?season=legion-s1-1',
+      new FakeDataFiles(undefined, false, liveIndex)
+    );
+
+    expect(page.index()?.season.id).toBe('legion-s1-1');
+    expect(element.textContent).toContain('score · Season 1.1 - Pre fixes');
+    expect(TestBed.inject(Location).path()).toBe('/mythic-plus/character/evermoon/Progtrix?season=legion-s1-1');
   });
 
   it('ignores a ?spec= the character has not played', async () => {

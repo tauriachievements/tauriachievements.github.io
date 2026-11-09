@@ -146,6 +146,12 @@ decision: ask first.** When a rule does change, change its tests first and see t
 
 ## Mythic+
 
+- **Seasons:** every score, rank, record, chart and "since the last scan" change counts only
+  the runs of the season shown. Season 1 is split at the server fixes of 9 November 2026,
+  14:35 Budapest time, into Season 1.1 - Pre fixes and Season 1.2 - Post fixes, so 1.2 starts
+  every character from zero ([data-pipeline.md](data-pipeline.md#mythic-seasons)). The pages
+  open on the live season; "This week" always means the live season's week, and a finished
+  season shows no affix week.
 - **Run score** (`api/MythicPlusExporter/MythicPlusScore.cs`), modelled on Raider.IO:
   - timed: `50 + 7.5 × level + 12.5 × (1 − time / timer)`;
   - over time: `50 + 7.5 × (level − 1) − 20 × (time / timer − 1)`;

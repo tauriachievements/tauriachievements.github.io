@@ -61,15 +61,34 @@ const fileFor = (path: string, tables = index.tables): MythicPlusDungeonFile => 
   return { version: 1, dungeon, tables, runs: runs[dungeon] };
 };
 
+const seasons = [
+  { id: 'legion-s1-1', name: 'Season 1.1 - Pre fixes' },
+  { id: 'legion-s1-2', name: 'Season 1.2 - Post fixes' }
+];
+
+const seasonIndexes: Record<string, MythicPlusIndex> = {
+  'mythic-plus-data/index.json': {
+    ...index,
+    season: { id: 'legion-s1-2', name: 'Season 1.2 - Post fixes', raid: 'Emerald Nightmare', startDate: '2026-11-09' },
+    seasons
+  },
+  'mythic-plus-data/legion-s1-1/index.json': {
+    ...index,
+    season: { id: 'legion-s1-1', name: 'Season 1.1 - Pre fixes', raid: 'Emerald Nightmare', startDate: '2026-09-16' }
+  }
+};
+
 class FakeDataFiles {
   refreshes = 0;
-  constructor(private staleTables?: string, private readonly staysStale = false) {}
+  readonly fetched: string[] = [];
+  constructor(private staleTables?: string, private readonly staysStale = false, private readonly indexes: Record<string, MythicPlusIndex> = {}) {}
 
-  getJson<T>(): Observable<T> {
-    return of(index as T);
+  getJson<T>(path: string): Observable<T> {
+    return of((this.indexes[path] ?? index) as T);
   }
 
   fetchJson<T>(path: string): Observable<T> {
+    this.fetched.push(path);
     return of(fileFor(path, this.staleTables ?? index.tables) as T);
   }
 
@@ -217,6 +236,29 @@ describe('MythicPlusRecordsPageComponent', () => {
 
     page.setFirstsDungeon(undefined);
     expect(TestBed.inject(Location).path()).toBe('/mythic-plus/records');
+  });
+
+  it('shows the records of the season the address names, and keeps it in the address', async () => {
+    const dataFiles = new FakeDataFiles(undefined, false, seasonIndexes);
+    const { page, element } = await open('/mythic-plus/records?season=legion-s1-1', dataFiles);
+
+    expect(page.index()?.season.id).toBe('legion-s1-1');
+    expect(texts(element, 'h1')).toEqual(['Mythic+ records · Season 1.1 - Pre fixes']);
+    expect(dataFiles.fetched).toContain('mythic-plus-data/legion-s1-1/nl.json');
+    expect(page.summary()[2].label).toBe("Final week's highest key");
+
+    page.setFirstsDungeon('mos');
+    expect(TestBed.inject(Location).path()).toBe('/mythic-plus/records?season=legion-s1-1&dungeon=mos');
+  });
+
+  it('names the live season in the heading and leaves it out of the address', async () => {
+    const dataFiles = new FakeDataFiles(undefined, false, seasonIndexes);
+    const { page, element } = await open('/mythic-plus/records', dataFiles);
+
+    expect(texts(element, 'h1')).toEqual(['Mythic+ records · Season 1.2 - Post fixes']);
+    expect(page.summary()[2].label).toBe("This week's highest key");
+    page.setFirstsDungeon('mos');
+    expect(TestBed.inject(Location).path()).toBe('/mythic-plus/records?dungeon=mos');
   });
 
   it('ignores a dungeon the index does not list', async () => {
