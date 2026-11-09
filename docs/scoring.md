@@ -274,8 +274,8 @@ decision: ask first.** When a rule does change, change its tests first and see t
   puts it last. It's left out of the profile's score, best runs, spec pills, teammates and
   chart.
 - `/mythic-plus/invalid` lists every invalid run, latest first, under a count of the runs
-  each reason set aside. It has no menu entry: the "List of invalid runs" link under the
-  leaderboard, shown only while there are any, leads to it.
+  each reason set aside. It has no menu entry: the "List of invalid runs" button left of "How
+  scores work" on the leaderboard, shown only while there are any, leads to it.
 - **Tests:** `MythicPlusInvalidRunsTests`, `MythicPlusExportServiceTests`
   (`ExportAsync_MarksInvalidRuns…`), `mythic-plus.spec.ts`, `mythic-plus-data.service.spec.ts`,
   `mythic-plus-invalid.spec.ts`, `mythic-plus-invalid-page.component.spec.ts`,

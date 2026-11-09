@@ -21,6 +21,9 @@
       @if (weekAffixes().length) {
         <app-mythic-plus-week-affixes [affixes]="weekAffixes()" [compact]="true" />
       }
+      @if (invalidRuns()) {
+        <a class="invalid-link" routerLink="/mythic-plus/invalid">List of invalid runs</a>
+      }
       <a class="scores-link" routerLink="/mythic-plus/scoring">
         <span class="scores-link-icon" aria-hidden="true">?</span>
         <span class="scores-link-text">How scores work</span>
@@ -248,10 +251,6 @@
         label="Leaderboard pages, bottom"
         [scrollTarget]="leaderboard"
         (pageChange)="goToPage($event)" />
-
-      @if (invalidRuns()) {
-        <a class="invalid-link" routerLink="/mythic-plus/invalid">List of invalid runs</a>
-      }
     }
   }
 </main>

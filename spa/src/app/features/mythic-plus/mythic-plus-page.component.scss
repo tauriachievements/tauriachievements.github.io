@@ -22,7 +22,8 @@
   .view-switch button:disabled { opacity: .45; cursor: not-allowed; }
 }
 
-.scores-link {
+.scores-link,
+.invalid-link {
   display: inline-flex;
   align-items: center;
   gap: 6px;
@@ -40,6 +41,13 @@
 
   &:hover { border-color: rgba(247, 181, 0, .45); color: #fff; }
   &:focus-visible { outline: 2px solid $gold; outline-offset: 2px; border-radius: 4px; }
+}
+
+.invalid-link {
+  min-height: 28px;
+
+  &:hover { border-color: rgba(255, 154, 154, .34); }
+  + .scores-link { margin-left: 0; }
 }
 
 .scores-link-icon {
@@ -278,22 +286,6 @@
 
 .bottom-pager { margin-top: 12px; }
 
-.invalid-link {
-  display: table;
-  margin: 16px 0 0 auto;
-  padding: 10px 14px;
-  border: 1px solid #333;
-  border-radius: 7px;
-  background: #111;
-  color: #bdbdbd;
-  font-size: .85rem;
-  font-weight: 600;
-  text-decoration: none;
-
-  &:hover { border-color: rgba(255, 154, 154, .34); color: #fff; }
-  &:focus-visible { outline: 2px solid $gold; outline-offset: 2px; }
-}
-
 .pager-timer {
   color: #9a9a9a;
   font-size: .8rem;
@@ -311,6 +303,7 @@
 
   .period-bar { column-gap: 10px; }
   .scores-link { width: 40px; height: 40px; justify-content: center; padding: 0; }
+  .invalid-link { min-height: 40px; }
   .scores-link-icon { width: 20px; height: 20px; font-size: .8rem; }
   .scores-link-text { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 

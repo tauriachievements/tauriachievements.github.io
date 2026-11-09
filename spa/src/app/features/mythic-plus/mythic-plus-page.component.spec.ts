@@ -296,7 +296,9 @@ describe('MythicPlusPageComponent invalid runs', () => {
     const { page, element } = await open(data);
 
     expect(page.filteredRows().map(row => [row.rank, row.run.score])).toEqual([[1, 160]]);
-    expect(element.querySelector('a.invalid-link')?.getAttribute('href')).toBe('/mythic-plus/invalid');
+    const link = element.querySelector('.period-bar a.invalid-link');
+    expect(link?.getAttribute('href')).toBe('/mythic-plus/invalid');
+    expect(link?.nextElementSibling?.classList).toContain('scores-link');
   });
 
   it('has no link while every run counts', async () => {
