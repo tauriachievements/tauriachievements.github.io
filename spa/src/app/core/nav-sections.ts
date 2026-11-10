@@ -96,7 +96,8 @@ export const NAV_SECTIONS: readonly NavSection[] = [
         path: '/raid-logs/leaderboard',
         includes: ['/raid-logs/character']
       },
-      { label: 'Race to Emerald Nightmare', tab: 'Race', path: '/emerald-nightmare' },
+      { label: 'Race to Emerald Nightmare', tab: 'EN Race', path: '/emerald-nightmare' },
+      { label: 'Race to Trial of Valor', tab: 'ToV Race', path: '/trial-of-valor' },
       { label: 'Realm First History', tab: 'History', path: '/raid-history' }
     ]
   },

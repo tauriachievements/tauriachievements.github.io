@@ -26,7 +26,7 @@ Tauri API ──► api/ console apps ──► spa/src/ data files ──► co
 | `mythic-plus-data/` | `MythicPlusExporter` | `sync data`, `sync mythic plus data` from `Run-MythicPlus.cmd`, or the `Run-QuickUpdate.cmd` commit | `/mythic-plus/*` |
 | `raid-log-data/` | `RaidLogExporter` | `sync data`, `sync raid logs data` from `Run-RaidLogs.cmd`, or the `Run-QuickUpdate.cmd` commit | `/raid-logs/*` |
 | `guild-analysis/<key>.json` | `GuildAnalysisExporter`, once per guild in the daily update | `sync data` | the hidden guild pages |
-| `EmeraldNightmare.json`, `RealmFirstAchievements.json`, `ap-chest-looters.json` | edited by hand | `chore:` / `feat:` | Race to Emerald Nightmare, Realm First History, Hall of Fame |
+| `EmeraldNightmare.json`, `TrialOfValor.json`, `RealmFirstAchievements.json`, `ap-chest-looters.json` | edited by hand ([below](#raid-race-files) for the race files) | `chore:` / `feat:` | Race to Emerald Nightmare, Race to Trial of Valor, Realm First History, Hall of Fame |
 
 The scan inputs live under `api/AchievementLadder/Data/`. `BattlegroundCollector` (from the
 members of every match it reads, arenas included) and the two `*GuildAndCharScan` jobs append
@@ -401,6 +401,33 @@ The seasons are over, so the list doesn't change on its own: edit it by hand, an
 in the file, `ELITE_PVP_ITEMS_VERSION` (`rare-items.ts`) and `ElitePvpItemsFormatVersion`
 (`RareItemCatalog`) together if its shape changes. An id in both this file and `rare-items.txt`
 counts once, under the `rare-items.txt` name.
+
+## Raid race files
+
+`spa/src/EmeraldNightmare.json` and `spa/src/TrialOfValor.json` hold one raid's race to realm
+first each, for its Race page. They're edited by hand: one list per boss, keyed as in the
+race's settings (`raid-races.ts`), with the first five kills in order.
+
+```
+{ "odyn": [ { "guild": "Miracle", "realm": "Evermoon", "date": "2026-11-18", "time": "18:21",
+              "youtubeUrl": "https://..." }, ... ],
+  "guarm": [],
+  "helya": [] }
+```
+
+- `date` is `YYYY-MM-DD` and `time` is `HH:MM`, on the same clock as the race's hours.
+  `realm` and `youtubeUrl` can be left out. A realm in the file shows on the boss card beside
+  the date; without one, the guild links to its known realm (`GUILD_REALMS` in `raid-race.ts`:
+  Outlaws is on Tauri), else Evermoon.
+- The boss card fills the places after the listed kills with "Available".
+- The timeline shows the race day only: the date of the earliest kill in the file. Every guild
+  with a kill that day gets a lane, except the race's `timelineExcludedGuilds`, and its kills
+  sit on a line from `startHour` to `endHour` (18:00 to 22:00 for both raids). A race-day kill
+  after the end hour never shows on the timeline, only on its boss card: move `endHour` if the
+  race runs late. Before the first kill the timeline shows one "No kills yet" lane, and its
+  playback controls are off.
+- The older Emerald Nightmare entries hold the date in `realm` and the time in `date`
+  (`{ "realm": "23-Sep-2026", "date": "18:13" }`); the page reads both forms.
 
 ## What `prepare-app.js` builds
 

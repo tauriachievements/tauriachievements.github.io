@@ -51,7 +51,7 @@ Romania, Colombia, Russia and Germany round out the list.
 | Ladder | Players ranked by achievement points or honorable kills, daily top gainers, side-by-side character comparison, guild rankings |
 | Achievements | Rare achievements and who holds them, newly discovered rare characters, the Hall of Fame |
 | PvP | 2v2 and 3v3 arena ladders, battleground activity, rated battlegrounds |
-| Raids | Emerald Nightmare logs, guild progression, character rankings, a spec tier list, talent analytics, realm-first history |
+| Raids | Emerald Nightmare logs, guild progression, character rankings, a spec tier list, talent analytics, the races to realm first (Emerald Nightmare, Trial of Valor), realm-first history |
 | Mythic+ | Scored leaderboards with character and guild pages, statistics, records, and the LegionKeyHistory addon |
 | Realm Stats | Class, race and faction balance, item level and time played across the realms |
 

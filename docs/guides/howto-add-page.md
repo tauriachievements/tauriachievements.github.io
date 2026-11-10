@@ -70,13 +70,16 @@ Add a lazy route to the feature's route file, `features/<area>/<area>.routes.ts`
 ```
 
 Deep routes that belong to the page (a profile under its leaderboard) get their own entries.
+Settings a page reads from the route's `data` go in a file with no logic in it (`raid-races.ts`):
+the route files are in the startup bundle, and a module that both a route file and a lazy page
+import is built into a chunk every page preloads.
 A new feature folder gets its own `<area>.routes.ts`, spread into `app.routes.ts` in menu
 order, before the guild pages and the final `'**'` redirect.
 Never put a dot in a path or parameter: `404.html` won't redirect it.
 
 ## 4. The navigation
 
-First raise the page count in both specs that pin it (26 today), and see them fail:
+First raise the page count in both specs that pin it (27 today), and see them fail:
 
 - `nav-sections.spec.ts`: `expect(paths).toHaveLength(…)`
 - `update-bar.component.spec.ts`: `.site-drawer-page` count

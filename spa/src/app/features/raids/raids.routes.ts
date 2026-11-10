@@ -1,4 +1,5 @@
 import { Routes } from '@angular/router';
+import { EMERALD_NIGHTMARE_RACE, TRIAL_OF_VALOR_RACE } from './raid-races';
 
 export const RAIDS_ROUTES: Routes = [
   {
@@ -69,8 +70,15 @@ export const RAIDS_ROUTES: Routes = [
   },
   {
     path: 'emerald-nightmare',
-    loadComponent: () => import('./emerald-nightmare-page.component')
-      .then(module => module.EmeraldNightmarePageComponent)
+    loadComponent: () => import('./raid-race-page.component')
+      .then(module => module.RaidRacePageComponent),
+    data: { race: EMERALD_NIGHTMARE_RACE }
+  },
+  {
+    path: 'trial-of-valor',
+    loadComponent: () => import('./raid-race-page.component')
+      .then(module => module.RaidRacePageComponent),
+    data: { race: TRIAL_OF_VALOR_RACE }
   },
   {
     path: 'raid-history',
