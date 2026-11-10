@@ -258,12 +258,13 @@ decision: ask first.** When a rule does change, change its tests first and see t
   fixes went live, 9 November 2026 14:35 Budapest time (13:35 UTC), by the run's finish time. Such
   a run is invalid when:
   1. it's Black Rook Hold with a Death Knight in the group;
-  2. it's Eye of Azshara with a Demon Hunter, Monk, Warlock, Warrior or Hunter (any one of them);
-  3. it's Vault of the Wardens, Court of Stars or Darkheart Thicket with a Warlock;
-  4. a Brewmaster Monk is in the group, in any dungeon;
-  5. it's Court of Stars.
+  2. it's Vault of the Wardens, Court of Stars or Darkheart Thicket with a Warlock;
+  3. a Brewmaster Monk is in the group, in any dungeon;
+  4. it's Court of Stars.
 
-  A run that breaks several rules shows the reason of the first one.
+  A run that breaks several rules shows the reason of the first one. Eye of Azshara has no rule
+  of its own (the owner dropped it on 10 November 2026), so its pre-fix +17 runs are invalid only
+  with a Brewmaster Monk in the group.
 - An invalid run counts nowhere, for any of its players: not in the scores, the leaderboard's
   runs and players, the guild ladder, the records, bounties, server firsts and most runs, the
   stats page, the dungeons' run counts and best scores, the dungeon ranks on the profile, or the
