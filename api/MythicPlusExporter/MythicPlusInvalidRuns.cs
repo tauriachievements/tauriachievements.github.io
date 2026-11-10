@@ -16,12 +16,9 @@ public static class MythicPlusInvalidRuns
 
     private const string BeforeTheFixes = ", before the 9 November fixes";
 
-    private const int Warrior = 1;
-    private const int Hunter = 3;
     private const int DeathKnight = 6;
     private const int Warlock = 9;
     private const int Monk = 10;
-    private const int DemonHunter = 12;
 
     private sealed record Rule(
         IReadOnlySet<string>? Dungeons,
@@ -35,11 +32,6 @@ public static class MythicPlusInvalidRuns
             new HashSet<string> { "brh" },
             member => member.ClassId == DeathKnight,
             "Black Rook Hold +17 or higher with a Death Knight"
-        ),
-        new(
-            new HashSet<string> { "eoa" },
-            member => member.ClassId is DemonHunter or Monk or Warlock or Warrior or Hunter,
-            "Eye of Azshara +17 or higher with a Demon Hunter, Monk, Warlock, Warrior or Hunter"
         ),
         new(
             new HashSet<string> { "votw", "cos", "dht" },

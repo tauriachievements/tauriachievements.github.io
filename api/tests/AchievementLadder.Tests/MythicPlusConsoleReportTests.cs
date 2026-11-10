@@ -108,8 +108,20 @@ public sealed class MythicPlusConsoleReportTests
                 [197] = ChallengeResponseParser.ParseLeaderboard(
                     Parse(
                         LeaderboardJson(
-                            Run(17, 1_440_000, 1, [], Member("Alpha", Evermoon, 1, "Fury", 2, "")),
-                            Run(16, 1_440_000, 2, [], Member("Alpha", Evermoon, 1, "Fury", 2, ""))
+                            Run(
+                                17,
+                                1_440_000,
+                                1,
+                                [],
+                                Member("Alpha", Evermoon, 10, "Brewmaster", 0, "")
+                            ),
+                            Run(
+                                16,
+                                1_440_000,
+                                2,
+                                [],
+                                Member("Alpha", Evermoon, 10, "Brewmaster", 0, "")
+                            )
                         )
                     )
                 ),

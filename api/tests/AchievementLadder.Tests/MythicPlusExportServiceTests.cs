@@ -332,7 +332,7 @@ public sealed class MythicPlusExportServiceTests
                                 1_794_000_100,
                                 [],
                                 Member("Alpha", Evermoon, 11, "Guardian", 0, ""),
-                                Member("Beta", Evermoon, 1, "Fury", 2, "")
+                                Member("Beta", Evermoon, 10, "Brewmaster", 0, "")
                             )
                         ),
                         [(Evermoon, 200)] = LeaderboardJson(
@@ -357,7 +357,7 @@ public sealed class MythicPlusExportServiceTests
 
             var eoa = ReadJson(outputDirectory, "eoa.json").GetProperty("runs");
             Assert.Equal(
-                "Eye of Azshara +17 or higher with a Demon Hunter, Monk, Warlock, Warrior or Hunter, before the 9 November fixes",
+                "+17 or higher with a Brewmaster Monk, before the 9 November fixes",
                 eoa[0][6].GetString()
             );
             Assert.Equal(6, eoa[1].GetArrayLength());

@@ -20,36 +20,6 @@ public sealed class MythicPlusInvalidRunsTests
     [Theory]
     [InlineData("brh", DeathKnight, "Blood", "Black Rook Hold +17 or higher with a Death Knight")]
     [InlineData(
-        "eoa",
-        DemonHunter,
-        "Havoc",
-        "Eye of Azshara +17 or higher with a Demon Hunter, Monk, Warlock, Warrior or Hunter"
-    )]
-    [InlineData(
-        "eoa",
-        Monk,
-        "Windwalker",
-        "Eye of Azshara +17 or higher with a Demon Hunter, Monk, Warlock, Warrior or Hunter"
-    )]
-    [InlineData(
-        "eoa",
-        Warlock,
-        "Affliction",
-        "Eye of Azshara +17 or higher with a Demon Hunter, Monk, Warlock, Warrior or Hunter"
-    )]
-    [InlineData(
-        "eoa",
-        Warrior,
-        "Fury",
-        "Eye of Azshara +17 or higher with a Demon Hunter, Monk, Warlock, Warrior or Hunter"
-    )]
-    [InlineData(
-        "eoa",
-        Hunter,
-        "Marksmanship",
-        "Eye of Azshara +17 or higher with a Demon Hunter, Monk, Warlock, Warrior or Hunter"
-    )]
-    [InlineData(
         "votw",
         Warlock,
         "Destruction",
@@ -69,6 +39,7 @@ public sealed class MythicPlusInvalidRunsTests
     )]
     [InlineData("hov", Monk, "Brewmaster", "+17 or higher with a Brewmaster Monk")]
     [InlineData("brh", Monk, "Brewmaster", "+17 or higher with a Brewmaster Monk")]
+    [InlineData("eoa", Monk, "Brewmaster", "+17 or higher with a Brewmaster Monk")]
     [InlineData("cos", Rogue, "Subtlety", "Court of Stars +17 or higher")]
     public void ReasonFor_NamesTheRuleAPreFixRunAt17OrHigherBreaks(
         string dungeon,
@@ -88,6 +59,11 @@ public sealed class MythicPlusInvalidRunsTests
     [Theory]
     [InlineData("brh", Druid, "Guardian")]
     [InlineData("eoa", Rogue, "Outlaw")]
+    [InlineData("eoa", DemonHunter, "Havoc")]
+    [InlineData("eoa", Monk, "Windwalker")]
+    [InlineData("eoa", Warlock, "Affliction")]
+    [InlineData("eoa", Warrior, "Fury")]
+    [InlineData("eoa", Hunter, "Marksmanship")]
     [InlineData("votw", Hunter, "Survival")]
     [InlineData("hov", Monk, "Windwalker")]
     [InlineData("hov", Warlock, "Affliction")]
