@@ -97,6 +97,11 @@ export const TESTIMONIALS: readonly Testimonial[] = [
     quote: 'Thanks for setting up such a nice website!',
     names: [{ name: 'Ratillas', classId: 4, realm: 'evermoon' }],
     from: 'ingame'
+  },
+  {
+    quote: 'I really admire the work you’ve put into this project. It’s one of the best community projects I’ve seen, and the way you treat people is truly special. Personally, your work is a big part of what keeps me playing. Climbing the Mythic+ ladders is one of the few things I still find exciting in modern WoW, and while I wish Tauri did more to support it, your efforts have helped keep M+ alive here. Thank you for everything you do.',
+    names: [{ name: 'Fox' }],
+    from: 'discord'
   }
 ];
 
