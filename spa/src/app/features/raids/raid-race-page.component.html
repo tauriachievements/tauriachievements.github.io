@@ -1,4 +1,4 @@
-<div class="race-banner">
+<div class="race-banner" [style.--race-banner-offset.px]="race.bannerOffset ?? 0">
   <img
     [src]="race.bannerUrl"
     [alt]="race.name + ': The Race To'"

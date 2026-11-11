@@ -43,6 +43,7 @@ describe('RaidRacePageComponent', () => {
 
     expect(dataFiles.requested).toEqual(['TrialOfValor.json']);
     expect(element.querySelector('.race-banner img')?.getAttribute('src')).toBe('assets/trial-of-valor-the-race-to.webp');
+    expect(element.querySelector<HTMLElement>('.race-banner')?.style.getPropertyValue('--race-banner-offset')).toBe('10px');
     expect(texts(element, '.boss-card h2')).toEqual(['Odyn', 'Guarm', 'Helya']);
     expect(texts(element, '.guild-ranking .guild-name')).toEqual(Array(15).fill('Available'));
     expect(texts(element, '.axis-hour')).toEqual(['18:00', '19:00', '20:00', '21:00', '22:00']);

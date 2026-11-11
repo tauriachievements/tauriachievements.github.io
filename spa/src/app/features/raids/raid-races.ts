@@ -9,6 +9,7 @@ export interface RaidRace {
   readonly dataFile: string;
   readonly bannerUrl: string;
   readonly backdropUrl?: string;
+  readonly bannerOffset?: number;
   readonly loadingText: string;
   readonly bosses: readonly RaceBoss[];
   readonly startHour: number;
@@ -40,6 +41,7 @@ export const TRIAL_OF_VALOR_RACE: RaidRace = {
   name: 'Trial of Valor',
   dataFile: 'TrialOfValor.json',
   bannerUrl: 'assets/trial-of-valor-the-race-to.webp',
+  bannerOffset: 10,
   loadingText: 'The Valarjar are gathering...',
   bosses: [
     { key: 'odyn', name: 'Odyn', iconUrl: 'assets/trial-of-valor/01-odyn.png' },

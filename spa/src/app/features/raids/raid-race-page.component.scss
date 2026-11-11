@@ -24,7 +24,7 @@
   display: block;
   width: 100%;
   height: auto;
-  margin-top: -9vw;
+  margin-top: calc(var(--race-banner-offset, 0px) - 9vw);
 }
 
 .race-page {
