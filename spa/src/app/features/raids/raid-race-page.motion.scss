@@ -1,0 +1,25 @@
+.playback-button.attention { animation: replay-glow 1.8s ease-in-out infinite; }
+.playback-button.attention:hover { animation-play-state: paused; }
+.checkpoint.killed { animation: boss-reveal .48s cubic-bezier(.2, .85, .3, 1.2) both; }
+@keyframes boss-reveal {
+  0% { opacity: 0; transform: translateX(-50%) scale(.45); filter: brightness(1.8); }
+  68% { opacity: 1; transform: translateX(-50%) scale(1.12); filter: brightness(1.25); }
+  100% { opacity: 1; transform: translateX(-50%) scale(1); filter: brightness(1); }
+}
+
+@keyframes replay-glow {
+  0%, 100% {
+    border-color: rgba(255, 111, 70, .68);
+    box-shadow: 0 0 6px rgba(255, 119, 45, .28), 0 0 14px rgba(225, 37, 29, .16);
+  }
+  50% {
+    border-color: #ffad75;
+    box-shadow: 0 0 10px rgba(255, 145, 65, .95), 0 0 28px rgba(255, 76, 18, .72);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .checkpoint.killed { animation: none; }
+  .lane-progress { transition: none; }
+  .playback-button.attention { animation: none; box-shadow: 0 0 12px rgba(255, 119, 45, .58); }
+}

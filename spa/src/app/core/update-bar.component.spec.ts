@@ -98,11 +98,11 @@ describe('UpdateBarComponent section groups', () => {
 
     point(races, 'pointerenter');
     fixture.detectChanges();
-    expect(openFlyouts(raids)).toEqual([['Race to Emerald Nightmare', 'Realm First History']]);
+    expect(openFlyouts(raids)).toEqual([['Race to Trial of Valor', 'Race to Emerald Nightmare', 'Realm First History']]);
 
     races.click();
     fixture.detectChanges();
-    expect(openFlyouts(raids)).toEqual([['Race to Emerald Nightmare', 'Realm First History']]);
+    expect(openFlyouts(raids)).toEqual([['Race to Trial of Valor', 'Race to Emerald Nightmare', 'Realm First History']]);
   });
 
   it('waits before switching groups, so a mouse crossing a group on its way to a flyout keeps it', async () => {
@@ -121,7 +121,7 @@ describe('UpdateBarComponent section groups', () => {
     point(groupButton(raids, 'Realm First Race'), 'pointerenter');
     vi.advanceTimersByTime(200);
     fixture.detectChanges();
-    expect(openFlyouts(raids)).toEqual([['Race to Emerald Nightmare', 'Realm First History']]);
+    expect(openFlyouts(raids)).toEqual([['Race to Trial of Valor', 'Race to Emerald Nightmare', 'Realm First History']]);
   });
 
   it('marks the group that holds the current page', async () => {
@@ -152,7 +152,7 @@ describe('UpdateBarComponent section groups', () => {
     const subheadings = Array.from(raids.querySelectorAll('.site-drawer-subheading')).map((heading) => heading.textContent!.trim());
 
     expect(subheadings).toEqual(['Logs & Rankings', 'Analytics', 'Realm First Race']);
-    expect(raids.querySelectorAll('.site-drawer-page')).toHaveLength(10);
+    expect(raids.querySelectorAll('.site-drawer-page')).toHaveLength(11);
     expect(fixture.nativeElement.querySelectorAll('.site-drawer-subheading')).toHaveLength(3);
   });
 });
@@ -217,7 +217,7 @@ describe('UpdateBarComponent drawer', () => {
 
     expect(drawer.open).toBe(true);
     expect(query(fixture, '.site-menu-toggle').getAttribute('aria-expanded')).toBe('true');
-    expect(drawer.querySelectorAll('.site-drawer-page')).toHaveLength(26);
+    expect(drawer.querySelectorAll('.site-drawer-page')).toHaveLength(27);
     expect(current).toHaveLength(1);
     expect(current[0].textContent).toContain('Statistics');
   });

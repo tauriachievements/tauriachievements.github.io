@@ -51,6 +51,7 @@ describe('findNavLocation', () => {
     expect(findNavLocation('/raid-logs/talents?difficulty=mythic')?.group?.label).toBe('Analytics');
     expect(findNavLocation('/raid-logs/character/tauri/Name')?.group?.label).toBe('Logs & Rankings');
     expect(findNavLocation('/emerald-nightmare')?.group?.label).toBe('Realm First Race');
+    expect(findNavLocation('/trial-of-valor')?.group?.label).toBe('Realm First Race');
     expect(findNavLocation('/mythic-plus/stats')?.group).toBeUndefined();
   });
 
@@ -58,7 +59,7 @@ describe('findNavLocation', () => {
     const paths = NAV_SECTIONS.flatMap((section) => section.pages.map((page) => page.path));
 
     expect(new Set(paths).size).toBe(paths.length);
-    expect(paths).toHaveLength(26);
+    expect(paths).toHaveLength(27);
   });
 });
 
@@ -71,7 +72,7 @@ describe('NAV_SECTIONS groups', () => {
     expect(groups).toEqual([
       ['Logs & Rankings', ['Raid Logs', 'Guild Progression', 'Fastest Clears', 'Character Rankings']],
       ['Analytics', ['Raid Statistics', 'Tier List', 'Talent Analytics', 'Trinket Analytics']],
-      ['Realm First Race', ['Race to Emerald Nightmare', 'Realm First History']]
+      ['Realm First Race', ['Race to Trial of Valor', 'Race to Emerald Nightmare', 'Realm First History']]
     ]);
   });
 

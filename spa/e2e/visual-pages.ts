@@ -47,6 +47,7 @@ export const VISUAL_PAGES: readonly VisualPage[] = [
   { name: 'raid-logs-character', path: '/raid-logs/character/evermoon/Gankuh?difficulty=mythic&metric=dps' },
   { name: 'raid-logs-invalid', path: '/raid-logs/invalid' },
   { name: 'emerald-nightmare', path: '/emerald-nightmare' },
+  { name: 'trial-of-valor', path: '/trial-of-valor' },
   { name: 'raid-history', path: '/raid-history' },
   { name: 'mythic-plus', path: '/mythic-plus' },
   { name: 'mythic-plus-players', path: '/mythic-plus?view=players' },
@@ -195,5 +196,5 @@ export const SIDEWAYS_BY_DESIGN: ReadonlyArray<{ readonly selector: string; read
   { selector: 'app-rated-battleground-page .activity-chart', reason: 'a day-by-day season chart that opens on the latest day' },
   { selector: 'app-mythic-plus-profile-page .chart-scroll', reason: 'a week-by-week score chart that opens on the latest week' },
   { selector: 'app-mythic-plus-stats-page .chart-scroll', reason: 'a day-by-day runs chart that opens on the latest day' },
-  { selector: 'app-emerald-nightmare-page .timeline-scroll', reason: 'the race timeline, 18:00 to 22:00, scrolled by hand or played back' }
+  { selector: 'app-raid-race-page .timeline-scroll', reason: 'a raid race timeline, 18:00 to 22:00, scrolled by hand or played back' }
 ];

@@ -123,7 +123,8 @@ export const NAV_SECTIONS: readonly NavSection[] = [
         id: 'raid-races',
         label: 'Realm First Race',
         pages: [
-          { label: 'Race to Emerald Nightmare', tab: 'Race', path: '/emerald-nightmare' },
+          { label: 'Race to Trial of Valor', tab: 'ToV Race', path: '/trial-of-valor' },
+          { label: 'Race to Emerald Nightmare', tab: 'EN Race', path: '/emerald-nightmare' },
           { label: 'Realm First History', tab: 'History', path: '/raid-history' }
         ]
       }

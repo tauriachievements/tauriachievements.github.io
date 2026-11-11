@@ -1,0 +1,108 @@
+:host(.theme-valor) .race-banner::after {
+  background: linear-gradient(90deg, transparent, #8a6100 15%, #ffd34d 50%, #8a6100 85%, transparent);
+  box-shadow: 0 0 18px #e9a800, 0 0 42px rgba(200, 140, 10, .85);
+}
+
+:host(.theme-valor) .race-page {
+  background-image:
+    linear-gradient(180deg, rgba(14, 10, 2, .78), rgba(3, 3, 2, .97)),
+    radial-gradient(circle at 50% 5%, rgba(255, 196, 50, .3), transparent 36%),
+    radial-gradient(circle at 12% 42%, rgba(170, 115, 0, .22), transparent 30%),
+    radial-gradient(circle at 88% 60%, rgba(30, 120, 160, .18), transparent 32%),
+    var(--race-backdrop);
+  color: #f4efe3;
+}
+
+:host(.theme-valor) .race-page::before {
+  background-image:
+    repeating-linear-gradient(115deg, transparent 0 90px, rgba(255, 200, 60, .025) 91px 92px),
+    linear-gradient(90deg, rgba(0, 0, 0, .45), transparent 18% 82%, rgba(0, 0, 0, .45));
+}
+
+:host(.theme-valor) .progression-timeline {
+  border-color: rgba(247, 181, 0, .4);
+  background: linear-gradient(145deg, rgba(30, 21, 4, .96), rgba(6, 5, 2, .98) 65%, rgba(5, 18, 25, .96));
+  box-shadow: 0 24px 60px rgba(0, 0, 0, .5), inset 0 1px 0 rgba(255, 230, 160, .1);
+}
+
+:host(.theme-valor) .progression-timeline::before,
+:host(.theme-valor) .boss-card::before {
+  background: linear-gradient(90deg, transparent, #fff0b0, #f7b500, transparent);
+  box-shadow: 0 0 16px #e0a000;
+}
+
+:host(.theme-valor) .race-playback { border-bottom-color: rgba(247, 181, 0, .2); background: linear-gradient(90deg, rgba(52, 36, 6, .72), rgba(10, 8, 3, .9)); }
+:host(.theme-valor) .playback-button { border-color: rgba(255, 200, 70, .68); background: linear-gradient(145deg, #4d3807, #241a04); color: #fff7e3; box-shadow: 0 0 14px rgba(230, 165, 20, .18); }
+:host(.theme-valor) .playback-button:enabled:hover { border-color: #ffe08a; background: linear-gradient(145deg, #664a0a, #302205); box-shadow: 0 0 9px rgba(255, 205, 70, .95), 0 0 25px rgba(240, 160, 20, .7); }
+:host(.theme-valor) .playback-button.attention { animation: valor-replay-glow 1.8s ease-in-out infinite; }
+:host(.theme-valor) .playback-reset { color: #c2b394; }
+:host(.theme-valor) .playback-reset:enabled:hover { border-color: rgba(255, 211, 107, .55); color: #fff0cc; }
+:host(.theme-valor) .playback-button:focus-visible,
+:host(.theme-valor) .playback-reset:focus-visible { outline-color: #ffd36b; }
+:host(.theme-valor) .playback-clock { color: #ffd27a; text-shadow: 0 0 10px rgba(255, 190, 40, .4); }
+:host(.theme-valor) .playback-slider { accent-color: #f7b500; }
+:host(.theme-valor) .playback-range { color: #8a7a5c; }
+
+:host(.theme-valor) .timeline-scroll:focus-visible { outline-color: #f7b500; }
+:host(.theme-valor) .axis-corner { border-right-color: rgba(247, 181, 0, .11); color: #95845f; }
+:host(.theme-valor) .axis-hour { color: #c4b393; }
+:host(.theme-valor) .guild-summary { border-right-color: rgba(247, 181, 0, .11); }
+:host(.theme-valor) .guild-summary-copy strong { color: #f3ecdc; }
+:host(.theme-valor) .guild-summary-copy small { color: #978866; }
+:host(.theme-valor) .placeholder-lane .guild-summary-copy strong { color: #7f6b45; }
+
+:host(.theme-valor) .lane-track { background: #382d17; }
+:host(.theme-valor) .lane-progress { background: linear-gradient(90deg, color-mix(in srgb, var(--guild-color) 60%, #ffb21f), var(--guild-color)); }
+:host(.theme-valor) .checkpoint { color: #776a50; }
+:host(.theme-valor) .checkpoint-node { border-color: #4a3c22; background: #0f0b04; color: #6c5b3c; box-shadow: 0 0 0 4px #0c0903; }
+:host(.theme-valor) .checkpoint.killed .checkpoint-node { border-color: var(--guild-color); box-shadow: 0 0 0 4px #0c0903, 0 0 15px color-mix(in srgb, var(--guild-color) 48%, transparent); }
+:host(.theme-valor) .checkpoint.realm-first .checkpoint-node { border-color: #ffd45e; box-shadow: 0 0 0 4px #0c0903, 0 0 8px #ffd45e, 0 0 19px rgba(255, 173, 32, .72); }
+:host(.theme-valor) .boss-hover-tooltip { background: #171106; color: #f2e6c9; }
+:host(.theme-valor) .checkpoint time,
+:host(.theme-valor) .checkpoint-waiting { color: #807155; }
+:host(.theme-valor) .checkpoint.killed time { color: var(--guild-color); }
+
+:host(.theme-valor) .boss-card {
+  border-color: rgba(247, 181, 0, .5);
+  background: linear-gradient(145deg, rgba(38, 26, 5, .98), rgba(8, 6, 2, .98) 62%, rgba(6, 20, 28, .98));
+  box-shadow:
+    0 18px 38px rgba(0, 0, 0, .68),
+    0 0 20px rgba(230, 170, 20, .12),
+    inset 0 1px 0 rgba(255, 226, 150, .14),
+    inset 0 0 28px rgba(120, 80, 0, .16);
+}
+
+:host(.theme-valor) .boss-card:hover {
+  border-color: rgba(255, 214, 102, .88);
+  box-shadow: 0 22px 48px rgba(0, 0, 0, .72), 0 0 27px rgba(247, 181, 0, .3), inset 0 0 35px rgba(125, 85, 0, .22);
+}
+
+:host(.theme-valor) .boss-header { border-bottom-color: rgba(247, 181, 0, .27); background: linear-gradient(110deg, rgba(150, 105, 10, .28), rgba(255, 200, 60, .06) 55%, rgba(30, 100, 140, .16)); }
+:host(.theme-valor) .boss-header h2 { color: #fff8e6; text-shadow: 0 2px 4px #000, 0 0 12px rgba(255, 190, 40, .6); }
+:host(.theme-valor) .boss-icon-frame { border-color: #d9a522; box-shadow: 0 0 5px #ffcf4d, 0 0 16px rgba(230, 160, 20, .55); background: #171004; }
+:host(.theme-valor) .guild-ranking li { border-bottom-color: rgba(247, 181, 0, .1); }
+:host(.theme-valor) .guild-ranking li:last-child { border: 0; }
+:host(.theme-valor) .rank { color: #b8a26a; text-shadow: 0 0 8px rgba(240, 180, 40, .3); }
+:host(.theme-valor) .guild-name { color: #f4ecda; }
+:host(.theme-valor) .guild-ranking .empty .guild-name { color: #7f6b45; }
+:host(.theme-valor) .guild-card-link:hover { color: #ffd36b; }
+:host(.theme-valor) .guild-card-link:focus-visible { outline-color: #f7b500; }
+:host(.theme-valor) .kill-meta { color: #ab9d80; }
+:host(.theme-valor) .realm-badge { color: #bdb197; }
+
+:host(.theme-valor) .feedback button { border-color: #e0a321; background: #2b2007; color: #fff7e3; box-shadow: 0 0 16px rgba(230, 165, 20, .24); }
+
+@keyframes valor-replay-glow {
+  0%, 100% {
+    border-color: rgba(255, 200, 70, .68);
+    box-shadow: 0 0 6px rgba(255, 190, 45, .28), 0 0 14px rgba(230, 160, 20, .16);
+  }
+  50% {
+    border-color: #ffe08a;
+    box-shadow: 0 0 10px rgba(255, 205, 70, .95), 0 0 28px rgba(240, 160, 20, .72);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :host(.theme-valor) .playback-button.attention { animation: none; box-shadow: 0 0 12px rgba(255, 190, 45, .58); }
+}
