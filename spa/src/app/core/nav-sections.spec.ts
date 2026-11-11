@@ -72,7 +72,7 @@ describe('NAV_SECTIONS groups', () => {
     expect(groups).toEqual([
       ['Logs & Rankings', ['Raid Logs', 'Guild Progression', 'Fastest Clears', 'Character Rankings']],
       ['Analytics', ['Raid Statistics', 'Tier List', 'Talent Analytics', 'Trinket Analytics']],
-      ['Realm First Race', ['Race to Emerald Nightmare', 'Race to Trial of Valor', 'Realm First History']]
+      ['Realm First Race', ['Race to Trial of Valor', 'Race to Emerald Nightmare', 'Realm First History']]
     ]);
   });
 

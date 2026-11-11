@@ -98,11 +98,11 @@ describe('UpdateBarComponent section groups', () => {
 
     point(races, 'pointerenter');
     fixture.detectChanges();
-    expect(openFlyouts(raids)).toEqual([['Race to Emerald Nightmare', 'Race to Trial of Valor', 'Realm First History']]);
+    expect(openFlyouts(raids)).toEqual([['Race to Trial of Valor', 'Race to Emerald Nightmare', 'Realm First History']]);
 
     races.click();
     fixture.detectChanges();
-    expect(openFlyouts(raids)).toEqual([['Race to Emerald Nightmare', 'Race to Trial of Valor', 'Realm First History']]);
+    expect(openFlyouts(raids)).toEqual([['Race to Trial of Valor', 'Race to Emerald Nightmare', 'Realm First History']]);
   });
 
   it('waits before switching groups, so a mouse crossing a group on its way to a flyout keeps it', async () => {
@@ -121,7 +121,7 @@ describe('UpdateBarComponent section groups', () => {
     point(groupButton(raids, 'Realm First Race'), 'pointerenter');
     vi.advanceTimersByTime(200);
     fixture.detectChanges();
-    expect(openFlyouts(raids)).toEqual([['Race to Emerald Nightmare', 'Race to Trial of Valor', 'Realm First History']]);
+    expect(openFlyouts(raids)).toEqual([['Race to Trial of Valor', 'Race to Emerald Nightmare', 'Realm First History']]);
   });
 
   it('marks the group that holds the current page', async () => {
