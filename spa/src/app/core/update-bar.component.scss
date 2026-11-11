@@ -146,14 +146,18 @@
     overflow: visible;
   }
 
-  &.has-flyout {
+  &.has-top-flyout {
     border-top-right-radius: 0;
   }
 }
 
+.site-nav-groups > li {
+  position: relative;
+}
+
 .site-nav-flyout {
   position: absolute;
-  top: -1px;
+  top: -5px;
   left: 100%;
   width: var(--dropdown-width);
   padding: 4px 0;

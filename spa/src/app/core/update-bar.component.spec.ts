@@ -71,7 +71,7 @@ describe('UpdateBarComponent section groups', () => {
     const raids = openRaids(fixture);
     const groups = Array.from(raids.querySelectorAll('.site-nav-group')).map((button) => button.textContent!.trim());
 
-    expect(groups).toEqual(['Logs & Rankings', 'Analytics', 'Races']);
+    expect(groups).toEqual(['Logs & Rankings', 'Analytics', 'Realm First Race']);
     expect(openFlyouts(raids)).toEqual([]);
     expect(groupButton(raids, 'Analytics').getAttribute('aria-expanded')).toBe('false');
   });
@@ -94,7 +94,7 @@ describe('UpdateBarComponent section groups', () => {
   it('opens a group under the mouse at once and keeps it open on the click that follows', async () => {
     const fixture = await render('/');
     const raids = openRaids(fixture);
-    const races = groupButton(raids, 'Races');
+    const races = groupButton(raids, 'Realm First Race');
 
     point(races, 'pointerenter');
     fixture.detectChanges();
@@ -118,7 +118,7 @@ describe('UpdateBarComponent section groups', () => {
     fixture.detectChanges();
     expect(openFlyouts(raids)[0]).toContain('Raid Logs');
 
-    point(groupButton(raids, 'Races'), 'pointerenter');
+    point(groupButton(raids, 'Realm First Race'), 'pointerenter');
     vi.advanceTimersByTime(200);
     fixture.detectChanges();
     expect(openFlyouts(raids)).toEqual([['Race to Emerald Nightmare', 'Realm First History']]);
@@ -151,7 +151,7 @@ describe('UpdateBarComponent section groups', () => {
       .find((section) => section.querySelector('.site-drawer-heading')?.textContent?.includes('Raids'))!;
     const subheadings = Array.from(raids.querySelectorAll('.site-drawer-subheading')).map((heading) => heading.textContent!.trim());
 
-    expect(subheadings).toEqual(['Logs & Rankings', 'Analytics', 'Races']);
+    expect(subheadings).toEqual(['Logs & Rankings', 'Analytics', 'Realm First Race']);
     expect(raids.querySelectorAll('.site-drawer-page')).toHaveLength(10);
     expect(fixture.nativeElement.querySelectorAll('.site-drawer-subheading')).toHaveLength(3);
   });

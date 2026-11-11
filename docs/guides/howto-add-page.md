@@ -81,7 +81,7 @@ First raise the page count in both specs that pin it (26 today), and see them fa
 - `nav-sections.spec.ts`: `expect(paths).toHaveLength(…)`
 - `update-bar.component.spec.ts`: `.site-drawer-page` count
 
-A Raids page also goes into one of the section's groups (Logs & Rankings, Analytics, Races), so
+A Raids page also goes into one of the section's groups (Logs & Rankings, Analytics, Realm First Race), so
 add it to the group list in `nav-sections.spec.ts` ("splits Raids into…") and raise the Raids
 drawer count in `update-bar.component.spec.ts` ("names the groups in the drawer").
 

@@ -60,7 +60,7 @@
               <div
                 class="site-nav-panel"
                 [class.is-grouped]="section.groups"
-                [class.has-flyout]="section.groups && openGroupId() !== null"
+                [class.has-top-flyout]="openGroupId() === section.groups?.[0]?.id"
                 [id]="'nav-panel-' + section.id"
                 [style.--dropdown-width]="dropdownWidths.get(section.id)"
                 [hidden]="openSectionId() !== section.id">
