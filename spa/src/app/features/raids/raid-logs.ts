@@ -251,6 +251,10 @@ export function memberTalents(member: Pick<RaidMember, 'spec' | 'talents'>, tabl
   return [...member.talents].map((column, tier) => tiers[tier]?.[Number(column)]);
 }
 
+export function averageItemLevel(members: ReadonlyArray<Pick<RaidMember, 'itemLevel'>>): number | undefined {
+  return members.length ? members.reduce((sum, member) => sum + member.itemLevel, 0) / members.length : undefined;
+}
+
 export function decodeGenders(file: RaidGendersFile): Map<string, number> {
   const genders = new Map<string, number>();
   for (const [gender, byRealm] of [[0, file.male], [1, file.female]] as const) {
