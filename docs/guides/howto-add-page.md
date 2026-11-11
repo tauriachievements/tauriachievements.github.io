@@ -81,9 +81,14 @@ First raise the page count in both specs that pin it (26 today), and see them fa
 - `nav-sections.spec.ts`: `expect(paths).toHaveLength(…)`
 - `update-bar.component.spec.ts`: `.site-drawer-page` count
 
+A Raids page also goes into one of the section's groups (Logs & Rankings, Analytics, Races), so
+add it to the group list in `nav-sections.spec.ts` ("splits Raids into…") and raise the Raids
+drawer count in `update-bar.component.spec.ts` ("names the groups in the drawer").
+
 Then add the page to its section in `core/nav-sections.ts` (`label`, optional short `tab`,
-`path`; `includes` lists the deep routes that should highlight it), and the specs pass. Nav
-labels are plain text with no emoji or icon; `update-bar.component.spec.ts` fails on one.
+`path`; `includes` lists the deep routes that should highlight it), or to its group's `pages`
+in a grouped section, and the specs pass. Nav labels are plain text with no emoji or icon;
+`update-bar.component.spec.ts` fails on one.
 
 Unlisted pages (guild pages, Rare Items) get a route but no nav entry.
 

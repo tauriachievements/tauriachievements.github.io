@@ -47,10 +47,48 @@ describe('findNavLocation', () => {
     expect(locate('/k7m2q9v4x8p3n6z')).toBeUndefined();
   });
 
+  it('names the group a grouped page sits in', () => {
+    expect(findNavLocation('/raid-logs/talents?difficulty=mythic')?.group?.label).toBe('Analytics');
+    expect(findNavLocation('/raid-logs/character/tauri/Name')?.group?.label).toBe('Logs & Rankings');
+    expect(findNavLocation('/emerald-nightmare')?.group?.label).toBe('Races');
+    expect(findNavLocation('/mythic-plus/stats')?.group).toBeUndefined();
+  });
+
   it('lists every page path once', () => {
     const paths = NAV_SECTIONS.flatMap((section) => section.pages.map((page) => page.path));
 
     expect(new Set(paths).size).toBe(paths.length);
     expect(paths).toHaveLength(26);
+  });
+});
+
+describe('NAV_SECTIONS groups', () => {
+  const raids = NAV_SECTIONS.find((section) => section.id === 'raids')!;
+
+  it('splits Raids into Logs & Rankings, Analytics and Races', () => {
+    const groups = raids.groups?.map((group) => [group.label, group.pages.map((page) => page.label)]);
+
+    expect(groups).toEqual([
+      ['Logs & Rankings', ['Raid Logs', 'Guild Progression', 'Fastest Clears', 'Character Rankings']],
+      ['Analytics', ['Raid Statistics', 'Tier List', 'Talent Analytics', 'Trinket Analytics']],
+      ['Races', ['Race to Emerald Nightmare', 'Realm First History']]
+    ]);
+  });
+
+  it('lists a grouped section\'s pages group by group', () => {
+    expect(raids.pages).toEqual(raids.groups!.flatMap((group) => group.pages));
+  });
+
+  it('gives every group an id no other group has', () => {
+    const ids = NAV_SECTIONS.flatMap((section) => section.groups?.map((group) => group.id) ?? []);
+
+    expect(ids).toHaveLength(3);
+    expect(new Set(ids).size).toBe(3);
+  });
+
+  it('leaves the other sections as plain lists', () => {
+    const grouped = NAV_SECTIONS.filter((section) => section.groups).map((section) => section.id);
+
+    expect(grouped).toEqual(['raids']);
   });
 });

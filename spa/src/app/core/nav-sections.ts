@@ -9,18 +9,30 @@ export interface NavPage {
   readonly tag?: string;
 }
 
+export interface NavGroup {
+  readonly id: string;
+  readonly label: string;
+  readonly pages: readonly NavPage[];
+}
+
 export interface NavSection {
   readonly id: string;
   readonly label: string;
   readonly isNew?: boolean;
   readonly pages: readonly NavPage[];
+  readonly groups?: readonly NavGroup[];
 }
 
 export const DISCORD_INVITE_URL = 'https://discord.gg/JMHnDmh2bP';
 
 export interface NavLocation {
   readonly section: NavSection;
+  readonly group?: NavGroup;
   readonly page: NavPage;
+}
+
+function groupedSection(section: Omit<NavSection, 'pages' | 'groups'> & { readonly groups: readonly NavGroup[] }): NavSection {
+  return { ...section, pages: section.groups.flatMap((group) => group.pages) };
 }
 
 export const NAV_SECTIONS: readonly NavSection[] = [
@@ -53,53 +65,70 @@ export const NAV_SECTIONS: readonly NavSection[] = [
       { label: 'Rated Battlegrounds', tab: 'Rated BG', path: '/rated-battleground' }
     ]
   },
-  {
+  groupedSection({
     id: 'raids',
     label: 'Raids',
-    pages: [
+    groups: [
       {
-        label: 'Raid Logs',
-        tab: 'Logs',
-        path: '/raid-logs',
-        includes: ['/raid-logs/boss', '/raid-logs/log', '/raid-logs/invalid']
-
+        id: 'raid-logs-rankings',
+        label: 'Logs & Rankings',
+        pages: [
+          {
+            label: 'Raid Logs',
+            tab: 'Logs',
+            path: '/raid-logs',
+            includes: ['/raid-logs/boss', '/raid-logs/log', '/raid-logs/invalid']
+          },
+          {
+            label: 'Guild Progression',
+            tab: 'Guilds',
+            path: '/raid-logs/guilds',
+            includes: ['/raid-logs/guild']
+          },
+          { label: 'Fastest Clears', tab: 'Clears', path: '/raid-logs/clears' },
+          {
+            label: 'Character Rankings',
+            tab: 'Rankings',
+            path: '/raid-logs/leaderboard',
+            includes: ['/raid-logs/character']
+          }
+        ]
       },
       {
-        label: 'Guild Progression',
-        tab: 'Guilds',
-        path: '/raid-logs/guilds',
-        includes: ['/raid-logs/guild']
+        id: 'raid-analytics',
+        label: 'Analytics',
+        pages: [
+          {
+            label: 'Raid Statistics',
+            tab: 'Statistics',
+            path: '/raid-logs/stats',
+            queryParams: { difficulty: 'mythic' }
+          },
+          { label: 'Tier List', path: '/raid-logs/tier-list', queryParams: { difficulty: 'mythic' } },
+          {
+            label: 'Talent Analytics',
+            tab: 'Talents',
+            path: '/raid-logs/talents',
+            queryParams: { difficulty: 'mythic' }
+          },
+          {
+            label: 'Trinket Analytics',
+            tab: 'Trinkets',
+            path: '/raid-logs/trinkets',
+            queryParams: { difficulty: 'mythic' }
+          }
+        ]
       },
-      { label: 'Fastest Clears', tab: 'Clears', path: '/raid-logs/clears' },
       {
-        label: 'Raid Statistics',
-        tab: 'Statistics',
-        path: '/raid-logs/stats',
-        queryParams: { difficulty: 'mythic' }
-      },
-      { label: 'Tier List', path: '/raid-logs/tier-list', queryParams: { difficulty: 'mythic' } },
-      {
-        label: 'Talent Analytics',
-        tab: 'Talents',
-        path: '/raid-logs/talents',
-        queryParams: { difficulty: 'mythic' }
-      },
-      {
-        label: 'Trinket Analytics',
-        tab: 'Trinkets',
-        path: '/raid-logs/trinkets',
-        queryParams: { difficulty: 'mythic' }
-      },
-      {
-        label: 'Character Rankings',
-        tab: 'Rankings',
-        path: '/raid-logs/leaderboard',
-        includes: ['/raid-logs/character']
-      },
-      { label: 'Race to Emerald Nightmare', tab: 'Race', path: '/emerald-nightmare' },
-      { label: 'Realm First History', tab: 'History', path: '/raid-history' }
+        id: 'raid-races',
+        label: 'Races',
+        pages: [
+          { label: 'Race to Emerald Nightmare', tab: 'Race', path: '/emerald-nightmare' },
+          { label: 'Realm First History', tab: 'History', path: '/raid-history' }
+        ]
+      }
     ]
-  },
+  }),
   {
     id: 'mythic-plus',
     label: 'Mythic+',
@@ -130,7 +159,7 @@ export function findNavLocation(url: string, sections: readonly NavSection[] = N
     for (const page of section.pages) {
       const isIncluded = page.includes?.some((prefix) => path === prefix || path.startsWith(`${prefix}/`));
       if (path === page.path || isIncluded) {
-        return { section, page };
+        return { section, group: section.groups?.find((group) => group.pages.includes(page)), page };
       }
     }
   }

@@ -2,6 +2,7 @@ import { DatePipe, Location, NgTemplateOutlet } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
+  DestroyRef,
   ElementRef,
   HostListener,
   computed,
@@ -12,8 +13,27 @@ import {
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { NavigationEnd, NavigationStart, Router, RouterLink, RouterLinkActive } from '@angular/router';
 import { filter, map } from 'rxjs';
-import { DISCORD_INVITE_URL, NAV_SECTIONS, NavSection, findNavLocation } from './nav-sections';
+import { DISCORD_INVITE_URL, NAV_SECTIONS, NavGroup, NavSection, findNavLocation } from './nav-sections';
 import { PageHeaderService } from './page-header';
+
+const GROUP_SWITCH_DELAY_MS = 150;
+const GROUP_CHEVRON_WIDTH_PX = 24;
+
+function menuWidth(labels: readonly string[], extraPx = 0): string {
+  const longestLabel = Math.max(...labels.map((label) => Array.from(label).length));
+  return `calc(${28 + extraPx}px + ${Math.ceil(longestLabel * 1.2)}ch)`;
+}
+
+function sectionMenuWidths(section: NavSection): (readonly [string, string])[] {
+  if (!section.groups) {
+    return [[section.id, menuWidth(section.pages.map((page) => page.label))]];
+  }
+
+  return [
+    [section.id, menuWidth(section.groups.map((group) => group.label), GROUP_CHEVRON_WIDTH_PX)],
+    ...section.groups.map((group) => [group.id, menuWidth(group.pages.map((page) => page.label))] as const)
+  ];
+}
 
 @Component({
   selector: 'app-update-bar',
@@ -31,19 +51,17 @@ export class UpdateBarComponent {
 
   protected readonly sections = NAV_SECTIONS;
   protected readonly discordUrl = DISCORD_INVITE_URL;
-  protected readonly dropdownWidths = new Map(
-    NAV_SECTIONS.map((section) => {
-      const longestLabel = Math.max(...section.pages.map((page) => Array.from(page.label).length));
-      return [section.id, `calc(28px + ${Math.ceil(longestLabel * 1.2)}ch)`] as const;
-    })
-  );
+  protected readonly dropdownWidths = new Map(NAV_SECTIONS.flatMap(sectionMenuWidths));
   protected readonly openSectionId = signal<string | null>(null);
+  protected readonly openGroupId = signal<string | null>(null);
   protected readonly drawerOpen = signal(false);
 
   private readonly drawer = viewChild.required<ElementRef<HTMLDialogElement>>('drawer');
   private readonly router = inject(Router);
   private readonly host: HTMLElement = inject(ElementRef<HTMLElement>).nativeElement;
   private hoverOpenedId: string | null = null;
+  private hoverOpenedGroupId: string | null = null;
+  private groupSwitchTimer: ReturnType<typeof setTimeout> | undefined;
 
   private readonly url = toSignal(
     this.router.events.pipe(
@@ -68,6 +86,8 @@ export class UpdateBarComponent {
         this.closeDrawer();
       }
     });
+
+    inject(DestroyRef).onDestroy(() => this.cancelGroupSwitch());
   }
 
   openDrawer(): void {
@@ -105,7 +125,7 @@ export class UpdateBarComponent {
     this.hoverOpenedId = null;
 
     if (!keepOpen) {
-      this.openSectionId.update((openId) => (openId === section.id ? null : section.id));
+      this.showSection(this.openSectionId() === section.id ? null : section.id);
     }
   }
 
@@ -115,7 +135,36 @@ export class UpdateBarComponent {
     }
 
     this.hoverOpenedId = section.id;
-    this.openSectionId.set(section.id);
+    this.showSection(section.id);
+  }
+
+  toggleGroup(group: NavGroup): void {
+    this.cancelGroupSwitch();
+    const keepOpen = this.hoverOpenedGroupId === group.id && this.openGroupId() === group.id;
+    this.hoverOpenedGroupId = null;
+
+    if (!keepOpen) {
+      this.openGroupId.update((openId) => (openId === group.id ? null : group.id));
+    }
+  }
+
+  onGroupPointerEnter(group: NavGroup, event: PointerEvent): void {
+    if (event.pointerType !== 'mouse') {
+      return;
+    }
+
+    this.cancelGroupSwitch();
+    if (this.openGroupId() === null) {
+      this.openGroupUnderPointer(group);
+    } else if (this.openGroupId() !== group.id) {
+      this.groupSwitchTimer = setTimeout(() => this.openGroupUnderPointer(group), GROUP_SWITCH_DELAY_MS);
+    }
+  }
+
+  onGroupPointerLeave(event: PointerEvent): void {
+    if (event.pointerType === 'mouse') {
+      this.cancelGroupSwitch();
+    }
   }
 
   onSectionPointerLeave(section: NavSection, event: PointerEvent): void {
@@ -135,7 +184,7 @@ export class UpdateBarComponent {
 
   closeMenu(): void {
     this.hoverOpenedId = null;
-    this.openSectionId.set(null);
+    this.showSection(null);
   }
 
   @HostListener('document:click', ['$event'])
@@ -159,6 +208,26 @@ export class UpdateBarComponent {
     if (openItem.contains(document.activeElement)) {
       openItem.querySelector<HTMLElement>('.site-nav-trigger')?.focus();
     }
+  }
+
+  private showSection(id: string | null): void {
+    if (this.openSectionId() !== id) {
+      this.cancelGroupSwitch();
+      this.hoverOpenedGroupId = null;
+      this.openGroupId.set(null);
+    }
+    this.openSectionId.set(id);
+  }
+
+  private openGroupUnderPointer(group: NavGroup): void {
+    this.groupSwitchTimer = undefined;
+    this.hoverOpenedGroupId = group.id;
+    this.openGroupId.set(group.id);
+  }
+
+  private cancelGroupSwitch(): void {
+    clearTimeout(this.groupSwitchTimer);
+    this.groupSwitchTimer = undefined;
   }
 
   private openSectionItem(): HTMLElement | null {

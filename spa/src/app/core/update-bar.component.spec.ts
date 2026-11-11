@@ -3,7 +3,7 @@ import { provideLocationMocks } from '@angular/common/testing';
 import { Component } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { Router, Routes, provideRouter } from '@angular/router';
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { NAV_SECTIONS } from './nav-sections';
 import { UpdateBarComponent } from './update-bar.component';
 
@@ -39,6 +39,123 @@ function openDrawer(fixture: ComponentFixture<UpdateBarComponent>): HTMLDialogEl
   fixture.detectChanges();
   return query<HTMLDialogElement>(fixture, '.site-drawer');
 }
+
+function point(target: Element, type: 'pointerenter' | 'pointerleave', pointerType = 'mouse'): void {
+  target.dispatchEvent(new PointerEvent(type, { pointerType }));
+}
+
+function openRaids(fixture: ComponentFixture<UpdateBarComponent>): HTMLElement {
+  const raids = query<HTMLElement>(fixture, '[data-nav-section="raids"]');
+  raids.querySelector<HTMLButtonElement>('.site-nav-trigger')!.click();
+  fixture.detectChanges();
+  return raids;
+}
+
+function groupButton(raids: HTMLElement, label: string): HTMLButtonElement {
+  return Array.from(raids.querySelectorAll<HTMLButtonElement>('.site-nav-group'))
+    .find((button) => button.textContent?.trim() === label)!;
+}
+
+function openFlyouts(raids: HTMLElement): string[][] {
+  return Array.from(raids.querySelectorAll<HTMLElement>('.site-nav-flyout:not([hidden])'))
+    .map((flyout) => Array.from(flyout.querySelectorAll('.site-nav-page')).map((link) => link.textContent!.trim()));
+}
+
+describe('UpdateBarComponent section groups', () => {
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  it('shows the Raids groups with every flyout closed', async () => {
+    const fixture = await render('/');
+    const raids = openRaids(fixture);
+    const groups = Array.from(raids.querySelectorAll('.site-nav-group')).map((button) => button.textContent!.trim());
+
+    expect(groups).toEqual(['Logs & Rankings', 'Analytics', 'Races']);
+    expect(openFlyouts(raids)).toEqual([]);
+    expect(groupButton(raids, 'Analytics').getAttribute('aria-expanded')).toBe('false');
+  });
+
+  it('opens a group\'s pages beside it on a tap and closes them on a second tap', async () => {
+    const fixture = await render('/');
+    const raids = openRaids(fixture);
+    const analytics = groupButton(raids, 'Analytics');
+
+    analytics.click();
+    fixture.detectChanges();
+    expect(analytics.getAttribute('aria-expanded')).toBe('true');
+    expect(openFlyouts(raids)).toEqual([['Raid Statistics', 'Tier List', 'Talent Analytics', 'Trinket Analytics']]);
+
+    analytics.click();
+    fixture.detectChanges();
+    expect(openFlyouts(raids)).toEqual([]);
+  });
+
+  it('opens a group under the mouse at once and keeps it open on the click that follows', async () => {
+    const fixture = await render('/');
+    const raids = openRaids(fixture);
+    const races = groupButton(raids, 'Races');
+
+    point(races, 'pointerenter');
+    fixture.detectChanges();
+    expect(openFlyouts(raids)).toEqual([['Race to Emerald Nightmare', 'Realm First History']]);
+
+    races.click();
+    fixture.detectChanges();
+    expect(openFlyouts(raids)).toEqual([['Race to Emerald Nightmare', 'Realm First History']]);
+  });
+
+  it('waits before switching groups, so a mouse crossing a group on its way to a flyout keeps it', async () => {
+    const fixture = await render('/');
+    const raids = openRaids(fixture);
+    vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
+
+    point(groupButton(raids, 'Logs & Rankings'), 'pointerenter');
+    point(groupButton(raids, 'Analytics'), 'pointerenter');
+    vi.advanceTimersByTime(100);
+    point(groupButton(raids, 'Analytics'), 'pointerleave');
+    vi.advanceTimersByTime(500);
+    fixture.detectChanges();
+    expect(openFlyouts(raids)[0]).toContain('Raid Logs');
+
+    point(groupButton(raids, 'Races'), 'pointerenter');
+    vi.advanceTimersByTime(200);
+    fixture.detectChanges();
+    expect(openFlyouts(raids)).toEqual([['Race to Emerald Nightmare', 'Realm First History']]);
+  });
+
+  it('marks the group that holds the current page', async () => {
+    const fixture = await render('/raid-logs/talents');
+    const raids = openRaids(fixture);
+    const current = Array.from(raids.querySelectorAll('.site-nav-group.is-current')).map((button) => button.textContent!.trim());
+
+    expect(current).toEqual(['Analytics']);
+  });
+
+  it('closes the open group with the menu', async () => {
+    const fixture = await render('/');
+    const raids = openRaids(fixture);
+    groupButton(raids, 'Analytics').click();
+    fixture.detectChanges();
+
+    raids.querySelector<HTMLButtonElement>('.site-nav-trigger')!.click();
+    fixture.detectChanges();
+    openRaids(fixture);
+
+    expect(openFlyouts(raids)).toEqual([]);
+  });
+
+  it('names the groups in the drawer under Raids', async () => {
+    const fixture = await render('/');
+    const raids = Array.from(fixture.nativeElement.querySelectorAll('.site-drawer-section') as NodeListOf<HTMLElement>)
+      .find((section) => section.querySelector('.site-drawer-heading')?.textContent?.includes('Raids'))!;
+    const subheadings = Array.from(raids.querySelectorAll('.site-drawer-subheading')).map((heading) => heading.textContent!.trim());
+
+    expect(subheadings).toEqual(['Logs & Rankings', 'Analytics', 'Races']);
+    expect(raids.querySelectorAll('.site-drawer-page')).toHaveLength(10);
+    expect(fixture.nativeElement.querySelectorAll('.site-drawer-subheading')).toHaveLength(3);
+  });
+});
 
 describe('UpdateBarComponent drawer', () => {
   beforeEach(() => {

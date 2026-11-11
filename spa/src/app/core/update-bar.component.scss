@@ -141,6 +141,32 @@
   &[hidden] {
     display: none;
   }
+
+  &.is-grouped {
+    overflow: visible;
+  }
+
+  &.has-flyout {
+    border-top-right-radius: 0;
+  }
+}
+
+.site-nav-flyout {
+  position: absolute;
+  top: -1px;
+  left: 100%;
+  width: var(--dropdown-width);
+  padding: 4px 0;
+  overflow: hidden;
+  border: 1px solid #242424;
+  border-radius: 0 4px 4px;
+  background: #111;
+  box-shadow: 18px 18px 42px rgba(0, 0, 0, 0.6);
+  animation: mp-fade-in var(--dur-fast) ease;
+
+  &[hidden] {
+    display: none;
+  }
 }
 
 @keyframes site-nav-panel-in {
@@ -150,13 +176,15 @@
   }
 }
 
-.site-nav-pages {
+.site-nav-pages,
+.site-nav-groups {
   display: flex;
   flex-direction: column;
   list-style: none;
 }
 
-.site-nav-page {
+.site-nav-page,
+.site-nav-group {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
   align-items: center;
@@ -185,7 +213,49 @@
   }
 }
 
-.site-nav-pages li:last-child .site-nav-page {
+.site-nav-group {
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 10px;
+  width: 100%;
+  padding-right: 10px;
+  background: transparent;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+
+  &[aria-expanded="true"] {
+    background: #202020;
+    color: #fff;
+  }
+
+  &.is-current[aria-expanded="true"] {
+    background: #282828;
+    color: #f7b500;
+  }
+}
+
+.site-nav-group-chevron {
+  width: 14px;
+  height: 14px;
+  fill: none;
+  stroke: #8a8f99;
+  stroke-width: 2.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  transition: stroke var(--dur-fast) ease, translate var(--dur-fast) ease;
+
+  .site-nav-group:hover &,
+  .site-nav-group[aria-expanded="true"] & {
+    stroke: #f7b500;
+  }
+
+  .site-nav-group[aria-expanded="true"] & {
+    translate: 2px 0;
+  }
+}
+
+.site-nav-pages li:last-child .site-nav-page,
+.site-nav-groups li:last-child .site-nav-group {
   border-bottom: 0;
 }
 
@@ -349,6 +419,16 @@
   color: #d8c48a;
   font-size: 0.68rem;
   font-weight: 800;
+  letter-spacing: 0.8px;
+  line-height: 1.2;
+  text-transform: uppercase;
+}
+
+.site-drawer-subheading {
+  padding: 10px 14px 4px;
+  color: #9aa0aa;
+  font-size: 0.64rem;
+  font-weight: 700;
   letter-spacing: 0.8px;
   line-height: 1.2;
   text-transform: uppercase;
@@ -587,8 +667,13 @@
 @media (prefers-reduced-motion: reduce) {
   .site-nav-new,
   .site-nav-panel,
+  .site-nav-flyout,
   .site-drawer[open],
   .site-drawer[open]::backdrop {
     animation: none;
+  }
+
+  .site-nav-group-chevron {
+    transition: none;
   }
 }
