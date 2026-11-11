@@ -39,7 +39,7 @@ import {
   RaidTalentTooltips
 } from './raid-logs.types';
 import { RaidMetric, RankedPerformance, fitClassAndSpec, rankCharacters, rankedClassOptions, rankedSpecs } from './raid-scores';
-import { characterKey, defaultDifficulty, logKey, memberTalents } from './raid-logs';
+import { averageItemLevel, characterKey, defaultDifficulty, logKey, memberTalents } from './raid-logs';
 import { fastestKills, latestKills } from './raid-progression';
 import { RaidLogsDataService } from './raid-logs-data.service';
 import { REALM_FILTER_OPTIONS, RoleFilter } from '../../game/wow';
@@ -80,6 +80,10 @@ const HEALING_NOTE = 'Healing counts absorbs; healers and tanks are ranked.';
 interface KillRow {
   rank?: number;
   kill: RaidKillDetails;
+}
+
+interface ShownKillRow extends KillRow {
+  itemLevel?: number;
 }
 
 interface RankingRow extends RankedPerformance {
@@ -217,7 +221,8 @@ export class RaidLogsBossPageComponent {
     return pageSlice(this.rankings(), this.currentPage(), RAID_PAGE_SIZE)
       .map(entry => ({ ...entry, talents: memberTalents(entry.member, talents) }));
   });
-  readonly shownKillRows = computed(() => pageSlice(this.killRows(), this.currentPage(), RAID_PAGE_SIZE));
+  readonly shownKillRows = computed<ShownKillRow[]>(() => pageSlice(this.killRows(), this.currentPage(), RAID_PAGE_SIZE)
+    .map(row => ({ ...row, itemLevel: averageItemLevel(row.kill.members) })));
 
   readonly summary = computed<SummaryTile[]>(() => {
     const kills = this.kills();

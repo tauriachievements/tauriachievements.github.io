@@ -359,7 +359,7 @@ decision (ask first).
 | Building block | Use it for |
 |---|---|
 | `app-update-bar` (`update-bar.component`) | the site header, rendered once by the shell ([below](#the-app-shell-and-the-header-height-contract)). A page sets the timestamp on the right with `setPageHeader()` |
-| `nav-sections.ts` | the header's sections and pages, a page's fixed link parameters (`queryParams`), and route matching for deep routes (`includes`) |
+| `nav-sections.ts` | the header's sections and pages, a page's fixed link parameters (`queryParams`), and route matching for deep routes (`includes`). A long section is built with `groupedSection()`: its `groups` (Raids has Logs & Rankings, Analytics and Realm First Race) hold the pages, and `pages` stays the flat list in group order, so route matching and page counts read it as before. `findNavLocation` also returns the page's `group` |
 | `app-filter-dropdown` + `filter-dropdown.types.ts` | every dropdown filter. The page must list `FilterDropdownCoordinatorService` in its own `providers`, or it fails with NG0201. Pass `widthLabels` (every label it can ever show) to keep the trigger as wide as the longest one, so picking never cuts a name short or moves the toolbar; its container must then size to its content. `compact` (the M+ toolbar look: dark trigger, gold chevron, tighter options) also drops the menu's height cap, so a long list runs past the screen. Rare Items gives its long compact menus the cap back with `::ng-deep .dropdown.compact .dropdown-menu` (the shorter `.dropdown-menu` loses to the component's own rule). `showIcons` draws each option's `icon` (an image URL) in a small square frame; `roundIcons` makes that frame the round dark badge the role icons sit in |
 | `wow.ts` | the game's tables: `CLASS_NAMES`, `CLASSES_BY_NAME` (A–Z), `RACE_NAMES` (the three Pandaren ids all read "Pandaren"), `raceFaction` (0 Alliance, 1 Horde, none for the neutral Pandaren), `REALMS`, `realmSlug` (a realm as it appears in URLs), the `Realm`, `Role` and `RoleFilter` types, and the role filters' `ROLE_FILTERS`, `ROLE_FILTER_LABELS`, `ROLE_FILTER_ICONS` (the blue shield, green cross and red sword as SVG data URLs; Melee and Ranged DPS use the sword), `parseRoleFilter` (`?role=`), `matchesRoleFilter` and `roleFiltersFor` ([scoring.md](scoring.md#role-filters)). Never copy one of them into a page |
 | `CLASS_FILTER_OPTIONS` (`wow.ts`) | a class dropdown's options: "All classes", then every class A–Z with its icon and colour. Filter it when a page offers fewer classes (the raid leaderboard on HPS) |
@@ -468,6 +468,14 @@ decision (ask first).
 - A mouse opens a section's dropdown by pointing at it (the click that usually follows keeps it
   open); touch and keyboard toggle it. Tabbing out of a section closes it, and a click
   elsewhere closes it through a document listener.
+- A grouped section's dropdown lists its groups, and each group opens its pages in a flyout to
+  the right, its first page level with the group. Groups follow the same rules: pointing opens one,
+  the click after keeps it, and a tap or Enter toggles it. Only one group is open, and the open
+  group closes with the dropdown. When a group is already open, pointing at another switches
+  only after the pointer rests there 150 ms (`GROUP_SWITCH_DELAY_MS`), so a diagonal move to
+  the flyout's lower pages can cross the other groups without switching. The flyout sits inside
+  the section's `<li>`, so moving onto it doesn't count as leaving the section. The group
+  holding the current page is gold. The drawer shows the groups as small sub-headings.
 
 ## Mobile
 
@@ -551,7 +559,10 @@ and 3 up to 1100 px: the name cell gives way (38% of the width from 641 px, so t
 grows with it) and the Talents and Trinkets columns move under the name. A guild name sets the
 name cell's width, and with the longest one in the data (WoD log 295450) the full table needs
 1074 px. Its `state-raid-log-long-guild` entry opens that log. On narrow phones (≤359 px) it also
-hides the race icon, so the name keeps room. Its `raid-log` entry is marked `wide`.
+hides the race icon, so the name keeps room. Its `raid-log` entry is marked `wide`. The boss
+page's kills table hides its View log column up to 900 px, since the time already links to the
+log, so its Avg ilvl column fits from 641 px. Its `raid-logs-boss-fastest` entry is marked
+`wide`.
 
 A few things scroll sideways by design: charts over time that open at the latest point
 (`appScrollToEnd`), a strip of cards you swipe through, and the raid race

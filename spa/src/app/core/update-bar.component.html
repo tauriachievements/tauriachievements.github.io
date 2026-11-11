@@ -59,24 +59,42 @@
 
               <div
                 class="site-nav-panel"
+                [class.is-grouped]="section.groups"
+                [class.has-top-flyout]="openGroupId() === section.groups?.[0]?.id"
                 [id]="'nav-panel-' + section.id"
                 [style.--dropdown-width]="dropdownWidths.get(section.id)"
                 [hidden]="openSectionId() !== section.id">
-                <ul class="site-nav-pages">
-                  @for (page of section.pages; track page) {
-                    <li>
-                      <a
-                        class="site-nav-page"
-                        [class.is-current]="location()?.page === page"
-                        [attr.aria-current]="location()?.page === page ? 'page' : null"
-                        [routerLink]="page.path"
-                        [queryParams]="page.queryParams"
-                        (click)="closeMenu()">
-                        <span class="site-nav-page-label">{{ page.label }}</span>
-                      </a>
-                    </li>
-                  }
-                </ul>
+                @if (section.groups; as groups) {
+                  <ul class="site-nav-groups">
+                    @for (group of groups; track group.id) {
+                      <li>
+                        <button
+                          type="button"
+                          class="site-nav-group"
+                          [class.is-current]="location()?.group === group"
+                          [attr.aria-expanded]="openGroupId() === group.id"
+                          [attr.aria-controls]="'nav-flyout-' + group.id"
+                          (click)="toggleGroup(group)"
+                          (pointerenter)="onGroupPointerEnter(group, $event)"
+                          (pointerleave)="onGroupPointerLeave($event)">
+                          <span class="site-nav-page-label">{{ group.label }}</span>
+                          <svg class="site-nav-group-chevron" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                            <path d="M9 6l6 6-6 6" />
+                          </svg>
+                        </button>
+                        <div
+                          class="site-nav-flyout"
+                          [id]="'nav-flyout-' + group.id"
+                          [style.--dropdown-width]="dropdownWidths.get(group.id)"
+                          [hidden]="openGroupId() !== group.id">
+                          <ng-container *ngTemplateOutlet="navPages; context: { $implicit: group.pages }"></ng-container>
+                        </div>
+                      </li>
+                    }
+                  </ul>
+                } @else {
+                  <ng-container *ngTemplateOutlet="navPages; context: { $implicit: section.pages }"></ng-container>
+                }
               </div>
             } @else {
               <a
@@ -145,26 +163,14 @@
               }
             </h2>
           }
-          <ul class="site-drawer-pages">
-            @for (page of section.pages; track page) {
-              <li>
-                <a
-                  class="site-drawer-page"
-                  [class.is-current]="location()?.page === page"
-                  [attr.aria-current]="location()?.page === page ? 'page' : null"
-                  [routerLink]="page.path"
-                  [queryParams]="page.queryParams"
-                  (click)="closeDrawer()">
-                  <span class="site-drawer-page-label">
-                    {{ page.label }}
-                    @if (page.tag) {
-                      <span class="site-drawer-tag">{{ page.tag }}</span>
-                    }
-                  </span>
-                </a>
-              </li>
+          @if (section.groups; as groups) {
+            @for (group of groups; track group.id) {
+              <h3 class="site-drawer-subheading">{{ group.label }}</h3>
+              <ng-container *ngTemplateOutlet="drawerPages; context: { $implicit: group.pages }"></ng-container>
             }
-          </ul>
+          } @else {
+            <ng-container *ngTemplateOutlet="drawerPages; context: { $implicit: section.pages }"></ng-container>
+          }
         </section>
       }
     </nav>
@@ -192,6 +198,47 @@
     </div>
   </div>
 </dialog>
+
+<ng-template #navPages let-pages>
+  <ul class="site-nav-pages">
+    @for (page of pages; track page.path) {
+      <li>
+        <a
+          class="site-nav-page"
+          [class.is-current]="location()?.page === page"
+          [attr.aria-current]="location()?.page === page ? 'page' : null"
+          [routerLink]="page.path"
+          [queryParams]="page.queryParams"
+          (click)="closeMenu()">
+          <span class="site-nav-page-label">{{ page.label }}</span>
+        </a>
+      </li>
+    }
+  </ul>
+</ng-template>
+
+<ng-template #drawerPages let-pages>
+  <ul class="site-drawer-pages">
+    @for (page of pages; track page.path) {
+      <li>
+        <a
+          class="site-drawer-page"
+          [class.is-current]="location()?.page === page"
+          [attr.aria-current]="location()?.page === page ? 'page' : null"
+          [routerLink]="page.path"
+          [queryParams]="page.queryParams"
+          (click)="closeDrawer()">
+          <span class="site-drawer-page-label">
+            {{ page.label }}
+            @if (page.tag) {
+              <span class="site-drawer-tag">{{ page.tag }}</span>
+            }
+          </span>
+        </a>
+      </li>
+    }
+  </ul>
+</ng-template>
 
 <ng-template #discordLogo>
   <svg class="discord-logo" viewBox="0 0 24 24" aria-hidden="true" focusable="false">

@@ -445,6 +445,9 @@ decision: ask first.** When a rule does change, change its tests first and see t
   so a guild the exporter has only just named isn't new because of that.
 - Fastest kills: the shortest fight first; the earlier kill wins a tie. A log's speed rank is
   its place among the boss's kills on that difficulty.
+- **Avg ilvl** on the boss page's Fastest kills and Latest kills (`averageItemLevel` in
+  `raid-logs.ts`) is the mean item level of everyone in the log, shown to one decimal. Every
+  player counts the same, a low-level character included. It doesn't change the order.
 - **A guild's kill history** (the Raids guild page, `killWeeks` and `weekPages` in
   `raid-kill-weeks.ts`) lists the guild's kills of the difficulty, invalid ones included, by
   raid week: from one Wednesday reset to the next (`raidWeekStart` to `raidWeekEnd`), the
@@ -454,8 +457,8 @@ decision: ask first.** When a rule does change, change its tests first and see t
   guild's fastest full clear that ended in the week ([below](#raid-fastest-full-clears)), the
   earlier on a tie. A page holds as many whole weeks as fit in 25 kills, and a bigger week has
   a page of its own, so a week is never split across pages.
-- **Tests:** `raid-progression.spec.ts`, `raidWeekStart` and `raidWeekEnd` in
-  `raid-logs.spec.ts`, `raid-kill-weeks.spec.ts`, the This week, All groups and pages cases in
+- **Tests:** `raid-progression.spec.ts`, `raidWeekStart`, `raidWeekEnd` and `averageItemLevel`
+  in `raid-logs.spec.ts`, `raid-kill-weeks.spec.ts`, the This week, All groups and pages cases in
   `raid-logs-progression-page.component.spec.ts`, and `raid-logs-guild-page.component.spec.ts`.
 
 ## Raid fastest full clears

@@ -41,7 +41,7 @@ export const VISUAL_PAGES: readonly VisualPage[] = [
   { name: 'raid-logs-leaderboard', path: '/raid-logs/leaderboard' },
   { name: 'raid-logs-leaderboard-hps', path: '/raid-logs/leaderboard?metric=hps&difficulty=heroic' },
   { name: 'raid-logs-boss', path: '/raid-logs/boss/xavius?difficulty=mythic' },
-  { name: 'raid-logs-boss-fastest', path: '/raid-logs/boss/ursoc?difficulty=heroic&tab=fastest' },
+  { name: 'raid-logs-boss-fastest', path: '/raid-logs/boss/ursoc?difficulty=heroic&tab=fastest', wide: true },
   { name: 'raid-log', path: '/raid-logs/log/tauri/1684762', wide: true },
   { name: 'raid-logs-guild', path: '/raid-logs/guild/evermoon/Miracle?difficulty=mythic' },
   { name: 'raid-logs-character', path: '/raid-logs/character/evermoon/Gankuh?difficulty=mythic&metric=dps' },
