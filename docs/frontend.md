@@ -542,7 +542,10 @@ and 3 up to 1100 px: the name cell gives way (38% of the width from 641 px, so t
 grows with it) and the Talents and Trinkets columns move under the name. A guild name sets the
 name cell's width, and with the longest one in the data (WoD log 295450) the full table needs
 1074 px. Its `state-raid-log-long-guild` entry opens that log. On narrow phones (≤359 px) it also
-hides the race icon, so the name keeps room. Its `raid-log` entry is marked `wide`.
+hides the race icon, so the name keeps room. Its `raid-log` entry is marked `wide`. The boss
+page's kills table hides its View log column up to 900 px, since the time already links to the
+log, so its Avg ilvl column fits from 641 px. Its `raid-logs-boss-fastest` entry is marked
+`wide`.
 
 A few things scroll sideways by design: charts over time that open at the latest point
 (`appScrollToEnd`), a strip of cards you swipe through, and the Emerald Nightmare race

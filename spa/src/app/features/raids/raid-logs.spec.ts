@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+  averageItemLevel,
   decodeBossFile,
   decodeGenders,
   decodeIndex,
@@ -235,5 +236,19 @@ describe('raidWeekEnd', () => {
   it('keeps the next reset at 09:00 server time across the clock changes', () => {
     expect(weekEnd('2026-10-22T12:00:00.000Z')).toBe('2026-10-28T08:00:00.000Z');
     expect(weekEnd('2026-03-26T12:00:00.000Z')).toBe('2026-04-01T07:00:00.000Z');
+  });
+});
+
+describe('averageItemLevel', () => {
+  it('averages the item level of everyone in the kill', () => {
+    expect(averageItemLevel([{ itemLevel: 880 }, { itemLevel: 875 }, { itemLevel: 870 }, { itemLevel: 878 }])).toBe(875.75);
+  });
+
+  it('counts a low item level like any other', () => {
+    expect(averageItemLevel([{ itemLevel: 880 }, { itemLevel: 300 }])).toBe(590);
+  });
+
+  it('has no average for a kill without members', () => {
+    expect(averageItemLevel([])).toBeUndefined();
   });
 });

@@ -191,12 +191,13 @@
               <tr>
                 <th class="rank" scope="col">#</th>
                 <th scope="col">Guild</th>
-                <th scope="col" class="num">Time</th>
-                <th scope="col" class="num phone-hidden">Players</th>
-                <th scope="col" class="num phone-hidden">Deaths</th>
-                <th scope="col" class="num phone-hidden">Wipes</th>
-                <th scope="col">Date</th>
-                <th scope="col" class="phone-hidden"><span class="visually-hidden">Log</span></th>
+                <th scope="col" class="num center">Time</th>
+                <th scope="col" class="num center phone-hidden">Players</th>
+                <th scope="col" class="num center phone-hidden" title="Average item level of everyone in the kill">Avg ilvl</th>
+                <th scope="col" class="num center phone-hidden">Deaths</th>
+                <th scope="col" class="num center phone-hidden">Wipes</th>
+                <th scope="col" class="center">Date</th>
+                <th scope="col" class="narrow-hidden"><span class="visually-hidden">Log</span></th>
               </tr>
             </thead>
             <tbody>
@@ -217,12 +218,13 @@
                       }
                     </span>
                   </td>
-                  <td class="num strong"><a [routerLink]="logLink(row.kill)">{{ formatFightTime(row.kill.fightMs) }}</a></td>
-                  <td class="num phone-hidden">{{ row.kill.members.length }}</td>
-                  <td class="num phone-hidden">{{ row.kill.deaths }}</td>
-                  <td class="num phone-hidden">{{ row.kill.wipes }}</td>
-                  <td class="muted"><time [attr.datetime]="row.kill.killedAt | date:'yyyy-MM-ddTHH:mm:ss'" [title]="row.kill.killedAt | date:'d MMM y, HH:mm'">{{ tab() === 'latest' ? ago(row.kill) : (row.kill.killedAt | date:'d MMM') }}</time></td>
-                  <td class="phone-hidden"><a class="log-link" [routerLink]="logLink(row.kill)">View log <span aria-hidden="true">›</span></a></td>
+                  <td class="num center strong"><a [routerLink]="logLink(row.kill)">{{ formatFightTime(row.kill.fightMs) }}</a></td>
+                  <td class="num center phone-hidden">{{ row.kill.members.length }}</td>
+                  <td class="num center phone-hidden">{{ row.itemLevel | number:'1.1-1' }}</td>
+                  <td class="num center phone-hidden">{{ row.kill.deaths }}</td>
+                  <td class="num center phone-hidden">{{ row.kill.wipes }}</td>
+                  <td class="center muted"><time [attr.datetime]="row.kill.killedAt | date:'yyyy-MM-ddTHH:mm:ss'" [title]="row.kill.killedAt | date:'d MMM y, HH:mm'">{{ tab() === 'latest' ? ago(row.kill) : (row.kill.killedAt | date:'d MMM') }}</time></td>
+                  <td class="narrow-hidden"><a class="log-link" [routerLink]="logLink(row.kill)">View log <span aria-hidden="true">›</span></a></td>
                 </tr>
               }
             </tbody>
