@@ -26,14 +26,16 @@ import { RaidRace } from './raid-races';
   selector: 'app-raid-race-page',
   imports: [TapTooltipDirective, SkeletonComponent],
   templateUrl: './raid-race-page.component.html',
-  styleUrls: ['./raid-race-page.component.scss', './raid-race-page.motion.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  styleUrls: ['./raid-race-page.component.scss', './raid-race-page.motion.scss', './raid-race-page.valor.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  host: { '[class]': 'themeClass' }
 })
 export class RaidRacePageComponent implements OnInit {
   private readonly dataFiles = inject(DataFileService);
   private readonly destroyRef = inject(DestroyRef);
 
   readonly race = inject(ActivatedRoute).snapshot.data['race'] as RaidRace;
+  readonly themeClass = `theme-${this.race.theme}`;
   readonly duration = raceDuration(this.race);
   readonly timelineHours = timelineHours(this.race);
   readonly startLabel = playbackClock(this.race, 0);

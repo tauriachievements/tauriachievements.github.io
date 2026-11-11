@@ -4,8 +4,11 @@ export interface RaceBoss {
   readonly iconUrl: string;
 }
 
+export type RaceTheme = 'nightmare' | 'valor';
+
 export interface RaidRace {
   readonly name: string;
+  readonly theme: RaceTheme;
   readonly dataFile: string;
   readonly bannerUrl: string;
   readonly backdropUrl?: string;
@@ -19,6 +22,7 @@ export interface RaidRace {
 
 export const EMERALD_NIGHTMARE_RACE: RaidRace = {
   name: 'Emerald Nightmare',
+  theme: 'nightmare',
   dataFile: 'EmeraldNightmare.json',
   bannerUrl: 'assets/emerald-nightmare-the-race-to.png',
   backdropUrl: 'https://www.buffed.de/screenshots/1280x/2016/09/WoW-Smaragdgruener-Alptraum-buffed.jpg',
@@ -39,6 +43,7 @@ export const EMERALD_NIGHTMARE_RACE: RaidRace = {
 
 export const TRIAL_OF_VALOR_RACE: RaidRace = {
   name: 'Trial of Valor',
+  theme: 'valor',
   dataFile: 'TrialOfValor.json',
   bannerUrl: 'assets/trial-of-valor-the-race-to.webp',
   bannerOffset: 10,

@@ -5,7 +5,7 @@ import { Observable, of } from 'rxjs';
 import { describe, expect, it } from 'vitest';
 import { DataFileService } from '../../core/data-file.service';
 import { RaceDataset } from './raid-race';
-import { RaidRace, TRIAL_OF_VALOR_RACE } from './raid-races';
+import { EMERALD_NIGHTMARE_RACE, RaidRace, TRIAL_OF_VALOR_RACE } from './raid-races';
 import { RaidRacePageComponent } from './raid-race-page.component';
 
 class FakeDataFiles {
@@ -50,6 +50,17 @@ describe('RaidRacePageComponent', () => {
     expect(texts(element, '.placeholder-lane .guild-summary-copy > *')).toEqual(['No kills yet', '0/3 bosses']);
     expect(element.querySelector<HTMLButtonElement>('.playback-button')?.disabled).toBe(true);
     expect(element.querySelector<HTMLInputElement>('.playback-slider')?.disabled).toBe(true);
+  });
+
+  it('wears the colours of its raid', async () => {
+    const valor = await open(TRIAL_OF_VALOR_RACE, {});
+    expect(valor.element.classList).toContain('theme-valor');
+    expect(valor.element.classList).not.toContain('theme-nightmare');
+
+    TestBed.resetTestingModule();
+    const nightmare = await open(EMERALD_NIGHTMARE_RACE, {});
+    expect(nightmare.element.classList).toContain('theme-nightmare');
+    expect(nightmare.element.classList).not.toContain('theme-valor');
   });
 
   it('draws a lane for each guild once the kills are in', async () => {
