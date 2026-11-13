@@ -241,7 +241,6 @@ $mono: ui-monospace, 'Cascadia Mono', 'SF Mono', Consolas, Menlo, monospace;
 }
 
 .panel-sub {
-  margin: 2px 0 12px;
   color: $muted;
   font-size: .8rem;
 }
@@ -340,6 +339,7 @@ $mono: ui-monospace, 'Cascadia Mono', 'SF Mono', Consolas, Menlo, monospace;
 .quotes {
   display: grid;
   grid-template-columns: repeat(6, minmax(0, 1fr));
+  margin-top: 12px;
   grid-auto-flow: row dense;
   gap: 8px;
 }
@@ -437,4 +437,14 @@ $mono: ui-monospace, 'Cascadia Mono', 'SF Mono', Consolas, Menlo, monospace;
   .perks { grid-template-columns: minmax(0, 1fr); }
   .quotes { grid-template-columns: minmax(0, 1fr); }
   .quote { grid-column: 1 / -1; }
+
+  .panel-head {
+    flex-wrap: wrap;
+    row-gap: 2px;
+  }
+
+  .panel-sub {
+    flex-basis: 100%;
+    order: 1;
+  }
 }

@@ -1,5 +1,5 @@
 <main class="support-page">
-  <div class="bento" appScrollRise=".perk, .panel-head, .panel-sub, .supporter, .supporter-slot, .quote">
+  <div class="bento" appScrollRise=".perk, .panel-head, .supporter, .supporter-slot, .quote">
     <section class="panel hero" appSpotlight aria-labelledby="support-title">
       <span class="hero-edge" aria-hidden="true"></span>
       <p class="kicker" appDecode [decodeDelay]="150"><span class="kicker-dot" aria-hidden="true"></span>Community project</p>
@@ -69,9 +69,9 @@
     <section class="panel words-panel" appSpotlight aria-labelledby="kind-words-title">
       <header class="panel-head" appDecode [decodeDelay]="350">
         <h2 id="kind-words-title">Kind words</h2>
+        <p class="panel-sub">What players have said about the site.</p>
         <span class="panel-meta">{{ testimonials.length }} quotes</span>
       </header>
-      <p class="panel-sub" appDecode [decodeDelay]="400">What players have said about the site.</p>
 
       <div class="quotes" [appReveal]="2400">
         @for (testimonial of testimonials; track testimonial; let i = $index) {
