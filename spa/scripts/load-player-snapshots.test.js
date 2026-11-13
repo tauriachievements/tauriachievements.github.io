@@ -1,6 +1,6 @@
 const { test } = require("node:test");
 const assert = require("node:assert/strict");
-const { selectEarlierDailyScans } = require("./load-player-snapshots");
+const { selectEarlierDailyScans, selectLastScanBefore } = require("./load-player-snapshots");
 
 function commit(sha, commitTimestamp) {
   return { sha, commitTimestamp, filePath: "spa/src/Players.csv" };
@@ -27,4 +27,26 @@ test("keeps at most 20 earlier days", () => {
   }
 
   assert.equal(selectEarlierDailyScans(history, "2026-09-29").length, 20);
+});
+
+test("takes the last scan committed before a moment", () => {
+  const history = [
+    commit("after-launch", "2026-07-16T09:25:15+02:00"),
+    commit("launch-eve", "2026-07-14T19:18:23+02:00"),
+    commit("day-before", "2026-07-14T00:11:28+02:00"),
+  ];
+
+  const scan = selectLastScanBefore(history, "2026-07-15T07:00:00.000Z");
+
+  assert.deepEqual(scan, {
+    sha: "launch-eve",
+    filePath: "spa/src/Players.csv",
+    timestamp: "2026-07-14T17:18:23.000Z",
+  });
+});
+
+test("finds no scan when every scan is later than the moment", () => {
+  const history = [commit("after-launch", "2026-07-16T09:25:15+02:00")];
+
+  assert.equal(selectLastScanBefore(history, "2026-07-15T07:00:00.000Z"), undefined);
 });

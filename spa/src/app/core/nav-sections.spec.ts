@@ -17,6 +17,7 @@ describe('findNavLocation', () => {
     expect(locate('/mythic-plus?dungeon=3&page=2')).toBe('Mythic+ / Leaderboard');
     expect(locate('/mythic-plus/stats#weeks')).toBe('Mythic+ / Statistics');
     expect(locate('/guilds;realm=wod')).toBe('Ladder / Guild Rankings');
+    expect(locate('/played-since-legion?class=3')).toBe('Ladder / Played Since Legion');
     expect(locate('/stats/')).toBe('Realm Stats / Realm Stats');
     expect(locate('/arena?x=1')).toBe('PvP / Arena');
   });
@@ -59,7 +60,7 @@ describe('findNavLocation', () => {
     const paths = NAV_SECTIONS.flatMap((section) => section.pages.map((page) => page.path));
 
     expect(new Set(paths).size).toBe(paths.length);
-    expect(paths).toHaveLength(27);
+    expect(paths).toHaveLength(28);
   });
 });
 

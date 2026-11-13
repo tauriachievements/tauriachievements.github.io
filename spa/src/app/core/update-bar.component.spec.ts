@@ -217,7 +217,7 @@ describe('UpdateBarComponent drawer', () => {
 
     expect(drawer.open).toBe(true);
     expect(query(fixture, '.site-menu-toggle').getAttribute('aria-expanded')).toBe('true');
-    expect(drawer.querySelectorAll('.site-drawer-page')).toHaveLength(27);
+    expect(drawer.querySelectorAll('.site-drawer-page')).toHaveLength(28);
     expect(current).toHaveLength(1);
     expect(current[0].textContent).toContain('Statistics');
   });

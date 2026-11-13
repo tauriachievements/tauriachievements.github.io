@@ -79,7 +79,7 @@ Never put a dot in a path or parameter: `404.html` won't redirect it.
 
 ## 4. The navigation
 
-First raise the page count in both specs that pin it (27 today), and see them fail:
+First raise the page count in both specs that pin it (28 today), and see them fail:
 
 - `nav-sections.spec.ts`: `expect(paths).toHaveLength(…)`
 - `update-bar.component.spec.ts`: `.site-drawer-page` count

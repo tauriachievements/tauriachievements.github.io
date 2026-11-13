@@ -17,6 +17,11 @@ export const LADDER_ROUTES: Routes = [
       .then(module => module.TopGainersPageComponent)
   },
   {
+    path: 'played-since-legion',
+    loadComponent: () => import('./played-since-legion-page.component')
+      .then(module => module.PlayedSinceLegionPageComponent)
+  },
+  {
     path: 'compare',
     loadComponent: () => import('./compare-page.component')
       .then(module => module.ComparePageComponent)

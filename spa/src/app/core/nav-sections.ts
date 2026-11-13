@@ -42,6 +42,7 @@ export const NAV_SECTIONS: readonly NavSection[] = [
     pages: [
       { label: 'Players', path: '/' },
       { label: 'Top Gainers', tab: 'Movers', path: '/top-gainers' },
+      { label: 'Played Since Legion', tab: 'Playtime', path: '/played-since-legion' },
       { label: 'Compare', path: '/compare' },
       { label: 'Guild Rankings', tab: 'Guilds', path: '/guilds' }
     ]

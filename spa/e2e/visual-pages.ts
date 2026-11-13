@@ -15,6 +15,8 @@ export const VISUAL_PAGES: readonly VisualPage[] = [
   { name: 'ladder', path: '/' },
   { name: 'ladder-filtered', path: '/?sort=honorableKills&realm=Evermoon&faction=Horde&class=8' },
   { name: 'top-gainers', path: '/top-gainers' },
+  { name: 'played-since-legion', path: '/played-since-legion', wide: true },
+  { name: 'played-since-legion-filtered', path: '/played-since-legion?realm=tauri&class=8&q=a', wide: true },
   { name: 'compare', path: '/compare' },
   { name: 'guilds', path: '/guilds' },
   { name: 'rare-achievements', path: '/rare-achievements' },
