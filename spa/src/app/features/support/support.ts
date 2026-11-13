@@ -55,8 +55,8 @@ export const DONATIONS: readonly Donation[] = [
 
 export const TESTIMONIALS: readonly Testimonial[] = [
   {
-    quote: 'Our entire guild is going back to your website fairly often though and I often refer people there as well when they are asking questions.',
-    names: [{ name: 'Cloud' }, { name: 'Faenrin', classId: 6, realm: 'evermoon' }],
+    quote: 'I really admire the work you’ve put into this project. It’s one of the best community projects I’ve seen, and the way you treat people is truly special. Personally, your work is a big part of what keeps me playing. Climbing the Mythic+ ladders is one of the few things I still find exciting in modern WoW, and while I wish Tauri did more to support it, your efforts have helped keep M+ alive here. Thank you for everything you do.',
+    names: [{ name: 'Fox' }],
     from: 'discord'
   },
   {
@@ -69,13 +69,35 @@ export const TESTIMONIALS: readonly Testimonial[] = [
     from: 'discord'
   },
   {
+    quote: 'Our entire guild is going back to your website fairly often though and I often refer people there as well when they are asking questions.',
+    names: [{ name: 'Cloud' }, { name: 'Faenrin', classId: 6, realm: 'evermoon' }],
+    from: 'discord'
+  },
+  {
+    quote: 'Fantastic work, man! Keep it up, the site and addon are both awesome!',
+    names: [{ name: 'Vicapriest', classId: 5, realm: 'evermoon' }],
+    from: 'discord'
+  },
+  {
+    quote: 'amazing, the animations add a nice touch 🙂 encourages pushing other specs',
+    names: [{ name: 'Nap', classId: 11, realm: 'evermoon' }],
+    from: 'discord'
+  },
+  {
     quote: 'U did some OP dev job there, thanks for the contribution. The addon is even more amazing.',
     names: [{ name: 'Musadon' }],
     from: 'discord'
   },
-  { quote: 'Ty Xyhop, god\'s work', names: [{ name: 'Tomir' }], from: 'stoat' },
-  { quote: 'ridiculously good work', names: [{ name: 'hecker' }], from: 'stoat' },
+  { quote: 'nice job, the addon works awesome!', names: [{ name: 'Zago' }], from: 'discord' },
+  {
+    quote: 'Thanks for setting up such a nice website!',
+    names: [{ name: 'Ratillas', classId: 4, realm: 'evermoon' }],
+    from: 'ingame'
+  },
   { quote: 'absolutely amazing work', names: [{ name: 'Bragorn', classId: 1, realm: 'evermoon' }], from: 'stoat' },
+  { quote: 'ridiculously good work', names: [{ name: 'hecker' }], from: 'stoat' },
+  { quote: 'Ty Xyhop, god\'s work', names: [{ name: 'Tomir' }], from: 'stoat' },
+  { quote: 'ngl Xyhop, this website you did is sick af', names: [{ name: 'Hutas' }], from: 'stoat' },
   {
     quote: 'thanks for ur efforts. 🫡',
     names: [{ name: 'Yoda', classId: 11, realm: 'evermoon', mythicPlusProfile: 'Yodadru' }],
@@ -84,28 +106,6 @@ export const TESTIMONIALS: readonly Testimonial[] = [
   {
     quote: 'shit, that\'s dope, great work then!',
     names: [{ name: 'Shaterhand', classId: 2, realm: 'evermoon' }],
-    from: 'discord'
-  },
-  { quote: 'nice job, the addon works awesome!', names: [{ name: 'Zago' }], from: 'discord' },
-  {
-    quote: 'amazing, the animations add a nice touch 🙂 encourages pushing other specs',
-    names: [{ name: 'Nap', classId: 11, realm: 'evermoon' }],
-    from: 'discord'
-  },
-  { quote: 'ngl Xyhop, this website you did is sick af', names: [{ name: 'Hutas' }], from: 'stoat' },
-  {
-    quote: 'Fantastic work, man! Keep it up, the site and addon are both awesome!',
-    names: [{ name: 'Vicapriest', classId: 5, realm: 'evermoon' }],
-    from: 'discord'
-  },
-  {
-    quote: 'Thanks for setting up such a nice website!',
-    names: [{ name: 'Ratillas', classId: 4, realm: 'evermoon' }],
-    from: 'ingame'
-  },
-  {
-    quote: 'I really admire the work you’ve put into this project. It’s one of the best community projects I’ve seen, and the way you treat people is truly special. Personally, your work is a big part of what keeps me playing. Climbing the Mythic+ ladders is one of the few things I still find exciting in modern WoW, and while I wish Tauri did more to support it, your efforts have helped keep M+ alive here. Thank you for everything you do.',
-    names: [{ name: 'Fox' }],
     from: 'discord'
   }
 ];
