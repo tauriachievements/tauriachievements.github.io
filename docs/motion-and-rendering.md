@@ -67,6 +67,13 @@ touching motion or layering.
   reader picks or focuses a tab. Under reduced
   motion it never starts. The fill grows by `width`, not a transform, so the tab label keeps
   LCD text (see the layer gotcha below).
+- **The header's Support button pulses**, starting 2 s after it appears: its border and a gold
+  halo breathe in and out every 2.5 s (`mp-support-pulse`), and every fourth pulse a warm sheen
+  sweeps across it at the pulse's peak (`mp-support-glint` on its `::after`, 10 s, started
+  750 ms later to stay in step). Both animate only `background-position`, `box-shadow` and
+  `border-color`, so the button never gets a layer of its own and the label keeps LCD text.
+  Hovering stops the pulse, plays one sheen and holds a steady halo; keyboard focus stops it so
+  the focus ring shows; on /support it doesn't run.
 - **Reduced motion:** wrap animation in the `motion-safe` mixin
   (`@media (prefers-reduced-motion: no-preference)`). The directives check
   `prefersReducedMotion()` and do nothing when it's on. View transitions are switched off
