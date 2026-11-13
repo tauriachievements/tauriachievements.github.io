@@ -68,6 +68,11 @@ response first.
   `ChallengeResponseParser`.
 - A list comes either as an array or as an object keyed by id (`{"197": {...}}`); the parser
   reads both. Code: `ChallengeResponseParser`.
+- A run names its players as they are now: after a rename, every past run comes back under the
+  new name, race and gender. Checked 2026-11-13 with Lastguard → Héll on Evermoon: the 13:11
+  UTC read listed his runs without him, and the 15:38 UTC read listed all of them under Héll.
+  `MythicPlusRenames` gives runs back to an old name
+  ([data-pipeline.md](data-pipeline.md#renamed-mythic-characters)).
 - Icons are names without a host. `dataUrlPrefix` (`legion-`) picks the expansion's static
   server: `https://legion-static.tauri.hu/images/icons/large/<icon>.png`. Code:
   `MythicPlusCatalog.IconUrl`.

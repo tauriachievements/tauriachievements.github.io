@@ -387,6 +387,54 @@ public sealed class MythicPlusExportServiceTests
     }
 
     [Fact]
+    public async Task ExportAsync_ScoresARenamedCharactersEarlierRunsUnderTheOldName()
+    {
+        var outputDirectory = CreateTempDirectory();
+        try
+        {
+            var lastRunAsLastguard = new DateTimeOffset(
+                2026,
+                11,
+                13,
+                16,
+                23,
+                51,
+                TimeSpan.Zero
+            ).ToUnixTimeSeconds();
+            await ExportHallsAsync(
+                outputDirectory,
+                new DateTimeOffset(2026, 11, 14, 9, 30, 0, TimeSpan.Zero),
+                Run(
+                    15,
+                    2_000_000,
+                    lastRunAsLastguard,
+                    [],
+                    Member("Héll", Evermoon, 2, "Protection", 0, "")
+                ),
+                Run(
+                    10,
+                    2_100_000,
+                    lastRunAsLastguard + 3600,
+                    [],
+                    Member("Héll", Evermoon, 2, "Protection", 0, "")
+                )
+            );
+
+            var index = ReadJson(outputDirectory, "index.json");
+            Assert.Equal(["Héll", "Lastguard"], PlayerNames(index));
+            Assert.Equal(
+                [HallsScore(15, 2_000_000), 2_000_000],
+                Values(ScoresOf(index, "Lastguard"))
+            );
+            Assert.Equal([HallsScore(10, 2_100_000), 2_100_000], Values(ScoresOf(index, "Héll")));
+        }
+        finally
+        {
+            Directory.Delete(outputDirectory, recursive: true);
+        }
+    }
+
+    [Fact]
     public async Task ExportAsync_KeepsEveryPlayerInPlaceAndAddsNewPlayersAtTheEnd()
     {
         var outputDirectory = CreateTempDirectory();

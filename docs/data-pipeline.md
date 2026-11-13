@@ -202,6 +202,23 @@ a key won by abusing a bug that the server has since fixed. What they are is in
 - On the site, `createRunDecoder` puts the reason in `invalid`, and `MythicPlusDataService`
   sets those runs apart (`splitInvalidRuns`) before any page sees them.
 
+## Renamed Mythic+ characters
+
+The leaderboards name a run's players as they are now, so a rename moves the character's whole
+history to the new name ([tauri-api.md](tauri-api.md#mythic-challenge-index-challenge-leaderboard)).
+When the player asks to keep the old name on the old runs, `MythicPlusRenames` in
+MythicPlusExporter lists the rename: the realm, the new name, the old name, the old race and
+gender, and when the last run under the old name finished (UTC, that run included).
+
+- Before it scores anything, the exporter gives every run that finished by then back to the old
+  name, with the old race and gender. The old name's row in the players table comes back into use
+  with that score. The new name scores only the runs after it, so until it plays one it has no
+  score (`[]`) and is listed in `departed`.
+- The old race and gender are in the old name's row of `index.json`, or in Players.csv.
+- As with invalid runs, a change needs no format bump: it shows after the next export.
+- The list: Lastguard → Héll (Evermoon), last run as Lastguard 13 November 2026 17:23 Budapest
+  time (16:23:51 UTC).
+
 ## Raid log files
 
 RaidLogExporter writes `raid-log-data/` for the `/raid-logs` pages, which decode it in

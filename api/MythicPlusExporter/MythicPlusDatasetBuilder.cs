@@ -63,7 +63,7 @@ public static class MythicPlusDatasetBuilder
             var info = MythicPlusCatalog.GetDungeon(map.ChallengeId, map.Name);
             var seen = new HashSet<string>(StringComparer.Ordinal);
             var ranked = new List<ScoredRun>(runs.Count);
-            foreach (var run in runs)
+            foreach (var run in runs.Select(MythicPlusRenames.Apply))
             {
                 if (!seen.Add(RunKey(run)))
                 {
