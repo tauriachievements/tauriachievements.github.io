@@ -240,6 +240,10 @@ decision: ask first.** When a rule does change, change its tests first and see t
   The exporter stamps a scan when it has finished reading, so a key finished during the previous
   scan, after its dungeon was read, raises the score without being marked.
 - An invalid run counts nowhere ([below](#invalid-mythic-runs)).
+- A renamed character whose old name is listed in `MythicPlusRenames` scores the runs from
+  before the rename under the old name, and only the later ones under the new name
+  ([data-pipeline.md](data-pipeline.md#renamed-mythic-characters)). Tests:
+  `MythicPlusRenamesTests`, `MythicPlusExportServiceTests` (`ExportAsync_ScoresARenamed…`).
 - **The scoring page** `/mythic-plus/scoring` explains all this with worked examples.
   `Score_MatchesTheScoringPageExamples` in `api/tests/AchievementLadder.Tests/MythicPlusExportServiceTests.cs`
   pins those examples, so change the page and the test together.
