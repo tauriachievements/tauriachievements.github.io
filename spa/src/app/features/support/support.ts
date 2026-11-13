@@ -45,6 +45,11 @@ export const DONATIONS: readonly Donation[] = [
     names: [{ name: 'Ratillas', classId: 4, realm: 'evermoon' }],
     amount: 100_000,
     currency: 'gold'
+  },
+  {
+    names: [{ name: 'Hellskream', classId: 1, realm: 'tauri' }],
+    amount: 100_000,
+    currency: 'gold'
   }
 ];
 
