@@ -1,5 +1,5 @@
 {
-  "timestamp": "2026-11-12 04:19:51 CET",
+  "timestamp": "2026-11-13 05:17:23 CET",
   "guild": {
     "name": "Final State",
     "realm": "Evermoon",
@@ -24,8 +24,8 @@
       "guildRank": 0,
       "guildRankName": "Guild Master",
       "specialization": "Shadow",
-      "playedTime": 22189822,
-      "achievementPoints": 20365,
+      "playedTime": 22237988,
+      "achievementPoints": 20505,
       "artifactWeapon": "Xal\u0027atath, Blade of the Black Empire",
       "artifactRelics": 3,
       "artifactTraits": 38,
@@ -38,7 +38,7 @@
         {
           "specialization": "Discipline",
           "name": "Light\u0027s Wrath",
-          "traits": 29
+          "traits": 30
         },
         {
           "specialization": "Holy",
@@ -185,20 +185,25 @@
       "guildRank": 4,
       "guildRankName": "Alt",
       "specialization": "Fire",
-      "playedTime": 456170,
+      "playedTime": 459054,
       "achievementPoints": 1745,
       "artifactWeapon": "Felo\u0027melorn",
       "artifactRelics": 2,
-      "artifactTraits": 12,
+      "artifactTraits": 13,
       "artifacts": [
         {
           "specialization": "Fire",
           "name": "Felo\u0027melorn",
-          "traits": 12
+          "traits": 13
+        },
+        {
+          "specialization": "Frost",
+          "name": "Ebonchill",
+          "traits": 1
         }
       ],
-      "artifactKnowledge": 5,
-      "itemLevel": 803.25,
+      "artifactKnowledge": 7,
+      "itemLevel": 795,
       "legendaries": []
     },
     {
@@ -233,7 +238,7 @@
       "guildRank": 4,
       "guildRankName": "Alt",
       "specialization": "Assassination",
-      "playedTime": 435172,
+      "playedTime": 435223,
       "achievementPoints": 1485,
       "artifactWeapon": "The Kingslayers",
       "artifactRelics": 3,
@@ -264,7 +269,7 @@
       "guildRank": 4,
       "guildRankName": "Alt",
       "specialization": "Destruction",
-      "playedTime": 2315909,
+      "playedTime": 2315934,
       "achievementPoints": 4445,
       "artifactWeapon": "Scepter of Sargeras",
       "artifactRelics": 3,
@@ -300,8 +305,8 @@
       "guildRank": 4,
       "guildRankName": "Alt",
       "specialization": "Arms",
-      "playedTime": 237513,
-      "achievementPoints": 1340,
+      "playedTime": 240689,
+      "achievementPoints": 1370,
       "artifactWeapon": "Strom\u0027kar, the Warbreaker",
       "artifactRelics": 2,
       "artifactTraits": 17,
@@ -312,8 +317,8 @@
           "traits": 17
         }
       ],
-      "artifactKnowledge": 11,
-      "itemLevel": 814,
+      "artifactKnowledge": 12,
+      "itemLevel": 819.5,
       "legendaries": []
     }
   ]
