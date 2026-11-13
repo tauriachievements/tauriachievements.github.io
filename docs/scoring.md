@@ -49,6 +49,33 @@ decision: ask first.** When a rule does change, change its tests first and see t
 - **Tests:** `scripts/generate-player-snapshot.test.js`, `scripts/generate-player-history.test.js`,
   `scripts/player-data-utils.test.js`.
 
+## Played Since Legion
+
+- **Code:** `spa/scripts/generate-played-since-legion.js` ranks; `features/ladder/played-since-legion.ts`
+  filters and averages for the page.
+- A character's played time since launch is its PlayedTime now minus its PlayedTime in the last
+  scan committed before the Legion launch (2026-07-15 09:00 server time). That scan is from the
+  evening before, so time played on Jul 14 after it counts too.
+- The launch scan's row counts only for the same character, by the Top Gainers rule
+  ([above](#ladder-changes-and-new-characters)). That scan has no Level10Date column, so it
+  compares the class only: a name now on another class is another character.
+- A character the launch scan doesn't have counts in full only when it reached level 10 on or
+  after that scan's day (UTC). Any other is left out: the ladder found it after launch, so its
+  time at launch is unknown (12,720 characters on 2026-11-13), and counting its whole /played
+  would put it at the top.
+- A character is left out when its time since launch is 0 or less (the name changed hands) or
+  more than the time between the two scans.
+- Most time first, then the player key (`realm::name`), so no two rows share a place. The file
+  keeps the top 1,000.
+- A realm or class filter numbers the characters again inside it; a name or guild search only
+  hides rows (case and accents ignored), as on the ladder.
+- Per day is the played time over the days from the launch to the current scan, fractions of a
+  day included, for every character, those made after launch too.
+- Each character counts on its own: the API doesn't link characters to accounts. /played counts
+  time logged in, AFK included.
+- **Tests:** `scripts/generate-played-since-legion.test.js`, `scripts/load-player-snapshots.test.js`
+  (`selectLastScanBefore`), `played-since-legion.spec.ts`.
+
 ## Realm Stats
 
 - **Code:** `spa/scripts/compute-server-stats.js` counts; `features/realm-stats/realm-stats-views.ts`

@@ -10,6 +10,7 @@ const {
 const SOURCE_PATH = path.join(__dirname, "..", "src", "Players.csv");
 const LAST_UPDATED_PATH = path.join(__dirname, "..", "src", "lastUpdated.txt");
 const SNAPSHOT_DAY_LIMIT = 21;
+const LEGION_LAUNCH = "2026-07-15T07:00:00.000Z";
 
 function loadPlayerSnapshots() {
   if (!fs.existsSync(SOURCE_PATH)) {
@@ -31,8 +32,20 @@ function loadPlayerSnapshots() {
 
   const snapshotTimestamps = [currentTimestamp, ...earlierScans.map((scan) => scan.timestamp)]
     .sort((left, right) => new Date(left).getTime() - new Date(right).getTime());
+  const launchScan = selectLastScanBefore(history, LEGION_LAUNCH);
+  const launchPlayers = launchScan
+    ? parsePlayersCsv(readGitFile(launchScan.sha, launchScan.filePath))
+    : [];
 
-  return { currentPlayers, previousPlayers, previousScanTimestamp: previousScan?.timestamp, snapshotTimestamps };
+  return {
+    currentPlayers,
+    currentTimestamp,
+    previousPlayers,
+    previousScanTimestamp: previousScan?.timestamp,
+    snapshotTimestamps,
+    launchPlayers,
+    launchScanTimestamp: launchScan?.timestamp,
+  };
 }
 
 function selectEarlierDailyScans(history, currentDayKey) {
@@ -93,4 +106,13 @@ function toDayKey(timestamp) {
   return timestamp ? timestamp.slice(0, 10) : "";
 }
 
-module.exports = { loadPlayerSnapshots, selectEarlierDailyScans };
+function selectLastScanBefore(history, timestamp) {
+  const limit = new Date(timestamp).getTime();
+
+  return history
+    .map((entry) => ({ sha: entry.sha, filePath: entry.filePath, timestamp: normalizeTimestamp(entry.commitTimestamp) }))
+    .filter((scan) => scan.timestamp && new Date(scan.timestamp).getTime() < limit)
+    .sort((left, right) => new Date(right.timestamp).getTime() - new Date(left.timestamp).getTime())[0];
+}
+
+module.exports = { LEGION_LAUNCH, loadPlayerSnapshots, selectEarlierDailyScans, selectLastScanBefore };

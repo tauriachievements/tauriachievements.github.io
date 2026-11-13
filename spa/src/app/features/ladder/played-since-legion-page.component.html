@@ -1,0 +1,116 @@
+<div class="played-page">
+  <header class="played-intro">
+    <h1>Played Since Legion</h1>
+    @if (launch()) {
+      <p>The characters with the most /played since Legion launched on {{ launch() }} server time.</p>
+    }
+  </header>
+
+  <section class="played-toolbar" aria-label="Filters">
+    <button type="button" class="filter-reset" [disabled]="!filtersActive()" (click)="resetFilters()">Reset</button>
+    <div class="filter-slot">
+      <app-filter-dropdown
+        dropdownId="playedRealm"
+        triggerId="playedRealmTrigger"
+        ariaLabel="Filter characters by realm"
+        [options]="realmOptions"
+        [selectedValue]="realm()"
+        [widthLabels]="realmWidthLabels"
+        [compact]="true"
+        (selectionChange)="setRealm($event)" />
+    </div>
+    <div class="filter-slot">
+      <app-filter-dropdown
+        dropdownId="playedClass"
+        triggerId="playedClassTrigger"
+        ariaLabel="Filter characters by class"
+        [options]="classOptions"
+        [selectedValue]="classId()"
+        [widthLabels]="classWidthLabels"
+        [showIcons]="true"
+        [compact]="true"
+        (selectionChange)="setClass($event)" />
+    </div>
+    <input
+      type="search"
+      class="search-input"
+      [value]="search()"
+      placeholder="Name or guild"
+      aria-label="Search by character name or guild"
+      (input)="setSearch($event)" />
+  </section>
+
+  <app-load-state
+    [loading]="isLoading()"
+    [error]="loadError()"
+    [skeleton]="['rows:12']"
+    loadingText="Loading played time..."
+    (retry)="loadData()" />
+
+  @if (data()) {
+    <section #list class="played-panel" aria-label="Played since Legion launched">
+      @if (pageRows().length > 0) {
+        <table class="played-table">
+          <thead>
+            <tr>
+              <th scope="col">#</th>
+              <th scope="col">Character</th>
+              <th scope="col" class="wide-only">Realm</th>
+              <th scope="col" class="wide-only">Guild</th>
+              <th scope="col" class="number">Played</th>
+              <th scope="col" class="number phone-hidden">Per day</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (row of pageRows(); track row.realm + '::' + row.name) {
+              <tr [class]="row.faction">
+                <td class="rank">{{ row.rank | number }}</td>
+                <td class="identity">
+                  <div class="identity-line">
+                    <img class="icon" [src]="getRaceIconPath(row.race, row.gender)" [alt]="raceAndClass(row)" [title]="raceAndClass(row)" width="18" height="18" loading="lazy" />
+                    <img class="icon" [src]="getClassIconPath(row.class)" alt="" width="18" height="18" loading="lazy" />
+                    <a
+                      class="character-name"
+                      [style.color]="classColor(row)"
+                      [href]="getArmoryUrl(row.name, row.realm)"
+                      target="_blank"
+                      rel="noopener noreferrer">{{ row.name }}</a>
+                  </div>
+                  <span class="meta narrow-only">{{ row.realm }}@if (row.guild) { · {{ row.guild }}}</span>
+                </td>
+                <td class="wide-only">{{ row.realm }}</td>
+                <td class="wide-only guild">
+                  @if (row.guild) {
+                    <a
+                      class="guild-name"
+                      [href]="getGuildArmoryUrl(row.guild, row.realm)"
+                      target="_blank"
+                      rel="noopener noreferrer">{{ row.guild }}</a>
+                  }
+                </td>
+                <td class="number played">{{ formatPlayedTime(row.played) }}</td>
+                <td class="number phone-hidden">{{ formatPlayedTime(row.perDay) }}</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+        <app-pager
+          [page]="currentPage()"
+          [pages]="pages()"
+          [count]="(rows().length | number) + ' characters'"
+          [scrollTarget]="list"
+          (pageChange)="goToPage($event)" />
+      } @else {
+        <p class="played-empty">No character in the top {{ listed() | number }} matches these filters.</p>
+      }
+    </section>
+
+    <p class="played-note">
+      Played is a character's /played now minus its /played in the last ladder scan before launch.
+      A character made after that scan counts in full. A character the ladder only found after launch
+      isn't listed, because its time at launch isn't known. /played counts all time logged in, AFK
+      included, and each character counts on its own. Per day averages the played time over the days
+      since launch. The list holds the top {{ listed() | number }} characters.
+    </p>
+  }
+</div>

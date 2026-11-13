@@ -449,6 +449,16 @@ git-ignored and regenerated on every build:
 - `players.history.snapshot.json`, `new-players.snapshot.json`, `stats.snapshot.json`,
   `guilds.snapshot.json`: small precomputed files for Top Gainers, New Rare Characters, Stats
   and Guild Rankings.
+- `played-since-legion.snapshot.json`: the Played Since Legion page's top 1,000 characters,
+  `{ v, launch, launchScan, generatedAt, players }`, each player
+  `{ name, realm, faction, race, gender, class, guild, played }` with `played` in seconds. The
+  baseline is the last Players.csv scan committed before the Legion launch (`LEGION_LAUNCH` in
+  `load-player-snapshots.js`, 2026-07-15 09:00 server time), read from git history like the
+  previous day's scan; that's the Jul 14 2026 19:18 scan, the second one with a PlayedTime
+  column. Reading it adds about 1.5 s to the build. The rules are in
+  [scoring.md](scoring.md#played-since-legion). `generate-battleground-snapshot.js` keeps its own
+  `LEGION_START` in the collector's server-time form, so a change to the launch moment changes
+  both.
 - `stats.snapshot.json` (version 3) holds one snapshot per realm and level filter, keyed
   `realm|level` with `*` for all (`*|110`, `Tauri|*`). A snapshot has the totals (characters,
   guilds, female characters, average and median item level, total and median played hours),
