@@ -1,5 +1,5 @@
 {
-  "timestamp": "2026-11-13 05:10:37 CET",
+  "timestamp": "2026-11-14 03:35:17 CET",
   "guild": {
     "name": "Impaired",
     "realm": "Evermoon",
@@ -597,47 +597,6 @@
       "legendaries": []
     },
     {
-      "name": "Caledra",
-      "race": 10,
-      "gender": 1,
-      "class": 4,
-      "guildRank": 5,
-      "guildRankName": "Alt",
-      "specialization": "Outlaw",
-      "playedTime": 1202135,
-      "achievementPoints": 2065,
-      "artifactWeapon": "The Dreadblades",
-      "artifactRelics": 3,
-      "artifactTraits": 22,
-      "artifacts": [
-        {
-          "specialization": "Outlaw",
-          "name": "The Dreadblades",
-          "traits": 22
-        },
-        {
-          "specialization": "Assassination",
-          "name": "The Kingslayers",
-          "traits": 9
-        },
-        {
-          "specialization": "Subtlety",
-          "name": "Fangs of the Devourer",
-          "traits": 0
-        }
-      ],
-      "artifactKnowledge": 17,
-      "itemLevel": 841.75,
-      "legendaries": [
-        {
-          "id": 137069,
-          "name": "Will of Valeera",
-          "icon": "https://legion-static.tauri.hu/images/icons/large/inv_pants_cloth_02.png",
-          "tooltipHtml": "\u003Ctable class=\u0022tooltip-table\u0022\u003E\u003Ctr\u003E\u003Ctd\u003E\u003Cb class=\u0022q5\u0022\u003EWill of Valeera\u003C/b\u003E\u003Cbr /\u003E\u003Cspan class=\u0022q i\u0022\u003EItem Level 910\u003C/span\u003E\u003Cbr /\u003EBinds when picked up\u003Cbr /\u003EUnique-Equipped: Legion Legendary (1)\u003Ctable width=\u0022100%\u0022\u003E\u003Ctr\u003E\u003Ctd\u003ELegs\u003C/td\u003E\u003Cth\u003ELeather\u003C/th\u003E\u003C/tr\u003E\u003C/table\u003E\u003Cspan class=\u0022ia\u0022\u003E352 Armor\u003C/span\u003E\u003Cbr /\u003E\u003Cspan class=\u0022s1\u0022\u003E\u002B3573 Stamina\u003C/span\u003E\u003Cbr /\u003E\u003Cspan class=\u0022s2\u0022\u003E\u002B2382 [Agility or Intellect]\u003C/span\u003E\u003Cbr /\u003E\u003C/td\u003E\u003C/tr\u003E\u003C/table\u003E\u003Ctable class=\u0022tooltip-table\u0022\u003E\u003Ctr\u003E\u003Ctd\u003E\u003Cspan class=\u0022q2 s3\u0022\u003E\u002B1812 Critical Strike\u0026nbsp;\u003Csmall\u003E(\u003Ca href=\u0022javascript:;\u0022 onmousedown=\u0022return false\u0022 onclick=\u0022g_setRatingLevel(this,110,32,1812)\u0022\u003E3.02%\u0026nbsp;@\u0026nbsp;L110\u003C/a\u003E)\u003C/small\u003E\u003C/span\u003E\u003Cbr /\u003E\u003Cspan class=\u0022q2 s4\u0022\u003E\u002B1359 Haste\u0026nbsp;\u003Csmall\u003E(\u003Ca href=\u0022javascript:;\u0022 onmousedown=\u0022return false\u0022 onclick=\u0022g_setRatingLevel(this,110,36,1359)\u0022\u003E3.2%\u0026nbsp;@\u0026nbsp;L110\u003C/a\u003E)\u003C/small\u003E\u003C/span\u003E\u003Cbr /\u003E\u003Cspan class=\u0022q2 s5\u0022\u003E\u002B1087 Mastery\u0026nbsp;\u003Csmall\u003E(\u003Ca href=\u0022javascript:;\u0022 onmousedown=\u0022return false\u0022 onclick=\u0022g_setRatingLevel(this,110,49,1087)\u0022\u003E1.81%\u0026nbsp;@\u0026nbsp;L110\u003C/a\u003E)\u003C/small\u003E\u003C/span\u003E\u003Cbr /\u003E\u003Cspan class=\u0022q2\u0022\u003EEquip: \u003Ca href=\u0022?spell=208402\u0022 class=\u0022q2\u0022\u003EFeint heals you for ${0*5 sec/5 sec}% of your maximum health over 5 sec.\u003C/a\u003E\u003C/span\u003E\u003Cbr /\u003E\u003C!--sockets--\u003EDurability 145 / 145\u003Cbr /\u003EClasses: \u003Cspan class=\u0022c4\u0022\u003ERogue\u003C/span\u003E\u003Cbr /\u003ERequires Level 101\u003Cbr /\u003E\u003Cspan class=\u0022q\u0022\u003E\u0022At a young age, Valeera survived the death of her parents, imprisonment, and slavery. Her enemies have always underestimated her will to survive.\u0022\u003C/span\u003E\u003Cbr /\u003ESell Price: \u003Cspan class=\u0022moneygold\u0022\u003E94\u003C/span\u003E \u003Cspan class=\u0022moneysilver\u0022\u003E45\u003C/span\u003E \u003Cspan class=\u0022moneycopper\u0022\u003E65\u003C/span\u003E\u003C/td\u003E\u003C/tr\u003E\u003C/table\u003E"
-        }
-      ]
-    },
-    {
       "name": "Caledrel",
       "race": 10,
       "gender": 1,
@@ -718,7 +677,7 @@
       "guildRank": 5,
       "guildRankName": "Alt",
       "specialization": "Mistweaver",
-      "playedTime": 2460253,
+      "playedTime": 2462912,
       "achievementPoints": 2925,
       "artifactWeapon": "Sheilun, Staff of the Mists",
       "artifactRelics": 3,
@@ -740,7 +699,7 @@
           "traits": 19
         }
       ],
-      "artifactKnowledge": 22,
+      "artifactKnowledge": 23,
       "itemLevel": 876.13,
       "legendaries": [
         {
@@ -1391,7 +1350,7 @@
       "guildRank": 9,
       "guildRankName": "Initiate",
       "specialization": "Frost",
-      "playedTime": 7873918,
+      "playedTime": 7879949,
       "achievementPoints": 14240,
       "artifactWeapon": "Ebonchill",
       "artifactRelics": 3,
@@ -1967,7 +1926,7 @@
       "guildRank": 5,
       "guildRankName": "Alt",
       "specialization": "Arms",
-      "playedTime": 1872421,
+      "playedTime": 1883068,
       "achievementPoints": 5360,
       "artifactWeapon": "Strom\u0027kar, the Warbreaker",
       "artifactRelics": 3,
@@ -1981,7 +1940,7 @@
         {
           "specialization": "Fury",
           "name": "Warswords of the Valarjar",
-          "traits": 32
+          "traits": 33
         },
         {
           "specialization": "Protection",
@@ -1990,7 +1949,7 @@
         }
       ],
       "artifactKnowledge": 23,
-      "itemLevel": 879.19,
+      "itemLevel": 879.81,
       "legendaries": [
         {
           "id": 137060,
@@ -2221,16 +2180,16 @@
       "guildRank": 5,
       "guildRankName": "Alt",
       "specialization": "Windwalker",
-      "playedTime": 1477290,
+      "playedTime": 1481287,
       "achievementPoints": 4405,
       "artifactWeapon": "Fists of the Heavens",
       "artifactRelics": 3,
-      "artifactTraits": 32,
+      "artifactTraits": 33,
       "artifacts": [
         {
           "specialization": "Windwalker",
           "name": "Fists of the Heavens",
-          "traits": 32
+          "traits": 33
         },
         {
           "specialization": "Mistweaver",
@@ -2243,7 +2202,7 @@
           "traits": 1
         }
       ],
-      "artifactKnowledge": 22,
+      "artifactKnowledge": 23,
       "itemLevel": 878.31,
       "legendaries": [
         {
@@ -2785,16 +2744,16 @@
       "guildRank": 7,
       "guildRankName": "Member",
       "specialization": "Fire",
-      "playedTime": 4291495,
+      "playedTime": 4297061,
       "achievementPoints": 8635,
       "artifactWeapon": "Felo\u0027melorn",
       "artifactRelics": 3,
-      "artifactTraits": 35,
+      "artifactTraits": 36,
       "artifacts": [
         {
           "specialization": "Fire",
           "name": "Felo\u0027melorn",
-          "traits": 35
+          "traits": 36
         },
         {
           "specialization": "Frost",
@@ -2969,7 +2928,7 @@
       "guildRank": 9,
       "guildRankName": "Initiate",
       "specialization": "Windwalker",
-      "playedTime": 8584217,
+      "playedTime": 8584379,
       "achievementPoints": 18655,
       "artifactWeapon": "Fists of the Heavens",
       "artifactRelics": 3,

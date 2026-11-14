@@ -1,5 +1,5 @@
 {
-  "timestamp": "2026-11-13 05:17:23 CET",
+  "timestamp": "2026-11-14 03:41:47 CET",
   "guild": {
     "name": "Final State",
     "realm": "Evermoon",
@@ -8,11 +8,19 @@
   "ranks": [
     {
       "order": 0,
-      "name": "Guild Master"
+      "name": "S Tier"
     },
     {
-      "order": 4,
-      "name": "Alt"
+      "order": 1,
+      "name": "A Tier"
+    },
+    {
+      "order": 2,
+      "name": "B Tier"
+    },
+    {
+      "order": 3,
+      "name": "C Tier"
     }
   ],
   "players": [
@@ -21,19 +29,19 @@
       "race": 9,
       "gender": 1,
       "class": 5,
-      "guildRank": 0,
-      "guildRankName": "Guild Master",
+      "guildRank": 3,
+      "guildRankName": "C Tier",
       "specialization": "Shadow",
-      "playedTime": 22237988,
+      "playedTime": 22267391,
       "achievementPoints": 20505,
       "artifactWeapon": "Xal\u0027atath, Blade of the Black Empire",
       "artifactRelics": 3,
-      "artifactTraits": 38,
+      "artifactTraits": 39,
       "artifacts": [
         {
           "specialization": "Shadow",
           "name": "Xal\u0027atath, Blade of the Black Empire",
-          "traits": 38
+          "traits": 39
         },
         {
           "specialization": "Discipline",
@@ -68,8 +76,8 @@
       "race": 10,
       "gender": 1,
       "class": 2,
-      "guildRank": 4,
-      "guildRankName": "Alt",
+      "guildRank": 3,
+      "guildRankName": "C Tier",
       "specialization": "Retribution",
       "playedTime": 204553,
       "achievementPoints": 2000,
@@ -92,8 +100,8 @@
       "race": 10,
       "gender": 1,
       "class": 12,
-      "guildRank": 4,
-      "guildRankName": "Alt",
+      "guildRank": 2,
+      "guildRankName": "B Tier",
       "specialization": "Havoc",
       "playedTime": 24881,
       "achievementPoints": 240,
@@ -116,8 +124,8 @@
       "race": 8,
       "gender": 1,
       "class": 11,
-      "guildRank": 4,
-      "guildRankName": "Alt",
+      "guildRank": 2,
+      "guildRankName": "B Tier",
       "specialization": "Feral",
       "playedTime": 145899,
       "achievementPoints": 500,
@@ -145,19 +153,19 @@
       "race": 8,
       "gender": 0,
       "class": 3,
-      "guildRank": 4,
-      "guildRankName": "Alt",
+      "guildRank": 1,
+      "guildRankName": "A Tier",
       "specialization": "Marksmanship",
-      "playedTime": 1336764,
+      "playedTime": 1337055,
       "achievementPoints": 3680,
       "artifactWeapon": "Thas\u0027dorah, Legacy of the Windrunners",
       "artifactRelics": 3,
-      "artifactTraits": 25,
+      "artifactTraits": 26,
       "artifacts": [
         {
           "specialization": "Marksmanship",
           "name": "Thas\u0027dorah, Legacy of the Windrunners",
-          "traits": 25
+          "traits": 26
         }
       ],
       "artifactKnowledge": 19,
@@ -182,13 +190,13 @@
       "race": 10,
       "gender": 1,
       "class": 8,
-      "guildRank": 4,
-      "guildRankName": "Alt",
-      "specialization": "Fire",
-      "playedTime": 459054,
-      "achievementPoints": 1745,
-      "artifactWeapon": "Felo\u0027melorn",
-      "artifactRelics": 2,
+      "guildRank": 1,
+      "guildRankName": "A Tier",
+      "specialization": "Frost",
+      "playedTime": 465921,
+      "achievementPoints": 1750,
+      "artifactWeapon": "Ebonchill",
+      "artifactRelics": 1,
       "artifactTraits": 13,
       "artifacts": [
         {
@@ -199,11 +207,11 @@
         {
           "specialization": "Frost",
           "name": "Ebonchill",
-          "traits": 1
+          "traits": 13
         }
       ],
       "artifactKnowledge": 7,
-      "itemLevel": 795,
+      "itemLevel": 802.31,
       "legendaries": []
     },
     {
@@ -211,23 +219,23 @@
       "race": 10,
       "gender": 1,
       "class": 10,
-      "guildRank": 4,
-      "guildRankName": "Alt",
+      "guildRank": 0,
+      "guildRankName": "S Tier",
       "specialization": "Windwalker",
-      "playedTime": 111048,
-      "achievementPoints": 190,
+      "playedTime": 116056,
+      "achievementPoints": 215,
       "artifactWeapon": "Fists of the Heavens",
-      "artifactRelics": 1,
-      "artifactTraits": 1,
+      "artifactRelics": 2,
+      "artifactTraits": 4,
       "artifacts": [
         {
           "specialization": "Windwalker",
           "name": "Fists of the Heavens",
-          "traits": 1
+          "traits": 4
         }
       ],
       "artifactKnowledge": 1,
-      "itemLevel": 783.31,
+      "itemLevel": 790.38,
       "legendaries": []
     },
     {
@@ -235,22 +243,22 @@
       "race": 10,
       "gender": 1,
       "class": 4,
-      "guildRank": 4,
-      "guildRankName": "Alt",
+      "guildRank": 1,
+      "guildRankName": "A Tier",
       "specialization": "Assassination",
-      "playedTime": 435223,
+      "playedTime": 435554,
       "achievementPoints": 1485,
       "artifactWeapon": "The Kingslayers",
       "artifactRelics": 3,
-      "artifactTraits": 25,
+      "artifactTraits": 26,
       "artifacts": [
         {
           "specialization": "Assassination",
           "name": "The Kingslayers",
-          "traits": 25
+          "traits": 26
         }
       ],
-      "artifactKnowledge": 16,
+      "artifactKnowledge": 17,
       "itemLevel": 851.94,
       "legendaries": [
         {
@@ -266,10 +274,10 @@
       "race": 8,
       "gender": 0,
       "class": 9,
-      "guildRank": 4,
-      "guildRankName": "Alt",
+      "guildRank": 1,
+      "guildRankName": "A Tier",
       "specialization": "Destruction",
-      "playedTime": 2315934,
+      "playedTime": 2315948,
       "achievementPoints": 4445,
       "artifactWeapon": "Scepter of Sargeras",
       "artifactRelics": 3,
@@ -302,10 +310,10 @@
       "race": 10,
       "gender": 1,
       "class": 1,
-      "guildRank": 4,
-      "guildRankName": "Alt",
+      "guildRank": 1,
+      "guildRankName": "A Tier",
       "specialization": "Arms",
-      "playedTime": 240689,
+      "playedTime": 240846,
       "achievementPoints": 1370,
       "artifactWeapon": "Strom\u0027kar, the Warbreaker",
       "artifactRelics": 2,
@@ -318,7 +326,7 @@
         }
       ],
       "artifactKnowledge": 12,
-      "itemLevel": 819.5,
+      "itemLevel": 820.44,
       "legendaries": []
     }
   ]
