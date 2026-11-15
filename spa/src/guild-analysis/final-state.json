@@ -1,5 +1,5 @@
 {
-  "timestamp": "2026-11-14 03:41:47 CET",
+  "timestamp": "2026-11-15 03:44:41 CET",
   "guild": {
     "name": "Final State",
     "realm": "Evermoon",
@@ -8,19 +8,11 @@
   "ranks": [
     {
       "order": 0,
-      "name": "S Tier"
+      "name": "Guild Master"
     },
     {
-      "order": 1,
-      "name": "A Tier"
-    },
-    {
-      "order": 2,
-      "name": "B Tier"
-    },
-    {
-      "order": 3,
-      "name": "C Tier"
+      "order": 4,
+      "name": "Alt"
     }
   ],
   "players": [
@@ -29,11 +21,11 @@
       "race": 9,
       "gender": 1,
       "class": 5,
-      "guildRank": 3,
-      "guildRankName": "C Tier",
+      "guildRank": 0,
+      "guildRankName": "Guild Master",
       "specialization": "Shadow",
-      "playedTime": 22267391,
-      "achievementPoints": 20505,
+      "playedTime": 22267928,
+      "achievementPoints": 20510,
       "artifactWeapon": "Xal\u0027atath, Blade of the Black Empire",
       "artifactRelics": 3,
       "artifactTraits": 39,
@@ -76,10 +68,10 @@
       "race": 10,
       "gender": 1,
       "class": 2,
-      "guildRank": 3,
-      "guildRankName": "C Tier",
+      "guildRank": 4,
+      "guildRankName": "Alt",
       "specialization": "Retribution",
-      "playedTime": 204553,
+      "playedTime": 205067,
       "achievementPoints": 2000,
       "artifactWeapon": "Ashbringer",
       "artifactRelics": 2,
@@ -100,10 +92,10 @@
       "race": 10,
       "gender": 1,
       "class": 12,
-      "guildRank": 2,
-      "guildRankName": "B Tier",
+      "guildRank": 4,
+      "guildRankName": "Alt",
       "specialization": "Havoc",
-      "playedTime": 24881,
+      "playedTime": 24888,
       "achievementPoints": 240,
       "artifactWeapon": "Twinblades of the Deceiver",
       "artifactRelics": 2,
@@ -124,28 +116,28 @@
       "race": 8,
       "gender": 1,
       "class": 11,
-      "guildRank": 2,
-      "guildRankName": "B Tier",
+      "guildRank": 4,
+      "guildRankName": "Alt",
       "specialization": "Feral",
-      "playedTime": 145899,
-      "achievementPoints": 500,
+      "playedTime": 152314,
+      "achievementPoints": 550,
       "artifactWeapon": "Fangs of Ashamane",
       "artifactRelics": 2,
-      "artifactTraits": 3,
+      "artifactTraits": 13,
       "artifacts": [
+        {
+          "specialization": "Feral",
+          "name": "Fangs of Ashamane",
+          "traits": 13
+        },
         {
           "specialization": "Balance",
           "name": "Scythe of Elune",
           "traits": 3
-        },
-        {
-          "specialization": "Feral",
-          "name": "Fangs of Ashamane",
-          "traits": 3
         }
       ],
-      "artifactKnowledge": 2,
-      "itemLevel": 786.81,
+      "artifactKnowledge": 4,
+      "itemLevel": 798.38,
       "legendaries": []
     },
     {
@@ -153,10 +145,10 @@
       "race": 8,
       "gender": 0,
       "class": 3,
-      "guildRank": 1,
-      "guildRankName": "A Tier",
+      "guildRank": 4,
+      "guildRankName": "Alt",
       "specialization": "Marksmanship",
-      "playedTime": 1337055,
+      "playedTime": 1337347,
       "achievementPoints": 3680,
       "artifactWeapon": "Thas\u0027dorah, Legacy of the Windrunners",
       "artifactRelics": 3,
@@ -168,7 +160,7 @@
           "traits": 26
         }
       ],
-      "artifactKnowledge": 19,
+      "artifactKnowledge": 20,
       "itemLevel": 855.73,
       "legendaries": [
         {
@@ -190,27 +182,27 @@
       "race": 10,
       "gender": 1,
       "class": 8,
-      "guildRank": 1,
-      "guildRankName": "A Tier",
+      "guildRank": 4,
+      "guildRankName": "Alt",
       "specialization": "Frost",
-      "playedTime": 465921,
+      "playedTime": 467229,
       "achievementPoints": 1750,
       "artifactWeapon": "Ebonchill",
       "artifactRelics": 1,
-      "artifactTraits": 13,
+      "artifactTraits": 14,
       "artifacts": [
+        {
+          "specialization": "Frost",
+          "name": "Ebonchill",
+          "traits": 14
+        },
         {
           "specialization": "Fire",
           "name": "Felo\u0027melorn",
           "traits": 13
-        },
-        {
-          "specialization": "Frost",
-          "name": "Ebonchill",
-          "traits": 13
         }
       ],
-      "artifactKnowledge": 7,
+      "artifactKnowledge": 8,
       "itemLevel": 802.31,
       "legendaries": []
     },
@@ -219,23 +211,23 @@
       "race": 10,
       "gender": 1,
       "class": 10,
-      "guildRank": 0,
-      "guildRankName": "S Tier",
+      "guildRank": 4,
+      "guildRankName": "Alt",
       "specialization": "Windwalker",
-      "playedTime": 116056,
+      "playedTime": 123427,
       "achievementPoints": 215,
       "artifactWeapon": "Fists of the Heavens",
       "artifactRelics": 2,
-      "artifactTraits": 4,
+      "artifactTraits": 13,
       "artifacts": [
         {
           "specialization": "Windwalker",
           "name": "Fists of the Heavens",
-          "traits": 4
+          "traits": 13
         }
       ],
-      "artifactKnowledge": 1,
-      "itemLevel": 790.38,
+      "artifactKnowledge": 2,
+      "itemLevel": 796.94,
       "legendaries": []
     },
     {
@@ -243,11 +235,11 @@
       "race": 10,
       "gender": 1,
       "class": 4,
-      "guildRank": 1,
-      "guildRankName": "A Tier",
+      "guildRank": 4,
+      "guildRankName": "Alt",
       "specialization": "Assassination",
-      "playedTime": 435554,
-      "achievementPoints": 1485,
+      "playedTime": 438638,
+      "achievementPoints": 1495,
       "artifactWeapon": "The Kingslayers",
       "artifactRelics": 3,
       "artifactTraits": 26,
@@ -274,10 +266,10 @@
       "race": 8,
       "gender": 0,
       "class": 9,
-      "guildRank": 1,
-      "guildRankName": "A Tier",
+      "guildRank": 4,
+      "guildRankName": "Alt",
       "specialization": "Destruction",
-      "playedTime": 2315948,
+      "playedTime": 2317225,
       "achievementPoints": 4445,
       "artifactWeapon": "Scepter of Sargeras",
       "artifactRelics": 3,
@@ -294,7 +286,7 @@
           "traits": 21
         }
       ],
-      "artifactKnowledge": 19,
+      "artifactKnowledge": 20,
       "itemLevel": 850.33,
       "legendaries": [
         {
@@ -310,10 +302,10 @@
       "race": 10,
       "gender": 1,
       "class": 1,
-      "guildRank": 1,
-      "guildRankName": "A Tier",
+      "guildRank": 4,
+      "guildRankName": "Alt",
       "specialization": "Arms",
-      "playedTime": 240846,
+      "playedTime": 243332,
       "achievementPoints": 1370,
       "artifactWeapon": "Strom\u0027kar, the Warbreaker",
       "artifactRelics": 2,
@@ -325,8 +317,8 @@
           "traits": 17
         }
       ],
-      "artifactKnowledge": 12,
-      "itemLevel": 820.44,
+      "artifactKnowledge": 13,
+      "itemLevel": 820.75,
       "legendaries": []
     }
   ]
