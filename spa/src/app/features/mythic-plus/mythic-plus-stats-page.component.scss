@@ -9,6 +9,9 @@ $band-high: #ff8000;
 $fortified: #4f8fe0;
 $tyrannical: #d9772f;
 $plot-height: 200px;
+$phone-axis-width: 36px;
+$phone-day-width: 9px;
+$day-label-overhang: 18px;
 
 :host { display: block; width: 100%; }
 
@@ -216,7 +219,7 @@ $plot-height: 200px;
   grid-template-columns: 44px minmax(0, 1fr);
   padding: 10px 4px 0 0;
 
-  &.days { min-width: max(640px, calc(var(--columns) * 14px)); }
+  &.days { padding-right: $day-label-overhang; }
   &.levels { min-width: max(360px, calc(var(--columns) * 22px)); }
 }
 
@@ -258,35 +261,7 @@ $plot-height: 200px;
   height: $plot-height;
   pointer-events: none;
 
-  > span { position: relative; border-left: 1px dashed #333; container-type: inline-size; }
-  > span:first-child { border-left: 0; }
-  .shade { background: rgba(255, 255, 255, .025); }
-
-  em {
-    position: absolute;
-    top: 3px;
-    left: 6px;
-    right: 4px;
-    display: flex;
-    gap: 10px;
-    overflow: hidden;
-    color: #8a8a8a;
-    font-size: .69rem;
-    font-style: normal;
-    white-space: nowrap;
-  }
-
-  @container (max-width: 24px) {
-    em { display: none; }
-  }
-}
-
-.band-affix {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-
-  img { width: 14px; height: 14px; border-radius: 2px; }
+  @include shared.week-bands;
 }
 
 .columns { position: relative; height: $plot-height; align-items: end; }
@@ -373,10 +348,11 @@ $plot-height: 200px;
   margin-top: 6px;
 
   span {
+    display: flex;
+    justify-content: center;
     overflow: visible;
     color: #8a8a8a;
     font-size: .69rem;
-    text-align: center;
     white-space: nowrap;
   }
 }
@@ -586,8 +562,6 @@ $plot-height: 200px;
   .page-header h1 { font-size: 1.35rem; }
 
   .chart-card { padding: 12px 12px 14px; }
-  .band-affix .affix-name { display: none; }
-  .week-bands em { flex-wrap: wrap; height: 16px; row-gap: 0; }
 
   .chart-header .segmented, .chart-controls .segmented { flex: 1 1 100%; }
   .chart-header .segmented button, .chart-controls .segmented button { flex: 1 1 0; padding: 7px 6px; }
@@ -596,10 +570,10 @@ $plot-height: 200px;
   .corner-filter { width: 100%; }
 
   .column-chart {
-    grid-template-columns: 36px minmax(0, 1fr);
+    grid-template-columns: $phone-axis-width minmax(0, 1fr);
     padding-right: 14px;
 
-    &.days { min-width: max(100%, calc(var(--columns) * 8px)); }
+    &.days { min-width: max(100%, calc(var(--columns) * $phone-day-width + $phone-axis-width + $day-label-overhang)); }
     &.levels { min-width: 0; }
   }
 

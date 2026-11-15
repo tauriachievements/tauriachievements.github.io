@@ -89,7 +89,8 @@ function findControlsCoveredAtPageEnd(): Finding[] {
 
 async function expectNoLayoutProblems(page: Page, visualPage: VisualPage, width: number): Promise<void> {
   await openPage(page, visualPage);
-  const problems = await page.evaluate(findLayoutProblems, SIDEWAYS_BY_DESIGN.map(entry => entry.selector));
+  const sidewaysByDesign = SIDEWAYS_BY_DESIGN.filter(entry => !entry.phonesOnly || PHONE_WIDTHS.includes(width));
+  const problems = await page.evaluate(findLayoutProblems, sidewaysByDesign.map(entry => entry.selector));
   if (!visualPage.clicks?.length) {
     await page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight));
     await page.waitForTimeout(300);

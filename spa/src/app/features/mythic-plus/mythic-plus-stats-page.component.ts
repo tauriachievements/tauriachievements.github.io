@@ -185,7 +185,7 @@ export class MythicPlusStatsPageComponent implements OnInit {
   readonly dayBars = computed<DayBar[]>(() => {
     const days = this.days();
     const top = this.dayTicks()[this.dayTicks().length - 1];
-    const labelEvery = Math.max(1, Math.ceil(days.length / (this.phone() ? 6 : 16)));
+    const labelEvery = Math.max(1, Math.ceil(days.length / (this.phone() ? 6 : this.cards() ? 10 : 16)));
     const split = this.daySplit();
     const today = localDay(new Date());
     return days.map((day, position) => {

@@ -92,13 +92,9 @@
                   <span
                     [class.shade]="band.shade"
                     [style.grid-column]="band.start + ' / span ' + band.span">
-                    <em>
-                      @for (affix of band.affixes; track affix) {
-                        <span class="band-affix">
-                          <img [src]="affix.icon" alt="" loading="lazy" /><span class="affix-name">{{ affix.name }}</span>
-                        </span>
-                      }
-                    </em>
+                    <em>@for (affix of band.affixes; track affix) {
+                      <img [src]="affix.icon" alt="" loading="lazy" />
+                    }</em>
                   </span>
                 }
               </div>
