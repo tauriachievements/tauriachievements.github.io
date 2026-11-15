@@ -31,7 +31,14 @@ $cards-breakpoint: 900px;
     overflow: hidden;
   }
 
-  img { width: 14px; height: 14px; flex: none; border-radius: 2px; opacity: .8; }
+  img {
+    $size: clamp(10px, (100cqi - 12px) / 3, 14px);
+    width: $size;
+    height: $size;
+    flex: none;
+    border-radius: 2px;
+    opacity: .8;
+  }
 
   @container (max-width: 20px) {
     em { display: none; }

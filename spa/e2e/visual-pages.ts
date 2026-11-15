@@ -55,8 +55,8 @@ export const VISUAL_PAGES: readonly VisualPage[] = [
   { name: 'mythic-plus-players', path: '/mythic-plus?view=players' },
   { name: 'mythic-plus-filtered', path: '/mythic-plus?dungeon=arc&class=8&period=week' },
   { name: 'mythic-plus-scoring', path: '/mythic-plus/scoring' },
-  { name: 'mythic-plus-stats', path: '/mythic-plus/stats' },
-  { name: 'mythic-plus-stats-week', path: '/mythic-plus/stats?period=week' },
+  { name: 'mythic-plus-stats', path: '/mythic-plus/stats', wide: true },
+  { name: 'mythic-plus-stats-week', path: '/mythic-plus/stats?period=week', wide: true },
   { name: 'mythic-plus-records', path: '/mythic-plus/records' },
   { name: 'mythic-plus-invalid', path: '/mythic-plus/invalid', wide: true },
   { name: 'mythic-plus-character', path: '/mythic-plus/character/evermoon/Pashao', wide: true },
@@ -193,10 +193,10 @@ export const PHONE_WIDTHS: readonly number[] = [320, 360, 390, 412];
 
 export const WIDE_WIDTHS: readonly number[] = [641, 768, 1280];
 
-export const SIDEWAYS_BY_DESIGN: ReadonlyArray<{ readonly selector: string; readonly reason: string }> = [
+export const SIDEWAYS_BY_DESIGN: ReadonlyArray<{ readonly selector: string; readonly reason: string; readonly phonesOnly?: boolean }> = [
   { selector: 'app-rated-battleground-page .match-tabs', reason: 'a swipe strip of match cards; the next card peeks in' },
   { selector: 'app-rated-battleground-page .activity-chart', reason: 'a day-by-day season chart that opens on the latest day' },
   { selector: 'app-mythic-plus-profile-page .chart-scroll', reason: 'a week-by-week score chart that opens on the latest week' },
-  { selector: 'app-mythic-plus-stats-page .chart-scroll', reason: 'a day-by-day runs chart that opens on the latest day' },
+  { selector: 'app-mythic-plus-stats-page .chart-scroll', reason: 'a day-by-day runs chart that opens on the latest day; from 641 px it fits its card', phonesOnly: true },
   { selector: 'app-raid-race-page .timeline-scroll', reason: 'a raid race timeline, 18:00 to 22:00, scrolled by hand or played back' }
 ];
