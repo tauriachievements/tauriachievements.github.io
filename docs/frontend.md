@@ -114,8 +114,9 @@ the page's store. The component keeps the URL, the filters and the event handler
   it lived under (`mythic-plus/compare` goes to `mythic-plus`). Guild pages are the exception: the GUID
   in the address is the guild's access key, so a new GUID replaces the old address with no
   redirect, and the owner sends the guild its new link.
-- Unlisted routes are unlisted on purpose: the guild pages (`<key>-<guid>`) and the Rare Items
-  page. Don't add them to the nav or link to them from public pages.
+- Unlisted routes are unlisted on purpose: the guild pages (`<key>-<guid>`), the Rare Items
+  page and its New findings page (`<rare items path>/new-findings`, linked only from the Rare
+  Items page). Don't add them to the nav or link to them from public pages.
 - Pages hosting: GitHub Pages serves `src/404.html` for any unknown path. It redirects to
   `/?p=<path>`, and `index.html` restores the path before Angular starts. Paths that contain a
   dot aren't redirected, so route parameters can't hold dots.
@@ -293,8 +294,8 @@ loads, and a placeholder in each image until it downloads.
   skeleton until that data arrives.
 - Its colours, sweep, header height, header background and breakpoints copy the app's.
   `scripts/boot-skeleton.test.js` fails when they drift, so change both together.
-- It never names an unlisted page's path, since `index.html` is public. The Rare Items page,
-  which has no header, shows the boot header until it renders.
+- It never names an unlisted page's path, since `index.html` is public. The Rare Items pages,
+  which have no header, show the boot header until they render.
 
 ### Page skeletons
 
@@ -439,7 +440,7 @@ decision (ask first).
   (`getLocalTimeZoneLabel`). Pass `timeZone` and `timeZoneLabel` only for a time that isn't
   local (the guild pages show the scan's own zone). The header shows a timestamp only while
   `lastEdited` is set, and it clears when the page is destroyed.
-- Route `data` can switch the shell off for one page: `header: false` (the Rare Items page has
+- Route `data` can switch the shell off for one page: `header: false` (the Rare Items pages have
   no header) and `backToTop: false` (the guild pages and the Hall of Fame).
 - The header persists across navigation, so it closes its dropdown and drawer on every
   `NavigationStart`.
@@ -608,6 +609,9 @@ the `tr` toggles, and the links and the toggle button inside it stop the click f
   class colours, and the styles of item tooltips injected as HTML from TauriShoot
   (`.legendary-tooltip-content`), which component styles can't reach.
 - Plain SCSS per component, with no CSS framework.
+- A page with another page's whole look lists that page's stylesheet first in its `styleUrls`
+  and its own rules after, as the spec charts do with `spec-chart.scss`: Rare Items' New
+  findings page lists `rare-items-page.component.scss` first, for the same cards and table.
 - Text on a coloured cell keeps 4.5:1 contrast: the talents heatmap's gold and the Realm Stats
   grid's gold stop at about half strength under their white figures. Most colours are literals. The shared
   tokens are the motion variables (`_motion.scss`), `--update-bar-height`, `--class-<id>` and

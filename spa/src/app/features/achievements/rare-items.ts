@@ -231,20 +231,29 @@ function ownerRow(character: RareItemCharacter, catalog: EliteCatalog, query: Ow
   return row(character, pieces.length, pieceDetail(pieces, catalog, query));
 }
 
-function row(character: RareItemCharacter, pieces: number, detail: string): OwnerRow {
+export interface OwnerIdentity {
+  readonly key: string;
+  readonly raceIcon: string;
+  readonly raceName: string;
+  readonly classIcon: string;
+  readonly className: string;
+}
+
+export function ownerIdentity(character: RareItemCharacter): OwnerIdentity {
   return {
     key: `${character.realm}::${character.name}`,
-    character,
     raceIcon: getRaceIconPath(character.race, character.gender),
     raceName: RACE_NAMES[character.race] ?? 'Unknown race',
     classIcon: getClassIconPath(character.class),
-    className: CLASS_NAMES[character.class] ?? 'Unknown class',
-    pieces,
-    detail
+    className: CLASS_NAMES[character.class] ?? 'Unknown class'
   };
 }
 
-function distinctPieces(items: ReadonlyArray<EliteItem>): EliteItem[] {
+function row(character: RareItemCharacter, pieces: number, detail: string): OwnerRow {
+  return { ...ownerIdentity(character), character, pieces, detail };
+}
+
+export function distinctPieces(items: ReadonlyArray<EliteItem>): EliteItem[] {
   const seen = new Map<string, EliteItem>();
   for (const item of items) {
     const piece = `${item.season.key}|${item.slot}|${item.name}`;

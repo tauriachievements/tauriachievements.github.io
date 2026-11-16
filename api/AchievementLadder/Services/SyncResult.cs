@@ -6,6 +6,8 @@ public sealed record SyncResult(
     string PlayersCsvPath,
     string RareAchievementsPath,
     string RareItemsPath,
+    string RareItemFindingsPath,
+    int NewRareItemFindingCount,
     string LastUpdatedPath,
     string RetryOutputPath
 );

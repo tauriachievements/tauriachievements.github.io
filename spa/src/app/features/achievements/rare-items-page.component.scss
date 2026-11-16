@@ -46,7 +46,7 @@ h2 { margin: 0; color: #f4f7ee; font-size: 1.35rem; }
 
 .filter-grid {
   display: grid;
-  grid-template-columns: auto minmax(0, 0.95fr) minmax(0, 1.25fr) minmax(0, 1.25fr) minmax(0, 0.75fr);
+  grid-template-columns: auto minmax(0, 0.95fr) minmax(0, 1.25fr) minmax(0, 1.25fr) minmax(0, 0.75fr) auto;
   gap: 8px;
 
   app-filter-dropdown { min-width: 0; }
@@ -59,6 +59,25 @@ h2 { margin: 0; color: #f4f7ee; font-size: 1.35rem; }
       overscroll-behavior: contain;
     }
   }
+}
+
+.findings-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 40px;
+  padding: 0 14px;
+  border: 1px solid #77974f;
+  border-radius: 7px;
+  background: #253119;
+  color: #eef5e7;
+  font-size: 0.82rem;
+  font-weight: 700;
+  text-decoration: none;
+  white-space: nowrap;
+
+  &:hover { border-color: #9fc96c; background: #2f3f1f; }
+  &:focus-visible { outline: 2px solid #9fc96c; outline-offset: 2px; }
 }
 
 .feedback {
@@ -167,6 +186,7 @@ app-pager {
     grid-template-columns: auto repeat(2, minmax(0, 1fr));
 
     .other-filter { grid-column: 2; }
+    .findings-link { grid-column: 1 / -1; }
   }
 }
 

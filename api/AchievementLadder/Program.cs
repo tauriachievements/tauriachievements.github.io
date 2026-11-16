@@ -45,6 +45,9 @@ internal static class Program
             Console.WriteLine($"Players.csv: {result.PlayersCsvPath}");
             Console.WriteLine($"RareAchievements.json: {result.RareAchievementsPath}");
             Console.WriteLine($"RareItems.json: {result.RareItemsPath}");
+            Console.WriteLine(
+                $"RareItemFindings.json: {result.RareItemFindingsPath} ({result.NewRareItemFindingCount} new this scan)"
+            );
             Console.WriteLine($"lastUpdated.txt: {result.LastUpdatedPath}");
             Console.WriteLine($"MissingPlayersToScan.txt: {result.RetryOutputPath}");
 

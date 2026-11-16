@@ -30,7 +30,9 @@ response first.
 - `13` (`GuildNotFoundErrorCode`): the guild doesn't exist on that realm.
   GuildCharacterExporter removes such guilds, at most 5% of the guilds per run.
 - `6` (`CharacterNotFoundErrorCode`): the character doesn't exist on that realm (renamed,
-  transferred or deleted).
+  transferred or deleted). `CharacterScanner` reports it as `CharacterNotFound`, so
+  AchievementLadder can drop such a rare item owner but keep one whose scan only failed
+  ([data-pipeline.md](data-pipeline.md#rare-item-findings)).
 - Treat a failed lookup as "unknown", never as an answer. For example, a failed or incomplete
   `character-sheet` never makes a character guildless.
 

@@ -30,7 +30,9 @@ public static class CharacterScanner
 
         if (!responseResult.Succeeded || responseResult.ResponseElement is not { } response)
         {
-            return CharacterScanResult.Failure();
+            return responseResult.ApiErrorCode == TauriApiResponseResult.CharacterNotFoundErrorCode
+                ? CharacterScanResult.NotFound()
+                : CharacterScanResult.Failure();
         }
 
         var achievements = RareAchievementExtractor.ExtractAchievements(
@@ -92,7 +94,8 @@ public readonly record struct CharacterScanResult(
     Player? Player,
     IReadOnlyList<CharacterRareAchievement> RareAchievements,
     IReadOnlyList<RareItemDefinition> RareItems,
-    bool Succeeded
+    bool Succeeded,
+    bool CharacterNotFound = false
 )
 {
     public static CharacterScanResult Success(
@@ -102,4 +105,6 @@ public readonly record struct CharacterScanResult(
     ) => new(player, rareAchievements, rareItems, true);
 
     public static CharacterScanResult Failure() => new(null, [], [], false);
+
+    public static CharacterScanResult NotFound() => new(null, [], [], false, true);
 }

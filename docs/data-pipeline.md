@@ -20,6 +20,7 @@ Tauri API ──► api/ console apps ──► spa/src/ data files ──► co
 |---|---|---|---|
 | `Players.csv`, `lastUpdated.txt`, `RareAchievements.json` | `AchievementLadder`, `MissingPlayerFinder` | `sync data` | `prepare-app.js`, the ladder pages |
 | `RareItems.json` | `AchievementLadder` | `sync data` | Rare Items page |
+| `RareItemFindings.json` | `AchievementLadder` ([below](#rare-item-findings)) | `sync data` | Rare Items' New findings page |
 | `elite-pvp-items.json` | built once from TauriShoot, then kept by hand ([below](#elite-pvp-items)) | `feat:` / `chore:` | Rare Items page, `AchievementLadder` |
 | `battlegrounds.json`, `battleground-collector-state.json`, `rated-battlegrounds.json` | `BattlegroundCollector` | `sync data` | Battleground and Rated Battleground pages |
 | `arena-ladder-2v2.json`, `arena-ladder-3v3.json` | `ArenaLadderExporter` | `sync data`, `sync arena data` from `Run-Arena.cmd`, or the `Run-QuickUpdate.cmd` commit ([below](#the-daily-update)) | Arena and Arena Statistics pages |
@@ -39,7 +40,8 @@ source used (`GuildListFiles`). Two files there are kept
 by hand: `invalid-raid-logs.txt`, the raid kills that don't count ([below](#invalid-raid-logs)),
 and `rare-items.txt`, the rare items that aren't elite PvP pieces, as `Name - ID` lines.
 AchievementLadder looks for those items and every piece in `spa/src/elite-pvp-items.json` in each
-character's appearance collection, and writes the owners to `RareItems.json`.
+character's appearance collection, and writes the owners to `RareItems.json` and what's new
+since the last scan to `RareItemFindings.json` ([below](#rare-item-findings)).
 
 ## The daily update
 
@@ -375,6 +377,48 @@ on 12 days between 17 Sept and 26 Oct 2026), so the page keeps showing the lates
 changes until new ones arrive. Both are `null` until the first scan after they were added finds
 a rated game.
 
+## Rare item findings
+
+`spa/src/RareItemFindings.json` holds what each of the last 7 AchievementLadder scans found
+that the scan before it didn't have, for the unlisted New findings page under Rare Items.
+AchievementLadder compares the owners it's about to write to `RareItems.json` with the
+`RareItems.json` it replaces (`RareItemFindings` in AchievementLadder):
+
+- A character (name and realm, in any case) missing from the previous file is new, with all
+  its items. A character already there is listed with the items it didn't have before; one
+  with nothing new isn't listed.
+- Only items the previous scan already looked for count. Adding items to `rare-items.txt` or
+  `elite-pvp-items.json` doesn't turn every owner of them into a finding; they count from the
+  scan after.
+- A renamed character is a new character under the new name: the API gives nothing that ties
+  the two names together.
+
+```
+{ "version": 1,
+  "scans":      [{ generatedAt, previousGeneratedAt }, ...],      newest first, at most 7
+  "characters": [{ scan, name, realm, race, gender, class, guild, isNew, items: [{ id, name }, ...] }, ...] }
+```
+
+One scan or character per line, LF. `scan` is the `generatedAt` of the scan that found the
+character, the same value as in `scans` and in that night's `RareItems.json`. A scan that found
+nothing stays in `scans`, so the page can say so. Each run adds its scan first and drops the
+oldest one past 7 together with its characters.
+
+- The comparison is with the `RareItems.json` on disk, published or not. Running AchievementLadder
+  twice adds a second scan holding what changed in between (usually nothing); the first run's
+  findings stay.
+- Without a readable previous `RareItems.json` a run records no scan and leaves the findings as
+  they were. A findings file of another `version`, or one it can't read, starts over empty.
+- An owner whose scan failed for any reason other than "character not found" (error code 6,
+  [tauri-api.md](tauri-api.md#errors)) keeps their previous entry in `RareItems.json`, minus
+  any items no longer looked for. Otherwise a failed scan would drop the owner for a night and
+  bring them back as new the night after. A character that isn't found drops out, as before.
+- The page decodes the file with `findingScans` (`rare-item-findings.ts`); its order and counts
+  are in [scoring.md](scoring.md#rare-item-findings).
+- The first file was built on 2026-11-16 from the last 8 `RareItems.json` versions in git, with
+  the same code. Git doesn't record which scans failed, so that first build treated an owner
+  missing from a night's file as still holding their last known items.
+
 ## Elite PvP items
 
 `spa/src/elite-pvp-items.json` lists every elite PvP piece a character can collect as an
@@ -557,6 +601,7 @@ tables, so they don't. The page code has its own guard for a code deploy
   many character and guild names are Cyrillic or accented.
 - GuildAnalysisExporter's `guild-analysis/` file names drop accents ("Témérité" becomes
   "Temerite"), so their URLs never need encoding.
-- MythicPlusExporter, RaidLogExporter and ArenaLadderExporter write LF. The root
+- MythicPlusExporter, RaidLogExporter and ArenaLadderExporter write LF, and so does
+  AchievementLadder for `RareItemFindings.json`. The root
   `.gitattributes` keeps their files LF on checkout, so `core.autocrlf` doesn't warn on every
   commit. A new exporter that writes LF needs a line there too.
