@@ -110,9 +110,30 @@ public sealed class CharacterScannerTests
         var result = await FetchAsync(client);
 
         Assert.False(result.Succeeded);
+        Assert.False(result.CharacterNotFound);
         Assert.Null(result.Player);
         Assert.Empty(result.RareAchievements);
         Assert.Equal(["character-achievements"], client.RequestedEndpoints);
+    }
+
+    [Fact]
+    public async Task ScanAsync_CharacterNotFound_SaysSo()
+    {
+        var client = new FakeTauriApiClient(
+            new Dictionary<string, TauriApiResponseResult>
+            {
+                ["character-achievements"] = TauriApiResponseResult.Failure(
+                    "Character not found",
+                    TauriApiResponseResult.CharacterNotFoundErrorCode
+                ),
+            }
+        );
+
+        var result = await FetchAsync(client);
+
+        Assert.False(result.Succeeded);
+        Assert.True(result.CharacterNotFound);
+        Assert.Null(result.Player);
     }
 
     [Fact]

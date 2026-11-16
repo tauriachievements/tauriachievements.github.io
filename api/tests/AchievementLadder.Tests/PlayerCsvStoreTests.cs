@@ -54,6 +54,55 @@ public sealed class PlayerCsvStoreTests : IDisposable
         Assert.Equal("{\"playerCount\":3}", content);
     }
 
+    [Fact]
+    public async Task ReadJsonOrDefaultAsync_ReadsWhatWriteJsonAsyncWrote()
+    {
+        var store = new PlayerCsvStore(_outputDirectory);
+        var generatedAt = new DateTimeOffset(2026, 11, 16, 1, 34, 28, TimeSpan.Zero);
+        var item = new RareItemDefinition(22818, "The Plague Bearer");
+        await store.WriteJsonAsync(
+            "RareItems.json",
+            new RareItemExport(
+                generatedAt,
+                [item],
+                [new CharacterRareItemEntry("Ghø", "Tauri", 4, 0, 4, "Guild", [item])]
+            ),
+            CancellationToken.None
+        );
+
+        var read = await store.ReadJsonOrDefaultAsync<RareItemExport>(
+            "RareItems.json",
+            CancellationToken.None
+        );
+
+        Assert.NotNull(read);
+        Assert.Equal(generatedAt, read.GeneratedAt);
+        Assert.Equal([item], read.Items);
+        var owner = Assert.Single(read.Characters);
+        Assert.Equal(("Ghø", "Tauri", "Guild"), (owner.Name, owner.Realm, owner.Guild));
+        Assert.Equal([item], owner.Items);
+    }
+
+    [Fact]
+    public async Task ReadJsonOrDefaultAsync_MissingOrUnreadableFile_ReturnsNull()
+    {
+        var store = new PlayerCsvStore(_outputDirectory);
+        await store.WriteTextAsync("broken.json", "{\"generatedAt\":", CancellationToken.None);
+
+        Assert.Null(
+            await store.ReadJsonOrDefaultAsync<RareItemExport>(
+                "missing.json",
+                CancellationToken.None
+            )
+        );
+        Assert.Null(
+            await store.ReadJsonOrDefaultAsync<RareItemExport>(
+                "broken.json",
+                CancellationToken.None
+            )
+        );
+    }
+
     public void Dispose()
     {
         if (Directory.Exists(_outputDirectory))

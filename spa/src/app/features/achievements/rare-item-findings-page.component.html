@@ -1,0 +1,77 @@
+<main class="rare-items-page">
+  <section class="rare-items-header findings-intro">
+    <a class="back-link" routerLink="/k7m2q9v4x8p3n6z"><span aria-hidden="true">‹</span> Rare items</a>
+    <h1>New findings</h1>
+    <p>Characters each nightly scan found with rare items for the first time, and owners who collected more. The last 7 scans, newest first.</p>
+  </section>
+
+  @if (isLoading()) {
+    <app-skeleton [blocks]="['rows:8']" label="Loading the new findings..." />
+  }
+
+  @if (!isLoading() && loadError()) {
+    <section class="feedback error">
+      <p>{{ loadError() }}</p>
+      <button type="button" (click)="retryLoad()">Try again</button>
+    </section>
+  }
+
+  @if (!isLoading() && !loadError() && !scans().length) {
+    <p class="feedback">No scans yet. The findings appear after the next nightly scan.</p>
+  }
+
+  @for (scan of scans(); track scan.key) {
+    <section class="results">
+      <div class="results-heading">
+        <div>
+          <p class="eyebrow">{{ scan.isLatest ? 'Latest scan' : 'Scan' }}</p>
+          <h2><time [attr.datetime]="scan.key">{{ scan.scannedAt | date:'MMM d, y, HH:mm' }}</time> <span class="zone">{{ timeZoneLabel() }}</span></h2>
+        </div>
+        <strong>{{ scan.count }}</strong>
+      </div>
+
+      @if (scan.rows.length) {
+        <table>
+          <thead>
+            <tr>
+              <th>Character</th>
+              <th class="pieces">Found</th>
+              <th class="realm">Realm</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (row of scan.rows; track row.key) {
+              <tr>
+                <td class="character">
+                  <div class="identity">
+                    <img class="icon" [src]="row.raceIcon" [alt]="row.raceName" [title]="row.raceName" width="20" height="20" loading="lazy" />
+                    <img class="icon" [src]="row.classIcon" [alt]="row.className" [title]="row.className" width="20" height="20" loading="lazy" />
+                    <div class="name">
+                      <div class="name-line">
+                        <a
+                          [href]="armoryUrl(row)"
+                          [style.color]="classColor(row)"
+                          target="_blank"
+                          rel="noopener noreferrer">{{ row.character.name }}</a>
+                        @if (row.character.isNew) {
+                          <span class="finding-tag new" title="Not in any earlier scan">New</span>
+                        } @else {
+                          <span class="finding-tag known" title="Already listed before; these items are new">Known</span>
+                        }
+                      </div>
+                      <span class="detail">{{ row.detail }}</span>
+                    </div>
+                  </div>
+                </td>
+                <td class="pieces">{{ row.found }}</td>
+                <td class="realm">{{ row.character.realm }}</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      } @else {
+        <p class="empty">Nothing new in this scan.</p>
+      }
+    </section>
+  }
+</main>

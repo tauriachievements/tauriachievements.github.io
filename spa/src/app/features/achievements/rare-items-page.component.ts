@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, DestroyRef, OnInit, computed, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, RouterLink } from '@angular/router';
 import { forkJoin } from 'rxjs';
 import { getArmoryUrl } from '../../game/armory';
 import { DataFileService } from '../../core/data-file.service';
@@ -42,7 +42,7 @@ const PAGE_SIZE = 50;
   selector: 'app-rare-items-page',
   templateUrl: './rare-items-page.component.html',
   styleUrls: ['./rare-items-page.component.scss'],
-  imports: [FilterDropdownComponent, PagerComponent, SkeletonComponent],
+  imports: [FilterDropdownComponent, PagerComponent, RouterLink, SkeletonComponent],
   providers: [FilterDropdownCoordinatorService],
   changeDetection: ChangeDetectionStrategy.OnPush
 })

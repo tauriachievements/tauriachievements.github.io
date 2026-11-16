@@ -147,6 +147,20 @@ decision: ask first.** When a rule does change, change its tests first and see t
   elite weapons, and nothing for a single rare item, whose list has no Pieces column.
 - **Tests:** `rare-items.spec.ts`.
 
+## Rare item findings
+
+- **Code:** `findingScans` in `spa/src/app/features/achievements/rare-item-findings.ts`. What
+  counts as a finding is AchievementLadder's `RareItemFindings`
+  ([data-pipeline.md](data-pipeline.md#rare-item-findings)).
+- The page shows the last 7 scans, newest first, each with what it found. In a scan, new
+  characters ("New") come first, then owners who collected more ("Known"); then the most items
+  found, then name, then realm.
+- Found counts a piece once however many of its item ids were found (as on Rare Items), and
+  each other rare item once. The detail line gives the elite pieces per season, set pieces and
+  weapons together, oldest season first, then the other items by name.
+- **Tests:** `rare-item-findings.spec.ts`; `RareItemFindingsTests` and
+  `RareItemFindingsFileTests` for what counts as found and the file.
+
 ## Guild Rankings
 
 - **Code:** `spa/scripts/generate-guild-rankings.js`. For each limit N, it counts which guilds

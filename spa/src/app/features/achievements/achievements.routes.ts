@@ -22,5 +22,11 @@ export const ACHIEVEMENTS_ROUTES: Routes = [
     loadComponent: () => import('./rare-items-page.component')
       .then(module => module.RareItemsPageComponent),
     data: { header: false }
+  },
+  {
+    path: 'k7m2q9v4x8p3n6z/new-findings',
+    loadComponent: () => import('./rare-item-findings-page.component')
+      .then(module => module.RareItemFindingsPageComponent),
+    data: { header: false }
   }
 ];

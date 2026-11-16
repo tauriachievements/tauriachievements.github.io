@@ -16,6 +16,7 @@ public class PlayerService(
 )
 {
     private static readonly CharacterTargetComparer CharacterComparer = new();
+    private const string RareItemsFileName = "RareItems.json";
     private const int ProgressInterval = 250;
     private const int ProgressBarWidth = 30;
     private readonly int _characterWorkerCount = Math.Max(4, apiOptions.MaxConcurrentRequests * 2);
@@ -37,6 +38,19 @@ public class PlayerService(
             )
         );
         var rareItemsById = rareItems.ToDictionary(item => item.Id);
+        var previousRareItems = await csvStore.ReadJsonOrDefaultAsync<RareItemExport>(
+            RareItemsFileName,
+            cancellationToken
+        );
+        var findingsPath = csvStore.PathOf(RareItemFindingsFile.FileName);
+        var earlierFindings = await RareItemFindingsFile.ReadAsync(findingsPath, cancellationToken);
+        if (previousRareItems is null)
+        {
+            Console.WriteLine(
+                $"No readable {RareItemsFileName} from the last scan: no rare item findings this run."
+            );
+        }
+
         var allCharacters = new List<(string Name, string ApiRealm, string DisplayRealm)>();
         LoadCharacterSources(allCharacters);
 
@@ -61,6 +75,7 @@ public class PlayerService(
         var rareItemEntries = new ConcurrentBag<CharacterRareItemEntry>();
         var retryCharacters =
             new ConcurrentBag<(string Name, string ApiRealm, string DisplayRealm)>();
+        var unscannedCharacters = new ConcurrentBag<(string Name, string Realm)>();
         var totalCharacters = distinctCharacters.Count;
         var done = 0;
         var progressLock = new Lock();
@@ -122,6 +137,10 @@ public class PlayerService(
                 if (!syncResult.Succeeded)
                 {
                     retryCharacters.Add(character);
+                    if (!syncResult.CharacterNotFound)
+                    {
+                        unscannedCharacters.Add((character.Name, character.DisplayRealm));
+                    }
                 }
 
                 var processed = Interlocked.Increment(ref done);
@@ -155,7 +174,13 @@ public class PlayerService(
             .OrderBy(character => character.DisplayRealm, StringComparer.OrdinalIgnoreCase)
             .ThenBy(character => character.Name, StringComparer.OrdinalIgnoreCase)
             .ToList();
-        var orderedRareItemEntries = rareItemEntries
+        var orderedRareItemEntries = RareItemFindings
+            .KeepUnscannedOwners(
+                previousRareItems,
+                [.. rareItemEntries],
+                [.. unscannedCharacters],
+                rareItemsById
+            )
             .OrderBy(entry => entry.Name, StringComparer.OrdinalIgnoreCase)
             .ThenBy(entry => entry.Realm, StringComparer.OrdinalIgnoreCase)
             .ToList();
@@ -176,10 +201,18 @@ public class PlayerService(
             cancellationToken
         );
         var rareItemsPath = await csvStore.WriteJsonAsync(
-            "RareItems.json",
+            RareItemsFileName,
             new RareItemExport(generatedAt, rareItems, orderedRareItemEntries),
             cancellationToken
         );
+        var findings = RareItemFindings.Record(
+            earlierFindings,
+            previousRareItems,
+            orderedRareItemEntries,
+            generatedAt
+        );
+        await RareItemFindingsFile.WriteAsync(findingsPath, findings, cancellationToken);
+        var newFindingCount = findings.Characters.Count(finding => finding.Scan == generatedAt);
         var lastUpdatedPath = await csvStore.WriteTextAsync(
             "lastUpdated.txt",
             generatedAt.ToString("yyyy-MM-ddTHH:mm:ss", CultureInfo.InvariantCulture),
@@ -200,6 +233,8 @@ public class PlayerService(
             playersCsvPath,
             rareAchievementsPath,
             rareItemsPath,
+            findingsPath,
+            newFindingCount,
             lastUpdatedPath,
             retryOutputPath
         );

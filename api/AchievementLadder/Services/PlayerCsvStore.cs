@@ -43,6 +43,31 @@ public sealed class PlayerCsvStore
         return fullPath;
     }
 
+    public string PathOf(string relativePath) => Path.Combine(_outputDirectory, relativePath);
+
+    public async Task<T?> ReadJsonOrDefaultAsync<T>(
+        string relativePath,
+        CancellationToken ct = default
+    )
+        where T : class
+    {
+        var fullPath = PathOf(relativePath);
+        if (!File.Exists(fullPath))
+        {
+            return null;
+        }
+
+        try
+        {
+            await using var stream = File.OpenRead(fullPath);
+            return await JsonSerializer.DeserializeAsync<T>(stream, FrontendJsonOptions, ct);
+        }
+        catch (JsonException)
+        {
+            return null;
+        }
+    }
+
     public async Task<string> WriteJsonAsync<T>(
         string relativePath,
         T value,

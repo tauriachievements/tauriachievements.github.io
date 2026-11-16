@@ -84,6 +84,7 @@ $publishPaths = @(
     'spa/src/Players.csv',
     'spa/src/RareAchievements.json',
     'spa/src/RareItems.json',
+    'spa/src/RareItemFindings.json',
     'spa/src/battleground-collector-state.json',
     'spa/src/battlegrounds.json',
     'spa/src/rated-battlegrounds.json',

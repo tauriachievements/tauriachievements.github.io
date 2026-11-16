@@ -40,7 +40,7 @@ workflow and its output contract.
 
 | Project | Purpose |
 | --- | --- |
-| `AchievementLadder` | Builds the player leaderboard and the rare-achievement and rare-item exports (the items in `Data/rare-items.txt` and every elite PvP piece in `spa/src/elite-pvp-items.json`). |
+| `AchievementLadder` | Builds the player leaderboard and the rare-achievement and rare-item exports (the items in `Data/rare-items.txt` and every elite PvP piece in `spa/src/elite-pvp-items.json`), and the last 7 scans' new rare-item finds (`spa/src/RareItemFindings.json`). |
 | `GuildCharacterExporter` | Expands configured guilds into character sources. |
 | `MissingPlayerFinder` | Backfills characters absent from an existing export. |
 | `RealmFirstAchievements` | Rebuilds and validates realm-first character sources. |
