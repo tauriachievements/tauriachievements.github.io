@@ -1,8 +1,4 @@
 <main class="raid-page">
-  <a class="back-link" routerLink="/raid-logs" [queryParams]="{ difficulty: difficulty()?.slug }">
-    <span aria-hidden="true">‹</span> Back to Raid Logs
-  </a>
-
   @if (bosses().length) {
     <nav class="boss-picker" aria-label="Pick a boss">
       @for (other of bosses(); track other.slug) {
