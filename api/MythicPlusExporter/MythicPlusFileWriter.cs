@@ -9,6 +9,7 @@ public static class MythicPlusFileWriter
 {
     public const int FormatVersion = 2;
     public const string IndexFileName = "index.json";
+    public const string DataDirectoryName = "mythic-plus-data";
 
     private static readonly JsonWriterOptions WriterOptions = new()
     {

@@ -64,31 +64,34 @@ set "RAID_LOGS_CHANGED="
 set "ARENA_FAILED="
 set "ARENA_CHANGED="
 
-dotnet run --project "%~dp0MythicPlusExporter" -c Release
-if errorlevel 1 (
-    set "MYTHIC_PLUS_FAILED=1"
-    goto :RaidLogs
+dotnet run --project "%~dp0QuickUpdate" -c Release
+set "FAILED=%ERRORLEVEL%"
+if %FAILED% LSS 0 set "FAILED=1"
+if %FAILED% GTR 14 set "FAILED=1"
+if "%FAILED%"=="1" (
+    echo.
+    echo QuickUpdate stopped before it finished, so nothing was committed. Its error is further up.
+    pause
+    exit /b 1
 )
+set /a "MYTHIC_PLUS_BIT=FAILED & 2, RAID_LOGS_BIT=FAILED & 4, ARENA_BIT=FAILED & 8"
+if not "%MYTHIC_PLUS_BIT%"=="0" set "MYTHIC_PLUS_FAILED=1"
+if not "%RAID_LOGS_BIT%"=="0" set "RAID_LOGS_FAILED=1"
+if not "%ARENA_BIT%"=="0" set "ARENA_FAILED=1"
+
+if defined MYTHIC_PLUS_FAILED goto :StageRaidLogs
 git -C "%REPO_ROOT%" add -- %MYTHIC_PLUS_DIR%
 git -C "%REPO_ROOT%" diff --cached --quiet -- %MYTHIC_PLUS_DIR%
 if errorlevel 1 set "MYTHIC_PLUS_CHANGED=1"
 
-:RaidLogs
-dotnet run --project "%~dp0RaidLogExporter" -c Release
-if errorlevel 1 (
-    set "RAID_LOGS_FAILED=1"
-    goto :Arena
-)
+:StageRaidLogs
+if defined RAID_LOGS_FAILED goto :StageArena
 git -C "%REPO_ROOT%" add -- %RAID_LOGS_DIR%
 git -C "%REPO_ROOT%" diff --cached --quiet -- %RAID_LOGS_DIR%
 if errorlevel 1 set "RAID_LOGS_CHANGED=1"
 
-:Arena
-dotnet run --project "%~dp0ArenaLadderExporter" -c Release
-if errorlevel 1 (
-    set "ARENA_FAILED=1"
-    goto :Commit
-)
+:StageArena
+if defined ARENA_FAILED goto :Commit
 git -C "%REPO_ROOT%" add -- %ARENA_FILES%
 git -C "%REPO_ROOT%" diff --cached --quiet -- %ARENA_FILES%
 if errorlevel 1 set "ARENA_CHANGED=1"
@@ -128,9 +131,9 @@ if errorlevel 1 (
 echo Committed and pushed "%MESSAGE%"; GitHub Pages is building.
 
 :Finish
-if defined MYTHIC_PLUS_FAILED echo MythicPlusExporter failed, so the Mythic+ data was left out. Its error is further up.
-if defined RAID_LOGS_FAILED echo RaidLogExporter failed, so the raid log data was left out. Its error is further up.
-if defined ARENA_FAILED echo ArenaLadderExporter failed, so the arena data was left out. Its error is further up.
+if defined MYTHIC_PLUS_FAILED echo The Mythic+ export failed, so its data was left out. Its error is further up.
+if defined RAID_LOGS_FAILED echo The raid log export failed, so its data was left out. Its error is further up.
+if defined ARENA_FAILED echo The arena export failed, so its data was left out. Its error is further up.
 pause
 if defined MYTHIC_PLUS_FAILED exit /b 1
 if defined RAID_LOGS_FAILED exit /b 1

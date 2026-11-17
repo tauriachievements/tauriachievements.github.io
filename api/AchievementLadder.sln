@@ -33,6 +33,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RaidLogGuildAndCharScan", "
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ArenaLadderExporter", "ArenaLadderExporter\ArenaLadderExporter.csproj", "{5F3635AF-A77B-4BEA-A30E-9913CB3FA756}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "QuickUpdate", "QuickUpdate\QuickUpdate.csproj", "{22BFB0ED-DA31-4999-8CD3-9D0CA0EEF0B5}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -223,6 +225,18 @@ Global
 		{5F3635AF-A77B-4BEA-A30E-9913CB3FA756}.Release|x64.Build.0 = Release|Any CPU
 		{5F3635AF-A77B-4BEA-A30E-9913CB3FA756}.Release|x86.ActiveCfg = Release|Any CPU
 		{5F3635AF-A77B-4BEA-A30E-9913CB3FA756}.Release|x86.Build.0 = Release|Any CPU
+		{22BFB0ED-DA31-4999-8CD3-9D0CA0EEF0B5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{22BFB0ED-DA31-4999-8CD3-9D0CA0EEF0B5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{22BFB0ED-DA31-4999-8CD3-9D0CA0EEF0B5}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{22BFB0ED-DA31-4999-8CD3-9D0CA0EEF0B5}.Debug|x64.Build.0 = Debug|Any CPU
+		{22BFB0ED-DA31-4999-8CD3-9D0CA0EEF0B5}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{22BFB0ED-DA31-4999-8CD3-9D0CA0EEF0B5}.Debug|x86.Build.0 = Debug|Any CPU
+		{22BFB0ED-DA31-4999-8CD3-9D0CA0EEF0B5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{22BFB0ED-DA31-4999-8CD3-9D0CA0EEF0B5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{22BFB0ED-DA31-4999-8CD3-9D0CA0EEF0B5}.Release|x64.ActiveCfg = Release|Any CPU
+		{22BFB0ED-DA31-4999-8CD3-9D0CA0EEF0B5}.Release|x64.Build.0 = Release|Any CPU
+		{22BFB0ED-DA31-4999-8CD3-9D0CA0EEF0B5}.Release|x86.ActiveCfg = Release|Any CPU
+		{22BFB0ED-DA31-4999-8CD3-9D0CA0EEF0B5}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

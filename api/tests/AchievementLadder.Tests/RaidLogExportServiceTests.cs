@@ -751,6 +751,107 @@ public sealed class RaidLogExportServiceTests
     }
 
     [Fact]
+    public async Task ExportAsync_ReturnsTheKillsTheLastExportDidNotHave()
+    {
+        var outputDirectory = CreateTempDirectory();
+        try
+        {
+            var api = new FakeRaidApiClient();
+            api.Rankings[(Tauri, Nythendra, Heroic)] = [100];
+            api.Logs[(Tauri, 100)] = LogJson(
+                100,
+                Nythendra,
+                Heroic,
+                10,
+                100_000,
+                null,
+                [],
+                Member("Mage", "", 8, 63)
+            );
+
+            var first = await Service(outputDirectory, api, PlayerGuildDirectory.Empty)
+                .ExportAsync(Options(), CancellationToken.None);
+            Assert.Equal(
+                [("Tauri", 100)],
+                first.NewLogs.Select(log => (log.Key.Realm, log.Key.LogId))
+            );
+
+            api.Rankings[(Tauri, Nythendra, Heroic)] = [100, 103];
+            api.Rankings[(WoD, Nythendra, Normal)] = [103];
+            api.Logs[(Tauri, 103)] = LogJson(
+                103,
+                Nythendra,
+                Heroic,
+                30,
+                100_000,
+                null,
+                [],
+                Member("Mage", "", 8, 63)
+            );
+            api.Logs[(WoD, 103)] = LogJson(
+                103,
+                Nythendra,
+                Normal,
+                20,
+                100_000,
+                null,
+                [],
+                Member("Hunter", "", 3, 254)
+            );
+
+            var second = await Service(outputDirectory, api, PlayerGuildDirectory.Empty)
+                .ExportAsync(Options(), CancellationToken.None);
+
+            Assert.Equal(
+                [("Tauri", 103, Heroic), ("WoD", 103, Normal)],
+                second
+                    .NewLogs.Select(log => (log.Key.Realm, log.Key.LogId, log.DifficultyId))
+                    .OrderBy(log => log.Realm, StringComparer.Ordinal)
+            );
+        }
+        finally
+        {
+            Directory.Delete(outputDirectory, recursive: true);
+        }
+    }
+
+    [Fact]
+    public async Task ExportAsync_WritesItsProgressToTheGivenWriter()
+    {
+        var outputDirectory = CreateTempDirectory();
+        try
+        {
+            var api = new FakeRaidApiClient();
+            api.Rankings[(Tauri, Nythendra, Heroic)] = [100];
+            api.Logs[(Tauri, 100)] = LogJson(
+                100,
+                Nythendra,
+                Heroic,
+                10,
+                100_000,
+                (7440, EvermoonRealmId, "", 0),
+                [],
+                Member("Mage", "", 8, 63)
+            );
+            var progress = new StringWriter();
+
+            await Service(outputDirectory, api, PlayerGuildDirectory.Empty, progress: progress)
+                .ExportAsync(Options(), CancellationToken.None);
+
+            Assert.Equal(
+                ["Reading 1 new logs...", "  Named 0 of 1 guilds the logs did not name."],
+                progress
+                    .ToString()
+                    .Split(Environment.NewLine, StringSplitOptions.RemoveEmptyEntries)
+            );
+        }
+        finally
+        {
+            Directory.Delete(outputDirectory, recursive: true);
+        }
+    }
+
+    [Fact]
     public async Task ExportAsync_ReadsEveryLogAgainOverFilesOfAnOlderFormat()
     {
         var outputDirectory = CreateTempDirectory();
@@ -1471,7 +1572,8 @@ public sealed class RaidLogExportServiceTests
         PlayerGuildDirectory directory,
         IRaidTalentSource? talents = null,
         IRaidSpellTooltipSource? tooltips = null,
-        InvalidRaidLogs? invalidLogs = null
+        InvalidRaidLogs? invalidLogs = null,
+        TextWriter? progress = null
     ) =>
         new(
             outputDirectory,
@@ -1480,7 +1582,8 @@ public sealed class RaidLogExportServiceTests
             talents ?? new FakeTalentSource(),
             tooltips ?? new FakeTooltipSource(),
             directory,
-            invalidLogs ?? InvalidRaidLogs.Empty
+            invalidLogs ?? InvalidRaidLogs.Empty,
+            progress: progress ?? TextWriter.Null
         );
 
     private static string LogJson(

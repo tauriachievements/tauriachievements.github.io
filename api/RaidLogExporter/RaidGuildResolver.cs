@@ -7,12 +7,15 @@ namespace RaidLogExporter;
 
 public sealed class RaidGuildResolver(
     ITauriApiClient apiClient,
-    PlayerGuildDirectory guildDirectory
+    PlayerGuildDirectory guildDirectory,
+    TextWriter? progress = null
 )
 {
     private const string GuildInfoEndpoint = "guild-info";
     private const int MaxCandidates = 3;
     private const int MaxParallelGuilds = 4;
+
+    private readonly TextWriter _progress = progress ?? Console.Out;
 
     public async Task<IReadOnlyList<RaidLog>> ResolveAsync(
         IReadOnlyList<RaidLog> logs,
@@ -70,7 +73,9 @@ public sealed class RaidGuildResolver(
         if (unnamed.Count > 0)
         {
             var named = lookups.Values.Count(guild => guild.Name.Length > 0);
-            Console.WriteLine($"  Named {named} of {unnamed.Count} guilds the logs did not name.");
+            _progress.WriteLine(
+                $"  Named {named} of {unnamed.Count} guilds the logs did not name."
+            );
         }
 
         return

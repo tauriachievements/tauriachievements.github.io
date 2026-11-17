@@ -51,6 +51,7 @@ workflow and its output contract.
 | `RaidLogExporter` | Exports every Emerald Nightmare boss kill with per-player damage, healing, talents, trinkets and loot for the `/raid-logs` pages, reading only kills the last export lacks, plus every spec's talent tiers and each talent's tooltip from TauriShoot. |
 | `RaidLogGuildAndCharScan` | Looks up the current guild of everyone with an Emerald Nightmare kill and adds new guilds and guildless characters to the scan inputs. |
 | `GuildAnalysisExporter` | Exports a guild's level 110 members with artifact traits, Artifact Knowledge, item level and legendaries for the hidden guild pages. |
+| `QuickUpdate` | Runs the Mythic+, raid log and arena ladder exports in one process for `Run-QuickUpdate.cmd`, and ends with how long they took and what each one added. |
 | `EndlessGuildExporter` | Produces a formatted Excel guild roster. |
 
 ## Processing model

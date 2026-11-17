@@ -90,13 +90,24 @@ So a night's run is one commit and one Pages deploy, the guild pages included.
 - `Run-MythicPlus.cmd`, `Run-RaidLogs.cmd` and `Run-Arena.cmd` refresh one dataset on its
   own. Their arguments go to the exporter (`Run-MythicPlus.cmd --allow-shrink` at a season
   reset).
-- `Run-QuickUpdate.cmd` is the refresh to run during the day. It runs MythicPlusExporter,
-  RaidLogExporter and ArenaLadderExporter, in that order, and publishes what changed in one
-  commit. The message names the changed datasets in the same order:
-  `sync mythic plus, raid logs and arena data`, `sync raid logs and arena data`,
+- `Run-QuickUpdate.cmd` is the refresh to run during the day. It runs the `QuickUpdate` console
+  app, which runs the Mythic+, raid log and arena ladder exports, in that order, in one process,
+  and publishes what changed in one commit. The message names the changed datasets in the same
+  order: `sync mythic plus, raid logs and arena data`, `sync raid logs and arena data`,
   `sync arena data`, and so on. It takes no arguments: `--allow-shrink` and `--full` go
-  through the single scripts. When an exporter fails, its data is left out of the commit and
-  the others' still goes out; the script then names the failed exporter and exits with 1.
+  through the single scripts.
+- QuickUpdate prints only a heading per export, each dungeon's leaderboard as it is read, and
+  at the end how long the three took and what each added (`QuickUpdateReport`): new Mythic+ runs
+  (the change in the run count), new raid logs (kills missing from the last export's boss files,
+  split by difficulty), and per arena bracket the change in games played (each listed player's
+  season games, summed, so one 2v2 match counts up to 4). The single scripts and the daily
+  update still run the exporters' own programs, with their full tables. QuickUpdate also leaves
+  out the raid exporter's warnings (a skipped log, a listed invalid log it doesn't have, a
+  talent tooltip TauriShoot couldn't give); the daily update shows them.
+- QuickUpdate's exit code has a bit per failed export: 2 for Mythic+, 4 for raid logs, 8 for
+  the arena. A failed export's data is left out of the commit and the others' still goes out;
+  the script then names the failed export and exits with 1. Exit code 1 is left for `dotnet run`
+  failing to build: on 1, or a code outside 0 to 14 (a crash), the script commits nothing.
 - Before the export, each of these scripts checks that the push at the end will be accepted:
   you're on `main` and level with `origin/main`. When you aren't, it asks you to type `1` to
   fix it, by switching to `main` (only when nothing is uncommitted) or by pulling with
