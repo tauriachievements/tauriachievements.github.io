@@ -14,12 +14,14 @@ public sealed record RaidLogDetails(
     IReadOnlyList<RaidLogKey> Mismatched
 );
 
-public sealed class RaidLogReader(ITauriApiClient apiClient)
+public sealed class RaidLogReader(ITauriApiClient apiClient, TextWriter? progress = null)
 {
     private const string RankingEndpoint = "raid-rank-encounter";
     private const string LogEndpoint = "raid-log";
     private const int MaxParallelRankings = 4;
     private const int MaxParallelLogs = 16;
+
+    private readonly TextWriter _progress = progress ?? Console.Out;
 
     public async Task<RaidRankings> ReadRankingsAsync(
         IReadOnlyList<string> apiRealms,
@@ -140,7 +142,7 @@ public sealed class RaidLogReader(ITauriApiClient apiClient)
                 var count = Interlocked.Increment(ref done);
                 if (count % 500 == 0)
                 {
-                    Console.WriteLine($"  {count} of {listed.Count} logs read");
+                    _progress.WriteLine($"  {count} of {listed.Count} logs read");
                 }
             }
         );

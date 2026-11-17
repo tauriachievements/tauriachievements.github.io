@@ -10,7 +10,8 @@ public sealed record RaidLogExportResult(
     IReadOnlyList<RaidLogKey> SkippedLogs,
     string OutputDirectory,
     int TalentSpecCount,
-    RaidTooltipLookup? TalentTooltips
+    RaidTooltipLookup? TalentTooltips,
+    IReadOnlyList<RaidLog> NewLogs
 );
 
 public sealed record RaidTooltipLookup(int SpellCount, int WrittenCount, int LookedUpCount);
@@ -23,7 +24,8 @@ public sealed class RaidLogExportService(
     IRaidSpellTooltipSource tooltipSource,
     PlayerGuildDirectory guildDirectory,
     InvalidRaidLogs invalidLogs,
-    TimeProvider? timeProvider = null
+    TimeProvider? timeProvider = null,
+    TextWriter? progress = null
 )
 {
     private const double MaxShrinkFraction = 0.02;
@@ -31,8 +33,9 @@ public sealed class RaidLogExportService(
     private const int MaxParallelItems = 8;
     private const int MaxParallelTooltips = 4;
 
-    private readonly RaidLogReader _reader = new(apiClient);
-    private readonly RaidGuildResolver _guildResolver = new(apiClient, guildDirectory);
+    private readonly TextWriter _progress = progress ?? Console.Out;
+    private readonly RaidLogReader _reader = new(apiClient, progress);
+    private readonly RaidGuildResolver _guildResolver = new(apiClient, guildDirectory, progress);
     private readonly TimeProvider _timeProvider = timeProvider ?? TimeProvider.System;
 
     public async Task<RaidLogExportResult> ExportAsync(
@@ -58,12 +61,12 @@ public sealed class RaidLogExportService(
 
         if (previous.OutOfDate)
         {
-            Console.WriteLine("The files are in an older format: reading every log again.");
+            _progress.WriteLine("The files are in an older format: reading every log again.");
         }
 
         if (toRead.Count > 0)
         {
-            Console.WriteLine($"Reading {toRead.Count} new logs...");
+            _progress.WriteLine($"Reading {toRead.Count} new logs...");
         }
 
         var details = await _reader.ReadLogsAsync(toRead, cancellationToken);
@@ -134,7 +137,8 @@ public sealed class RaidLogExportService(
             details.Mismatched,
             outputDirectory,
             talents?.Count ?? 0,
-            tooltips?.Lookup
+            tooltips?.Lookup,
+            [.. dataset.Logs.Where(log => !previous.Logs.ContainsKey(log.Key))]
         );
     }
 

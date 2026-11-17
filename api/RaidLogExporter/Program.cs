@@ -32,8 +32,6 @@ internal static class Program
         );
         var solutionRoot = ProjectPaths.FindSolutionRoot(projectRoot);
         var settingsPath = ResolveSettingsPath(projectRoot, solutionRoot);
-        var frontendSrc = ProjectPaths.GetFrontendSrcDirectory(solutionRoot);
-        var outputDirectory = Path.Combine(frontendSrc, RaidLogFileWriter.DataDirectoryName);
 
         using var cancellationTokenSource = new CancellationTokenSource();
 
@@ -47,30 +45,14 @@ internal static class Program
         {
             var settings = AppSettings.Load(settingsPath);
             using var apiClient = new TauriApiClient(settings.TauriApi);
-            using var itemSource = new TauriShootItemSource();
-            using var talentSource = new TauriShootTalentSource();
-            using var tooltipSource = new TauriShootSpellTooltipSource();
-            var guildDirectory = PlayerGuildDirectory.Load(
-                Path.Combine(frontendSrc, "Players.csv")
-            );
-            var invalidLogs = InvalidRaidLogs.Load(
-                Path.Combine(solutionRoot, "AchievementLadder", "Data", InvalidRaidLogs.FileName)
-            );
-            var exporter = new RaidLogExportService(
-                outputDirectory,
-                apiClient,
-                itemSource,
-                talentSource,
-                tooltipSource,
-                guildDirectory,
-                invalidLogs
-            );
+            using var setup = new RaidLogExportSetup(solutionRoot, apiClient);
+            var invalidLogs = setup.InvalidLogs;
 
             Console.WriteLine(
                 $"Reading {RaidCatalog.Name} rankings for {string.Join(", ", options!.Realms)}..."
             );
 
-            var result = await exporter.ExportAsync(options, cancellationTokenSource.Token);
+            var result = await setup.Service.ExportAsync(options, cancellationTokenSource.Token);
             var dataset = result.Dataset;
 
             Console.WriteLine();

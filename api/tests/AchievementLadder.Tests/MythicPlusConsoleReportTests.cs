@@ -26,7 +26,7 @@ public sealed class MythicPlusConsoleReportTests
     public void LeaderboardRead_NumbersTheDungeonAndShowsItsRunsAndTime()
     {
         Assert.Equal(
-            "  [1/9]  Halls of Valor               8,216 runs    12.4s",
+            "[1/9]  Halls of Valor               8,216 runs    12.4s",
             MythicPlusConsoleReport.LeaderboardRead(
                 1,
                 9,
@@ -36,7 +36,7 @@ public sealed class MythicPlusConsoleReportTests
             )
         );
         Assert.Equal(
-            "  [ 3/12]  Maw of Souls                11,402 runs   1m 05s",
+            "[ 3/12]  Maw of Souls                11,402 runs   1m 05s",
             MythicPlusConsoleReport.LeaderboardRead(
                 3,
                 12,
@@ -51,7 +51,7 @@ public sealed class MythicPlusConsoleReportTests
     public void LeaderboardFailed_NumbersTheDungeonAndShowsHowLongItTried()
     {
         Assert.Equal(
-            "  [4/9]  Court of Stars             failed after 30.2s",
+            "[4/9]  Court of Stars             failed after 30.2s",
             MythicPlusConsoleReport.LeaderboardFailed(
                 4,
                 9,
@@ -165,18 +165,16 @@ public sealed class MythicPlusConsoleReportTests
         Assert.Contains(
             lines,
             line =>
-                line.StartsWith("  [")
-                && line.Contains("Halls of Valor")
-                && line.Contains(" 1 runs ")
+                line.StartsWith('[') && line.Contains("Halls of Valor") && line.Contains(" 1 runs ")
         );
         Assert.Contains(
             lines,
             line =>
-                line.StartsWith("  [")
+                line.StartsWith('[')
                 && line.Contains("Eye of Azshara")
                 && line.Contains("failed after ")
         );
-        Assert.Equal(["  [1/2]", "  [2/2]"], lines.Select(line => line[..7]));
+        Assert.Equal(["[1/2]", "[2/2]"], lines.Select(line => line[..5]));
     }
 
     private static MythicPlusDataset Dataset() =>

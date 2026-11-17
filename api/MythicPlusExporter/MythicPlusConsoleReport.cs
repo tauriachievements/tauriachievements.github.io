@@ -71,7 +71,7 @@ public static class MythicPlusConsoleReport
     {
         var width = total.ToString(CultureInfo.InvariantCulture).Length;
         return Invariant(
-            $"  [{position.ToString(CultureInfo.InvariantCulture).PadLeft(width)}/{total}]  "
+            $"[{position.ToString(CultureInfo.InvariantCulture).PadLeft(width)}/{total}]  "
         );
     }
 
