@@ -120,6 +120,13 @@ the page's store. The component keeps the URL, the filters and the event handler
 - Pages hosting: GitHub Pages serves `src/404.html` for any unknown path. It redirects to
   `/?p=<path>`, and `index.html` restores the path before Angular starts. Paths that contain a
   dot aren't redirected, so route parameters can't hold dots.
+- Google Analytics (gtag.js, no Tag Manager) starts from one inline script in `index.html`. It
+  adds the gtag.js tag itself, and only when the browser doesn't report automation
+  (`navigator.webdriver`) or headless Chrome (`HeadlessChrome` in the user agent), so scripted
+  visits stay out of the reports. Playwright runs count as automated, so the visual and layout
+  checks send nothing. `scripts/analytics-tag.test.js` runs that script against a fake browser.
+  A bot that hides both signals, or one that posts hits straight to Google, still shows up:
+  filter it in the GA reports.
 
 ## URL state
 
