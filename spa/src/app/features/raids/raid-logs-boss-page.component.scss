@@ -51,6 +51,10 @@
   &:focus-visible { outline: 2px solid $gold; outline-offset: 2px; }
 }
 
+.character-line { display: flex; min-width: 0; align-items: baseline; gap: 8px; }
+.character-line .character-name { flex: 0 1 auto; min-width: 0; @include truncate; }
+.character-realm { flex: 0 1000 auto; min-width: 0; color: $raid-muted; font-size: .78rem; @include truncate; }
+
 .kill-link { display: inline-flex; align-items: baseline; gap: 8px; }
 .guild-cell { display: inline-flex; flex-wrap: wrap; align-items: center; gap: 2px 8px; }
 .invalid-tag { @include invalid-tag; }
@@ -69,6 +73,7 @@ td a.log-link { color: $gold; font-size: .8rem; font-weight: 600; }
 
 @media (max-width: 900px) {
   .narrow-hidden, .kill-link .muted { display: none; }
+  .phone-fluid { @include fluid-identity; }
 }
 
 @media (max-width: 640px) {
@@ -80,7 +85,6 @@ td a.log-link { color: $gold; font-size: .8rem; font-weight: 600; }
   .view-switch { display: grid; width: 100%; grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .view-switch button { padding-inline: 4px; }
   .role-slot { flex: 1 1 100%; }
-  .character-guild { @include truncate; color: #fff; font-size: .74rem; font-weight: 700; }
   .loadout { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 12px; padding-left: 28px; }
   .loadout > :last-child { margin-left: auto; }
 }

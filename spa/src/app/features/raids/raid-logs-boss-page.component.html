@@ -148,14 +148,13 @@
                     <span class="character">
                       <img [src]="entry.member.spec?.icon || classIcon(entry.member.character.classId)" [title]="entry.member.spec?.name ?? ''" alt="" loading="lazy" />
                       <img class="race-icon" [src]="raceIcon(entry.member.character)" alt="" loading="lazy" />
-                      <span class="character-text">
+                      <span class="character-line">
                         <a
                           class="character-name"
                           [style.color]="classColor(entry.member.character.classId)"
                           [routerLink]="characterLink(entry.member.character)"
                           [queryParams]="{ difficulty: current.slug }">{{ entry.member.character.name }}</a>
-                        <span class="character-sub phone-hidden">{{ entry.member.character.realm }}</span>
-                        <span class="character-guild phone-only">@if (entry.member.character.guild; as guild) {&lt;{{ guild }}&gt;} @else {{{ entry.member.character.realm }}}</span>
+                        <span class="character-realm">{{ entry.member.character.realm }}</span>
                       </span>
                     </span>
                   </td>

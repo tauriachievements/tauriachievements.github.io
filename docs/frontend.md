@@ -578,8 +578,10 @@ name cell's width, and with the longest one in the data (WoD log 295450) the ful
 `character-cell` mixin hides the race icon, so the name keeps room; that covers the log page and
 the boss page's rankings. Its `raid-log` entry is marked `wide`. The boss page's kills table
 hides its View log column up to 900 px, since the time already links to the log, so its Avg
-ilvl column fits from 641 px. Its `raid-logs-boss-fastest` and `raid-logs-boss` (the damage
-ranking) entries are marked `wide`.
+ilvl column fits from 641 px. Its rankings show the spec icon, race icon, name and realm on one
+line; up to 900 px that cell gives way (the realm shortens first, then the name), so Talents and
+Trinkets still fit beside it from 641 px. Its `raid-logs-boss-fastest` and `raid-logs-boss` (the
+damage ranking) entries are marked `wide`.
 
 A few things scroll sideways by design: charts over time that open at the latest point
 (`appScrollToEnd`), a strip of cards you swipe through, and the raid race

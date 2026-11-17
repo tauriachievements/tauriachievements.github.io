@@ -76,12 +76,13 @@ describe('RaidLogsBossPageComponent', () => {
     expect(element.querySelector('.boss-heading .eyebrow')?.textContent?.trim()).toBe('Boss 2 · The Emerald Nightmare');
   });
 
-  it('shows the spec icon, then the race icon, and only the realm under the name', async () => {
+  it('shows the spec icon, the race icon, the name and the realm on one line', async () => {
     const element = await openBoss('ursoc');
     const character = element.querySelector('tbody .character');
 
     expect([...character?.querySelectorAll('img') ?? []].map(image => image.getAttribute('src')))
       .toEqual([specFor(8, 'Frost')?.icon, 'assets/race-icons/10-1.gif']);
-    expect(character?.querySelector('.character-sub')?.textContent?.trim()).toBe('Evermoon');
+    expect([...character?.querySelector('.character-line')?.children ?? []].map(part => part.textContent?.trim())).toEqual(['Alpha', 'Evermoon']);
+    expect([...character?.children ?? []].map(part => part.className)).toEqual(['', 'race-icon', 'character-line']);
   });
 });
