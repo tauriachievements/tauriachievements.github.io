@@ -26,10 +26,12 @@ import {
   raidBossLink,
   raidCharacterLink,
   raidGuildLink,
-  raidLogLink
+  raidLogLink,
+  raidRaceIcon
 } from './raid-display';
 import {
   RaidBoss,
+  RaidCharacter,
   RaidDifficulty,
   RaidKillDetails,
   RaidLogsIndex,
@@ -39,7 +41,7 @@ import {
   RaidTalentTooltips
 } from './raid-logs.types';
 import { RaidMetric, RankedPerformance, fitClassAndSpec, rankCharacters, rankedClassOptions, rankedSpecs } from './raid-scores';
-import { averageItemLevel, characterKey, defaultDifficulty, logKey, memberTalents } from './raid-logs';
+import { averageItemLevel, bossesInKillOrder, characterKey, defaultDifficulty, logKey, memberTalents } from './raid-logs';
 import { fastestKills, latestKills } from './raid-progression';
 import { RaidLogsDataService } from './raid-logs-data.service';
 import { REALM_FILTER_OPTIONS, RoleFilter } from '../../game/wow';
@@ -136,6 +138,7 @@ export class RaidLogsBossPageComponent {
   private readonly invalidKills = signal<RaidKillDetails[]>([]);
   private readonly talentTable = signal<RaidTalentTable>(new Map());
   readonly talentTooltips = signal<RaidTalentTooltips>(new Map());
+  private readonly genders = toSignal(this.data.genders(), { initialValue: new Map<string, number>() as ReadonlyMap<string, number> });
   readonly isLoading = signal(true);
   readonly loadError = signal<string | undefined>(undefined);
   readonly now = signal(Date.now());
@@ -152,8 +155,15 @@ export class RaidLogsBossPageComponent {
   readonly search = signal(this.query.get('q') ?? '');
   readonly page = signal(parsePage(this.query.get('page')));
 
+  readonly bosses = computed(() => bossesInKillOrder(this.index()?.bosses ?? []));
+
   readonly boss = computed<RaidBoss | undefined>(() =>
-    this.index()?.bosses.find(boss => boss.slug === this.params().get('boss')));
+    this.bosses().find(boss => boss.slug === this.params().get('boss')));
+
+  readonly bossNumber = computed(() => {
+    const boss = this.boss();
+    return boss ? this.bosses().indexOf(boss) + 1 : 0;
+  });
 
   readonly bossKillCounts = computed(() => {
     const counts = new Map<string, number>();
@@ -392,6 +402,10 @@ export class RaidLogsBossPageComponent {
 
   classColor(classId: number): string {
     return getClassColor(classId) ?? '#e0e0e0';
+  }
+
+  raceIcon(character: RaidCharacter): string {
+    return raidRaceIcon(character, this.genders());
   }
 
   ago(kill: RaidKillDetails): string {

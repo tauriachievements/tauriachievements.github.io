@@ -5,7 +5,7 @@ import { ActivatedRoute, RouterLink } from '@angular/router';
 import { getClassColor } from '../../game/class-colors';
 import { RaidDifficultySwitchComponent } from './raid-difficulty-switch.component';
 import { RaidBoss, RaidKill, RaidLogsIndex, RaidPerformer } from './raid-logs.types';
-import { defaultDifficulty, encounterKey, logKey } from './raid-logs';
+import { bossesInKillOrder, defaultDifficulty, encounterKey, logKey } from './raid-logs';
 import { fastestKills, latestKills } from './raid-progression';
 import { formatAgo, formatFightTime, formatPerSecond, raidBossLink, raidLogLink } from './raid-display';
 import { RevealDirective } from '../../shared/motion/reveal.directive';
@@ -65,7 +65,7 @@ export class RaidLogsPageComponent implements OnInit {
       return [];
     }
 
-    return index.bosses.map(boss => {
+    return bossesInKillOrder(index.bosses).map(boss => {
       const kills = this.kills().filter(kill => kill.boss === boss);
       const top = index.top.get(encounterKey(boss.slug, difficulty.slug));
       return { boss, kills: kills.length, fastest: fastestKills(kills)[0], dps: top?.dps, hps: top?.hps };

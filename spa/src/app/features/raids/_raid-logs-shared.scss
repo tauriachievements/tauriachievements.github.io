@@ -116,6 +116,10 @@ $difficulty-colors: (
     .character { display: flex; max-width: 100%; }
     .character-name, .character-sub { @include truncate; }
   }
+
+  @media (max-width: $narrow-phone-breakpoint) {
+    .race-icon { display: none; }
+  }
 }
 
 @mixin raid-icons {

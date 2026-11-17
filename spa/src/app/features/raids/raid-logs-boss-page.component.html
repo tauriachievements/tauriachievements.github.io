@@ -3,9 +3,9 @@
     <span aria-hidden="true">‹</span> Back to Raid Logs
   </a>
 
-  @if (index(); as loaded) {
+  @if (bosses().length) {
     <nav class="boss-picker" aria-label="Pick a boss">
-      @for (other of loaded.bosses; track other.slug) {
+      @for (other of bosses(); track other.slug) {
         <a
           class="boss-pick"
           [class.active]="other === boss()"
@@ -24,7 +24,7 @@
     <header class="boss-header">
       <img class="boss-portrait" [src]="current.portrait" alt="" />
       <div class="boss-heading">
-        <p class="eyebrow">Boss {{ current.index + 1 }} · {{ index()?.raid?.name }}</p>
+        <p class="eyebrow">Boss {{ bossNumber() }} · {{ index()?.raid?.name }}</p>
         <h1>{{ current.name }}</h1>
       </div>
       @if (index(); as loaded) {
@@ -146,14 +146,15 @@
                   <td class="rank">{{ entry.rank }}</td>
                   <td class="phone-fluid">
                     <span class="character">
-                      <img [src]="entry.member.spec?.icon || classIcon(entry.member.character.classId)" alt="" loading="lazy" />
+                      <img [src]="entry.member.spec?.icon || classIcon(entry.member.character.classId)" [title]="entry.member.spec?.name ?? ''" alt="" loading="lazy" />
+                      <img class="race-icon" [src]="raceIcon(entry.member.character)" alt="" loading="lazy" />
                       <span class="character-text">
                         <a
                           class="character-name"
                           [style.color]="classColor(entry.member.character.classId)"
                           [routerLink]="characterLink(entry.member.character)"
                           [queryParams]="{ difficulty: current.slug }">{{ entry.member.character.name }}</a>
-                        <span class="character-sub phone-hidden">{{ entry.member.spec?.name }} · {{ entry.member.character.realm }}@if (entry.member.character.guild) { · {{ entry.member.character.guild }}}</span>
+                        <span class="character-sub phone-hidden">{{ entry.member.character.realm }}</span>
                         <span class="character-guild phone-only">@if (entry.member.character.guild; as guild) {&lt;{{ guild }}&gt;} @else {{{ entry.member.character.realm }}}</span>
                       </span>
                     </span>
