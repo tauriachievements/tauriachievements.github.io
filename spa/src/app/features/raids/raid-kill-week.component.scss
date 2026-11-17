@@ -1,0 +1,32 @@
+@use './raid-logs-shared' as *;
+
+:host { display: block; min-width: 0; }
+:host(:not(:first-of-type)) { margin-top: 10px; }
+
+.week { display: flex; min-width: 0; flex-direction: column; gap: 8px; }
+
+.week-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 4px 16px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid $raid-line;
+
+  h3 { margin: 0; color: $raid-muted; font-size: .9rem; font-weight: 600; }
+}
+
+.week-name { color: $gold; font-size: .78rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
+.week-dates { color: #fff; }
+
+.week-stats {
+  margin: 0;
+  color: $raid-muted;
+  font-size: .82rem;
+  font-variant-numeric: tabular-nums;
+
+  a { color: $gold; font-weight: 600; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  a:focus-visible { outline: 2px solid $gold; outline-offset: 2px; }
+}

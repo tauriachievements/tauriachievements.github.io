@@ -407,7 +407,7 @@ decision: ask first.** When a rule does change, change its tests first and see t
     half a percent keeps its arrow ("▲ <1%"). The column shows the change and the latest kill's
     date, without a "New PR" tag. With one kill there is nothing to compare yet ("First kill").
   - The character page leaves invalid kills out entirely, as if the character hadn't killed the
-    boss that day: they're not in the boss rows, the charts, Latest vs PR or the latest kills.
+    boss that day: they're not in the boss rows, the charts, Latest vs PR or the kill history.
   - Every kill gets an equal column, whatever the time between kills. The chart's top line is the
     best anyone did on the boss (with a comparison picked, the best of that class or spec), and
     each dot is coloured like "Of best".
@@ -493,25 +493,32 @@ decision: ask first.** When a rule does change, change its tests first and see t
 - **Avg ilvl** on the boss page's Fastest kills and Latest kills (`averageItemLevel` in
   `raid-logs.ts`) is the mean item level of everyone in the log, shown to one decimal. Every
   player counts the same, a low-level character included. It doesn't change the order.
-- **A guild's kill history** (the Raids guild page, `killWeeks` and `weekPages` in
-  `raid-kill-weeks.ts`) lists the guild's kills of the difficulty, invalid ones included, by
-  raid week: from one Wednesday reset to the next (`raidWeekStart` to `raidWeekEnd`), the
-  latest week and the latest kill first. A week without kills isn't listed. The reader's
-  current week is "This week" and the one before it "Last week"; older weeks show only their
-  dates. A week's heading counts its valid kills and the bosses they killed, and shows the
-  guild's fastest full clear that ended in the week ([below](#raid-fastest-full-clears)), the
-  earlier on a tie. A page holds as many whole weeks as fit in 25 kills, and a bigger week has
-  a page of its own, so a week is never split across pages.
+- **A kill history** (the Raids guild and character pages, `killWeeks` and `killWeekPage` in
+  `raid-kill-weeks.ts`) lists a guild's kills of the difficulty, invalid ones included, or a
+  character's, without its invalid ones ([below](#invalid-raid-logs)), by raid week: from one
+  Wednesday reset to the next (`raidWeekStart` to `raidWeekEnd`), the latest week and the
+  latest kill first. A week without kills isn't listed. The reader's current week is "This
+  week" and the one before it "Last week"; older weeks show only their dates. A week's heading
+  counts its valid kills and the bosses they killed, and shows the fastest full clear that
+  ended in the week ([below](#raid-fastest-full-clears)), the earlier on a tie: on a guild page
+  the guild's own clears (`guildClears`), on a character page every clear the character was in
+  all the kills of, whichever group it was with (`characterClears`). A page holds as many whole
+  weeks as fit in 25 kills, and a bigger week has a page of its own, so a week is never split
+  across pages. Changing the difficulty, or switching to an earlier character with the name,
+  goes back to the first page; Damage/Healing and the comparison keep it.
 - **Tests:** `raid-progression.spec.ts`, `raidWeekStart`, `raidWeekEnd` and `averageItemLevel`
-  in `raid-logs.spec.ts`, `raid-kill-weeks.spec.ts`, the This week, All groups and pages cases in
-  `raid-logs-progression-page.component.spec.ts`, and `raid-logs-guild-page.component.spec.ts`.
+  in `raid-logs.spec.ts`, `raid-kill-weeks.spec.ts`, `characterClears` in
+  `raid-clears.spec.ts`, the This week, All groups and pages cases in
+  `raid-logs-progression-page.component.spec.ts`, `raid-logs-guild-page.component.spec.ts`,
+  and the kill history cases in `raid-logs-character-page.component.spec.ts`.
 
 ## Raid fastest full clears
 
 - **Code:** `RaidLogDatasetBuilder.Clears` in RaidLogExporter finds the clears; `clearRun`,
   `rankClears`, `clearSplits`, `clearEndedBy` and `guildClears` in
   `spa/src/app/features/raids/raid-clears.ts` time and rank them; `/raid-logs/clears` shows
-  them, and a guild page's kill history shows the guild's fastest clear of each raid week.
+  them, and the kill history on a guild or character page shows its fastest clear of each raid
+  week.
 - **A full clear** is one raid instance (the API's `instance_uid`,
   [tauri-api.md](tauri-api.md#raid-logs-raid-rank-encounter-raid-log)) with a kill of every boss
   on one difficulty. A raid finished in a second instance doesn't count. An instance kept open
@@ -549,7 +556,7 @@ decision: ask first.** When a rule does change, change its tests first and see t
   players who abused something.
 - It's still listed, tagged "Invalid" with the reason on hover, in the lists of latest kills:
   the overview's, a boss's Latest tab (without a number) and a guild's kill history. The
-  character page leaves it out altogether, its latest kills and kill charts included. Its log
+  character page leaves it out altogether, its kill history and kill charts included. Its log
   page opens with the reason, and the fight time says "Not ranked".
 - `/raid-logs/invalid` lists every invalid log of every difficulty, latest first, with its
   reason. It has no menu entry: the "List of invalid logs" button on `/raid-logs`, shown only

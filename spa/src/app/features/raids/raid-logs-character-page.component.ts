@@ -13,6 +13,9 @@ import { GlideDirective } from '../../shared/motion/glide.directive';
 import { RaidDifficultySwitchComponent } from './raid-difficulty-switch.component';
 import { RaidKillChartComponent } from './raid-kill-chart.component';
 import { KillHistory, RecordChange, RecordCheck, killHistory, recordChange } from './raid-kill-history';
+import { killWeekPage, killWeeks } from './raid-kill-weeks';
+import { RaidKillWeekComponent } from './raid-kill-week.component';
+import { characterClears } from './raid-clears';
 import {
   ITEM_QUALITY_COLORS,
   formatFightTime,
@@ -43,7 +46,8 @@ import {
 import { characterKey, formerCharactersOf, logKey } from './raid-logs';
 import { RaidLogsDataService } from './raid-logs-data.service';
 import { CLASS_NAMES, realmSlug } from '../../game/wow';
-import { injectReplaceUrl, parseInteger } from '../../core/url-state';
+import { injectReplaceUrl, parseInteger, parsePage } from '../../core/url-state';
+import { PagerComponent } from '../../shared/pager.component';
 import { LoadStateComponent } from '../../shared/load-state.component';
 import { setPageHeader } from '../../core/page-header';
 
@@ -85,7 +89,6 @@ interface ClassOption {
   active: boolean;
 }
 
-const RECENT_KILLS = 20;
 const NOT_RANKED = 'Earlier character, not ranked';
 
 @Component({
@@ -95,11 +98,13 @@ const NOT_RANKED = 'Earlier character, not ranked';
     FilterDropdownComponent,
     RaidDifficultySwitchComponent,
     RaidKillChartComponent,
+    RaidKillWeekComponent,
     GlideDirective,
     DatePipe,
     DecimalPipe,
     LoadStateComponent,
-    NgTemplateOutlet
+    NgTemplateOutlet,
+    PagerComponent
   ],
   templateUrl: './raid-logs-character-page.component.html',
   styleUrl: './raid-logs-character-page.component.scss',
@@ -128,6 +133,8 @@ export class RaidLogsCharacterPageComponent {
   private readonly pickedSpec = signal(parseInteger(this.route.snapshot.queryParamMap.get('spec')));
   private readonly requestedClass = signal(parseClass(this.route.snapshot.queryParamMap.get('class')));
   readonly predict = signal(this.route.snapshot.queryParamMap.get('predict') === '1');
+  private readonly page = signal(parsePage(this.route.snapshot.queryParamMap.get('page')));
+  private readonly now = Date.now();
 
   private readonly classes = computed(() => {
     const index = this.index();
@@ -266,7 +273,14 @@ export class RaidLogsCharacterPageComponent {
 
   readonly referenceLabel = computed(() => this.comparison() === 'class' ? `#1 ${this.comparedMember()}` : '#1');
 
-  readonly recent = computed(() => latestFirst(this.appearances()).slice(0, RECENT_KILLS));
+  private readonly clears = computed(() => {
+    const index = this.index();
+    const loaded = this.loaded();
+    return index && loaded ? characterClears(index.clears, loaded.difficulty, this.appearances().map(({ kill }) => kill)) : [];
+  });
+
+  readonly history = computed(() => killWeekPage(killWeeks(this.appearances(), ({ kill }) => kill, this.clears()), this.page(), this.now));
+  readonly bossCount = computed(() => this.index()?.bosses.length ?? 0);
 
   readonly summary = computed<SummaryTile[]>(() => {
     const rows = this.bossRows();
@@ -344,6 +358,7 @@ export class RaidLogsCharacterPageComponent {
 
   setDifficulty(slug: string): void {
     this.requestedDifficulty.set(slug);
+    this.page.set(1);
     this.writeUrl();
     this.loadData();
   }
@@ -355,8 +370,14 @@ export class RaidLogsCharacterPageComponent {
 
     this.requestedClass.set(classId);
     this.pickedSpec.set(undefined);
+    this.page.set(1);
     this.writeUrl();
     this.loadData(true);
+  }
+
+  goToPage(page: number): void {
+    this.page.set(page);
+    this.writeUrl();
   }
 
   setMetric(metric: RaidMetric): void {
@@ -428,6 +449,7 @@ export class RaidLogsCharacterPageComponent {
 
           if (this.requestedDifficulty() !== undefined && this.requestedDifficulty() !== difficulty.slug) {
             this.requestedDifficulty.set(difficulty.slug);
+            this.page.set(1);
             this.writeUrl();
           }
           this.loaded.set({ difficulty, bossKills, key });
@@ -489,7 +511,8 @@ export class RaidLogsCharacterPageComponent {
       compare: this.comparison() === 'class' ? 'class' : null,
       spec: this.comparedSpec()?.id ?? null,
       class: this.formerClass() ?? null,
-      predict: this.predict() ? 1 : null
+      predict: this.predict() ? 1 : null,
+      page: this.history().page > 1 ? this.history().page : null
     });
   }
 }

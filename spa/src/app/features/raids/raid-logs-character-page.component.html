@@ -221,49 +221,65 @@
       </section>
     }
 
-      <section class="section" aria-labelledby="character-recent-title">
+      <section class="section" aria-labelledby="character-history-title" #historySection>
         <header class="section-header">
-          <h2 id="character-recent-title">Latest kills</h2>
+          <h2 id="character-history-title">Kill history</h2>
+          <p>Every kill on this difficulty by raid week, from one Wednesday reset to the next, latest first.</p>
         </header>
-        <div class="table-scroll">
-          <table>
-            <thead>
-              <tr>
-                <th scope="col">Boss</th>
-                <th scope="col" class="phone-hidden">Guild</th>
-                <th scope="col" class="phone-hidden">Spec</th>
-                <th scope="col" class="num">DPS</th>
-                <th scope="col" class="num">HPS</th>
-                <th scope="col" class="num phone-hidden">Time</th>
-                <th scope="col">Date</th>
-              </tr>
-            </thead>
-            <tbody>
-              @for (entry of recent(); track logKey(entry.kill)) {
-                <tr>
-                  <td class="phone-fluid">
-                    <a class="boss-cell" [routerLink]="logLink(entry.kill)">
-                      <img [src]="entry.kill.boss.portrait" alt="" loading="lazy" />
-                      <span class="strong">{{ entry.kill.boss.shortName }}</span>
-                    </a>
-                  </td>
-                  <td class="phone-hidden">
-                    @if (entry.kill.guild?.name) {
-                      <a [routerLink]="guildLink(entry.kill.guild!)" [queryParams]="{ difficulty: entry.kill.difficulty.slug }">{{ entry.kill.guild!.name }}</a>
-                    } @else {
-                      <span class="muted">Pickup group</span>
-                    }
-                  </td>
-                  <td class="phone-hidden">{{ entry.member.spec?.name }}</td>
-                  <td class="num" [class.strong]="metric() === 'dps'">{{ formatPerSecond(entry.member.dps) }}</td>
-                  <td class="num" [class.strong]="metric() === 'hps'">{{ formatPerSecond(entry.member.hps) }}</td>
-                  <td class="num phone-hidden">{{ formatFightTime(entry.kill.fightMs) }}</td>
-                  <td class="muted">{{ entry.kill.killedAt | date:'d MMM' }}</td>
-                </tr>
-              }
-            </tbody>
-          </table>
-        </div>
+
+        @for (week of history().weeks; track week.start) {
+          <app-raid-kill-week [week]="week" [bossCount]="bossCount()">
+            <div class="table-scroll">
+              <table class="kill-table">
+                <thead>
+                  <tr>
+                    <th scope="col" class="boss-column">Boss</th>
+                    <th scope="col" class="guild-column phone-hidden">Guild</th>
+                    <th scope="col" class="spec-column phone-hidden">Spec</th>
+                    <th scope="col" class="value-column num">DPS</th>
+                    <th scope="col" class="value-column num">HPS</th>
+                    <th scope="col" class="time-column num phone-hidden">Time</th>
+                    <th scope="col" class="date-column">Date</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (entry of week.kills; track logKey(entry.kill)) {
+                    <tr>
+                      <td class="phone-fluid">
+                        <a class="boss-cell" [routerLink]="logLink(entry.kill)">
+                          <img [src]="entry.kill.boss.portrait" alt="" loading="lazy" />
+                          <span class="strong">{{ entry.kill.boss.shortName }}</span>
+                        </a>
+                      </td>
+                      <td class="phone-hidden">
+                        @if (entry.kill.guild?.name) {
+                          <a [routerLink]="guildLink(entry.kill.guild!)" [queryParams]="{ difficulty: entry.kill.difficulty.slug }">{{ entry.kill.guild!.name }}</a>
+                        } @else {
+                          <span class="muted">Pickup group</span>
+                        }
+                      </td>
+                      <td class="phone-hidden">{{ entry.member.spec?.name }}</td>
+                      <td class="num" [class.strong]="metric() === 'dps'">{{ formatPerSecond(entry.member.dps) }}</td>
+                      <td class="num" [class.strong]="metric() === 'hps'">{{ formatPerSecond(entry.member.hps) }}</td>
+                      <td class="num phone-hidden">{{ formatFightTime(entry.kill.fightMs) }}</td>
+                      <td class="muted">{{ entry.kill.killedAt | date:'d MMM' }}</td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          </app-raid-kill-week>
+        }
+
+        @if (history().pages > 1) {
+          <app-pager
+            label="Kill history pages"
+            [page]="history().page"
+            [pages]="history().pages"
+            [count]="(appearances().length | number) + ' kills'"
+            [scrollTarget]="historySection"
+            (pageChange)="goToPage($event)" />
+        }
       </section>
     }
   </main>

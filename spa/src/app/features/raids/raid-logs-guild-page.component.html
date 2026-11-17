@@ -91,17 +91,8 @@
         <p>Every kill on this difficulty by raid week, from one Wednesday reset to the next, latest first.</p>
       </header>
 
-      @for (week of historyWeeks(); track week.start) {
-        <section class="week" [attr.aria-labelledby]="'kill-week-' + week.start">
-          <header class="week-header">
-            <h3 [id]="'kill-week-' + week.start">
-              @if (week.name; as name) {<span class="week-name">{{ name }}</span> · }<span class="week-dates" [title]="'From the raid reset on ' + (week.start | date:'EEE d MMM, HH:mm') + ' to the one on ' + (week.end | date:'EEE d MMM, HH:mm')">{{ week.start | date:'d MMM' }} – {{ week.end | date:'d MMM' }}</span>
-            </h3>
-            <p class="week-stats">
-              {{ week.validKills }} {{ week.validKills === 1 ? 'kill' : 'kills' }} · {{ week.bosses }}/{{ bossCount() }} bosses@if (week.clear; as clear) { · <a [routerLink]="logLink(clear.last)" [title]="'Open the ' + clear.last.boss.shortName + ' kill that finished the clear'">Full clear {{ formatFightTime(clear.clearMs) }}</a>}
-            </p>
-          </header>
-
+      @for (week of history().weeks; track week.start) {
+        <app-raid-kill-week [week]="week" [bossCount]="bossCount()">
           <ol class="history">
             @for (kill of week.kills; track logKey(kill)) {
               <li>
@@ -120,16 +111,16 @@
               </li>
             }
           </ol>
-        </section>
+        </app-raid-kill-week>
       } @empty {
         <p class="empty-note">No kills on this difficulty.</p>
       }
 
-      @if (pages() > 1) {
+      @if (history().pages > 1) {
         <app-pager
           label="Kill history pages"
-          [page]="currentPage()"
-          [pages]="pages()"
+          [page]="history().page"
+          [pages]="history().pages"
           [count]="(listedKills().length | number) + ' kills'"
           [scrollTarget]="historySection"
           (pageChange)="goToPage($event)" />

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { clearRun } from './raid-clears';
-import { KillWeek, killWeeks, weekName, weekPages } from './raid-kill-weeks';
+import { KillWeek, KillWeekPage, killWeekPage, killWeeks, weekName, weekPages } from './raid-kill-weeks';
 import { RaidGuild, RaidKill } from './raid-logs.types';
 import { index } from './raid-logs.fixture';
 
@@ -37,7 +37,7 @@ describe('killWeeks', () => {
     const reset = kill('2026-10-28T08:00:00Z');
     const later = kill('2026-10-29T20:00:00Z');
 
-    expect(killWeeks([before, later, early, reset, lastMinute]).map(week => [iso(week.start), iso(week.end), week.kills])).toEqual([
+    expect(killWeeks([before, later, early, reset, lastMinute], kill => kill).map(week => [iso(week.start), iso(week.end), week.kills])).toEqual([
       ['2026-10-28T08:00:00.000Z', '2026-11-04T08:00:00.000Z', [later, reset]],
       ['2026-10-21T07:00:00.000Z', '2026-10-28T08:00:00.000Z', [lastMinute, before]],
       ['2026-10-07T07:00:00.000Z', '2026-10-14T07:00:00.000Z', [early]]
@@ -50,9 +50,20 @@ describe('killWeeks', () => {
       kill('2026-10-28T19:30:00Z', { boss: ilgynoth }),
       kill('2026-10-29T19:00:00Z'),
       kill('2026-10-29T19:30:00Z', { boss: elerethe, invalid: 'Bug abuse' })
-    ]);
+    ], kill => kill);
 
     expect([week.kills.length, week.validKills, week.bosses]).toEqual([4, 3, 2]);
+  });
+
+  it("groups rows that hold a kill by that kill, as a character's kills are", () => {
+    const early = { kill: kill('2026-10-22T19:00:00Z'), dps: 1 };
+    const later = { kill: kill('2026-10-29T20:00:00Z'), dps: 2 };
+    const sameWeek = { kill: kill('2026-10-28T19:00:00Z', { boss: ilgynoth }), dps: 3 };
+
+    expect(killWeeks([early, sameWeek, later], row => row.kill).map(week => [week.kills, week.validKills, week.bosses])).toEqual([
+      [[later, sameWeek], 2, 2],
+      [[early], 1, 1]
+    ]);
   });
 
   it("gives each week the guild's fastest full clear that ended in it, the earlier one on a tie", () => {
@@ -65,7 +76,7 @@ describe('killWeeks', () => {
     const quiet = kill('2026-10-14T19:00:00Z');
     const kills = [slow, fast, tied, lastWeek].flatMap(clear => clear.kills);
 
-    expect(killWeeks([...kills, quiet], [slow, tied, fast, lastWeek]).map(week => week.clear?.key))
+    expect(killWeeks([...kills, quiet], kill => kill, [slow, tied, fast, lastWeek]).map(week => week.clear?.key))
       .toEqual([fast.key, lastWeek.key, undefined]);
   });
 });
@@ -91,6 +102,30 @@ describe('weekPages', () => {
 
   it('has no pages without weeks', () => {
     expect(pageSizes([])).toEqual([]);
+  });
+});
+
+describe('killWeekPage', () => {
+  const now = Date.parse('2026-10-29T12:00:00Z');
+  const kills = (count: number, at: string) => Array.from({ length: count }, () => kill(at));
+  const weeks = killWeeks([
+    ...kills(3, '2026-10-28T19:00:00Z'),
+    ...kills(20, '2026-10-22T19:00:00Z'),
+    ...kills(10, '2026-10-08T19:00:00Z')
+  ], kill => kill);
+  const shown = ({ page, pages, weeks }: KillWeekPage<RaidKill>) => [page, pages, weeks.map(week => [week.name, week.kills.length])];
+
+  it('opens the page asked for, of whole weeks up to 25 kills, and names this week and last week', () => {
+    expect(shown(killWeekPage(weeks, 1, now))).toEqual([1, 2, [['This week', 3], ['Last week', 20]]]);
+    expect(shown(killWeekPage(weeks, 2, now))).toEqual([2, 2, [[undefined, 10]]]);
+  });
+
+  it('shows the last page for a page past the end', () => {
+    expect(shown(killWeekPage(weeks, 9, now))).toEqual([2, 2, [[undefined, 10]]]);
+  });
+
+  it('has one empty page without kills', () => {
+    expect(shown(killWeekPage([], 3, now))).toEqual([1, 1, []]);
   });
 });
 

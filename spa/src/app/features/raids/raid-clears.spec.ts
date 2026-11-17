@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { clearEndedBy, clearRun, clearSplits, guildClears, rankClears } from './raid-clears';
+import { characterClears, clearEndedBy, clearRun, clearSplits, guildClears, rankClears } from './raid-clears';
 import { RaidDifficulty, RaidFullClear, RaidGuild, RaidKill } from './raid-logs.types';
 import { logKey } from './raid-logs';
 import { index } from './raid-logs.fixture';
@@ -117,6 +117,20 @@ describe('guildClears', () => {
 
     expect(guildClears([own, heroicClear, otherGuild, partly, sameNameElsewhere], mythic, miracle).map(run => run.key))
       .toEqual([logKey(own.kills[1])]);
+  });
+});
+
+describe('characterClears', () => {
+  it('keeps the clears of the difficulty the character was in every kill of, matched by realm and log id', () => {
+    const together = guildClear(miracle, 10_000, 1_000);
+    const joinedLate = guildClear(miracle, 20_000, 1_000);
+    const heroicClear = guildClear(miracle, 30_000, 1_000, heroic);
+    const pickup = clear([kill(39_000, 60), kill(40_000, 60, undefined, { boss: ilgynoth })]);
+    const ownKills = [...together.kills, joinedLate.kills[1], ...heroicClear.kills, ...pickup.kills]
+      .map(({ realm, logId }) => ({ realm, logId }));
+
+    expect(characterClears([together, joinedLate, heroicClear, pickup], mythic, ownKills).map(run => run.key))
+      .toEqual([logKey(together.kills[1]), logKey(pickup.kills[1])]);
   });
 });
 
