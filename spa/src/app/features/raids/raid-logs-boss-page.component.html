@@ -1,11 +1,7 @@
 <main class="raid-page">
-  <a class="back-link" routerLink="/raid-logs" [queryParams]="{ difficulty: difficulty()?.slug }">
-    <span aria-hidden="true">‹</span> Back to Raid Logs
-  </a>
-
-  @if (index(); as loaded) {
+  @if (bosses().length) {
     <nav class="boss-picker" aria-label="Pick a boss">
-      @for (other of loaded.bosses; track other.slug) {
+      @for (other of bosses(); track other.slug) {
         <a
           class="boss-pick"
           [class.active]="other === boss()"
@@ -24,7 +20,7 @@
     <header class="boss-header">
       <img class="boss-portrait" [src]="current.portrait" alt="" />
       <div class="boss-heading">
-        <p class="eyebrow">Boss {{ current.index + 1 }} · {{ index()?.raid?.name }}</p>
+        <p class="eyebrow">Boss {{ bossNumber() }} · {{ index()?.raid?.name }}</p>
         <h1>{{ current.name }}</h1>
       </div>
       @if (index(); as loaded) {
@@ -118,13 +114,6 @@
         </div>
       </div>
 
-      @if (isRanking()) {
-        <p class="list-note">
-          Each character's best kill. {{ rankingNote() }}
-          <a class="talents-link" routerLink="/raid-logs/talents" [queryParams]="talentsQueryParams()">Which talents do they pick? <span aria-hidden="true">›</span></a>
-        </p>
-      }
-
       @if (isRanking() && rankings().length) {
         <app-icon-tips class="table-scroll" [spells]="talentTooltips()">
           <table>
@@ -132,12 +121,13 @@
               <tr>
                 <th class="rank" scope="col">#</th>
                 <th scope="col">Character</th>
-                <th scope="col" class="num">{{ metric() === 'hps' ? 'HPS' : 'DPS' }}</th>
-                <th scope="col" class="num narrow-hidden">Item level</th>
-                <th scope="col">Kill</th>
-                <th scope="col" class="tablet-hidden">Date</th>
-                <th scope="col" class="phone-hidden">Talents</th>
-                <th scope="col" class="phone-hidden">Trinkets</th>
+                <th scope="col" class="num center">{{ metric() === 'hps' ? 'HPS' : 'DPS' }}</th>
+                <th scope="col" class="num center narrow-hidden">Item level</th>
+                <th scope="col" class="num center">Kill</th>
+                <th scope="col" class="center narrow-hidden">Guild</th>
+                <th scope="col" class="center tablet-hidden">Date</th>
+                <th scope="col" class="center phone-hidden">Talents</th>
+                <th scope="col" class="center phone-hidden">Trinkets</th>
               </tr>
             </thead>
             <tbody>
@@ -146,33 +136,35 @@
                   <td class="rank">{{ entry.rank }}</td>
                   <td class="phone-fluid">
                     <span class="character">
-                      <img [src]="entry.member.spec?.icon || classIcon(entry.member.character.classId)" alt="" loading="lazy" />
-                      <span class="character-text">
+                      <img [src]="entry.member.spec?.icon || classIcon(entry.member.character.classId)" [title]="entry.member.spec?.name ?? ''" alt="" loading="lazy" />
+                      <img class="race-icon" [src]="raceIcon(entry.member.character)" alt="" loading="lazy" />
+                      <span class="character-line">
                         <a
                           class="character-name"
                           [style.color]="classColor(entry.member.character.classId)"
                           [routerLink]="characterLink(entry.member.character)"
                           [queryParams]="{ difficulty: current.slug }">{{ entry.member.character.name }}</a>
-                        <span class="character-sub phone-hidden">{{ entry.member.spec?.name }} · {{ entry.member.character.realm }}@if (entry.member.character.guild) { · {{ entry.member.character.guild }}}</span>
-                        <span class="character-guild phone-only">@if (entry.member.character.guild; as guild) {&lt;{{ guild }}&gt;} @else {{{ entry.member.character.realm }}}</span>
+                        <span class="character-realm">{{ entry.member.character.realm }}</span>
                       </span>
                     </span>
                   </td>
-                  <td class="num strong">{{ formatPerSecond(entry.value) }}</td>
-                  <td class="num narrow-hidden">{{ entry.member.itemLevel }}</td>
-                  <td>
-                    <a class="kill-link" [routerLink]="logLink(entry.kill)">
-                      <span class="strong">{{ formatFightTime(entry.kill.fightMs) }}</span>
-                      <span class="muted">{{ entry.kill.guild?.name || 'Pickup group' }}</span>
-                    </a>
+                  <td class="num center strong">{{ formatPerSecond(entry.value) }}</td>
+                  <td class="num center narrow-hidden">{{ entry.member.itemLevel }}</td>
+                  <td class="num center strong"><a [routerLink]="logLink(entry.kill)">{{ formatFightTime(entry.kill.fightMs) }}</a></td>
+                  <td class="center narrow-hidden muted">
+                    @if (entry.kill.guild?.name) {
+                      <a [routerLink]="guildLink(entry.kill.guild!)" [queryParams]="{ difficulty: current.slug }">{{ entry.kill.guild!.name }}</a>
+                    } @else {
+                      Pickup group
+                    }
                   </td>
-                  <td class="tablet-hidden muted">{{ entry.kill.killedAt | date:'d MMM' }}</td>
-                  <td class="phone-hidden"><app-raid-talent-icons [talents]="entry.talents" /></td>
-                  <td class="phone-hidden"><app-raid-trinket-icons [trinkets]="entry.member.trinkets" /></td>
+                  <td class="center tablet-hidden muted">{{ entry.kill.killedAt | date:'d MMM' }}</td>
+                  <td class="center phone-hidden"><app-raid-talent-icons [talents]="entry.talents" /></td>
+                  <td class="center phone-hidden"><app-raid-trinket-icons [trinkets]="entry.member.trinkets" /></td>
                 </tr>
                 <tr class="phone-detail-row">
                   <td class="rank"></td>
-                  <td colspan="7">
+                  <td colspan="8">
                     <span class="loadout">
                       <app-raid-talent-icons [talents]="entry.talents" />
                       <app-raid-trinket-icons [trinkets]="entry.member.trinkets" />

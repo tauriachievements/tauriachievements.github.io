@@ -3,7 +3,6 @@
 :host { display: block; width: 100%; }
 
 @include visually-hidden;
-@include back-link;
 @include summary-tiles;
 @include sections;
 @include raid-table;
@@ -21,37 +20,33 @@
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 14px 18px;
-  padding: 18px;
+  gap: 10px 14px;
+  padding: 10px 14px;
   border: 1px solid $raid-line;
   border-radius: 10px;
   background:
-    radial-gradient(circle at 8% 0%, rgba(64, 200, 120, .14), transparent 45%),
+    radial-gradient(circle at 8% 0%, rgba(143, 12, 36, .5), transparent 45%),
     radial-gradient(circle at 95% 120%, rgba(120, 40, 160, .18), transparent 50%),
-    #101210;
+    #120a0c;
 
   app-raid-difficulty-switch { margin-left: auto; }
 }
 
-.boss-portrait { @include boss-portrait(64px); }
+.boss-portrait { @include boss-portrait(48px); }
 .boss-heading { min-width: 0; flex: 1 1 260px; }
-.boss-heading h1 { margin: 2px 0 0; color: #fff; font-size: 1.55rem; line-height: 1.2; }
+.boss-heading h1 { margin: 1px 0 0; color: #fff; font-size: 1.3rem; line-height: 1.2; }
 .eyebrow { margin: 0; color: $gold; font-size: .72rem; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; }
 
-.list-note { margin: 0; color: $raid-muted; font-size: .8rem; }
+.summary { gap: 8px; }
+.summary > div { padding: 6px 12px; }
+.summary dt { font-size: .7rem; }
+.summary dd { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0 6px; margin: 1px 0 0; font-size: 1.05rem; line-height: 1.25; }
+.summary-note { display: inline; font-size: .72rem; }
 
-.talents-link {
-  margin-left: 6px;
-  color: $gold;
-  font-weight: 600;
-  text-decoration: none;
-  white-space: nowrap;
+.character-line { display: flex; min-width: 0; align-items: baseline; gap: 8px; }
+.character-line .character-name { flex: 0 1 auto; min-width: 0; @include truncate; }
+.character-realm { flex: 0 1000 auto; min-width: 0; color: $raid-muted; font-size: .78rem; @include truncate; }
 
-  &:hover { text-decoration: underline; }
-  &:focus-visible { outline: 2px solid $gold; outline-offset: 2px; }
-}
-
-.kill-link { display: inline-flex; align-items: baseline; gap: 8px; }
 .guild-cell { display: inline-flex; flex-wrap: wrap; align-items: center; gap: 2px 8px; }
 .invalid-tag { @include invalid-tag; }
 .realm { font-size: .78rem; }
@@ -68,19 +63,21 @@ td a.log-link { color: $gold; font-size: .8rem; font-weight: 600; }
 }
 
 @media (max-width: 900px) {
-  .narrow-hidden, .kill-link .muted { display: none; }
+  .narrow-hidden { display: none; }
+  .phone-fluid { @include fluid-identity; }
 }
 
 @media (max-width: 640px) {
   .raid-page { padding-top: 32px; }
-  .boss-header { padding: 14px; }
+  .boss-header { gap: 8px 12px; padding: 10px; }
   .boss-header app-raid-difficulty-switch { margin-left: 0; }
-  .boss-portrait { width: 52px; height: 52px; }
-  .boss-heading h1 { font-size: 1.25rem; }
+  .boss-portrait { width: 44px; height: 44px; }
+  .boss-heading { flex: 1 1 calc(100% - 56px); }
+  .boss-heading h1 { font-size: 1.15rem; }
+  @include summary-rows($raid-card-raised);
   .view-switch { display: grid; width: 100%; grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .view-switch button { padding-inline: 4px; }
   .role-slot { flex: 1 1 100%; }
-  .character-guild { @include truncate; color: #fff; font-size: .74rem; font-weight: 700; }
   .loadout { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 12px; padding-left: 28px; }
   .loadout > :last-child { margin-left: auto; }
 }

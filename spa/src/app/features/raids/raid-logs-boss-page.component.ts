@@ -26,10 +26,12 @@ import {
   raidBossLink,
   raidCharacterLink,
   raidGuildLink,
-  raidLogLink
+  raidLogLink,
+  raidRaceIcon
 } from './raid-display';
 import {
   RaidBoss,
+  RaidCharacter,
   RaidDifficulty,
   RaidKillDetails,
   RaidLogsIndex,
@@ -39,7 +41,7 @@ import {
   RaidTalentTooltips
 } from './raid-logs.types';
 import { RaidMetric, RankedPerformance, fitClassAndSpec, rankCharacters, rankedClassOptions, rankedSpecs } from './raid-scores';
-import { averageItemLevel, characterKey, defaultDifficulty, logKey, memberTalents } from './raid-logs';
+import { averageItemLevel, bossesInKillOrder, characterKey, defaultDifficulty, logKey, memberTalents } from './raid-logs';
 import { fastestKills, latestKills } from './raid-progression';
 import { RaidLogsDataService } from './raid-logs-data.service';
 import { REALM_FILTER_OPTIONS, RoleFilter } from '../../game/wow';
@@ -65,17 +67,6 @@ const TABS: ReadonlyArray<TabEntry> = [
   { id: 'fastest', label: 'Fastest kills' },
   { id: 'latest', label: 'Latest kills' }
 ];
-
-const DAMAGE_NOTES: Readonly<Partial<Record<RoleFilter, string>>> = {
-  tank: 'Damage done over the length of the fight, by tanks only.',
-  dps: 'Damage done over the length of the fight, by damage specs only; tanks are left out.',
-  melee: 'Damage done over the length of the fight, by melee damage specs only.',
-  ranged: 'Damage done over the length of the fight, by ranged damage specs only.'
-};
-
-const ALL_DAMAGE_NOTE = 'Damage done over the length of the fight, tanks included; healers are ranked under Healing.';
-
-const HEALING_NOTE = 'Healing counts absorbs; healers and tanks are ranked.';
 
 interface KillRow {
   rank?: number;
@@ -136,6 +127,7 @@ export class RaidLogsBossPageComponent {
   private readonly invalidKills = signal<RaidKillDetails[]>([]);
   private readonly talentTable = signal<RaidTalentTable>(new Map());
   readonly talentTooltips = signal<RaidTalentTooltips>(new Map());
+  private readonly genders = toSignal(this.data.genders(), { initialValue: new Map<string, number>() as ReadonlyMap<string, number> });
   readonly isLoading = signal(true);
   readonly loadError = signal<string | undefined>(undefined);
   readonly now = signal(Date.now());
@@ -152,8 +144,15 @@ export class RaidLogsBossPageComponent {
   readonly search = signal(this.query.get('q') ?? '');
   readonly page = signal(parsePage(this.query.get('page')));
 
+  readonly bosses = computed(() => bossesInKillOrder(this.index()?.bosses ?? []));
+
   readonly boss = computed<RaidBoss | undefined>(() =>
-    this.index()?.bosses.find(boss => boss.slug === this.params().get('boss')));
+    this.bosses().find(boss => boss.slug === this.params().get('boss')));
+
+  readonly bossNumber = computed(() => {
+    const boss = this.boss();
+    return boss ? this.bosses().indexOf(boss) + 1 : 0;
+  });
 
   readonly bossKillCounts = computed(() => {
     const counts = new Map<string, number>();
@@ -177,13 +176,6 @@ export class RaidLogsBossPageComponent {
   readonly metric = computed<RaidMetric>(() => this.tabEntry().metric ?? 'dps');
   readonly role = computed(() => this.tab() === 'dps' ? this.damageRole() : undefined);
   readonly isRanking = computed(() => this.tabEntry().metric !== undefined);
-  readonly rankingNote = computed(() => {
-    if (this.metric() === 'hps') {
-      return HEALING_NOTE;
-    }
-    const role = this.role();
-    return (role && DAMAGE_NOTES[role]) ?? ALL_DAMAGE_NOTE;
-  });
 
   readonly rankings = computed<RankedPerformance[]>(() => {
     if (!this.isRanking()) {
@@ -269,12 +261,6 @@ export class RaidLogsBossPageComponent {
     class: this.isRanking() ? this.classFilter() ?? null : null,
     spec: this.isRanking() ? this.specFilter() ?? null : null,
     realm: this.isRanking() ? this.realmFilter() ?? null : null
-  }));
-
-  readonly talentsQueryParams = computed(() => ({
-    difficulty: this.difficulty()?.slug ?? null,
-    boss: this.boss()?.slug ?? null,
-    spec: this.specFilter() ?? null
   }));
 
   private killsSubscription?: Subscription;
@@ -392,6 +378,10 @@ export class RaidLogsBossPageComponent {
 
   classColor(classId: number): string {
     return getClassColor(classId) ?? '#e0e0e0';
+  }
+
+  raceIcon(character: RaidCharacter): string {
+    return raidRaceIcon(character, this.genders());
   }
 
   ago(kill: RaidKillDetails): string {

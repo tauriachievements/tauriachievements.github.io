@@ -204,6 +204,5 @@ $loadout-breakpoint: 1100px;
 }
 
 @media (max-width: $narrow-phone-breakpoint) {
-  .race-icon { display: none; }
   .loadout { padding-left: 34px; }
 }

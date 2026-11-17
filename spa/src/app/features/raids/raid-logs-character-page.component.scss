@@ -158,12 +158,7 @@ tbody tr.boss-detail:hover td { background: #121212; }
   .raid-page { padding-top: 32px; --skeleton-hero-height: 235px; }
   .boss-cell { gap: 8px; }
   .character-header { gap: 8px 12px; padding: 10px; }
-  .character-header .summary { flex-direction: column; gap: 0; border: 1px solid rgba(255, 255, 255, .06); border-radius: 4px; background: rgba(255, 255, 255, .04); }
-  .character-header .summary > div { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; padding: 4px 8px; border: 0; border-radius: 0; background: none; }
-  .character-header .summary > div + div { border-top: 1px solid rgba(255, 255, 255, .06); }
-  .character-header .summary dt { flex: none; }
-  .character-header .summary dd { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: flex-end; gap: 0 6px; font-size: .95rem; text-align: right; }
-  .character-header .summary-note { display: inline; }
+  .character-header { @include summary-rows; }
   .crest { width: 44px; height: 44px; img { width: 36px; height: 36px; } }
   .character-heading h1 { font-size: 1.2rem; }
   tr.boss-detail > td { padding: 2px 8px 14px; }

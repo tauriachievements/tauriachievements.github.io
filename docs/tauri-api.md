@@ -137,7 +137,7 @@ response first.
 
   The site keeps the API's credit ([scoring.md](scoring.md#raid-guild-progression-and-kill-speed)).
 - **Genders are wrong.** The raid API reports almost everyone as male. The build corrects the
-  race icons on the leaderboard and the log page from Players.csv
+  race icons on the leaderboard, the log page and the boss page from Players.csv
   (`scripts/generate-raid-genders.js` writes `raid-genders.json`; `raidRaceIcon` in
   `raid-display.ts` applies it).
 - A few logs pair a class with another class's spec. Those members get spec 0 and are left out
