@@ -144,6 +144,16 @@ tbody tr.boss-detail:hover td { background: #121212; }
 .phone-progress { display: flex; align-items: center; gap: 10px; }
 .phone-progress app-raid-kill-chart { flex: 1; }
 
+@media (min-width: 641px) {
+  .kill-table {
+    .boss-column { width: 15rem; }
+    .guild-column { width: 12rem; }
+    .spec-column { width: 8rem; }
+    .value-column { width: 6rem; }
+    .time-column, .date-column { width: 5rem; }
+  }
+}
+
 @media (max-width: 640px) {
   .raid-page { padding-top: 32px; --skeleton-hero-height: 235px; }
   .boss-cell { gap: 8px; }

@@ -6,7 +6,7 @@ import { NavigationEnd, Router, provideRouter } from '@angular/router';
 import { RouterTestingHarness } from '@angular/router/testing';
 import { Observable, filter, firstValueFrom, of, throwError } from 'rxjs';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { RaidBossFile, RaidBossLogEntry, RaidLogsIndexFile, RaidMemberEntry } from './raid-logs.types';
+import { RaidBossFile, RaidBossLogEntry, RaidIndexLogEntry, RaidLogsIndexFile, RaidMemberEntry } from './raid-logs.types';
 import { RaidLogsCharacterPageComponent } from './raid-logs-character-page.component';
 import { DataFileService } from '../../core/data-file.service';
 
@@ -249,11 +249,11 @@ describe('RaidLogsCharacterPageComponent with an invalid log', () => {
     ]);
   });
 
-  it('leaves the invalid kill out of the latest kills', async () => {
+  it('leaves the invalid kill out of the kill history', async () => {
     const { page, element } = await open('/raid-logs/character/tauri/Kael', flagged);
 
-    expect(page.recent().map(({ kill }) => kill.logId)).toEqual([13, 12, 10]);
-    expect(element.querySelectorAll('section[aria-labelledby="character-recent-title"] tbody tr')).toHaveLength(3);
+    expect(page.history().weeks.flatMap(week => week.kills).map(({ kill }) => kill.logId)).toEqual([13, 12, 10]);
+    expect(element.querySelectorAll('section[aria-labelledby="character-history-title"] tbody tr')).toHaveLength(3);
   });
 
   it("leaves the invalid kill out of the boss's kills, as if it never happened", async () => {
@@ -263,6 +263,105 @@ describe('RaidLogsCharacterPageComponent with an invalid log', () => {
     toggleBoss(harness, element, 0);
     expect(openDetail(element)).toMatchObject({ logs: ['/raid-logs/log/tauri/10'] });
     expect(openDetail(element)?.facts).toMatch(/^1 kill ·/);
+  });
+});
+
+describe('RaidLogsCharacterPageComponent kill history', () => {
+  const seconds = (at: string, minutes = 0) => Date.parse(at) / 1000 + minutes * 60;
+  const indexLog = (logId: number, boss: number, difficulty: number, killedAt: number): RaidIndexLogEntry =>
+    ['Tauri', logId, boss, difficulty, killedAt, 100_000, 0, 1, 0, 0, 20];
+  const kaelKill = (logId: number, killedAt: number) => log(logId, killedAt, [member(KAEL, 63, 600)]);
+  const thisWeek = [[100, 0, seconds('2026-10-28T19:00:00Z')], [101, 1, seconds('2026-10-28T19:30:00Z')], [102, 2, seconds('2026-10-28T20:00:00Z')]];
+  const nythendraKills = [
+    ...Array.from({ length: 20 }, (_, index) => [200 + index, seconds('2026-10-22T19:00:00Z', index)]),
+    ...Array.from({ length: 10 }, (_, index) => [300 + index, seconds('2026-10-08T19:00:00Z', index)])
+  ];
+  const heroicKill = seconds('2026-10-27T19:00:00Z');
+
+  const historyIndex: RaidLogsIndexFile = {
+    ...indexFile,
+    difficulties: [
+      { id: 15, slug: 'heroic', name: 'Heroic', shortName: 'HC', kills: 1 },
+      { id: 16, slug: 'mythic', name: 'Mythic', shortName: 'M', kills: 33 }
+    ],
+    logs: [
+      ...thisWeek.map(([logId, boss, killedAt]) => indexLog(logId, boss, 16, killedAt)),
+      ...nythendraKills.map(([logId, killedAt]) => indexLog(logId, 0, 16, killedAt)),
+      indexLog(400, 0, 15, heroicKill)
+    ],
+    clears: [['Tauri', 16, 'Evermoon', [100, 1, 1]]]
+  };
+
+  const historyFiles: Record<string, RaidBossFile> = Object.fromEntries([
+    bossFile('nythendra', 'mythic', [kaelKill(100, thisWeek[0][2]), ...nythendraKills.map(([logId, killedAt]) => kaelKill(logId, killedAt))]),
+    bossFile('ilgynoth', 'mythic', [kaelKill(101, thisWeek[1][2])]),
+    bossFile('elerethe-renferal', 'mythic', [kaelKill(102, thisWeek[2][2])]),
+    bossFile('nythendra', 'heroic', [kaelKill(400, heroicKill)])
+  ].map(file => [`raid-log-data/${file.boss}-${file.difficulty}.json`, file]));
+
+  const text = (element: Element | null | undefined) => element?.textContent?.replace(/\s+/g, ' ').trim();
+
+  async function openHistory(url: string) {
+    const opened = await open(url, historyIndex, historyFiles);
+    const section = opened.element.querySelector<HTMLElement>('[aria-labelledby="character-history-title"]')!;
+    section.scrollIntoView = vi.fn();
+    return { ...opened, section };
+  }
+
+  function weeks(element: HTMLElement) {
+    return [...element.querySelectorAll('[aria-labelledby="character-history-title"] .week')].map(week => [
+      text(week.querySelector('h3')),
+      text(week.querySelector('.week-stats')),
+      week.querySelectorAll('tbody tr').length
+    ]);
+  }
+
+  function click(harness: RouterTestingHarness, element: HTMLElement, label: string) {
+    [...element.querySelectorAll<HTMLButtonElement>('button')].find(found => text(found) === label)?.click();
+    harness.detectChanges();
+  }
+
+  beforeEach(() => {
+    vi.useFakeTimers({ toFake: ['Date'] });
+    vi.setSystemTime(new Date('2026-10-29T12:00:00Z'));
+  });
+
+  afterEach(() => vi.useRealTimers());
+
+  it("lists the character's kills by raid week, each with its kills, bosses and full clear", async () => {
+    const { element } = await openHistory('/raid-logs/character/tauri/Kael?difficulty=mythic');
+
+    expect(weeks(element)).toEqual([
+      ['This week · 28 Oct – 4 Nov', '3 kills · 3/3 bosses · Full clear 1:01:40', 3],
+      ['Last week · 21 Oct – 28 Oct', '20 kills · 1/3 bosses', 20]
+    ]);
+    expect(element.querySelector('.week-stats a')?.getAttribute('href')).toBe('/raid-logs/log/tauri/102');
+    expect(text(element.querySelector('.pager-status'))).toBe('Page 1 of 2 · 33 kills');
+  });
+
+  it('opens the page in the URL and writes the page the pager turns to', async () => {
+    const { harness, element, section, location } = await openHistory('/raid-logs/character/tauri/Kael?difficulty=mythic&page=2');
+    expect(weeks(element)).toEqual([['7 Oct – 14 Oct', '10 kills · 1/3 bosses', 10]]);
+
+    click(harness, element, '« First');
+    expect(location.path()).toBe('/raid-logs/character/tauri/Kael?difficulty=mythic');
+    expect(section.scrollIntoView).toHaveBeenCalledOnce();
+    expect(weeks(element).map(([heading]) => heading)).toEqual(['This week · 28 Oct – 4 Nov', 'Last week · 21 Oct – 28 Oct']);
+
+    click(harness, element, 'Next ›');
+    expect(location.path()).toBe('/raid-logs/character/tauri/Kael?difficulty=mythic&page=2');
+  });
+
+  it('keeps the page through Damage and Healing, and goes back to the first page on another difficulty', async () => {
+    const { harness, element, location } = await openHistory('/raid-logs/character/tauri/Kael?difficulty=mythic&page=2');
+
+    click(harness, element, 'Healing');
+    expect(location.path()).toBe('/raid-logs/character/tauri/Kael?difficulty=mythic&metric=hps&page=2');
+
+    click(harness, element, 'Heroic');
+    expect(location.path()).toBe('/raid-logs/character/tauri/Kael?difficulty=heroic&metric=hps');
+    expect(weeks(element)).toEqual([['Last week · 21 Oct – 28 Oct', '1 kill · 1/3 bosses', 1]]);
+    expect(element.querySelector('app-pager')).toBeNull();
   });
 });
 

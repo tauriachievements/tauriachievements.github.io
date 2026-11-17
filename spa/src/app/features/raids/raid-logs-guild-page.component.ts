@@ -8,7 +8,8 @@ import { RaidBoss, RaidDifficulty, RaidGuild, RaidKill, RaidLogsIndex } from './
 import { defaultDifficulty, guildKey, logKey } from './raid-logs';
 import { ProgressKill, fastestKills, guildProgression, latestKills } from './raid-progression';
 import { guildClears } from './raid-clears';
-import { KillWeek, WeekName, killWeeks, weekName, weekPages } from './raid-kill-weeks';
+import { killWeekPage, killWeeks } from './raid-kill-weeks';
+import { RaidKillWeekComponent } from './raid-kill-week.component';
 import { formatAgo, formatFightTime, raidBossLink, raidLogLink } from './raid-display';
 import { RaidLogsDataService } from './raid-logs-data.service';
 import { injectReplaceUrl, parsePage } from '../../core/url-state';
@@ -30,15 +31,9 @@ interface SummaryTile {
   note: string;
 }
 
-interface HistoryWeek extends KillWeek {
-  name?: WeekName;
-}
-
-const HISTORY_PAGE_SIZE = 25;
-
 @Component({
   selector: 'app-raid-logs-guild-page',
-  imports: [RouterLink, RaidDifficultySwitchComponent, DatePipe, DecimalPipe, LoadStateComponent, PagerComponent],
+  imports: [RouterLink, RaidDifficultySwitchComponent, RaidKillWeekComponent, DatePipe, DecimalPipe, LoadStateComponent, PagerComponent],
   templateUrl: './raid-logs-guild-page.component.html',
   styleUrl: './raid-logs-guild-page.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush
@@ -130,13 +125,8 @@ export class RaidLogsGuildPageComponent {
     return index && difficulty && guild ? guildClears(index.clears, difficulty, guild) : [];
   });
 
-  private readonly historyPages = computed(() => weekPages(killWeeks(this.listedKills(), this.clears()), HISTORY_PAGE_SIZE));
-  readonly pages = computed(() => Math.max(1, this.historyPages().length));
-  readonly currentPage = computed(() => Math.min(this.page(), this.pages()));
+  readonly history = computed(() => killWeekPage(killWeeks(this.listedKills(), kill => kill, this.clears()), this.page(), this.now()));
   readonly bossCount = computed(() => this.index()?.bosses.length ?? 0);
-
-  readonly historyWeeks = computed<HistoryWeek[]>(() =>
-    (this.historyPages()[this.currentPage() - 1] ?? []).map(week => ({ ...week, name: weekName(week.start, this.now()) })));
 
   readonly summary = computed<SummaryTile[]>(() => {
     const progress = this.progress();
@@ -214,7 +204,7 @@ export class RaidLogsGuildPageComponent {
   private writeUrl(): void {
     this.replaceUrl({
       difficulty: this.requestedDifficulty() ?? null,
-      page: this.currentPage() > 1 ? this.currentPage() : null
+      page: this.history().page > 1 ? this.history().page : null
     });
   }
 }

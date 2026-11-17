@@ -1,0 +1,13 @@
+@let current = week();
+<section class="week" [attr.aria-labelledby]="headingId()">
+  <header class="week-header">
+    <h3 [id]="headingId()">
+      @if (current.name; as name) {<span class="week-name">{{ name }}</span> · }<span class="week-dates" [title]="'From the raid reset on ' + (current.start | date:'EEE d MMM, HH:mm') + ' to the one on ' + (current.end | date:'EEE d MMM, HH:mm')">{{ current.start | date:'d MMM' }} – {{ current.end | date:'d MMM' }}</span>
+    </h3>
+    <p class="week-stats">
+      {{ current.validKills }} {{ current.validKills === 1 ? 'kill' : 'kills' }} · {{ current.bosses }}/{{ bossCount() }} bosses@if (current.clear; as clear) { · <a [routerLink]="logLink(clear.last)" [title]="'Open the ' + clear.last.boss.shortName + ' kill that finished the clear'">Full clear {{ formatFightTime(clear.clearMs) }}</a>}
+    </p>
+  </header>
+
+  <ng-content />
+</section>

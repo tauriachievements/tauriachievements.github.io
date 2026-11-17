@@ -99,6 +99,17 @@ export function guildClears(clears: readonly RaidFullClear[], difficulty: RaidDi
     .filter(run => run.guild && guildKey(run.guild) === key);
 }
 
+export function characterClears(
+  clears: readonly RaidFullClear[],
+  difficulty: RaidDifficulty,
+  kills: readonly Pick<RaidKill, 'realm' | 'logId'>[]
+): RaidClearRun[] {
+  const own = new Set(kills.map(logKey));
+  return clears
+    .filter(clear => clear.difficulty === difficulty && clear.kills.every(kill => own.has(logKey(kill))))
+    .map(clearRun);
+}
+
 export function clearEndedBy(clears: readonly RaidFullClear[], kill: Pick<RaidKill, 'realm' | 'logId'>): RaidClearRun | undefined {
   const key = logKey(kill);
   const clear = clears.find(candidate => logKey(candidate.kills[candidate.kills.length - 1]) === key);
