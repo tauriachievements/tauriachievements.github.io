@@ -38,24 +38,10 @@
 .boss-heading h1 { margin: 2px 0 0; color: #fff; font-size: 1.55rem; line-height: 1.2; }
 .eyebrow { margin: 0; color: $gold; font-size: .72rem; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; }
 
-.list-note { margin: 0; color: $raid-muted; font-size: .8rem; }
-
-.talents-link {
-  margin-left: 6px;
-  color: $gold;
-  font-weight: 600;
-  text-decoration: none;
-  white-space: nowrap;
-
-  &:hover { text-decoration: underline; }
-  &:focus-visible { outline: 2px solid $gold; outline-offset: 2px; }
-}
-
 .character-line { display: flex; min-width: 0; align-items: baseline; gap: 8px; }
 .character-line .character-name { flex: 0 1 auto; min-width: 0; @include truncate; }
 .character-realm { flex: 0 1000 auto; min-width: 0; color: $raid-muted; font-size: .78rem; @include truncate; }
 
-.kill-link { display: inline-flex; align-items: baseline; gap: 8px; }
 .guild-cell { display: inline-flex; flex-wrap: wrap; align-items: center; gap: 2px 8px; }
 .invalid-tag { @include invalid-tag; }
 .realm { font-size: .78rem; }
@@ -72,7 +58,7 @@ td a.log-link { color: $gold; font-size: .8rem; font-weight: 600; }
 }
 
 @media (max-width: 900px) {
-  .narrow-hidden, .kill-link .muted { display: none; }
+  .narrow-hidden { display: none; }
   .phone-fluid { @include fluid-identity; }
 }
 

@@ -579,8 +579,9 @@ name cell's width, and with the longest one in the data (WoD log 295450) the ful
 the boss page's rankings. Its `raid-log` entry is marked `wide`. The boss page's kills table
 hides its View log column up to 900 px, since the time already links to the log, so its Avg
 ilvl column fits from 641 px. Its rankings show the spec icon, race icon, name and realm on one
-line; up to 900 px that cell gives way (the realm shortens first, then the name), so Talents and
-Trinkets still fit beside it from 641 px. Its `raid-logs-boss-fastest` and `raid-logs-boss` (the
+line and the kill's guild in a Guild column after the kill time. Up to 900 px they hide the Item
+level and Guild columns and the name cell gives way (the realm shortens first, then the name),
+so Talents and Trinkets still fit beside it from 641 px. Its `raid-logs-boss-fastest` and `raid-logs-boss` (the
 damage ranking) entries are marked `wide`.
 
 A few things scroll sideways by design: charts over time that open at the latest point

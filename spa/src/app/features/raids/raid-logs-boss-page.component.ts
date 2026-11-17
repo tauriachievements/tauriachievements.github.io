@@ -68,17 +68,6 @@ const TABS: ReadonlyArray<TabEntry> = [
   { id: 'latest', label: 'Latest kills' }
 ];
 
-const DAMAGE_NOTES: Readonly<Partial<Record<RoleFilter, string>>> = {
-  tank: 'Damage done over the length of the fight, by tanks only.',
-  dps: 'Damage done over the length of the fight, by damage specs only; tanks are left out.',
-  melee: 'Damage done over the length of the fight, by melee damage specs only.',
-  ranged: 'Damage done over the length of the fight, by ranged damage specs only.'
-};
-
-const ALL_DAMAGE_NOTE = 'Damage done over the length of the fight, tanks included; healers are ranked under Healing.';
-
-const HEALING_NOTE = 'Healing counts absorbs; healers and tanks are ranked.';
-
 interface KillRow {
   rank?: number;
   kill: RaidKillDetails;
@@ -187,13 +176,6 @@ export class RaidLogsBossPageComponent {
   readonly metric = computed<RaidMetric>(() => this.tabEntry().metric ?? 'dps');
   readonly role = computed(() => this.tab() === 'dps' ? this.damageRole() : undefined);
   readonly isRanking = computed(() => this.tabEntry().metric !== undefined);
-  readonly rankingNote = computed(() => {
-    if (this.metric() === 'hps') {
-      return HEALING_NOTE;
-    }
-    const role = this.role();
-    return (role && DAMAGE_NOTES[role]) ?? ALL_DAMAGE_NOTE;
-  });
 
   readonly rankings = computed<RankedPerformance[]>(() => {
     if (!this.isRanking()) {
@@ -279,12 +261,6 @@ export class RaidLogsBossPageComponent {
     class: this.isRanking() ? this.classFilter() ?? null : null,
     spec: this.isRanking() ? this.specFilter() ?? null : null,
     realm: this.isRanking() ? this.realmFilter() ?? null : null
-  }));
-
-  readonly talentsQueryParams = computed(() => ({
-    difficulty: this.difficulty()?.slug ?? null,
-    boss: this.boss()?.slug ?? null,
-    spec: this.specFilter() ?? null
   }));
 
   private killsSubscription?: Subscription;

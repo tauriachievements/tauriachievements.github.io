@@ -85,4 +85,23 @@ describe('RaidLogsBossPageComponent', () => {
     expect([...character?.querySelector('.character-line')?.children ?? []].map(part => part.textContent?.trim())).toEqual(['Alpha', 'Evermoon']);
     expect([...character?.children ?? []].map(part => part.className)).toEqual(['', 'race-icon', 'character-line']);
   });
+
+  it('shows the guild in its own Guild column after the kill time', async () => {
+    const element = await openBoss('ursoc');
+    const headers = [...element.querySelectorAll('thead th')].map(header => header.textContent?.trim());
+    const cells = [...element.querySelectorAll('tbody tr:first-child td')];
+    const guildLink = cells[headers.indexOf('Guild')]?.querySelector('a');
+
+    expect(headers).toEqual(['#', 'Character', 'DPS', 'Item level', 'Kill', 'Guild', 'Date', 'Talents', 'Trinkets']);
+    expect(cells[headers.indexOf('Kill')]?.textContent?.trim()).toBe('1:40');
+    expect(guildLink?.textContent?.trim()).toBe('Miracle');
+    expect(guildLink?.getAttribute('href')).toBe('/raid-logs/guild/evermoon/Miracle?difficulty=mythic');
+  });
+
+  it('shows no note above the rankings', async () => {
+    const element = await openBoss('ursoc');
+
+    expect(element.querySelector('.list-note')).toBeNull();
+    expect(element.textContent).not.toContain('Which talents do they pick?');
+  });
 });
