@@ -27,12 +27,18 @@
     <meta name="twitter:description" content="Browse Tauri WoW ladder rankings by achievement points and honorable kills. Filter by realm, faction, class, player, or guild and share your view instantly.">
     <meta name="twitter:image" content="https://tauriachievements.github.io/assets/tauriAchievements.png">
     <meta name="twitter:image:alt" content="Tauri Achievements ladder preview">
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-XTSGVHYVTS"></script>
     <script>
-      window.dataLayer = window.dataLayer || [];
-      function gtag(){dataLayer.push(arguments);}
-      gtag('js', new Date());
-      gtag('config', 'G-XTSGVHYVTS');
+      (function () {
+        if (navigator.webdriver || /HeadlessChrome/.test(navigator.userAgent)) return;
+        window.dataLayer = window.dataLayer || [];
+        window.gtag = function () { window.dataLayer.push(arguments); };
+        window.gtag("js", new Date());
+        window.gtag("config", "G-XTSGVHYVTS");
+        var tag = document.createElement("script");
+        tag.async = true;
+        tag.src = "https://www.googletagmanager.com/gtag/js?id=G-XTSGVHYVTS";
+        document.head.appendChild(tag);
+      })();
     </script>
     <link rel="icon" type="image/png" href="assets/favicon.png">
     <script>
