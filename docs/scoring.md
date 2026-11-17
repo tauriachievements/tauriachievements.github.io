@@ -204,11 +204,12 @@ decision: ask first.** When a rule does change, change its tests first and see t
 - **Ties** (`playerRanks`): two players share a place only with the same score and the same
   total time. Places use competition ranking (1, 1, 1, 4).
 - **Colours:**
-  - Player scores (`scoreTiers`): Raider.IO-style stops at the score that the top 60%, 25%,
-    10%, 1% and 0.1% of players reach, from white through green, blue, purple and orange to
-    gold.
-  - Run scores (`scoreQuality`, `shared/score-quality.ts`, which the raid leaderboard uses
-    too): the share of the best score; at least 90% is legendary, 84% epic, 76% rare.
+  - Player scores (`scoreTiers` and `scoreColor` in `shared/score-quality.ts`, which the raid
+    leaderboard uses too): Raider.IO-style stops at the score that the top 60%, 25%, 10%, 1%
+    and 0.1% of players reach, from white through green, blue, purple and orange to gold, blended
+    in between. Fewer than 20 scores give no stops, and everything is grey.
+  - Most runs on the records page (`scoreQuality`, `shared/score-quality.ts`): the share of the
+    most runs; at least 90% is legendary, 84% epic, 76% rare.
   - Which scale a score uses depends on the scope: one dungeon's score is a single run, which
     `runScoreColor` colours on the season's stops as if every dungeon had that run (score ×
     dungeons); "This week" places scores among this week's players; everything else uses the
@@ -262,7 +263,7 @@ decision: ask first.** When a rule does change, change its tests first and see t
   `Score_MatchesTheScoringPageExamples` in `api/tests/AchievementLadder.Tests/MythicPlusExportServiceTests.cs`
   pins those examples, so change the page and the test together.
 - **Tests:** `MythicPlusExportServiceTests`, `mythic-plus.spec.ts`, `mythic-plus-activity.spec.ts`,
-  `mythic-plus-profile.spec.ts`, `mythic-plus-views.spec.ts`.
+  `mythic-plus-profile.spec.ts`, `mythic-plus-views.spec.ts`, `score-quality.spec.ts`.
 
 ## Mythic+ guild ladder
 
@@ -387,9 +388,13 @@ decision: ask first.** When a rule does change, change its tests first and see t
   on a boss lowers everyone else's share of it, so a score can drop. That's why the table
   shows gains in green and drops in grey, as small text: the rank change beside the rank, the
   score change beside the score.
-- **Colours** (`performanceQuality` in `raid-scores.ts`) follow Warcraft Logs' parse colours,
-  on the share of the best in view: artifact for the best, legendary from 95%, epic from 75%,
-  rare from 50%, uncommon from 25%.
+- **Colours on the leaderboard** are Mythic+'s player-score colours ([above](#mythic)): the
+  rank and the score both take the colour of where the score stands. The stops come from every
+  character the tab ranks on the difficulty, before any filter, so the class, spec and realm
+  filters and the search never change a colour: a score has the same colour whatever is picked.
+- **Colours on the character page** ("Of best", `performanceQuality` in `raid-scores.ts`) follow
+  Warcraft Logs' parse colours, on the share of the best in view: artifact for the best,
+  legendary from 95%, epic from 75%, rare from 50%, uncommon from 25%.
 - The search hides rows without renumbering them, as on every leaderboard.
 - **Character page, per boss** (`bossStanding`): "Of best" and Rank put the character's best
   kill of the boss among every character's best, and the "Compare with" dropdown narrows that
@@ -426,7 +431,7 @@ decision: ask first.** When a rule does change, change its tests first and see t
     the last kill missed by 13%, so week-to-week noise is that large and the page shows the
     prediction as "≈".
 - **Tests:** `raid-scores.spec.ts`, `raid-kill-history.spec.ts`,
-  `raid-logs-character-page.component.spec.ts`.
+  `raid-logs-character-page.component.spec.ts`, `raid-logs-leaderboard-page.component.spec.ts`.
 
 ## Raid boss rankings
 

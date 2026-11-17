@@ -31,11 +31,10 @@ import {
   memberNameMatches,
   rankPlayers,
   runScoreColor,
-  scoreColor,
-  scoreTiers,
   seasonScoreColors,
   standingChanges
 } from './mythic-plus';
+import { scoreColor, scoreTiers } from '../../shared/score-quality';
 import {
   GuildLadderEntry,
   findGuild,

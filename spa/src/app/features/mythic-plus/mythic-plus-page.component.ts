@@ -25,11 +25,10 @@ import {
   playerRanks,
   rankPlayers,
   runScoreColor,
-  scoreColor,
-  scoreTiers,
   seasonScoreColors,
   standingChanges
 } from './mythic-plus';
+import { scoreColor, scoreTiers } from '../../shared/score-quality';
 import { MythicPlusPlayersListComponent } from './mythic-plus-players-list.component';
 import { characterParam, findCharacters, parseCharacterParam } from './mythic-plus-profile';
 import { MythicPlusRunsListComponent } from './mythic-plus-runs-list.component';

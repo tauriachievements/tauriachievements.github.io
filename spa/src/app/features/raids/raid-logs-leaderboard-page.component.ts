@@ -42,10 +42,10 @@ import { ScanChange, rankChangeLabel, signedChange, valueChangeLabel } from '../
 import { pageCount, pageSlice } from '../../shared/pager';
 import { SkeletonBlock } from '../../shared/skeleton';
 import { setPageHeader } from '../../core/page-header';
+import { scoreColor, scoreTiers } from '../../shared/score-quality';
 
 const ROWS_SKELETON: readonly SkeletonBlock[] = ['rows:15'];
 const PAGE_SKELETON: readonly SkeletonBlock[] = ['switch:3', 'toolbar:4', ...ROWS_SKELETON];
-import { RunQuality, scoreQuality } from '../../shared/score-quality';
 
 interface Loaded {
   difficulty: RaidDifficulty;
@@ -165,7 +165,7 @@ export class RaidLogsLeaderboardPageComponent {
     return query ? this.ranked().filter(entry => nameMatches(entry.character.name, query)) : this.ranked();
   });
 
-  private readonly topScore = computed(() => this.ranked()[0]?.score ?? 0);
+  private readonly scoreTiers = computed(() => scoreTiers(this.allScores().map(entry => entry.score)));
 
   readonly bossTops = computed<BossTop[]>(() => {
     const scores = this.allScores();
@@ -312,8 +312,8 @@ export class RaidLogsLeaderboardPageComponent {
     return raidRaceIcon(character, this.genders());
   }
 
-  scoreTier(entry: RankedScore): RunQuality {
-    return scoreQuality(entry.score, this.topScore());
+  scoreColor(entry: RankedScore): string {
+    return scoreColor(entry.score, this.scoreTiers());
   }
 
   change(entry: RankedScore): ScanChange | undefined {

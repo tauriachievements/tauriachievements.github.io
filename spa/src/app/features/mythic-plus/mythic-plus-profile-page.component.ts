@@ -26,11 +26,11 @@ import {
   rankPlayers,
   rankRuns,
   runIncludesCharacter,
-  scoreColor,
   seasonScoreColors,
   upgradeStars,
   ROLE_LABELS
 } from './mythic-plus';
+import { scoreColor } from '../../shared/score-quality';
 import { affixWeeks, localDay } from './mythic-plus-activity';
 import {
   CharacterLink,

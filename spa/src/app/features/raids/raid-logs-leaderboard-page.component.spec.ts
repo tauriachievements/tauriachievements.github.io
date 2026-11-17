@@ -64,7 +64,7 @@ class FakeDataFiles {
   refresh(): void {}
 }
 
-async function openPage(index: RaidLogsIndexFile, bossFiles: Readonly<Record<string, RaidBossFile>> = {}) {
+async function openPage(index: RaidLogsIndexFile, bossFiles: Readonly<Record<string, RaidBossFile>> = {}, query = '') {
   TestBed.configureTestingModule({
     providers: [
       provideRouter([{ path: 'raid-logs/leaderboard', component: RaidLogsLeaderboardPageComponent }]),
@@ -82,7 +82,7 @@ async function openPage(index: RaidLogsIndexFile, bossFiles: Readonly<Record<str
     ]
   });
   const harness = await RouterTestingHarness.create();
-  await harness.navigateByUrl('/raid-logs/leaderboard?difficulty=mythic', RaidLogsLeaderboardPageComponent);
+  await harness.navigateByUrl(`/raid-logs/leaderboard?difficulty=mythic${query}`, RaidLogsLeaderboardPageComponent);
   harness.detectChanges();
   return { harness, element: harness.routeNativeElement as HTMLElement };
 }
@@ -136,6 +136,60 @@ describe('RaidLogsLeaderboardPageComponent changes since the last scan', () => {
       ['Beta', '', false, '', '4646', '', false],
       ['Gamma', '', false, '', '3484', '', false]
     ]);
+  });
+});
+
+describe('RaidLogsLeaderboardPageComponent colours', () => {
+  const gold = 'rgb(255, 209, 0)';
+  const purple = 'rgb(163, 54, 237)';
+  const blue = 'rgb(0, 112, 222)';
+  const green = 'rgb(31, 255, 0)';
+  const white = 'rgb(255, 255, 255)';
+  const fireMage = 18;
+
+  const twentyMages: RaidBossFile = {
+    ...nythendraFile,
+    players: Array.from({ length: 20 }, (_, player) => [`Mage${String.fromCharCode(65 + player)}`, 'Evermoon', 8, 10, 0, 'Miracle']),
+    logs: [[
+      'Tauri', 10, 1_000, 100_000, 0, 1, 0, 0, 0,
+      Array.from({ length: 20 }, (_, player) => member(player, player === fireMage ? 63 : 64, (player + 1) * 10_000_000)),
+      []
+    ]]
+  };
+
+  const oneKill: RaidLogsIndexFile = {
+    ...indexFile,
+    difficulties: [{ ...indexFile.difficulties[0], kills: 1 }],
+    logs: [indexFile.logs[0]],
+    newLogs: undefined
+  };
+
+  function colours(element: HTMLElement) {
+    return [...element.querySelectorAll<HTMLTableRowElement>('tbody tr')].map(row => [
+      row.querySelector('.character-name')?.textContent,
+      row.querySelector<HTMLElement>('td.rank')?.style.color,
+      row.querySelector<HTMLElement>('td.score')?.style.color
+    ]);
+  }
+
+  it('colours the rank and the score by where the score stands among every character on the tab, like Mythic+', async () => {
+    const { element } = await openPage(oneKill, { 'raid-log-data/nythendra-mythic.json': twentyMages });
+    const shown = colours(element);
+
+    expect(shown.length).toBe(20);
+    expect([shown[0], shown[1], shown[4], shown[11], shown[19]]).toEqual([
+      ['MageT', gold, gold],
+      ['MageS', purple, purple],
+      ['MageP', blue, blue],
+      ['MageI', green, green],
+      ['MageA', white, white]
+    ]);
+  });
+
+  it('keeps the colours of the whole tab when a spec filter leaves one character', async () => {
+    const { element } = await openPage(oneKill, { 'raid-log-data/nythendra-mythic.json': twentyMages }, '&class=8&spec=63');
+
+    expect(colours(element)).toEqual([['MageS', purple, purple]]);
   });
 });
 

@@ -196,7 +196,7 @@
             <tbody>
               @for (entry of shownRankings(); track characterKey(entry.character)) {
                 <tr>
-                  <td class="rank" [class]="'q-' + scoreTier(entry)">
+                  <td class="rank" [style.color]="scoreColor(entry)">
                     <span class="rank-cell">
                       <span>{{ entry.rank }}</span>
                       @if (change(entry); as moved) {
@@ -226,7 +226,7 @@
                   </td>
                   <td class="center phone-hidden guild" [class]="'faction-text-' + entry.faction">@if (guildLink(entry.character); as link) {<a [routerLink]="link" [queryParams]="{ difficulty: current.slug }">{{ entry.character.guild }}</a>} @else {{{ entry.character.guild }}}</td>
                   <td class="center phone-hidden muted col-realm">{{ entry.character.realm }}</td>
-                  <td class="num center strong score" [class]="'q-' + scoreTier(entry)">
+                  <td class="num center strong score" [style.color]="scoreColor(entry)">
                     <span class="score-cell">
                       <span class="score-value">{{ entry.score }}</span>
                       @if (change(entry)?.value; as scoreChange) {
