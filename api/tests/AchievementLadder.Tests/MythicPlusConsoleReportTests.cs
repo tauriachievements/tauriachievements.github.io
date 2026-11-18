@@ -62,6 +62,19 @@ public sealed class MythicPlusConsoleReportTests
     }
 
     [Fact]
+    public void RetryingLeaderboards_SaysHowManyWhenAndWhichRound()
+    {
+        Assert.Equal(
+            "Retrying 2 failed leaderboards in 1m 00s (round 1 of 3)...",
+            MythicPlusConsoleReport.RetryingLeaderboards(2, 1, 3, TimeSpan.FromMinutes(1))
+        );
+        Assert.Equal(
+            "Retrying 1 failed leaderboard in 1m 00s (round 3 of 3)...",
+            MythicPlusConsoleReport.RetryingLeaderboards(1, 3, 3, TimeSpan.FromMinutes(1))
+        );
+    }
+
+    [Fact]
     public void Summary_TablesEachDungeonThenTheTotalsAndWhereTheFilesWent()
     {
         var repoRoot = Path.Combine(Path.GetTempPath(), "repo");
@@ -175,6 +188,69 @@ public sealed class MythicPlusConsoleReportTests
                 && line.Contains("failed after ")
         );
         Assert.Equal(["[1/2]", "[2/2]"], lines.Select(line => line[..5]));
+    }
+
+    [Fact]
+    public async Task ReadLeaderboards_RetriesOnlyTheFailedDungeonsAndNumbersThemWithinTheRound()
+    {
+        var progress = new StringWriter();
+        var reader = new ChallengeLeaderboardReader(
+            new FakeChallengeApiClient(
+                IndexJson(),
+                new()
+                {
+                    [(Evermoon, 197)] = LeaderboardJson(),
+                    [(Evermoon, 200)] = LeaderboardJson(
+                        Run(16, 2_950_000, 1, [], Member("Alpha", Evermoon, 6, "Blood", 0, ""))
+                    ),
+                },
+                failuresBeforeAnswer: new() { [(Evermoon, 200)] = 2 }
+            ),
+            progress,
+            retryRounds: 3
+        );
+
+        var index = await reader.ReadIndexAsync(Evermoon, CancellationToken.None);
+        var leaderboards = await reader.ReadLeaderboardsAsync(
+            index,
+            [Evermoon],
+            CancellationToken.None
+        );
+
+        Assert.Empty(leaderboards.Failures);
+        Assert.Equal([197, 200], leaderboards.RunsByChallengeId.Keys.Order());
+        var lines = progress
+            .ToString()
+            .Split(Environment.NewLine, StringSplitOptions.RemoveEmptyEntries);
+        Assert.Equal(6, lines.Length);
+        Assert.Equal("Retrying 1 failed leaderboard in 0.0s (round 1 of 3)...", lines[2]);
+        Assert.StartsWith("[1/1]  Halls of Valor", lines[3]);
+        Assert.Contains("failed after ", lines[3]);
+        Assert.Equal("Retrying 1 failed leaderboard in 0.0s (round 2 of 3)...", lines[4]);
+        Assert.StartsWith("[1/1]  Halls of Valor", lines[5]);
+        Assert.Contains(" 1 runs ", lines[5]);
+    }
+
+    [Fact]
+    public async Task ReadLeaderboards_ReadsEachDungeonOnceWithoutRetryRounds()
+    {
+        var apiClient = new FakeChallengeApiClient(
+            IndexJson(),
+            new() { [(Evermoon, 197)] = LeaderboardJson() },
+            failuresBeforeAnswer: new() { [(Evermoon, 197)] = 1 }
+        );
+        var reader = new ChallengeLeaderboardReader(apiClient, TextWriter.Null);
+
+        var index = await reader.ReadIndexAsync(Evermoon, CancellationToken.None);
+        var leaderboards = await reader.ReadLeaderboardsAsync(
+            index,
+            [Evermoon],
+            CancellationToken.None
+        );
+
+        Assert.Equal(2, leaderboards.Failures.Count);
+        Assert.Equal(1, apiClient.LeaderboardRequests(Evermoon, 197));
+        Assert.Equal(1, apiClient.LeaderboardRequests(Evermoon, 200));
     }
 
     private static MythicPlusDataset Dataset() =>

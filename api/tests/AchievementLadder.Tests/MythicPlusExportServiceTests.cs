@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using System.Globalization;
 using System.Text.Json;
 using System.Text.Json.Nodes;
@@ -648,7 +649,46 @@ public sealed class MythicPlusExportServiceTests
     }
 
     [Fact]
-    public async Task ExportAsync_WritesNothingWhenALeaderboardFails()
+    public async Task ExportAsync_ReadsTheFailedLeaderboardsAgainUntilTheyAnswer()
+    {
+        var outputDirectory = CreateTempDirectory();
+        try
+        {
+            var apiClient = new FakeChallengeApiClient(
+                IndexJson(),
+                new()
+                {
+                    [(Evermoon, 197)] = LeaderboardJson(),
+                    [(Evermoon, 200)] = LeaderboardJson(
+                        Run(10, 2_000_000, 100, [], Member("Alpha", Evermoon, 6, "Blood", 0, ""))
+                    ),
+                },
+                failuresBeforeAnswer: new() { [(Evermoon, 200)] = 3 }
+            );
+            var service = new MythicPlusExportService(
+                outputDirectory,
+                apiClient,
+                retryPause: TimeSpan.Zero
+            );
+
+            var result = await service.ExportAsync(
+                new MythicPlusExporterOptions([Evermoon], AllowShrink: false),
+                CancellationToken.None
+            );
+
+            Assert.Equal(1, result.Dataset.RunCount);
+            Assert.True(File.Exists(Path.Combine(outputDirectory, "hov.json")));
+            Assert.Equal(4, apiClient.LeaderboardRequests(Evermoon, 200));
+            Assert.Equal(1, apiClient.LeaderboardRequests(Evermoon, 197));
+        }
+        finally
+        {
+            Directory.Delete(outputDirectory, recursive: true);
+        }
+    }
+
+    [Fact]
+    public async Task ExportAsync_WritesNothingWhenALeaderboardFailsEveryRound()
     {
         var outputDirectory = CreateTempDirectory();
         try
@@ -657,7 +697,11 @@ public sealed class MythicPlusExportServiceTests
                 IndexJson(),
                 new() { [(Evermoon, 197)] = LeaderboardJson() }
             );
-            var service = new MythicPlusExportService(outputDirectory, apiClient);
+            var service = new MythicPlusExportService(
+                outputDirectory,
+                apiClient,
+                retryPause: TimeSpan.Zero
+            );
 
             var error = await Assert.ThrowsAsync<InvalidOperationException>(() =>
                 service.ExportAsync(
@@ -667,6 +711,9 @@ public sealed class MythicPlusExportServiceTests
             );
 
             Assert.Contains("Halls of Valor", error.Message);
+            Assert.Contains("3 more tries", error.Message);
+            Assert.Equal(4, apiClient.LeaderboardRequests(Evermoon, 200));
+            Assert.Equal(1, apiClient.LeaderboardRequests(Evermoon, 197));
             Assert.Empty(Directory.EnumerateFiles(outputDirectory));
         }
         finally
@@ -840,9 +887,16 @@ public sealed class MythicPlusExportServiceTests
 
     internal sealed class FakeChallengeApiClient(
         string indexJson,
-        Dictionary<(string Realm, int ChallengeId), string> leaderboards
+        Dictionary<(string Realm, int ChallengeId), string> leaderboards,
+        Dictionary<(string Realm, int ChallengeId), int>? failuresBeforeAnswer = null
     ) : ITauriApiClient
     {
+        private readonly ConcurrentDictionary<(string Realm, int ChallengeId), int> _requests =
+            new();
+
+        public int LeaderboardRequests(string realm, int challengeId) =>
+            _requests.GetValueOrDefault((realm, challengeId));
+
         public Task<TauriApiResponseResult> FetchResponseElementAsync(
             string endpoint,
             object parameters,
@@ -860,6 +914,14 @@ public sealed class MythicPlusExportServiceTests
 
             Assert.Equal("challenge-leaderboard", endpoint);
             var challengeId = request.GetProperty("id").GetInt32();
+            var attempt = _requests.AddOrUpdate((realm, challengeId), 1, (_, count) => count + 1);
+            if (failuresBeforeAnswer?.GetValueOrDefault((realm, challengeId)) >= attempt)
+            {
+                return Task.FromResult(
+                    TauriApiResponseResult.Failure("Request timed out after 30 seconds.")
+                );
+            }
+
             return Task.FromResult(
                 leaderboards.TryGetValue((realm, challengeId), out var json)
                     ? TauriApiResponseResult.Success(Parse(json))
