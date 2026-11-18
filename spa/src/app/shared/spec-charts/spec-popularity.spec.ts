@@ -137,7 +137,7 @@ describe('popularityChart', () => {
   const group = (className: string) => chart.groups.find(entry => entry.className === className)!;
 
   it('draws a gridline at every tick, the top tick at the top of the plot', () => {
-    expect(chart.gridlines.map(line => line.value)).toEqual([0, 10, 20, 30]);
+    expect(chart.gridlines.map(line => line.label)).toEqual(['0%', '10%', '20%', '30%']);
     expect(chart.gridlines.map(line => Math.round(line.position))).toEqual([0, 33, 67, 100]);
   });
 
@@ -157,8 +157,8 @@ describe('popularityChart', () => {
 
   it('keeps the class order and gives each class its icon and share labels', () => {
     expect(chart.groups.map(entry => entry.classId)).toEqual(specPopularity(runs).classes.map(entry => entry.classId));
-    expect(group('Mage')).toMatchObject({ classIcon: 'assets/class-icons/8.gif', shareLabel: '30.0%' });
-    expect(group('Mage').specs[0]).toMatchObject({ spec: 'Frost', count: 3, shareLabel: '30.0%' });
+    expect(group('Mage')).toMatchObject({ classIcon: 'assets/class-icons/8.gif', valueLabel: '30.0%' });
+    expect(group('Mage').specs[0]).toMatchObject({ spec: 'Frost', count: 3, valueLabel: '30.0%' });
   });
 });
 

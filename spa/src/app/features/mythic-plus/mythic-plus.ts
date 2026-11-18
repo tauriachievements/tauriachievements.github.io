@@ -1,5 +1,5 @@
 import { DamageRange, Role } from '../../game/wow';
-import { specFor } from '../../game/wow-specs';
+import { LegionSpec, specFor } from '../../game/wow-specs';
 import { formatClock } from '../../shared/time-format';
 import { foldName } from '../../shared/search-suggestions';
 import { scoreColor, scoreTiers } from '../../shared/score-quality';
@@ -398,41 +398,93 @@ export interface PlayerScore {
   bestRuns: ReadonlyMap<string, MythicPlusRun>;
 }
 
+interface PlayerTally {
+  member: MythicPlusMember;
+  topRun: MythicPlusRun;
+  bestRuns: Map<string, MythicPlusRun>;
+  specRuns: Map<string, number>;
+}
+
+const memberKeys = new WeakMap<MythicPlusMember, string>();
+
+function memberKey(member: MythicPlusMember): string {
+  let key = memberKeys.get(member);
+  if (key === undefined) {
+    key = characterKey(member);
+    memberKeys.set(member, key);
+  }
+  return key;
+}
+
+const memberSpecs = new WeakMap<MythicPlusMember, LegionSpec | null>();
+
+function memberSpec(member: MythicPlusMember): LegionSpec | undefined {
+  let spec = memberSpecs.get(member);
+  if (spec === undefined) {
+    spec = specFor(member.class, member.spec) ?? null;
+    memberSpecs.set(member, spec);
+  }
+  return spec ?? undefined;
+}
+
+function tallyRun(players: Map<string, PlayerTally>, run: MythicPlusRun, member: MythicPlusMember): void {
+  const key = memberKey(member);
+  let player = players.get(key);
+  if (!player) {
+    player = { member, topRun: run, bestRuns: new Map(), specRuns: new Map() };
+    players.set(key, player);
+  } else if (isBetterRun(run, player.topRun)) {
+    player.member = member;
+    player.topRun = run;
+  }
+  player.specRuns.set(member.spec, (player.specRuns.get(member.spec) ?? 0) + 1);
+
+  const best = player.bestRuns.get(run.dungeon);
+  if (!best || isBetterRun(run, best)) {
+    player.bestRuns.set(run.dungeon, run);
+  }
+}
+
 export function rankPlayers(
   runs: readonly MythicPlusRun[],
   include?: (member: MythicPlusMember) => boolean
 ): PlayerScore[] {
-  const players = new Map<string, {
-    member: MythicPlusMember;
-    topRun: MythicPlusRun;
-    bestRuns: Map<string, MythicPlusRun>;
-    specRuns: Map<string, number>;
-  }>();
+  const players = new Map<string, PlayerTally>();
 
   for (const run of runs) {
     for (const member of run.roster) {
-      if (include && !include(member)) {
-        continue;
-      }
-
-      const key = characterKey(member);
-      let player = players.get(key);
-      if (!player) {
-        player = { member, topRun: run, bestRuns: new Map(), specRuns: new Map() };
-        players.set(key, player);
-      } else if (isBetterRun(run, player.topRun)) {
-        player.member = member;
-        player.topRun = run;
-      }
-      player.specRuns.set(member.spec, (player.specRuns.get(member.spec) ?? 0) + 1);
-
-      const best = player.bestRuns.get(run.dungeon);
-      if (!best || isBetterRun(run, best)) {
-        player.bestRuns.set(run.dungeon, run);
+      if (!include || include(member)) {
+        tallyRun(players, run, member);
       }
     }
   }
 
+  return rankTallies(players);
+}
+
+export function rankPlayersBySpec(runs: readonly MythicPlusRun[]): Map<LegionSpec, PlayerScore[]> {
+  const bySpec = new Map<LegionSpec, Map<string, PlayerTally>>();
+
+  for (const run of runs) {
+    for (const member of run.roster) {
+      const spec = memberSpec(member);
+      if (!spec) {
+        continue;
+      }
+
+      let players = bySpec.get(spec);
+      if (!players) {
+        players = new Map();
+        bySpec.set(spec, players);
+      }
+      tallyRun(players, run, member);
+    }
+  }
+
+  return new Map([...bySpec].map(([spec, players]) => [spec, rankTallies(players)]));
+}
+
+function rankTallies(players: ReadonlyMap<string, PlayerTally>): PlayerScore[] {
   return [...players].map(([key, player]) => {
     let total = 0;
     let time = 0;

@@ -2,7 +2,8 @@ import { Role } from '../../game/wow';
 import { LEGION_SPECS } from '../../game/wow-specs';
 import { getSpecArtPath } from '../../game/classIconHelper';
 import { RaidSpec } from './raid-logs.types';
-import { SPEC_TOP_SCORES, SpecCharacterScore, specPerformance } from './raid-scores';
+import { SpecCharacterScore, specPerformance } from './raid-scores';
+import { SPEC_TOP_SCORES } from '../../shared/spec-charts/spec-performance';
 
 export interface SpecTier {
   key: string;

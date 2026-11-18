@@ -2,7 +2,7 @@
   <div class="chart" appReveal>
     <div class="y-axis" aria-hidden="true">
       @for (line of chart().gridlines; track line.value) {
-        <span [style.bottom.%]="line.position">{{ line.value }}%</span>
+        <span [style.bottom.%]="line.position">{{ line.label }}</span>
       }
     </div>
 
@@ -35,10 +35,10 @@
                   [style.--bar]="spec.heightPercent + '%'"
                   [style.background-color]="group.color">
                   @if (spec.showValue) {
-                    <span class="bar-value">{{ spec.shareLabel }}</span>
+                    <span class="bar-value">{{ spec.valueLabel }}</span>
                   }
                   <span class="tooltip" aria-hidden="true">
-                    <strong>{{ spec.shareLabel }}</strong>
+                    <strong>{{ spec.valueLabel }}</strong>
                     <span>{{ spec.spec }} {{ group.className }}</span>
                     <span class="tooltip-meta">{{ spec.count | number }} of {{ popularity().total | number }} {{ unit() }}</span>
                   </span>
@@ -60,7 +60,7 @@
           <div class="class-label">
             <img [src]="group.classIcon" alt="" />
             <span>{{ group.className }}</span>
-            <span class="class-share">{{ group.shareLabel }}</span>
+            <span class="class-share">{{ group.valueLabel }}</span>
           </div>
         </div>
       }

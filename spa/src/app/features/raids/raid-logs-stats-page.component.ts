@@ -5,7 +5,8 @@ import { RaceBySpecComponent } from '../../shared/spec-charts/race-by-spec.compo
 import { RaceSample } from '../../shared/spec-charts/race-popularity';
 import { RaidDifficulty, RaidKillDetails, RaidLogsIndex } from './raid-logs.types';
 import { defaultDifficulty } from './raid-logs';
-import { ChartView, RaidSpecPopularityChartComponent, parseChartView } from './raid-spec-popularity-chart.component';
+import { RaidSpecPopularityChartComponent } from './raid-spec-popularity-chart.component';
+import { ChartView, parseChartView } from '../../shared/spec-charts/spec-performance';
 import { RaidLogsDataService } from './raid-logs-data.service';
 import { Role, RoleFilter, parseRoleFilter } from '../../game/wow';
 import { FilterDropdownCoordinatorService } from '../../shared/filter-dropdown-coordinator.service';

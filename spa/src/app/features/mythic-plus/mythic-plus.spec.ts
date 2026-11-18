@@ -21,6 +21,7 @@ import {
   memberNameMatches,
   sharesTables,
   rankPlayers,
+  rankPlayersBySpec,
   rankRuns,
   runIncludesCharacter,
   runIncludesPlayer,
@@ -31,7 +32,8 @@ import {
   upgradeCutoffs,
   upgradeStars
 } from './mythic-plus';
-import { CLASS_FILTER_OPTIONS } from '../../game/wow';
+import { CLASS_FILTER_OPTIONS, Role } from '../../game/wow';
+import { memberFilter } from './mythic-plus-leaderboard';
 
 describe('upgradeStars', () => {
   it('draws one star per upgrade and none for a depleted key', () => {
@@ -440,6 +442,37 @@ describe('rankPlayers', () => {
     ], candidate => candidate.spec === 'Vengeance');
 
     expect(ranked.map(player => [player.member.name, player.score])).toEqual([['Pashao', 180]]);
+  });
+});
+
+describe('rankPlayersBySpec', () => {
+  const member = (name: string, classId: number, spec: string, role: Role) =>
+    ({ name, realm: 'Evermoon', class: classId, race: 1, gender: 0, spec, role });
+  const run = (id: string, dungeon: string, score: number, roster: ReturnType<typeof member>[], clearTimeSeconds = 1500) =>
+    ({ id, dungeon, keyLevel: 10, clearTimeSeconds, score, completedAt: '', affixes: [], roster });
+
+  const runs = [
+    run('a', 'hov', 180, [member('Pashao', 12, 'Vengeance', 'tank'), member('Leaf', 11, 'Restoration', 'healer')]),
+    run('b', 'eoa', 190.4, [member('Pashao', 12, 'Havoc', 'dps'), member('Leaf', 11, 'Restoration', 'healer')], 1600),
+    run('c', 'hov', 175, [member('Bea', 12, 'Vengeance', 'tank'), member('Odd', 6, 'Havoc', 'dps')], 1400),
+    run('d', 'eoa', 160, [member('Pashao', 12, 'Vengeance', 'tank'), member('Bea', 12, 'Vengeance', 'tank')])
+  ];
+
+  it('ranks each spec as the leaderboard does with that class and spec picked', () => {
+    const bySpec = rankPlayersBySpec(runs);
+
+    expect([...bySpec].map(([spec, ranked]) => [spec.spec, ranked.map(player => [player.member.name, player.score])])).toEqual([
+      ['Vengeance', [['Pashao', 340], ['Bea', 335]]],
+      ['Restoration', [['Leaf', 370.4]]],
+      ['Havoc', [['Pashao', 190.4]]]
+    ]);
+    for (const [spec, ranked] of bySpec) {
+      expect(ranked).toEqual(rankPlayers(runs, memberFilter({ classId: spec.classId, spec: spec.spec })));
+    }
+  });
+
+  it('leaves out a spec its class does not have', () => {
+    expect([...rankPlayersBySpec(runs).values()].flat().map(player => player.member.name)).not.toContain('Odd');
   });
 });
 

@@ -53,25 +53,25 @@
     <div class="chart-scroll">
       <div class="chart" appReveal>
         <div class="y-axis" aria-hidden="true">
-          @for (line of gridlines(); track line) {
+          @for (line of plot().gridlines; track line) {
             <span [style.bottom.%]="line.position">{{ line.label }}</span>
           }
         </div>
 
-        <div class="plot" [appFlip]="groups()">
+        <div class="plot" [appFlip]="plot().groups">
           <div class="gridlines" aria-hidden="true">
-            @for (line of gridlines(); track line) {
+            @for (line of plot().gridlines; track line) {
               <span [style.bottom.%]="line.position"></span>
             }
           </div>
 
-          @for (group of groups(); track group.classId; let index = $index) {
+          @for (group of plot().groups; track group.classId; let index = $index) {
             <div
               class="class-group"
               [attr.data-flip]="group.classId"
               [style.--i]="index"
               [style.--class-color]="group.color"
-              [class.flip]="index >= groups().length / 2">
+              [class.flip]="index >= plot().groups.length / 2">
               <div class="bars">
                 @for (spec of group.specs; track spec.spec; let specIndex = $index) {
                   <button
