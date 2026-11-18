@@ -24,6 +24,7 @@ const BREWMASTER = 268;
 const GUARDIAN = 104;
 const RESTORATION_DRUID = 105;
 const MISTWEAVER = 270;
+const FIRE = 63;
 
 const tankScores = new Map([
   players(GUARDIAN, 1, 1199),
@@ -83,19 +84,23 @@ describe('roleTierList', () => {
   it('describes each spec for the tooltip and the screen reader', () => {
     const [blood] = tanks.rows[0].specs;
     const guardian = tanks.rows[4].specs[0];
-    expect(blood.note).toBe('2,000 DPS score · 100% of the best · 10 characters');
-    expect(guardian.note).toBe('1,199 DPS score · 59% of the best · only 1 character');
-    expect(guardian.label).toBe('Guardian Druid, F tier: 1,199 DPS score, 59% of the best, only 1 character. Open its rankings.');
+    expect(blood.note).toBe('2,000 Tank score · 100% of the best · 10 characters');
+    expect(guardian.note).toBe('1,199 Tank score · 59% of the best · only 1 character');
+    expect(guardian.label).toBe('Guardian Druid, F tier: 1,199 Tank score, 59% of the best, only 1 character. Open its rankings.');
     expect(blood.art).toBe('assets/spec-art/death-knight-blood.webp');
     expect(tanks.rows[0].specs[1].art).toBe('assets/spec-art/demon-hunter-vengeance.webp');
   });
 
-  it("links each spec to its rankings on the difficulty, by HPS for healers", () => {
-    expect(tanks.rows[0].specs[0].rankingsQuery).toEqual({ difficulty: 'mythic', metric: null, class: 6, spec: BLOOD });
+  it("links each spec to its role's tab of the rankings on the difficulty", () => {
+    expect(tanks.rows[0].specs[0].rankingsQuery).toEqual({ difficulty: 'mythic', role: 'tank', class: 6, spec: BLOOD });
 
     const healers = roleTierList(new Map([players(MISTWEAVER, 10, 4000)]), 'healer', 'Heal', 'heroic');
-    expect(healers.rows[0].specs[0].rankingsQuery).toEqual({ difficulty: 'heroic', metric: 'hps', class: 10, spec: MISTWEAVER });
-    expect(healers.rows[0].specs[0].note).toBe('4,000 HPS score · 100% of the best · 10 characters');
+    expect(healers.rows[0].specs[0].rankingsQuery).toEqual({ difficulty: 'heroic', role: 'healer', class: 10, spec: MISTWEAVER });
+    expect(healers.rows[0].specs[0].note).toBe('4,000 Healer score · 100% of the best · 10 characters');
+
+    const damage = roleTierList(new Map([players(FIRE, 10, 4000)]), 'dps', 'DPS', 'normal');
+    expect(damage.rows[0].specs[0].rankingsQuery).toEqual({ difficulty: 'normal', role: null, class: 8, spec: FIRE });
+    expect(damage.rows[0].specs[0].note).toBe('4,000 DPS score · 100% of the best · 10 characters');
   });
 
   it("keeps the game's order between specs with the same score", () => {

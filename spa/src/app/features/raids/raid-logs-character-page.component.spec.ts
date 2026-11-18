@@ -541,6 +541,32 @@ describe('RaidLogsCharacterPageComponent with a former character of the name', (
   });
 });
 
+describe('RaidLogsCharacterPageComponent leaderboard score', () => {
+  function metricTabs(element: HTMLElement) {
+    return [...element.querySelectorAll<HTMLButtonElement>('[role="tab"]')];
+  }
+
+  it("shows a tank's score from the Tank list on Damage, and the Healer list on Healing", async () => {
+    const { harness, element } = await open('/raid-logs/character/tauri/Tank');
+
+    expect(summaryTile(element, 'Tank score')).toEqual({ value: '6969', note: '#1 of 1 on the leaderboard' });
+
+    metricTabs(element)[1].click();
+    harness.detectChanges();
+    expect(summaryTile(element, 'Healer score')).toEqual({ value: '-', note: 'No ranked kill' });
+  });
+
+  it("shows a healer's score from the Healer list, and a damage dealer's from the DPS list", async () => {
+    const { harness, element } = await open('/raid-logs/character/evermoon/Light');
+
+    expect(summaryTile(element, 'Healer score')).toEqual({ value: '3484', note: '#1 of 2 on the leaderboard' });
+
+    metricTabs(element)[0].click();
+    harness.detectChanges();
+    expect(summaryTile(element, 'DPS score')).toEqual({ value: '-', note: 'No ranked kill' });
+  });
+});
+
 describe('RaidLogsCharacterPageComponent comparison', () => {
   it('compares with all players by default, as the score does', async () => {
     const { page, element } = await open('/raid-logs/character/evermoon/Frosty');
@@ -555,7 +581,7 @@ describe('RaidLogsCharacterPageComponent comparison', () => {
     expect(page.bossRows().map(row => row.relative)).toEqual(page.score()?.bosses.map(entry => entry.relative));
     expect(cells(element)).toEqual([['Nythendra', '80%', '#2 / 4'], ["Il'gynoth", '37%', '#3 / 3'], ['Elerethe', '', '']]);
 
-    expect(summaryTile(element, 'DPS score')).toEqual({ value: '2729', note: '#3 of 4 on the leaderboard' });
+    expect(summaryTile(element, 'DPS score')).toEqual({ value: '2729', note: '#3 of 3 on the leaderboard' });
     expect(summaryTile(element, 'Best damage rank')).toEqual({ value: '#2', note: 'Nythendra, of 4' });
     expect(element.querySelector('th[title]')?.getAttribute('title')).toBe('The best kill against the best anyone did on the boss');
     expect(element.querySelector('.list-note')).toBeNull();
@@ -576,7 +602,7 @@ describe('RaidLogsCharacterPageComponent comparison', () => {
     ]);
     expect(cells(element)).toEqual([['Nythendra', '100%', '#1 / 2'], ["Il'gynoth", '50%', '#2 / 2'], ['Elerethe', '', '']]);
 
-    expect(summaryTile(element, 'DPS score')).toEqual({ value: '2729', note: '#3 of 4 among all players' });
+    expect(summaryTile(element, 'DPS score')).toEqual({ value: '2729', note: '#3 of 3 among all players' });
     expect(summaryTile(element, 'Best damage rank')).toEqual({ value: '#1', note: 'Nythendra, of 2 Mages' });
     expect([...element.querySelectorAll('th[title]')].map(th => th.getAttribute('title'))).toEqual([
       'The best kill against the best any Mage did on the boss',
@@ -653,7 +679,7 @@ describe('RaidLogsCharacterPageComponent spec comparison', () => {
     expect(cells(element)).toEqual([['Nythendra', '92%', '#2 / 2'], ["Il'gynoth", '', ''], ['Elerethe', '', '']]);
     expect([logCell(element, 1), logCell(element, 2)]).toEqual(['Not as Fire', 'Not killed']);
 
-    expect(summaryTile(element, 'DPS score')).toEqual({ value: '2729', note: '#3 of 4 among all players' });
+    expect(summaryTile(element, 'DPS score')).toEqual({ value: '2729', note: '#3 of 3 among all players' });
     expect(summaryTile(element, 'Best damage rank')).toEqual({ value: '#2', note: 'Nythendra, of 2 Fire Mages' });
     expect([...element.querySelectorAll('th[title]')].map(th => th.getAttribute('title'))).toEqual([
       'The best kill against the best any Fire Mage did on the boss',

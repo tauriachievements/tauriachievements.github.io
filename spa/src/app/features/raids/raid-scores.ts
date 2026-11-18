@@ -1,13 +1,11 @@
 import { SpecPerformanceSummary, summarizeSpecScores } from '../../shared/spec-charts/spec-performance';
-import { CLASS_FILTER_OPTIONS, matchesRoleFilter, raceFaction, realmSlug, RoleFilter } from '../../game/wow';
+import { CLASS_FILTER_OPTIONS, matchesRoleFilter, raceFaction, realmSlug, Role, RoleFilter } from '../../game/wow';
 import { FilterDropdownOption } from '../../shared/filter-dropdown.types';
 import { ScanChange, scanChanges } from '../../shared/scan-change';
 import { RaidBoss, RaidSpec, RaidCharacter, RaidMember, RaidKillDetails } from './raid-logs.types';
 import { characterKey, logKey } from './raid-logs';
 
 export type RaidMetric = 'dps' | 'hps';
-
-const RAID_METRICS: readonly RaidMetric[] = ['dps', 'hps'];
 
 export interface RankingFilter {
   classId?: number;
@@ -176,12 +174,32 @@ export interface RankedScore extends CharacterScore {
   rank: number;
 }
 
+export function roleMetric(role: Role): RaidMetric {
+  return role === 'healer' ? 'hps' : 'dps';
+}
+
+export function leaderboardRole(metric: RaidMetric, specsLatestFirst: readonly RaidSpec[]): Role {
+  if (metric === 'hps') {
+    return 'healer';
+  }
+
+  const kills = new Map<Role, number>();
+  for (const spec of specsLatestFirst) {
+    if (spec.role !== 'healer') {
+      kills.set(spec.role, (kills.get(spec.role) ?? 0) + 1);
+    }
+  }
+  return [...kills].sort((a, b) => b[1] - a[1])[0]?.[0] ?? 'dps';
+}
+
 export function scoreCharacters(
   bosses: readonly RaidBoss[],
   bossKills: ReadonlyArray<readonly RaidKillDetails[]>,
-  metric: RaidMetric,
+  role: Role,
   specId?: number
 ): CharacterScore[] {
+  const metric = roleMetric(role);
+
   interface Tally {
     latest: Appearance;
     specs: Map<RaidSpec, { count: number; at: number }>;
@@ -194,7 +212,7 @@ export function scoreCharacters(
   bosses.forEach((boss, bossIndex) => {
     for (const kill of bossKills[bossIndex] ?? []) {
       for (const member of kill.members) {
-        if (!member.spec || !countsFor(metric, member.spec)) {
+        if (member.spec?.role !== role) {
           continue;
         }
 
@@ -262,7 +280,7 @@ function toScore(performance: number): number {
 }
 
 export function specMetric(spec: RaidSpec): RaidMetric {
-  return spec.role === 'healer' ? 'hps' : 'dps';
+  return roleMetric(spec.role);
 }
 
 export interface SpecCharacterScore {
@@ -274,7 +292,7 @@ export function scoresBySpec(
   bosses: readonly RaidBoss[],
   bossKills: ReadonlyArray<readonly RaidKillDetails[]>
 ): Map<RaidSpec, SpecCharacterScore[]> {
-  const tops: Record<RaidMetric, number[]> = { dps: bosses.map(() => 0), hps: bosses.map(() => 0) };
+  const tops: Record<Role, number[]> = { dps: bosses.map(() => 0), tank: bosses.map(() => 0), healer: bosses.map(() => 0) };
   const bests = new Map<RaidSpec, Map<string, { character: RaidCharacter; values: number[] }>>();
 
   bosses.forEach((boss, bossIndex) => {
@@ -284,12 +302,9 @@ export function scoresBySpec(
           continue;
         }
 
-        for (const counted of RAID_METRICS) {
-          if (countsFor(counted, member.spec)) {
-            tops[counted][bossIndex] = Math.max(tops[counted][bossIndex], member[counted]);
-          }
-        }
         const value = member[specMetric(member.spec)];
+        const roleTops = tops[member.spec.role];
+        roleTops[bossIndex] = Math.max(roleTops[bossIndex], value);
         if (member.character.former) {
           continue;
         }
@@ -311,19 +326,18 @@ export function scoresBySpec(
     }
   });
 
-  const scoredBosses = { dps: tops.dps.filter(top => top > 0).length, hps: tops.hps.filter(top => top > 0).length };
   const scores = new Map<RaidSpec, SpecCharacterScore[]>();
   for (const [spec, characters] of bests) {
-    const metric = specMetric(spec);
-    const top = tops[metric];
-    if (!scoredBosses[metric]) {
+    const top = tops[spec.role];
+    const scoredBosses = top.filter(best => best > 0).length;
+    if (!scoredBosses) {
       continue;
     }
 
     scores.set(spec, [...characters.values()]
       .map(({ character, values }) => ({
         character,
-        score: toScore(values.reduce((sum, value, bossIndex) => sum + (top[bossIndex] > 0 ? value / top[bossIndex] : 0), 0) / scoredBosses[metric])
+        score: toScore(values.reduce((sum, value, bossIndex) => sum + (top[bossIndex] > 0 ? value / top[bossIndex] : 0), 0) / scoredBosses)
       }))
       .sort((a, b) => b.score - a.score || a.character.name.localeCompare(b.character.name)));
   }

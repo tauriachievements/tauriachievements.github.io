@@ -376,16 +376,24 @@ decision: ask first.** When a rule does change, change its tests first and see t
 ## Raid leaderboard
 
 - **Code:** `scoreCharacters` / `rankScores` in `spa/src/app/features/raids/raid-scores.ts`.
-- On each boss, the character's best counted kill is divided by the best anyone did there. The
-  average of those shares, times `MAX_SCORE` (6969), floored, is the score. A boss the
-  character hasn't killed counts as 0; a boss nobody has killed is left out of the average.
-- **This reproduces tauriprogress's character score exactly.** It matched the owner's
-  screenshot rank for rank. Don't "fix" the formula.
-- Metric (`countsFor`): DPS ranks every spec but the healers, tanks included. HPS ranks the
-  healers and the tanks, so a tank is on both. HPS is healing plus absorbs. A tank's healing
-  can be a boss's best on HPS, and then every healer is measured against it: a Brewmaster can
-  heal more than any healer on a boss. The owner chose this over measuring tanks against the
-  best healer.
+- On each boss, the character's best counted kill is divided by the best on the same list
+  there. The average of those shares, times `MAX_SCORE` (6969), floored, is the score. A boss
+  the character hasn't killed counts as 0; a boss nobody on the list has killed is left out of
+  the average.
+- **The formula reproduces tauriprogress's character score exactly.** Don't "fix" it. The three
+  lists below are this site's own.
+- **Three lists, by the role of the spec played** (`scoreCharacters` takes the role, and
+  `roleMetric` gives what it's measured on). The tabs are DPS, Tank and Healer, in that order,
+  and `?role=tank` or `?role=healer` keeps the tab in the URL. An old `?metric=hps` link opens
+  Healer.
+  - DPS: the damage specs, on DPS.
+  - Tank: the tank specs, on DPS.
+  - Healer: the healer specs, on HPS (healing plus absorbs).
+
+  A kill counts only on its spec's list, and only that list's kills set a boss's best. So a tank
+  is measured against the best tank. A Brewmaster who heals more than every healer on a boss
+  sets nothing on Healer, and a tank's damage never sets the best on DPS. The owner chose
+  separate lists over ranking tanks on both DPS and HPS against everyone.
 - A character is its realm and name (`characterKey`), and the name belongs to the class of its
   latest kill on any boss and difficulty. Kills logged on another class belong to a former
   character with that name ([data-pipeline.md](data-pipeline.md#raid-log-files)): they're left
@@ -395,17 +403,16 @@ decision: ask first.** When a rule does change, change its tests first and see t
   of that best, but no score or rank.
 - An invalid log counts nowhere, not even for a boss's best ([below](#invalid-raid-logs)).
 - A spec filter scores characters only on the kills they played as that spec. The best on each
-  boss is still the best anyone did there.
+  boss is still the best anyone on the list did there.
 - Filters (class, faction, realm) only hide rows and re-rank the rest. Each score is still
-  measured against everyone.
-- A class or spec the tab doesn't rank (a Mage on HPS) is cleared rather than leaving an
-  empty list. A class with one spec the tab ranks gets that spec picked: on HPS that's the
-  Shaman's Restoration and the tank of the Warrior, Death Knight and Demon Hunter. Paladins,
-  Monks and Druids have a healer and a tank on HPS, and Priests two healers, so a picked
-  damage spec of theirs is dropped. No class has a single DPS spec. The class dropdown lists only
-  the classes the tab ranks. `fitClassAndSpec` and `rankedClassOptions` do this, here and on a
-  boss's ranking tabs.
-- **Changes since the last scan:** the same ranking (metric, spec, class, realm) worked out
+  measured against the whole list.
+- A class or spec the tab doesn't rank (a Mage on Healer) is cleared rather than leaving an
+  empty list. A class with one spec the tab ranks gets that spec picked: on Tank, every tank
+  class; on Healer, Paladins, Monks, Druids and Shamans (Priests have two healers); on DPS,
+  Paladins, Monks and Demon Hunters. The class dropdown lists only the classes the tab ranks.
+  `fitClassAndSpec` and `rankedClassOptions` do this, here and on a boss's ranking tabs
+  ([below](#raid-boss-rankings)).
+- **Changes since the last scan:** the same ranking (list, spec, class, realm) worked out
   again without the kills that scan didn't have (`newLogs`), compared with today's. A new best
   on a boss lowers everyone else's share of it, so a score can drop. That's why the table
   shows gains in green and drops in grey, as small text: the rank change beside the rank, the
@@ -418,13 +425,20 @@ decision: ask first.** When a rule does change, change its tests first and see t
   Warcraft Logs' parse colours, on the share of the best in view: artifact for the best,
   legendary from 95%, epic from 75%, rare from 50%, uncommon from 25%.
 - The search hides rows without renumbering them, as on every leaderboard.
-- **Character page, per boss** (`bossStanding`): "Of best" and Rank put the character's best
+- **Character page, per boss** (`bossStanding`): Damage and Healing count kills the way a
+  boss's ranking tabs do (`countsFor`, [below](#raid-boss-rankings)), so a tank is on both.
+  "Of best" and Rank put the character's best
   kill of the boss among every character's best, and the "Compare with" dropdown narrows that
   to the character's class (All Death Knights) or one of its specs (Blood). With a spec, only
   kills played as that spec count, the character's own included, so a boss they never killed
   as that spec has no rank. The dropdown lists the specs the metric ranks, and a picked spec
   the other metric doesn't rank is dropped on switching. The score tile always compares with
   all players.
+- **Character page, score tile** (`leaderboardRole`): the character's score and rank on one of
+  the leaderboard's lists. Healing shows Healer. Damage shows Tank or DPS, whichever the
+  character has more kills as among their tank and damage specs, the latest on a tie. So a
+  Protection Paladin who also plays Holy sees their Tank score on Damage, and their Healer
+  score on Healing.
 - **Character page, kills over time** (`killHistory`, `killChart` and `recordChange` in
   `raid-kill-history.ts`): each boss row lists the character's kills of the boss that count for
   the metric, oldest first, and with a spec picked to compare with, only the kills as that spec.
@@ -606,9 +620,11 @@ decision: ask first.** When a rule does change, change its tests first and see t
   `spa/src/app/shared/spec-charts/spec-performance.ts`, which the
   [Mythic+ chart](#mythic-spec-performance) shares.
 - Every character gets the raid leaderboard score for each spec they played, as if that spec
-  were picked on the leaderboard: HPS for a healer, DPS for everyone else, tanks too
-  (`specMetric`). A healer's share of a boss is of the best HPS there, a tank's included, as on
-  the leaderboard. A spec's performance is the average of its best
+  were picked on its role's list of the leaderboard ([above](#raid-leaderboard)): a damage spec
+  on DPS, a tank on Tank (DPS, against the best tank), a healer on Healer (HPS, against the
+  best healer). So in the all-roles chart each spec stands against the best of its own role.
+  The chart and its tooltips name the scores after the list: DPS, Tank or Healer score. A
+  spec's performance is the average of its best
   `SPEC_TOP_SCORES` (10) character scores, or of all of them when it has fewer, and 0 when
   nobody played it. Only the best ten count, so attendance doesn't drag a spec down.
 - Each difficulty is scored on its own, over every boss of the raid.
@@ -619,14 +635,17 @@ decision: ask first.** When a rule does change, change its tests first and see t
   - Talent Analytics and Trinket Analytics list each role's specs by it, best first. A tie keeps
     the game's order, the order is the same whichever boss is picked, and a picked class shows
     its specs in the game's order instead.
-- **Tests:** `raid-scores.spec.ts`, `raid-analytics.spec.ts`, `spec-performance.spec.ts`.
+- **Tests:** `raid-scores.spec.ts`, `raid-analytics.spec.ts`, `spec-performance.spec.ts`,
+  `raid-spec-popularity-chart.component.spec.ts`.
 
 ## Raid spec tier list
 
 - **Code:** `roleTierList`, `percentOfBest` and `tierFor` in
   `spa/src/app/features/raids/raid-tier-list.ts`; the page is `/raid-logs/tier-list`.
 - Three lists, DPS, Heal and Tank, each from the spec performance above on the picked
-  difficulty: HPS for healers, DPS for tanks and damage dealers.
+  difficulty: HPS for healers, DPS for tanks and damage dealers. A spec's icon links to its
+  role's tab of the leaderboard with the spec picked, and its tooltip names the score after that
+  tab (DPS, Tank or Healer score).
 - A spec's share is its performance against the best spec in its role, as a whole percent
   rounded down, so 94.8% shows and counts as 94%. The tier is the highest it reaches
   (`SPEC_TIERS`): S from 95%, A from 85%, B from 75%, C from 60%, F below. Every tier is

@@ -1,3 +1,4 @@
+import { Location } from '@angular/common';
 import { provideLocationMocks } from '@angular/common/testing';
 import { TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
@@ -136,6 +137,104 @@ describe('RaidLogsLeaderboardPageComponent changes since the last scan', () => {
       ['Beta', '', false, '', '4646', '', false],
       ['Gamma', '', false, '', '3484', '', false]
     ]);
+  });
+});
+
+describe('RaidLogsLeaderboardPageComponent role tabs', () => {
+  const [ALPHA, SHIELD, WALL, MENDER] = [0, 1, 2, 3];
+  const [FIRE, HOLY, PROTECTION] = [63, 65, 66];
+
+  const roleIndex: RaidLogsIndexFile = {
+    ...indexFile,
+    difficulties: [{ ...indexFile.difficulties[0], kills: 1 }],
+    specs: [...indexFile.specs, { id: HOLY, class: 2, name: 'Holy', role: 'healer' }, { id: PROTECTION, class: 2, name: 'Protection', role: 'tank' }],
+    logs: [indexFile.logs[0]],
+    newLogs: undefined
+  };
+
+  const healing = (player: number, spec: number, damage: number, healed: number): RaidMemberEntry =>
+    [player, spec, 870, damage, healed, 0, 0, 0, 0, 0];
+
+  const roleFile: RaidBossFile = {
+    ...nythendraFile,
+    players: [
+      ['Alpha', 'Evermoon', 8, 10, 0, 'Miracle'],
+      ['Shield', 'Evermoon', 2, 1, 0, 'Miracle'],
+      ['Wall', 'Evermoon', 2, 1, 0, 'Miracle'],
+      ['Mender', 'Evermoon', 2, 10, 0, 'Miracle']
+    ],
+    logs: [['Tauri', 10, 1_000, 100_000, 0, 1, 0, 0, 0, [
+      member(ALPHA, FIRE, 200_000_000),
+      healing(SHIELD, PROTECTION, 300_000_000, 90_000_000),
+      healing(WALL, PROTECTION, 150_000_000, 0),
+      healing(MENDER, HOLY, 0, 50_000_000)
+    ], []]]
+  };
+
+  const openRoles = (query = '') => openPage(roleIndex, { 'raid-log-data/nythendra-mythic.json': roleFile }, query);
+
+  function tabs(element: HTMLElement) {
+    return [...element.querySelectorAll<HTMLButtonElement>('[role="tablist"][aria-label="Rank by"] [role="tab"]')];
+  }
+
+  function activeTab(element: HTMLElement) {
+    return tabs(element).find(tab => tab.getAttribute('aria-selected') === 'true')?.textContent?.trim();
+  }
+
+  function listed(element: HTMLElement) {
+    return [...element.querySelectorAll('tbody tr')].map(row => [
+      row.querySelector('.character-name')?.textContent,
+      row.querySelector('.score-value')?.textContent?.trim(),
+      row.querySelector('.character-name')?.getAttribute('href')
+    ]);
+  }
+
+  it('offers DPS, Tank and Healer, in that order, and opens on DPS without the tanks', async () => {
+    const { element } = await openRoles();
+
+    expect(tabs(element).map(tab => tab.textContent?.trim())).toEqual(['DPS', 'Tank', 'Healer']);
+    expect(activeTab(element)).toBe('DPS');
+    expect(listed(element)).toEqual([['Alpha', '6969', '/raid-logs/character/evermoon/Alpha?difficulty=mythic&metric=dps']]);
+  });
+
+  it('ranks the tanks on DPS against the best tank, and the healers on HPS against the best healer', async () => {
+    const { harness, element } = await openRoles();
+    const location = TestBed.inject(Location);
+
+    tabs(element)[1].click();
+    harness.detectChanges();
+    expect(location.path()).toBe('/raid-logs/leaderboard?difficulty=mythic&role=tank');
+    expect(activeTab(element)).toBe('Tank');
+    expect(listed(element)).toEqual([
+      ['Shield', '6969', '/raid-logs/character/evermoon/Shield?difficulty=mythic&metric=dps'],
+      ['Wall', '3484', '/raid-logs/character/evermoon/Wall?difficulty=mythic&metric=dps']
+    ]);
+
+    tabs(element)[2].click();
+    harness.detectChanges();
+    expect(location.path()).toBe('/raid-logs/leaderboard?difficulty=mythic&role=healer');
+    expect(listed(element)).toEqual([['Mender', '6969', '/raid-logs/character/evermoon/Mender?difficulty=mythic&metric=hps']]);
+
+    tabs(element)[0].click();
+    harness.detectChanges();
+    expect(location.path()).toBe('/raid-logs/leaderboard?difficulty=mythic');
+  });
+
+  it.each([
+    ['&role=tank', 'Tank'],
+    ['&role=healer', 'Healer'],
+    ['&metric=hps', 'Healer'],
+    ['&role=melee', 'DPS']
+  ])('opens %s on %s', async (query, tab) => {
+    expect(activeTab((await openRoles(query)).element)).toBe(tab);
+  });
+
+  it("lists only the classes with a spec on the tab, and picks a class's only spec there", async () => {
+    const { harness } = await openRoles('&role=tank&class=2');
+    const page = harness.routeDebugElement?.componentInstance as RaidLogsLeaderboardPageComponent;
+
+    expect(page.classOptions().map(option => option.label)).toEqual(['All classes', 'Paladin']);
+    expect(page.specFilter()).toBe(PROTECTION);
   });
 });
 

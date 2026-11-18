@@ -102,15 +102,15 @@ export class RaidSpecPopularityChartComponent {
   });
 
   private scoreNoun(): string {
-    switch (this.role()) {
-      case 'healer': return 'HPS scores';
-      case undefined: return 'scores (HPS for healers, DPS for the rest)';
-      default: return 'DPS scores';
+    const role = this.role();
+    if (role === undefined) {
+      return 'leaderboard scores (DPS, Tank or Healer)';
     }
+    return role === 'tank' || role === 'healer' ? `${ROLE_FILTER_LABELS[role]} scores` : 'DPS scores';
   }
 
   scoreKind(spec: SpecBar): string {
-    return spec.role === 'healer' ? 'HPS score' : 'DPS score';
+    return `${ROLE_FILTER_LABELS[spec.role]} score`;
   }
 
   scoreSample(spec: SpecBar): string {
