@@ -1,4 +1,4 @@
-import { Role } from '../../game/wow';
+import { ROLE_FILTER_LABELS, Role } from '../../game/wow';
 import { LEGION_SPECS } from '../../game/wow-specs';
 import { getSpecArtPath } from '../../game/classIconHelper';
 import { RaidSpec } from './raid-logs.types';
@@ -81,7 +81,7 @@ function characterCount(count: number, fewPlayers: boolean): string {
 
 function specFacts(score: number, percent: number, count: number, fewPlayers: boolean, role: Role): string[] {
   return [
-    `${score.toLocaleString('en-US')} ${role === 'healer' ? 'HPS' : 'DPS'} score`,
+    `${score.toLocaleString('en-US')} ${ROLE_FILTER_LABELS[role]} score`,
     `${percent}% of the best`,
     characterCount(count, fewPlayers)
   ];
@@ -116,7 +116,7 @@ export function roleTierList(
       fewPlayers,
       note: facts.join(' · '),
       label: `${name}, ${tierFor(percent).label} tier: ${facts.join(', ')}. Open its rankings.`,
-      rankingsQuery: { difficulty, metric: role === 'healer' ? 'hps' : null, class: spec.classId, spec: spec.id }
+      rankingsQuery: { difficulty, role: role === 'dps' ? null : role, class: spec.classId, spec: spec.id }
     };
   });
 

@@ -29,6 +29,7 @@ import {
   RankedScore,
   bossBest,
   bossStanding,
+  leaderboardRole,
   performanceQuality,
   rankScores,
   rankedSpecs,
@@ -45,7 +46,7 @@ import {
 } from './raid-logs.types';
 import { characterKey, formerCharactersOf, logKey } from './raid-logs';
 import { RaidLogsDataService } from './raid-logs-data.service';
-import { CLASS_NAMES, realmSlug } from '../../game/wow';
+import { CLASS_NAMES, ROLE_FILTER_LABELS, realmSlug } from '../../game/wow';
 import { injectReplaceUrl, parseInteger, parsePage } from '../../core/url-state';
 import { PagerComponent } from '../../shared/pager.component';
 import { LoadStateComponent } from '../../shared/load-state.component';
@@ -224,10 +225,13 @@ export class RaidLogsCharacterPageComponent {
 
   readonly metric = computed<RaidMetric>(() => this.pickedMetric() ?? (this.mainSpec()?.role === 'healer' ? 'hps' : 'dps'));
 
+  private readonly scoreRole = computed(() =>
+    leaderboardRole(this.metric(), latestFirst(this.appearances()).flatMap(({ member }) => member.spec ? [member.spec] : [])));
+
   private readonly scores = computed<RankedScore[]>(() => {
     const loaded = this.loaded();
     const index = this.index();
-    return loaded && index ? rankScores(scoreCharacters(index.bosses, loaded.bossKills, this.metric())) : [];
+    return loaded && index ? rankScores(scoreCharacters(index.bosses, loaded.bossKills, this.scoreRole())) : [];
   });
 
   readonly score = computed(() => {
@@ -294,7 +298,7 @@ export class RaidLogsCharacterPageComponent {
     return [
       { label: 'Bosses killed', value: `${killed.length}/${rows.length}`, note: `${this.appearances().length} kills` },
       {
-        label: `${this.metric().toUpperCase()} score`,
+        label: `${ROLE_FILTER_LABELS[this.scoreRole()]} score`,
         value: score ? String(score.score) : '-',
         note: score
           ? `#${score.rank} of ${this.scores().length.toLocaleString('en-US')} ${byClass ? 'among all players' : 'on the leaderboard'}`

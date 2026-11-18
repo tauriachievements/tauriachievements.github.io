@@ -4,22 +4,24 @@ import {
   bossStanding,
   fitClassAndSpec,
   killsBefore,
+  leaderboardRole,
   performanceQuality,
   rankCharacters,
   rankScores,
   rankedClassOptions,
   rankedSpecs,
+  roleMetric,
   scoreChanges,
   scoreCharacters,
   scoresBySpec,
   scoresBySpecForKills,
-  specMetric,
   specPerformance
 } from './raid-scores';
 import { RaidBoss, RaidCharacter, RaidKillDetails, RaidSpec } from './raid-logs.types';
 import { characterKey, logKey } from './raid-logs';
 import { index, mythic, kills } from './raid-logs.fixture';
 import { LEGION_SPECS } from '../../game/wow-specs';
+import { Role } from '../../game/wow';
 
 describe('rankCharacters', () => {
   it("ranks each character's best kill, healers and tanks by healing", () => {
@@ -193,8 +195,7 @@ describe('scoreCharacters', () => {
     const scores = scoreCharacters(bosses, bossKills, 'dps');
     expect(scores.map(entry => [entry.character.name, entry.score, entry.killed])).toEqual([
       ['Best', MAX_SCORE, 4],
-      ['Example', 2090, 3],
-      ['Tank', 871, 1]
+      ['Example', 2090, 3]
     ]);
 
     const example = scores[1];
@@ -209,16 +210,37 @@ describe('scoreCharacters', () => {
     expect(bossKills.map(kills => bossStanding(kills, 'dps', key).relative)).toEqual(example.bosses.map(entry => entry.relative));
   });
 
-  it('scores healers and tanks by healing, against the best of either', () => {
-    const healingKills = [
-      [kill(0, 1, [[character('Light', 10, 2), holy, 0, 100], [character('Tank', 1, 2), protection, 500, 25], [character('Best'), fire, 1000, 900]])],
-      [kill(1, 2, [[character('Light', 10, 2), holy, 0, 100], [character('Tank', 1, 2), protection, 500, 200]])],
+  it("leaves the tanks off the DPS list, so a tank's damage never sets the best", () => {
+    const tankTopped = [[kill(0, 1, [[character('Best'), fire, 100], [character('Tank', 1, 2), protection, 400]])], [], [], []];
+    expect(scoreCharacters(bosses, tankTopped, 'dps').map(entry => [entry.character.name, entry.score])).toEqual([['Best', MAX_SCORE]]);
+  });
+
+  it('scores the tanks on DPS, against the best tank', () => {
+    const tankKills = [
+      [kill(0, 1, [
+        [character('Tank', 1, 2), protection, 500], [character('Wall', 1, 2), protection, 250],
+        [character('Best'), fire, 1000], [character('Light', 10, 2), holy, 0, 900]
+      ])],
+      [kill(1, 2, [[character('Tank', 1, 2), protection, 100], [character('Wall', 1, 2), protection, 400]])],
       [],
       []
     ];
-    expect(scoreCharacters(bosses, healingKills, 'hps').map(entry => [entry.character.name, entry.score])).toEqual([
+    expect(scoreCharacters(bosses, tankKills, 'tank').map(entry => [entry.character.name, entry.score, entry.killed])).toEqual([
+      ['Wall', Math.floor(MAX_SCORE * (.5 + 1) / 2), 2],
+      ['Tank', Math.floor(MAX_SCORE * (1 + .25) / 2), 2]
+    ]);
+  });
+
+  it('scores only the healers on HPS, against the best healer, even where a tank healed more', () => {
+    const healingKills = [
+      [kill(0, 1, [[character('Light', 10, 2), holy, 0, 100], [character('Tank', 1, 2), protection, 500, 25], [character('Best'), fire, 1000, 900]])],
+      [kill(1, 2, [[character('Light', 10, 2), holy, 0, 50], [character('Mend', 10, 2), holy, 0, 100], [character('Tank', 1, 2), protection, 500, 200]])],
+      [],
+      []
+    ];
+    expect(scoreCharacters(bosses, healingKills, 'healer').map(entry => [entry.character.name, entry.score])).toEqual([
       ['Light', Math.floor(MAX_SCORE * (1 + .5) / 2)],
-      ['Tank', Math.floor(MAX_SCORE * (.25 + 1) / 2)]
+      ['Mend', Math.floor(MAX_SCORE * (0 + 1) / 2)]
     ]);
   });
 
@@ -234,17 +256,20 @@ describe('scoreCharacters', () => {
     expect(example.spec?.name).toBe('Frost');
     expect(example.itemLevel).toBe(863);
     expect(example.faction).toBe(1);
-    expect(scores.find(entry => entry.character.name === 'Tank')?.faction).toBe(0);
+    expect(scoreCharacters(bosses, bossKills, 'tank').find(entry => entry.character.name === 'Tank')?.faction).toBe(0);
   });
 
   it('ranks the filtered rows from 1, keeping the scores', () => {
-    const scores = scoreCharacters(bosses, bossKills, 'dps');
-    expect(rankScores(scores, { classId: 2 }).map(entry => [entry.rank, entry.character.name, entry.score])).toEqual([[1, 'Tank', 871]]);
-    expect(rankScores(scores, { classId: 8 }).map(entry => entry.rank)).toEqual([1, 2]);
-    expect(rankScores(scores, { realm: 'wod' })).toEqual([]);
+    const visitor: RaidCharacter = { ...character('Visitor'), realm: 'WoD' };
+    const withVisitor = bossKills.map((kills, boss) => boss === 0 ? [...kills, kill(0, 5, [[visitor, frost, 50]])] : kills);
+    const scores = scoreCharacters(bosses, withVisitor, 'dps');
+    expect(rankScores(scores, { realm: 'wod' }).map(entry => [entry.rank, entry.character.name, entry.score]))
+      .toEqual([[1, 'Visitor', Math.floor(MAX_SCORE * .5 / 4)]]);
+    expect(rankScores(scores, { classId: 8 }).map(entry => entry.rank)).toEqual([1, 2, 3]);
+    expect(rankScores(scores, { classId: 2 })).toEqual([]);
   });
 
-  it('scores a spec on the kills played as it, against the best of any spec', () => {
+  it('scores a spec on the kills played as it, against the best of any damage spec', () => {
     const fireOnly = scoreCharacters(bosses, bossKills, 'dps', fire.id);
     expect(fireOnly.map(entry => [entry.character.name, entry.score, entry.killed])).toEqual([
       ['Best', MAX_SCORE, 4],
@@ -257,8 +282,10 @@ describe('scoreCharacters', () => {
     const former: RaidCharacter = { ...character('Example', 10, 2), former: true };
     const withFormer = bossKills.map((kills, boss) => boss === 0 ? [...kills, kill(0, 5, [[former, protection, 400]])] : kills);
 
-    expect(scoreCharacters(bosses, withFormer, 'dps').map(entry => [entry.character.name, entry.character.classId, entry.score]))
-      .toEqual([['Best', 8, 5662], ['Example', 8, 1960], ['Tank', 2, 871]]);
+    expect(scoreCharacters(bosses, withFormer, 'tank').map(entry => [entry.character.name, entry.character.classId, entry.score]))
+      .toEqual([['Tank', 2, Math.floor(MAX_SCORE / 2)]]);
+    expect(scoreCharacters(bosses, withFormer, 'dps').map(entry => [entry.character.name, entry.score]))
+      .toEqual([['Best', MAX_SCORE], ['Example', 2090]]);
     expect(rankCharacters(withFormer[0], 'dps').map(entry => entry.member.character.name)).toEqual(['Best', 'Example']);
     expect(bossStanding(withFormer[0], 'dps', characterKey(former))).toEqual({ rank: 2, ranked: 2, relative: 10 / 400 });
     expect(scoresBySpec(bosses, withFormer).get(protection)?.map(entry => entry.character.name)).toEqual(['Tank']);
@@ -271,23 +298,25 @@ describe('scoreCharacters', () => {
         ['Fire', [['Best', MAX_SCORE], ['Example', 174]]],
         ['Holy', [['Light', MAX_SCORE]]],
         ['Frost', [['Example', 1916]]],
-        ['Protection', [['Tank', 871]]]
+        ['Protection', [['Tank', MAX_SCORE]]]
       ]);
 
       for (const [spec, scores] of bySpec) {
-        const leaderboard = scoreCharacters(bosses, bossKills, specMetric(spec), spec.id);
+        const leaderboard = scoreCharacters(bosses, bossKills, spec.role, spec.id);
         expect(new Map(scores.map(entry => [entry.character.name, entry.score])))
           .toEqual(new Map(leaderboard.map(entry => [entry.character.name, entry.score])));
       }
     });
 
-    it("measures a healer against a tank's healing when the tank healed most, and the tank on damage", () => {
-      const tankHealedMost = [[kill(0, 1, [[character('Light', 10, 2), holy, 0, 100], [character('Tank', 1, 2), protection, 500, 400]])], [], [], []];
-      const bySpec = scoresBySpec(bosses, tankHealedMost);
-      expect(bySpec.get(holy)).toEqual(scoreCharacters(bosses, tankHealedMost, 'hps', holy.id)
-        .map(entry => ({ character: entry.character, score: entry.score })));
-      expect(bySpec.get(holy)?.map(entry => entry.score)).toEqual([Math.floor(MAX_SCORE * .25)]);
+    it('measures a healer against the best healer and a tank against the best tank', () => {
+      const mixed = [[kill(0, 1, [
+        [character('Light', 10, 2), holy, 0, 100], [character('Tank', 1, 2), protection, 500, 400], [character('Best'), fire, 1000]
+      ])], [], [], []];
+      const bySpec = scoresBySpec(bosses, mixed);
+      expect(bySpec.get(holy)?.map(entry => entry.score)).toEqual([MAX_SCORE]);
       expect(bySpec.get(protection)?.map(entry => entry.score)).toEqual([MAX_SCORE]);
+      expect(bySpec.get(protection)).toEqual(scoreCharacters(bosses, mixed, 'tank', protection.id)
+        .map(entry => ({ character: entry.character, score: entry.score })));
     });
 
     it("sorts one difficulty's kills by boss before scoring them", () => {
@@ -310,7 +339,7 @@ describe('scoreCharacters', () => {
 
       const everyone = specPerformance(scores);
       expect(everyone.classes.slice(0, 2).map(group => [group.className, group.score])).toEqual([
-        ['Paladin', Math.round((MAX_SCORE + 871) / 2)],
+        ['Paladin', MAX_SCORE],
         ['Mage', Math.round((MAX_SCORE + 1916) / 2)]
       ]);
       expect(everyone.characterCount).toBe(4);
@@ -331,10 +360,10 @@ describe('scoreCharacters', () => {
   });
 
   describe('since the previous scan', () => {
-    const changesWithout = (kills: RaidKillDetails[][], newKill: RaidKillDetails, bossCount = 4) => {
+    const changesWithout = (kills: RaidKillDetails[][], newKill: RaidKillDetails, bossCount = 4, role: Role = 'dps') => {
       const scored = bosses.slice(0, bossCount);
       const before = killsBefore(kills, new Set([logKey(newKill)]));
-      return scoreChanges(rankScores(scoreCharacters(scored, kills, 'dps')), rankScores(scoreCharacters(scored, before, 'dps')));
+      return scoreChanges(rankScores(scoreCharacters(scored, kills, role)), rankScores(scoreCharacters(scored, before, role)));
     };
 
     it('leaves out only the kills the previous scan did not have', () => {
@@ -357,8 +386,31 @@ describe('scoreCharacters', () => {
       const changes = changesWithout(bossKills, bossKills[3][0]);
       expect(changes.has('tauri/Best')).toBe(false);
       expect(changes.get('tauri/Example')).toEqual({ rank: 0, value: 2090 - 2787, isNew: false });
-      expect(changes.get('tauri/Tank')).toEqual({ rank: 0, value: 0, isNew: true });
+      expect(changes.has('tauri/Tank')).toBe(false);
+      expect(changesWithout(bossKills, bossKills[3][0], 4, 'tank').get('tauri/Tank')).toEqual({ rank: 0, value: 0, isNew: true });
     });
+  });
+});
+
+describe('roleMetric', () => {
+  it('measures the damage dealers and the tanks on DPS, and the healers on HPS', () => {
+    expect((['dps', 'tank', 'healer'] as const).map(roleMetric)).toEqual(['dps', 'dps', 'hps']);
+  });
+});
+
+describe('leaderboardRole', () => {
+  const [fire, holy, protection] = [63, 65, 66].map(id => index.specs.get(id)!);
+
+  it('scores healing on the Healer list', () => {
+    expect(leaderboardRole('hps', [protection, protection, fire])).toBe('healer');
+  });
+
+  it('scores damage on the list of the damage or tank spec played most, the latest on a tie', () => {
+    expect(leaderboardRole('dps', [protection, fire, protection, holy, holy, holy])).toBe('tank');
+    expect(leaderboardRole('dps', [fire, protection])).toBe('dps');
+    expect(leaderboardRole('dps', [protection, fire])).toBe('tank');
+    expect(leaderboardRole('dps', [holy])).toBe('dps');
+    expect(leaderboardRole('dps', [])).toBe('dps');
   });
 });
 

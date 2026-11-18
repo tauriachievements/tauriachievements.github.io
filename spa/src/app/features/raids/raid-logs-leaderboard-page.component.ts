@@ -21,20 +21,20 @@ import {
 } from './raid-display';
 import {
   MAX_SCORE,
-  RaidMetric,
   RankedScore,
   fitClassAndSpec,
   killsBefore,
   rankScores,
   rankedClassOptions,
   rankedSpecs,
+  roleMetric,
   scoreChanges,
   scoreCharacters
 } from './raid-scores';
 import { RaidBoss, RaidCharacter, RaidDifficulty, RaidKillDetails, RaidLogsIndex, RaidSpec } from './raid-logs.types';
 import { bossesInKillOrder, characterKey, defaultDifficulty } from './raid-logs';
 import { RaidLogsDataService } from './raid-logs-data.service';
-import { CLASS_NAMES, REALM_FILTER_OPTIONS } from '../../game/wow';
+import { CLASS_NAMES, REALM_FILTER_OPTIONS, ROLE_FILTER_LABELS, Role } from '../../game/wow';
 import { injectReplaceUrl, parseInteger, parsePage } from '../../core/url-state';
 import { LoadStateComponent } from '../../shared/load-state.component';
 import { PagerComponent } from '../../shared/pager.component';
@@ -57,10 +57,15 @@ interface BossTop {
   best?: { value: number; character: RaidCharacter };
 }
 
-const METRICS: ReadonlyArray<{ id: RaidMetric; label: string }> = [
-  { id: 'dps', label: 'DPS' },
-  { id: 'hps', label: 'HPS' }
+const ROLE_TABS: ReadonlyArray<{ id: Role; label: string; peers: string }> = [
+  { id: 'dps', label: ROLE_FILTER_LABELS.dps, peers: 'damage dealer' },
+  { id: 'tank', label: ROLE_FILTER_LABELS.tank, peers: 'tank' },
+  { id: 'healer', label: ROLE_FILTER_LABELS.healer, peers: 'healer' }
 ];
+
+function parseRole(role: string | null, legacyMetric: string | null): Role {
+  return ROLE_TABS.find(tab => tab.id === role)?.id ?? (legacyMetric === 'hps' ? 'healer' : 'dps');
+}
 
 @Component({
   selector: 'app-raid-logs-leaderboard-page',
@@ -89,7 +94,7 @@ export class RaidLogsLeaderboardPageComponent {
 
   private readonly query = this.route.snapshot.queryParamMap;
 
-  readonly metrics = METRICS;
+  readonly roleTabs = ROLE_TABS;
   readonly maxScore = MAX_SCORE;
   readonly index = signal<RaidLogsIndex | undefined>(undefined);
   readonly loaded = signal<Loaded | undefined>(undefined);
@@ -99,7 +104,9 @@ export class RaidLogsLeaderboardPageComponent {
   readonly skeleton = computed(() => (this.index() ? ROWS_SKELETON : PAGE_SKELETON));
 
   private readonly requestedDifficulty = signal(this.query.get('difficulty') ?? this.data.lastDifficulty());
-  readonly metric = signal<RaidMetric>(this.query.get('metric') === 'hps' ? 'hps' : 'dps');
+  readonly role = signal<Role>(parseRole(this.query.get('role'), this.query.get('metric')));
+  readonly metric = computed(() => roleMetric(this.role()));
+  readonly roleTab = computed(() => ROLE_TABS.find(tab => tab.id === this.role()) ?? ROLE_TABS[0]);
   readonly classFilter = signal<number | undefined>(parseInteger(this.query.get('class')));
   readonly specFilter = signal<number | undefined>(parseInteger(this.query.get('spec')));
   readonly realmFilter = signal<string | undefined>(this.query.get('realm') ?? undefined);
@@ -119,7 +126,7 @@ export class RaidLogsLeaderboardPageComponent {
   private readonly allScores = computed(() => {
     const loaded = this.loaded();
     const index = this.index();
-    return loaded && index ? scoreCharacters(index.bosses, loaded.bossKills, this.metric()) : [];
+    return loaded && index ? scoreCharacters(index.bosses, loaded.bossKills, this.role()) : [];
   });
 
   readonly scores = computed(() => {
@@ -129,7 +136,7 @@ export class RaidLogsLeaderboardPageComponent {
     if (spec === undefined) {
       return this.allScores();
     }
-    return loaded && index ? scoreCharacters(index.bosses, loaded.bossKills, this.metric(), spec) : [];
+    return loaded && index ? scoreCharacters(index.bosses, loaded.bossKills, this.role(), spec) : [];
   });
 
   private readonly ranked = computed<RankedScore[]>(() => rankScores(this.scores(), {
@@ -153,7 +160,7 @@ export class RaidLogsLeaderboardPageComponent {
     if (!previousKills || !index) {
       return new Map<string, ScanChange>();
     }
-    const previous = scoreCharacters(index.bosses, previousKills, this.metric(), this.specFilter());
+    const previous = scoreCharacters(index.bosses, previousKills, this.role(), this.specFilter());
     return scoreChanges(this.ranked(), rankScores(previous, { classId: this.classFilter(), realm: this.realmFilter() }));
   });
 
@@ -189,11 +196,11 @@ export class RaidLogsLeaderboardPageComponent {
   private readonly specs = computed<ReadonlyMap<number, RaidSpec>>(() => this.index()?.specs ?? new Map());
   private readonly guildsWithKills = computed(() => guildsWithKills(this.index()?.kills ?? []));
 
-  readonly classOptions = computed(() => rankedClassOptions(this.specs(), this.metric()));
+  readonly classOptions = computed(() => rankedClassOptions(this.specs(), this.metric(), this.role()));
 
   readonly specOptions = computed<FilterDropdownOption[]>(() => {
     const index = this.index();
-    const specs = index ? rankedSpecs(index.specs, this.classFilter(), this.metric()) : [];
+    const specs = index ? rankedSpecs(index.specs, this.classFilter(), this.metric(), this.role()) : [];
     return [{ value: undefined, label: 'All specs' }, ...specs.map(spec => ({ value: spec.id, label: spec.name, icon: spec.icon }))];
   });
 
@@ -245,18 +252,18 @@ export class RaidLogsLeaderboardPageComponent {
     }
   }
 
-  setMetric(metric: RaidMetric): void {
-    if (metric === this.metric()) {
+  setRole(role: Role): void {
+    if (role === this.role()) {
       return;
     }
-    this.metric.set(metric);
+    this.role.set(role);
     this.fitFiltersToTab();
     this.page.set(1);
     this.writeUrl();
   }
 
   private fitFiltersToTab(): void {
-    const fitted = fitClassAndSpec(this.specs(), { classId: this.classFilter(), specId: this.specFilter() }, this.metric());
+    const fitted = fitClassAndSpec(this.specs(), { classId: this.classFilter(), specId: this.specFilter() }, this.metric(), this.role());
     this.classFilter.set(fitted.classId);
     this.specFilter.set(fitted.specId);
   }
@@ -356,7 +363,7 @@ export class RaidLogsLeaderboardPageComponent {
   private writeUrl(): void {
     this.replaceUrl({
       difficulty: this.difficulty()?.slug ?? null,
-      metric: this.metric() === 'dps' ? null : this.metric(),
+      role: this.role() === 'dps' ? null : this.role(),
       class: this.classFilter() ?? null,
       spec: this.specFilter() ?? null,
       realm: this.realmFilter() ?? null,

@@ -6,13 +6,13 @@
       <div class="toolbar">
         <div class="toolbar-switches">
           <div class="view-switch" role="tablist" aria-label="Rank by" appGlide>
-            @for (entry of metrics; track entry) {
+            @for (entry of roleTabs; track entry.id) {
               <button
                 type="button"
                 role="tab"
-                [class.active]="metric() === entry.id"
-                [attr.aria-selected]="metric() === entry.id"
-                (click)="setMetric(entry.id)">{{ entry.label }}</button>
+                [class.active]="role() === entry.id"
+                [attr.aria-selected]="role() === entry.id"
+                (click)="setRole(entry.id)">{{ entry.label }}</button>
             }
           </div>
           <app-raid-difficulty-switch
@@ -89,7 +89,7 @@
           <div class="help-text">
             <p>
               On each boss, the character's best {{ metric().toUpperCase() }} is compared to the best {{ metric().toUpperCase() }}
-              anyone did on that boss. These relative performances are added together and averaged. The average then
+              any {{ roleTab().peers }} did on that boss. These relative performances are added together and averaged. The average then
               sets the score, out of an arbitrary maximum of {{ maxScore }}: the character's score is the maximum score
               times their performance.
             </p>

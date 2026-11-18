@@ -15,6 +15,7 @@ const DIFFICULTIES: RaidDifficulty[] = [
 const RESTORATION: RaidSpec = { id: 105, classId: 11, name: 'Restoration', role: 'healer' };
 const FIRE: RaidSpec = { id: 63, classId: 8, name: 'Fire', role: 'dps', range: 'ranged' };
 const FROST: RaidSpec = { id: 64, classId: 8, name: 'Frost', role: 'dps', range: 'ranged' };
+const BLOOD: RaidSpec = { id: 250, classId: 6, name: 'Blood', role: 'tank' };
 const BOSS: RaidBoss = { id: 1, slug: 'boss', name: 'Boss', shortName: 'Boss', index: 0, portrait: '' };
 
 function member(name: string, spec: RaidSpec, dps = 0): RaidMember {
@@ -154,6 +155,31 @@ describe('RaidSpecPopularityChartComponent', () => {
 
     chart.view.set('popularity');
     expect(chart.plot().groups[0].specs.map(spec => spec.spec)).toEqual(['Fire', 'Frost', 'Arcane']);
+  });
+
+  it('names the scores after the leaderboard list each role is ranked on', async () => {
+    await TestBed.configureTestingModule({ imports: [RaidSpecPopularityChartComponent], providers: [FilterDropdownCoordinatorService] }).compileComponents();
+    const fixture = TestBed.createComponent(RaidSpecPopularityChartComponent);
+    fixture.componentRef.setInput('difficulties', DIFFICULTIES);
+    fixture.componentRef.setInput('selectedDifficulty', 'normal');
+    fixture.componentRef.setInput('bosses', [BOSS]);
+    fixture.componentRef.setInput('kills', [kill(1, [member('Bulwark', BLOOD, 100), member('Spark', FIRE, 300)])]);
+    fixture.componentRef.setInput('view', 'performance');
+    fixture.detectChanges();
+    const chart = fixture.componentInstance;
+
+    chart.role.set('tank');
+    const [deathKnight] = chart.plot().groups;
+    expect(deathKnight.specs[0].valueLabel).toBe(String(MAX_SCORE));
+    expect(chart.barLabel(deathKnight.specs[0], deathKnight)).toContain(`Tank score ${MAX_SCORE}`);
+    expect(chart.subtitle()).toContain('Tank scores, averaged');
+
+    chart.role.set('healer');
+    expect(chart.subtitle()).toContain('Healer scores, averaged');
+    chart.role.set('ranged');
+    expect(chart.subtitle()).toContain('DPS scores, averaged');
+    chart.role.set(undefined);
+    expect(chart.subtitle()).toContain('leaderboard scores (DPS, Tank or Healer), averaged');
   });
 
   it('opens on the view and role it is given, and reports a click on either', async () => {
