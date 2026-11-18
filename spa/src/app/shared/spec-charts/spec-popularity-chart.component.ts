@@ -20,6 +20,6 @@ export class SpecPopularityChartComponent {
 
   barLabel(spec: PopularityBar, group: PopularityClassGroup): string {
     const total = this.popularity().total;
-    return `${spec.spec} ${group.className}: ${spec.shareLabel}, ${spec.count.toLocaleString('en-US')} of ${total.toLocaleString('en-US')} ${this.unit()}`;
+    return `${spec.spec} ${group.className}: ${spec.valueLabel}, ${spec.count.toLocaleString('en-US')} of ${total.toLocaleString('en-US')} ${this.unit()}`;
   }
 }

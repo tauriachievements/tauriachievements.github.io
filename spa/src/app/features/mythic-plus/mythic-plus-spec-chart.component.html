@@ -1,7 +1,7 @@
 <section class="chart-card" aria-labelledby="spec-chart-title">
   <header class="chart-header">
     <div class="chart-heading">
-      <h2 id="spec-chart-title">Spec Popularity@if (seasonName()) { · {{ seasonName() }}}</h2>
+      <h2 id="spec-chart-title">{{ title() }}@if (seasonName()) { · {{ seasonName() }}}</h2>
       @if (showBody()) {
         <p class="chart-subtitle">{{ subtitle() }}</p>
       }
@@ -20,7 +20,7 @@
     }
 
     @if (showBody()) {
-      <div class="chart-filters">
+      <div class="chart-filters view-at-end">
         <button
           type="button"
           class="filter-reset"
@@ -42,43 +42,54 @@
               (click)="minLevel.set(option.value)">{{ option.label }}</button>
           }
         </div>
-        <div class="segmented" role="group" aria-label="How characters are counted" appGlide>
-          @for (option of countOptions; track option) {
+        @if (view() === 'popularity') {
+          <div class="segmented" role="group" aria-label="How characters are counted" appGlide>
+            @for (option of countOptions; track option) {
+              <button
+                type="button"
+                [class.active]="countMode() === option.value"
+                [attr.aria-pressed]="countMode() === option.value"
+                (click)="countMode.set(option.value)">{{ option.label }}</button>
+            }
+          </div>
+        }
+        <div class="segmented view-filter" role="group" aria-label="Rank specs by" appGlide>
+          @for (option of viewOptions; track option.value) {
             <button
               type="button"
-              [class.active]="countMode() === option.value"
-              [attr.aria-pressed]="countMode() === option.value"
-              (click)="countMode.set(option.value)">{{ option.label }}</button>
+              [class.active]="view() === option.value"
+              [attr.aria-pressed]="view() === option.value"
+              (click)="view.set(option.value)">{{ option.label }}</button>
           }
         </div>
       </div>
     }
   </header>
 
-  @if (showBody() && popularity().total > 0) {
+  @if (showBody() && hasData()) {
     <div class="chart-scroll" id="spec-chart-body">
       <div class="chart" appReveal>
         <div class="y-axis" aria-hidden="true">
-          @for (line of gridlines(); track line) {
-            <span [style.bottom.%]="line.position">{{ line.value }}%</span>
+          @for (line of plot().gridlines; track line.value) {
+            <span [style.bottom.%]="line.position">{{ line.label }}</span>
           }
         </div>
 
-        <div class="plot" [appFlip]="groups()">
+        <div class="plot" [appFlip]="plot().groups">
           <div class="gridlines" aria-hidden="true">
-            @for (line of gridlines(); track line) {
+            @for (line of plot().gridlines; track line.value) {
               <span [style.bottom.%]="line.position"></span>
             }
           </div>
 
-          @for (group of groups(); track group.classId; let index = $index) {
+          @for (group of plot().groups; track group.classId; let index = $index) {
             <div
               class="class-group"
               [attr.data-flip]="group.classId"
               [style.--i]="index"
               [style.--class-color]="group.color"
               [class.filter-class]="isSelectedClass(group.classId)"
-              [class.flip]="index >= groups().length / 2">
+              [class.flip]="index >= plot().groups.length / 2">
               <div class="bars">
                 @for (spec of group.specs; track spec.spec; let specIndex = $index) {
                   <button
@@ -86,8 +97,9 @@
                     type="button"
                     appTapTooltip
                     [style.--s]="specIndex"
+                    [class.short-bar]="spec.heightPercent < 50"
                     [class.filter-match]="isSelectedSpec(group.classId, spec.spec)"
-                    [attr.aria-label]="'Show ' + spec.spec + ' ' + group.className + ' players: ' + spec.shareLabel + ', ' + spec.count + ' of ' + popularity().total + ' ' + unitLabel()"
+                    [attr.aria-label]="barLabel(spec, group)"
                     (click)="specSelect.emit({ classId: group.classId, spec: spec.spec })">
                     <span
                       class="bar"
@@ -96,12 +108,30 @@
                       [style.--bar]="spec.heightPercent + '%'"
                       [style.background-color]="group.color">
                       @if (spec.showValue) {
-                        <span class="bar-value">{{ spec.shareLabel }}</span>
+                        <span class="bar-value">{{ spec.valueLabel }}</span>
                       }
                       <span class="tooltip" aria-hidden="true">
-                        <strong>{{ spec.shareLabel }}</strong>
-                        <span>{{ spec.spec }} {{ group.className }}</span>
-                        <span class="tooltip-meta">{{ spec.count }} of {{ popularity().total }} {{ unitLabel() }}</span>
+                        @switch (view()) {
+                          @case ('performance') {
+                            @if (spec.count) {
+                              <strong>{{ spec.valueLabel }} <span class="tooltip-unit">score</span></strong>
+                              <span>{{ spec.spec }} {{ group.className }}</span>
+                              <span class="tooltip-meta">{{ scoreSample(spec) }}</span>
+                              @if (spec.best; as best) {
+                                <span class="tooltip-meta">Best: {{ best.member.name }}, {{ best.score | number:'1.1-1' }}</span>
+                              }
+                            } @else {
+                              <strong>-</strong>
+                              <span>{{ spec.spec }} {{ group.className }}</span>
+                              <span class="tooltip-meta">Nobody played it</span>
+                            }
+                          }
+                          @default {
+                            <strong>{{ spec.valueLabel }}</strong>
+                            <span>{{ spec.spec }} {{ group.className }}</span>
+                            <span class="tooltip-meta">{{ spec.count }} of {{ popularity().total }} {{ unitLabel() }}</span>
+                          }
+                        }
                       </span>
                     </span>
                   </button>
@@ -130,7 +160,7 @@
               <div class="class-label" [class.filter-match]="isSelectedClass(group.classId)">
                 <img [src]="group.classIcon" alt="" />
                 <span>{{ group.className }}</span>
-                <span class="class-share">{{ group.shareLabel }}</span>
+                <span class="class-share">{{ group.valueLabel }}</span>
               </div>
             </div>
           }
@@ -139,7 +169,7 @@
     </div>
   }
 
-  @if (showBody() && popularity().total === 0) {
+  @if (showBody() && !hasData()) {
     <p class="chart-empty" id="spec-chart-body">No runs match these filters yet.</p>
   }
 </section>

@@ -1,9 +1,7 @@
-import { getClassColor } from '../../game/class-colors';
-import { compareSpecLists } from '../../shared/spec-charts/spec-popularity';
-import { CLASS_FILTER_OPTIONS, CLASS_NAMES, matchesRoleFilter, raceFaction, realmSlug, RoleFilter } from '../../game/wow';
+import { SpecPerformanceSummary, summarizeSpecScores } from '../../shared/spec-charts/spec-performance';
+import { CLASS_FILTER_OPTIONS, matchesRoleFilter, raceFaction, realmSlug, RoleFilter } from '../../game/wow';
 import { FilterDropdownOption } from '../../shared/filter-dropdown.types';
 import { ScanChange, scanChanges } from '../../shared/scan-change';
-import { LEGION_SPECS, LegionSpec } from '../../game/wow-specs';
 import { RaidBoss, RaidSpec, RaidCharacter, RaidMember, RaidKillDetails } from './raid-logs.types';
 import { characterKey, logKey } from './raid-logs';
 
@@ -340,96 +338,15 @@ export function scoresBySpecForKills(
   return scoresBySpec(bosses, bosses.map(boss => kills.filter(kill => kill.boss.slug === boss.slug)));
 }
 
-export const SPEC_TOP_SCORES = 10;
-
-export function topAverage(scores: readonly number[], count: number = SPEC_TOP_SCORES): number {
-  const top = [...scores].sort((a, b) => b - a).slice(0, count);
-  return top.length ? Math.round(top.reduce((sum, score) => sum + score, 0) / top.length) : 0;
-}
-
-export interface SpecPerformance extends LegionSpec {
-  count: number;
-  score: number;
-  best?: SpecCharacterScore;
-}
-
-export interface ClassPerformance {
-  classId: number;
-  className: string;
-  color: string;
-  count: number;
-  score: number;
-  specs: SpecPerformance[];
-}
-
-export interface SpecPerformanceSummary {
-  characterCount: number;
-  classes: ClassPerformance[];
-}
-
 export function specPerformance(
   scores: ReadonlyMap<RaidSpec, readonly SpecCharacterScore[]>,
   role?: RoleFilter
-): SpecPerformanceSummary {
+): SpecPerformanceSummary<SpecCharacterScore> {
   const bySpec = new Map([...scores].map(([spec, entries]) => [`${spec.classId}|${spec.name}`, entries]));
-  const groups = new Map<number, { group: ClassPerformance; characters: Map<string, number> }>();
-  const characters = new Set<string>();
-
-  for (const definition of LEGION_SPECS) {
-    if (!matchesRoleFilter(definition, role)) {
-      continue;
-    }
-
-    let entry = groups.get(definition.classId);
-    if (!entry) {
-      entry = {
-        group: {
-          classId: definition.classId,
-          className: CLASS_NAMES[definition.classId] ?? 'Unknown',
-          color: getClassColor(definition.classId) ?? '#9a9a9a',
-          count: 0,
-          score: 0,
-          specs: []
-        },
-        characters: new Map()
-      };
-      groups.set(definition.classId, entry);
-    }
-
-    const specScores = bySpec.get(`${definition.classId}|${definition.spec}`) ?? [];
-    entry.group.specs.push({
-      ...definition,
-      count: specScores.length,
-      score: topAverage(specScores.map(score => score.score)),
-      best: specScores[0]
-    });
-
-    for (const { character, score } of specScores) {
-      const key = cachedCharacterKey(character);
-      characters.add(key);
-      entry.characters.set(key, Math.max(entry.characters.get(key) ?? 0, score));
-    }
-  }
-
-  const classes = [...groups.values()].map(({ group, characters: classCharacters }) => {
-    group.count = classCharacters.size;
-    group.score = topAverage([...classCharacters.values()]);
-    group.specs.sort((a, b) => b.score - a.score);
-    return group;
-  });
-  classes.sort((a, b) => compareSpecLists(a.specs, b.specs, spec => spec.score) || a.classId - b.classId);
-
-  return { characterCount: characters.size, classes };
-}
-
-export function scoreTicks(maxScore: number): number[] {
-  const step = [100, 200, 250, 500, 1000, 2000].find(candidate => maxScore / candidate <= 5) ?? 2000;
-  const top = Math.max(step, Math.ceil(maxScore / step) * step);
-  return Array.from({ length: top / step + 1 }, (_, index) => index * step);
-}
-
-export function formatScoreTick(score: number): string {
-  return score >= 1000 ? `${score / 1000}k` : String(score);
+  return summarizeSpecScores(
+    definition => bySpec.get(`${definition.classId}|${definition.spec}`) ?? [],
+    entry => cachedCharacterKey(entry.character),
+    role);
 }
 
 export interface ScoreFilter {

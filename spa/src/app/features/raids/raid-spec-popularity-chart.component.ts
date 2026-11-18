@@ -1,48 +1,18 @@
 import { DecimalPipe } from '@angular/common';
 import { ChangeDetectionStrategy, Component, computed, input, model, output } from '@angular/core';
-import { getClassIconPath } from '../../game/classIconHelper';
 import { FlipDirective } from '../../shared/motion/flip.directive';
 import { GlideDirective } from '../../shared/motion/glide.directive';
-import { formatShare, shareTicks, specPopularity } from '../../shared/spec-charts/spec-popularity';
+import { SpecChart, SpecChartBar, SpecChartGroup, popularityChart, specPopularity } from '../../shared/spec-charts/spec-popularity';
+import { CHART_VIEWS, ChartView, SPEC_TOP_SCORES, describeScoreSample, performanceChart } from '../../shared/spec-charts/spec-performance';
 import { RaidBoss, RaidDifficulty, RaidKillDetails } from './raid-logs.types';
 import { ROLE_FILTER_LABELS, RoleFilter } from '../../game/wow';
 import { RoleFilterComponent } from '../../shared/role-filter.component';
-import {
-  SPEC_TOP_SCORES,
-  SpecCharacterScore,
-  formatScoreTick,
-  scoreTicks,
-  scoresBySpecForKills,
-  specPerformance
-} from './raid-scores';
+import { SpecCharacterScore, scoresBySpecForKills, specPerformance } from './raid-scores';
 import { RevealDirective } from '../../shared/motion/reveal.directive';
 import { SkeletonComponent } from '../../shared/skeleton.component';
 import { TapTooltipDirective } from '../../shared/tap-tooltip.directive';
-import { SpecDefinition } from '../../game/wow-specs';
 
-interface SpecBar extends SpecDefinition {
-  count: number;
-  value: number;
-  heightPercent: number;
-  valueLabel: string;
-  showValue: boolean;
-  best?: SpecCharacterScore;
-}
-
-interface ClassGroup {
-  classId: number;
-  className: string;
-  color: string;
-  classIcon: string;
-  valueLabel: string;
-  specs: SpecBar[];
-}
-
-export type ChartView = 'popularity' | 'performance';
-
-export function parseChartView(value: string | null | undefined): ChartView {
-  return value === 'performance' ? 'performance' : 'popularity';
-}
+type SpecBar = SpecChartBar<SpecCharacterScore>;
 
 @Component({
   selector: 'app-raid-spec-popularity-chart',
@@ -67,10 +37,7 @@ export class RaidSpecPopularityChartComponent {
   readonly difficultyChange = output<string>();
   readonly retry = output<void>();
 
-  readonly viewOptions: ReadonlyArray<{ value: ChartView; label: string }> = [
-    { value: 'popularity', label: 'Popularity' },
-    { value: 'performance', label: 'Performance' }
-  ];
+  readonly viewOptions = CHART_VIEWS;
   readonly view = model<ChartView>('popularity');
 
   readonly role = model<RoleFilter>();
@@ -102,56 +69,8 @@ export class RaidSpecPopularityChartComponent {
   readonly hasData = computed(() =>
     this.view() === 'performance' ? this.performance().characterCount > 0 : this.popularity().total > 0);
 
-  private readonly ticks = computed(() => {
-    if (this.view() === 'performance') {
-      return scoreTicks(Math.max(0, ...this.performance().classes.flatMap(group => group.specs.map(spec => spec.score))));
-    }
-    return shareTicks(Math.max(0, ...this.popularity().classes.flatMap(group => group.specs.map(spec => spec.share))));
-  });
-
-  readonly gridlines = computed(() => {
-    const ticks = this.ticks();
-    const top = ticks[ticks.length - 1];
-    const performance = this.view() === 'performance';
-    return ticks.map(value => ({ position: (value / top) * 100, label: performance ? formatScoreTick(value) : `${value}%` }));
-  });
-
-  readonly groups = computed<ClassGroup[]>(() => {
-    const ticks = this.ticks();
-    const top = ticks[ticks.length - 1];
-
-    if (this.view() === 'performance') {
-      return this.performance().classes.map(group => ({
-        classId: group.classId,
-        className: group.className,
-        color: group.color,
-        classIcon: getClassIconPath(group.classId),
-        valueLabel: group.count ? String(group.score) : '-',
-        specs: group.specs.map((spec, index) => ({
-          ...spec,
-          value: spec.score,
-          heightPercent: (spec.score / top) * 100,
-          valueLabel: String(spec.score),
-          showValue: index === 0 && spec.count > 0
-        }))
-      }));
-    }
-
-    return this.popularity().classes.map(group => ({
-      classId: group.classId,
-      className: group.className,
-      color: group.color,
-      classIcon: getClassIconPath(group.classId),
-      valueLabel: formatShare(group.share),
-      specs: group.specs.map((spec, index) => ({
-        ...spec,
-        value: spec.share,
-        heightPercent: (spec.share * 100 / top) * 100,
-        valueLabel: formatShare(spec.share),
-        showValue: index === 0 && spec.count > 0
-      }))
-    }));
-  });
+  readonly plot = computed<SpecChart<SpecBar>>(() =>
+    this.view() === 'performance' ? performanceChart(this.performance()) : popularityChart(this.popularity()));
 
   readonly selectedDifficultyName = computed(() =>
     this.difficulties().find(difficulty => difficulty.slug === this.selectedDifficulty())?.name
@@ -195,15 +114,10 @@ export class RaidSpecPopularityChartComponent {
   }
 
   scoreSample(spec: SpecBar): string {
-    if (spec.count === 1) {
-      return 'Only 1 character';
-    }
-    return spec.count > SPEC_TOP_SCORES
-      ? `Average of the top ${SPEC_TOP_SCORES} of ${spec.count.toLocaleString('en-US')} characters`
-      : `Average of all ${spec.count} characters`;
+    return describeScoreSample(spec.count);
   }
 
-  barLabel(spec: SpecBar, group: ClassGroup): string {
+  barLabel(spec: SpecBar, group: SpecChartGroup<SpecBar>): string {
     const name = `${spec.spec} ${group.className}`;
     if (this.view() === 'performance') {
       return spec.count

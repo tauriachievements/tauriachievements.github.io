@@ -31,6 +31,12 @@
 
 .chart-filters { display: flex; flex-wrap: wrap; align-items: stretch; gap: 8px; }
 
+.chart-filters.view-at-end {
+  flex: 1 1 auto;
+
+  .view-filter { margin-left: auto; }
+}
+
 .role-slot { flex: none; min-width: 200px; }
 
 .filter-reset {
@@ -112,4 +118,5 @@
   .role-slot { flex: 1 1 100%; }
   .filter-reset { order: 1; min-height: 40px; }
   .filter-reset:disabled { display: none; }
+  .view-at-end .view-filter { order: -1; }
 }

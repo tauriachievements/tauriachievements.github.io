@@ -351,6 +351,28 @@ decision: ask first.** When a rule does change, change its tests first and see t
 - **Tests:** `spec-popularity.spec.ts`, `race-popularity.spec.ts`, `arena-stats.spec.ts`,
   `arena-stats-page.component.spec.ts`.
 
+## Mythic+ spec performance
+
+- **Code:** `rankPlayersBySpec` in `spa/src/app/features/mythic-plus/mythic-plus.ts`;
+  `summarizeSpecScores` and `topAverage` in `spa/src/app/shared/spec-charts/spec-performance.ts`.
+- The Performance switch on the leaderboard's spec chart (`/mythic-plus`) ranks specs by the
+  leaderboard score. Every character gets the [player score](#mythic) for each spec they
+  played, worked out as if that class and spec were picked on the leaderboard: the best run per
+  dungeon played as that spec, summed. `rankPlayersBySpec` shares `rankPlayers`' tally, so the
+  two can't disagree. A spec's performance is the average of its best `SPEC_TOP_SCORES` (10)
+  scores, rounded to a whole number, or of all of them when it has fewer, and 0 when nobody
+  played it, the same rule as the [raids](#raid-spec-performance). A class shows the same
+  average over each of its characters' best spec.
+- It follows the chart's scope: the season or This week, all dungeons or the one picked, the
+  role and the minimum key level. A minimum key level scores only the keys at or above it. The
+  count switch (All runs / Unique characters) is popularity's alone, so Performance hides it,
+  and Reset ignores it while hidden.
+- Clicking a bar opens the leaderboard's players with that class and spec picked, ranked by
+  the same scores the bar averages.
+- The switch isn't kept in the URL, like the chart's key level and count switches.
+- **Tests:** `mythic-plus.spec.ts` (`rankPlayersBySpec`), `spec-performance.spec.ts`,
+  `mythic-plus-spec-chart.component.spec.ts`.
+
 ## Raid leaderboard
 
 - **Code:** `scoreCharacters` / `rankScores` in `spa/src/app/features/raids/raid-scores.ts`.
@@ -577,9 +599,12 @@ decision: ask first.** When a rule does change, change its tests first and see t
 ## Raid spec performance
 
 
-- **Code:** `scoresBySpec` (`scoresBySpecForKills` takes one difficulty's kills), `topAverage`
-  and `specPerformance` in `spa/src/app/features/raids/raid-scores.ts`; `sortByPerformance` in
-  `spa/src/app/features/raids/raid-analytics.ts`.
+- **Code:** `scoresBySpec` (`scoresBySpecForKills` takes one difficulty's kills) and
+  `specPerformance` in `spa/src/app/features/raids/raid-scores.ts`; `sortByPerformance` in
+  `spa/src/app/features/raids/raid-analytics.ts`. The averaging and the class order are
+  `topAverage`, `SPEC_TOP_SCORES` and `summarizeSpecScores` in
+  `spa/src/app/shared/spec-charts/spec-performance.ts`, which the
+  [Mythic+ chart](#mythic-spec-performance) shares.
 - Every character gets the raid leaderboard score for each spec they played, as if that spec
   were picked on the leaderboard: HPS for a healer, DPS for everyone else, tanks too
   (`specMetric`). A healer's share of a boss is of the best HPS there, a tank's included, as on
@@ -594,7 +619,7 @@ decision: ask first.** When a rule does change, change its tests first and see t
   - Talent Analytics and Trinket Analytics list each role's specs by it, best first. A tie keeps
     the game's order, the order is the same whichever boss is picked, and a picked class shows
     its specs in the game's order instead.
-- **Tests:** `raid-scores.spec.ts`, `raid-analytics.spec.ts`.
+- **Tests:** `raid-scores.spec.ts`, `raid-analytics.spec.ts`, `spec-performance.spec.ts`.
 
 ## Raid spec tier list
 

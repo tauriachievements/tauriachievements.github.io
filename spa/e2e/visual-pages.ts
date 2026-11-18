@@ -93,6 +93,13 @@ export const VISUAL_PAGES: readonly VisualPage[] = [
   { name: 'state-mythic-plus-dropdown', path: '/mythic-plus?view=players', clicks: ['#mythicPlusRealmTrigger'], only: 'desktop' },
   { name: 'state-mythic-plus-role-menu', path: '/mythic-plus?view=players&role=melee', clicks: ['#mythicPlusRoleTrigger'] },
   { name: 'state-mythic-plus-chart-role', path: '/mythic-plus?chartRole=ranged', only: 'desktop' },
+  { name: 'state-mythic-plus-chart-performance', path: '/mythic-plus', clicks: ['.view-filter button:has-text("Performance")'], only: 'desktop' },
+  {
+    name: 'state-mythic-plus-chart-performance-phone',
+    path: '/mythic-plus',
+    clicks: ['.chart-toggle', '.view-filter button:has-text("Performance")'],
+    only: 'phone'
+  },
   { name: 'state-mythic-plus-filters-open', path: '/mythic-plus?view=players', clicks: ['.mobile-filter-toggle'], only: 'phone' },
   { name: 'state-mythic-plus-guild-week', path: '/mythic-plus/guild/evermoon/Miracle?period=week&role=healer' },
   { name: 'state-mythic-plus-guild-role-menu', path: '/mythic-plus/guild/evermoon/Miracle?role=ranged', clicks: ['#guildLadderRoleTrigger'] },

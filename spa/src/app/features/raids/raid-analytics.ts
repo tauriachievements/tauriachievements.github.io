@@ -1,6 +1,7 @@
 import { RaidBoss, RaidCharacter, RaidKillDetails, RaidMember, RaidSpec } from './raid-logs.types';
 import { RoleFilter, matchesRoleFilter } from '../../game/wow';
-import { SpecCharacterScore, specMetric, topAverage } from './raid-scores';
+import { SpecCharacterScore, specMetric } from './raid-scores';
+import { topAverage } from '../../shared/spec-charts/spec-performance';
 import { characterKey } from './raid-logs';
 
 const TOP_SHARE = 0.1;

@@ -3,7 +3,6 @@ import {
   MAX_SCORE,
   bossStanding,
   fitClassAndSpec,
-  formatScoreTick,
   killsBefore,
   performanceQuality,
   rankCharacters,
@@ -12,12 +11,10 @@ import {
   rankedSpecs,
   scoreChanges,
   scoreCharacters,
-  scoreTicks,
   scoresBySpec,
   scoresBySpecForKills,
   specMetric,
-  specPerformance,
-  topAverage
+  specPerformance
 } from './raid-scores';
 import { RaidBoss, RaidCharacter, RaidKillDetails, RaidSpec } from './raid-logs.types';
 import { characterKey, logKey } from './raid-logs';
@@ -330,19 +327,6 @@ describe('scoreCharacters', () => {
       expect(melee.characterCount).toBe(0);
       expect(melee.classes.map(group => group.className)).toContain('Rogue');
       expect(melee.classes.map(group => group.className)).not.toContain('Mage');
-    });
-
-    it('averages the best scores only, or all of them when there are fewer', () => {
-      expect(topAverage([1, 5, 3], 2)).toBe(4);
-      expect(topAverage([5, 2])).toBe(4);
-      expect(topAverage([])).toBe(0);
-    });
-
-    it('draws clean score gridlines', () => {
-      expect(scoreTicks(5368)).toEqual([0, 2000, 4000, 6000]);
-      expect(scoreTicks(2400)).toEqual([0, 500, 1000, 1500, 2000, 2500]);
-      expect(scoreTicks(0)).toEqual([0, 100]);
-      expect([0, 500, 1000, 2500].map(formatScoreTick)).toEqual(['0', '500', '1k', '2.5k']);
     });
   });
 

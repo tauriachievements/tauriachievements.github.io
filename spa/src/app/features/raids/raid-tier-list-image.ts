@@ -1,5 +1,5 @@
 import { DIFFICULTY_COLORS } from './raid-display';
-import { SPEC_TOP_SCORES } from './raid-scores';
+import { SPEC_TOP_SCORES } from '../../shared/spec-charts/spec-performance';
 import { FEW_PLAYERS, RoleTierList, TierSpec, describeTiers } from './raid-tier-list';
 
 export interface TierListImageInfo {

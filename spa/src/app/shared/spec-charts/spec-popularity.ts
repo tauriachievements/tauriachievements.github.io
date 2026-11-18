@@ -106,42 +106,54 @@ export function specPopularity(
   return { total, runCount: runs.length, classes };
 }
 
-export interface PopularityBar extends SpecShare {
+export interface SpecChartBar<T = never> extends SpecDefinition {
+  count: number;
   heightPercent: number;
-  shareLabel: string;
+  valueLabel: string;
   showValue: boolean;
+  best?: T;
 }
 
-export interface PopularityClassGroup extends Omit<ClassShare, 'specs'> {
+export interface SpecChartGroup<B extends SpecChartBar<unknown>> {
+  classId: number;
+  className: string;
+  color: string;
   classIcon: string;
-  shareLabel: string;
-  specs: PopularityBar[];
+  valueLabel: string;
+  specs: B[];
 }
 
-export interface PopularityGridline {
+export interface SpecChartGridline {
   value: number;
   position: number;
+  label: string;
 }
 
-export interface PopularityChart {
-  gridlines: PopularityGridline[];
-  groups: PopularityClassGroup[];
+export interface SpecChart<B extends SpecChartBar<unknown>> {
+  gridlines: SpecChartGridline[];
+  groups: SpecChartGroup<B>[];
 }
 
-export function popularityChart(popularity: SpecPopularity): PopularityChart {
+export interface PopularityBar extends SpecShare, SpecChartBar {}
+
+export type PopularityClassGroup = SpecChartGroup<PopularityBar>;
+
+export function popularityChart(popularity: SpecPopularity): SpecChart<PopularityBar> {
   const ticks = shareTicks(Math.max(0, ...popularity.classes.flatMap(group => group.specs.map(spec => spec.share))));
   const topPercent = ticks[ticks.length - 1];
 
   return {
-    gridlines: ticks.map(value => ({ value, position: (value / topPercent) * 100 })),
+    gridlines: ticks.map(value => ({ value, position: (value / topPercent) * 100, label: `${value}%` })),
     groups: popularity.classes.map(group => ({
-      ...group,
+      classId: group.classId,
+      className: group.className,
+      color: group.color,
       classIcon: getClassIconPath(group.classId),
-      shareLabel: formatShare(group.share),
+      valueLabel: formatShare(group.share),
       specs: group.specs.map((spec, index) => ({
         ...spec,
         heightPercent: (spec.share * 100 / topPercent) * 100,
-        shareLabel: formatShare(spec.share),
+        valueLabel: formatShare(spec.share),
         showValue: index === 0 && spec.count > 0
       }))
     }))

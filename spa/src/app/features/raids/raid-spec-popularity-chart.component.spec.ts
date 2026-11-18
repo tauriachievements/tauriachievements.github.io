@@ -2,7 +2,7 @@ import { TestBed } from '@angular/core/testing';
 import { describe, expect, it } from 'vitest';
 import { MAX_SCORE } from './raid-scores';
 import { RaidBoss, RaidDifficulty, RaidKillDetails, RaidMember, RaidSpec } from './raid-logs.types';
-import { RaidSpecPopularityChartComponent, parseChartView } from './raid-spec-popularity-chart.component';
+import { RaidSpecPopularityChartComponent } from './raid-spec-popularity-chart.component';
 import { RoleFilter } from '../../game/wow';
 import { FilterDropdownCoordinatorService } from '../../shared/filter-dropdown-coordinator.service';
 
@@ -142,7 +142,7 @@ describe('RaidSpecPopularityChartComponent', () => {
       kill(1, [member('Spark', FIRE, 100), member('Ember', FIRE, 50), member('Chill', FROST, 80)])
     ]);
     chart.role.set('dps');
-    const mage = chart.groups()[0];
+    const mage = chart.plot().groups[0];
     expect(mage.className).toBe('Mage');
     expect(mage.specs.map(spec => [spec.spec, spec.valueLabel])).toEqual([
       ['Frost', String(Math.floor(MAX_SCORE * .8))],
@@ -150,10 +150,10 @@ describe('RaidSpecPopularityChartComponent', () => {
       ['Arcane', '0']
     ]);
     expect(chart.subtitle()).toContain('3 characters');
-    expect(chart.gridlines().map(line => line.label)).toEqual(['0', '2k', '4k', '6k']);
+    expect(chart.plot().gridlines.map(line => line.label)).toEqual(['0', '2k', '4k', '6k']);
 
     chart.view.set('popularity');
-    expect(chart.groups()[0].specs.map(spec => spec.spec)).toEqual(['Fire', 'Frost', 'Arcane']);
+    expect(chart.plot().groups[0].specs.map(spec => spec.spec)).toEqual(['Fire', 'Frost', 'Arcane']);
   });
 
   it('opens on the view and role it is given, and reports a click on either', async () => {
@@ -180,12 +180,5 @@ describe('RaidSpecPopularityChartComponent', () => {
       .find(option => option.textContent?.trim() === 'Ranged DPS')!.click();
     expect(views).toEqual(['popularity']);
     expect(roles).toEqual(['ranged']);
-  });
-});
-
-describe('parseChartView', () => {
-  it('reads the address bar, falling back to Popularity', () => {
-    expect(['performance', 'popularity', 'nonsense', null].map(parseChartView))
-      .toEqual(['performance', 'popularity', 'popularity', 'popularity']);
   });
 });
