@@ -1,6 +1,6 @@
-{"version":4,"generatedAt":"2026-11-18T13:06:05Z","previousGeneratedAt":"2026-11-18T07:33:01Z","raid":{"id":1520,"slug":"emerald-nightmare","name":"The Emerald Nightmare"},"difficulties":[
+{"version":4,"generatedAt":"2026-11-18T17:05:51Z","previousGeneratedAt":"2026-11-18T13:06:05Z","raid":{"id":1520,"slug":"emerald-nightmare","name":"The Emerald Nightmare"},"difficulties":[
 {"id":17,"slug":"lfr","name":"Looking For Raid","shortName":"LFR","kills":0},
-{"id":14,"slug":"normal","name":"Normal","shortName":"N","kills":6006},
+{"id":14,"slug":"normal","name":"Normal","shortName":"N","kills":6009},
 {"id":15,"slug":"heroic","name":"Heroic","shortName":"HC","kills":6943},
 {"id":16,"slug":"mythic","name":"Mythic","shortName":"M","kills":1015}],"bosses":[
 {"id":1853,"slug":"nythendra","name":"Nythendra"},
@@ -14162,14 +14162,13 @@
 ["Tauri",1927677,2,14,1794992765,164712,-1,1,0,4,20],
 ["Tauri",1927713,1,14,1794996466,233319,-1,1,0,0,19],
 ["Tauri",1927741,5,14,1794996911,176384,-1,1,0,9,20],
-["Tauri",1927774,6,14,1794997395,239418,-1,1,0,3,20]],"newLogs":[
-["Tauri",1927583],
-["Tauri",1927626],
-["Tauri",1927654],
-["Tauri",1927677],
-["Tauri",1927713],
-["Tauri",1927741],
-["Tauri",1927774]],"invalidLogs":[
+["Tauri",1927774,6,14,1794997395,239418,-1,1,0,3,20],
+["Tauri",1930507,0,14,1795019081,170319,1,1,0,3,21],
+["Tauri",1930630,3,14,1795019933,124522,1,1,3,1,22],
+["Tauri",1930683,4,14,1795020366,167163,1,1,0,0,23]],"newLogs":[
+["Tauri",1930507],
+["Tauri",1930630],
+["Tauri",1930683]],"invalidLogs":[
 ["Tauri",1565371,"Invalid log. Reason: Warlock Enslave Demon on Taintheart Tormenter"],
 ["Tauri",1684227,"Invalid log. Reason: Warlock Enslave Demon on Taintheart Tormenter"],
 ["Tauri",1684463,"Invalid log. Reason: Warlock Enslave Demon on Taintheart Tormenter"],
