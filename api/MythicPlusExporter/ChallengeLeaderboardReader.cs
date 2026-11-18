@@ -11,7 +11,9 @@ public sealed record ChallengeLeaderboards(
 
 public sealed class ChallengeLeaderboardReader(
     ITauriApiClient apiClient,
-    TextWriter? progress = null
+    TextWriter? progress = null,
+    int retryRounds = 0,
+    TimeSpan retryPause = default
 )
 {
     private const string IndexEndpoint = "challenge-index";
@@ -58,12 +60,51 @@ public sealed class ChallengeLeaderboardReader(
     )
     {
         var runsByChallengeId = new ConcurrentDictionary<int, IReadOnlyList<ChallengeRun>>();
-        var failures = new ConcurrentBag<string>();
+        var failures = await ReadRoundAsync(
+            index.Maps,
+            realms,
+            runsByChallengeId,
+            cancellationToken
+        );
+
+        for (var round = 1; round <= retryRounds && failures.Count > 0; round++)
+        {
+            _progress.WriteLine(
+                MythicPlusConsoleReport.RetryingLeaderboards(
+                    failures.Count,
+                    round,
+                    retryRounds,
+                    retryPause
+                )
+            );
+            await Task.Delay(retryPause, cancellationToken);
+            failures = await ReadRoundAsync(
+                [.. failures.Select(failure => failure.Map)],
+                realms,
+                runsByChallengeId,
+                cancellationToken
+            );
+        }
+
+        return new ChallengeLeaderboards(
+            runsByChallengeId,
+            [.. failures.Select(failure => failure.Message).Order(StringComparer.Ordinal)]
+        );
+    }
+
+    private async Task<List<(ChallengeMap Map, string Message)>> ReadRoundAsync(
+        IReadOnlyList<ChallengeMap> maps,
+        IReadOnlyList<string> realms,
+        ConcurrentDictionary<int, IReadOnlyList<ChallengeRun>> runsByChallengeId,
+        CancellationToken cancellationToken
+    )
+    {
+        var failures = new ConcurrentDictionary<int, string>();
         var progressLock = new Lock();
         var finished = 0;
 
         await Parallel.ForEachAsync(
-            index.Maps,
+            maps,
             new ParallelOptions
             {
                 MaxDegreeOfParallelism = MaxParallelLeaderboards,
@@ -81,7 +122,7 @@ public sealed class ChallengeLeaderboardReader(
                 }
                 else
                 {
-                    failures.Add(failure);
+                    failures[map.ChallengeId] = failure;
                 }
 
                 lock (progressLock)
@@ -91,14 +132,14 @@ public sealed class ChallengeLeaderboardReader(
                         failure is null
                             ? MythicPlusConsoleReport.LeaderboardRead(
                                 finished,
-                                index.Maps.Count,
+                                maps.Count,
                                 map.Name,
                                 runs.Count,
                                 elapsed
                             )
                             : MythicPlusConsoleReport.LeaderboardFailed(
                                 finished,
-                                index.Maps.Count,
+                                maps.Count,
                                 map.Name,
                                 elapsed
                             )
@@ -107,10 +148,11 @@ public sealed class ChallengeLeaderboardReader(
             }
         );
 
-        return new ChallengeLeaderboards(
-            runsByChallengeId,
-            [.. failures.Order(StringComparer.Ordinal)]
-        );
+        return
+        [
+            .. maps.Where(map => failures.ContainsKey(map.ChallengeId))
+                .Select(map => (map, failures[map.ChallengeId])),
+        ];
     }
 
     private async Task<(List<ChallengeRun> Runs, string? Failure)> ReadLeaderboardAsync(

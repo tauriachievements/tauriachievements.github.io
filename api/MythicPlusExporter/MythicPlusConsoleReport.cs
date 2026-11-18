@@ -39,6 +39,11 @@ public static class MythicPlusConsoleReport
         TimeSpan elapsed
     ) => $"{Counter(position, total)}{dungeon, -DungeonWidth} failed after {Duration(elapsed)}";
 
+    public static string RetryingLeaderboards(int count, int round, int rounds, TimeSpan pause) =>
+        Invariant(
+            $"Retrying {count} failed {(count == 1 ? "leaderboard" : "leaderboards")} in {Duration(pause)} (round {round} of {rounds})..."
+        );
+
     public static IReadOnlyList<string> Summary(MythicPlusExportResult result, string repoRoot)
     {
         var dataset = result.Dataset;

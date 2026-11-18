@@ -84,6 +84,11 @@ response first.
   season, and run the exporter with `--allow-shrink`.
 - Observed 2026-10-05: `medal` matches the timer cutoffs exactly (a bronze time equals the
   timer).
+- A single dungeon's `challenge-leaderboard` can stop answering for a while while the others
+  answer. On 2026-11-18 at 08:03 Evermoon's Eye of Azshara and Darkheart Thicket timed out on
+  all 8 tries (5m 38s each), and Halls of Valor took 5m 24s; the 00:01 daily update had failed
+  on the same step. The exporter reads failed leaderboards again in later rounds
+  ([data-pipeline.md](data-pipeline.md#publishing-safety)).
 
 ## Raid logs (`raid-rank-encounter`, `raid-log`)
 

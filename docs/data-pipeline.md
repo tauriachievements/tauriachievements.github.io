@@ -71,10 +71,15 @@ So a night's run is one commit and one Pages deploy, the guild pages included.
 - The commit message must stay exactly `sync data`: `discord-on-push.yml` matches on it. The
   commit uses `git commit --only` on the publish paths, so unrelated staged work never rides
   along.
-- `GuildAnalysis` is the one step that doesn't stop the run. A guild whose scan fails is named
-  in the log and keeps its last file (the exporter writes through `AtomicFile`), and the rest
-  of the night's data still goes out. `-From GuildAnalysis` scans every guild again and
-  publishes, as `sync data` like any run.
+- `MythicPlus` and `GuildAnalysis` are the steps that don't stop the run. When MythicPlus fails
+  for any reason (a leaderboard that never answered, the shrink check, a crash), the log says
+  so in yellow, `spa/src/mythic-plus-data` is left out of the night's commit so the site keeps
+  the last export, and the run goes on with `RaidLogs`. The end of the log repeats it and
+  names `Run-MythicPlus.cmd` to refresh Mythic+ on its own. A step that should behave the same
+  gets an `OnFailure` entry in `$steps`: the path to leave out and the script that refreshes it.
+- A guild whose scan fails is named in the log and keeps its last file (the exporter writes
+  through `AtomicFile`), and the rest of the night's data still goes out. `-From GuildAnalysis`
+  scans every guild again and publishes, as `sync data` like any run.
 - The script turns off the console's QuickEdit mode: in a classic console window a stray click
   starts a text selection that freezes every program writing to the window until Esc is
   pressed.
@@ -83,7 +88,9 @@ So a night's run is one commit and one Pages deploy, the guild pages included.
 - Retry queues (`MissingGuildsToScan.txt`, `MissingPlayersToScan.txt`) and run logs live in the
   git-ignored `api/.work/`.
 - `MythicPlusNames` and `RaidLogNames` don't fail over a leaderboard or character sheet that
-  didn't load. They only add names, so they warn, and the next run catches up.
+  didn't load. They only add names, so they warn, and the next run catches up. MythicPlusNames
+  reads each leaderboard once, without the export's retry rounds ([below](#publishing-safety)):
+  right after an export that gave up on a leaderboard, more rounds would only wait on it again.
 - `MissingPlayers` works in rounds and stops once a round resolves nobody: characters gone from
   the realm fail every time. A character already in Players.csv only gets its rare achievements
   refreshed, which needs `character-achievements` alone.
@@ -96,7 +103,8 @@ So a night's run is one commit and one Pages deploy, the guild pages included.
   order: `sync mythic plus, raid logs and arena data`, `sync raid logs and arena data`,
   `sync arena data`, and so on. It takes no arguments: `--allow-shrink` and `--full` go
   through the single scripts.
-- QuickUpdate prints only a heading per export, each dungeon's leaderboard as it is read, and
+- QuickUpdate prints only a heading per export, each dungeon's leaderboard as it is read (and
+  each retry round, [below](#publishing-safety)), and
   at the end how long the three took and what each added (`QuickUpdateReport`): new Mythic+ runs
   (the change in the run count), new raid logs (kills missing from the last export's boss files,
   split by difficulty), and per arena bracket the change in games played (each listed player's
@@ -126,7 +134,13 @@ On top of that:
   compared with the last commit. That usually means the API was unstable.
 - MythicPlusExporter and RaidLogExporter refuse to write when the run or kill count shrinks by
   more than 2%. Pass `--allow-shrink` when the drop is real, such as a new season.
-- MythicPlusExporter writes nothing unless it read every leaderboard.
+- MythicPlusExporter writes nothing unless it read every leaderboard. `ITauriApiClient` already
+  tries each request 8 times (about 5½ minutes when every try times out); a leaderboard that
+  still fails is read again once the others are done, in up to 3 more rounds a minute apart,
+  only the ones still failing each time (`ChallengeLeaderboardReader`,
+  `MythicPlusExportService.LeaderboardRetryRounds`). So a dead leaderboard costs the export up
+  to about 25 minutes before it gives up. This holds for the daily update, `Run-MythicPlus.cmd`
+  and `Run-QuickUpdate.cmd` alike.
 - MythicPlusExporter and RaidLogExporter write the dungeon or boss files first and `index.json`
   last: the index is what makes new dungeons and kills visible.
 - ArenaLadderExporter writes nothing unless it read both brackets' ladders. It refuses to

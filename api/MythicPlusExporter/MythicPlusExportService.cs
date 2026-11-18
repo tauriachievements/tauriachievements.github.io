@@ -20,12 +20,21 @@ internal sealed record PreviousMythicPlusSnapshot(
 public sealed class MythicPlusExportService(
     string outputDirectory,
     ITauriApiClient apiClient,
-    TimeProvider? timeProvider = null
+    TimeProvider? timeProvider = null,
+    TimeSpan? retryPause = null
 )
 {
+    public const int LeaderboardRetryRounds = 3;
+
     private const double MaxShrinkFraction = 0.02;
 
-    private readonly ChallengeLeaderboardReader _reader = new(apiClient);
+    private static readonly TimeSpan DefaultRetryPause = TimeSpan.FromMinutes(1);
+
+    private readonly ChallengeLeaderboardReader _reader = new(
+        apiClient,
+        retryRounds: LeaderboardRetryRounds,
+        retryPause: retryPause ?? DefaultRetryPause
+    );
     private readonly TimeProvider _timeProvider = timeProvider ?? TimeProvider.System;
 
     public async Task<MythicPlusExportResult> ExportAsync(
@@ -44,7 +53,7 @@ public sealed class MythicPlusExportService(
         if (leaderboards.Failures.Count > 0)
         {
             throw new InvalidOperationException(
-                "Could not read every leaderboard, nothing was written:"
+                $"Could not read every leaderboard, even after {LeaderboardRetryRounds} more tries. Nothing was written:"
                     + Environment.NewLine
                     + string.Join(Environment.NewLine, leaderboards.Failures)
             );

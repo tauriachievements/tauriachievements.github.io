@@ -4,7 +4,7 @@
 
 .DESCRIPTION
     Builds the solution once, then runs each job in order and stops at the first failure
-    (GuildAnalysis only warns):
+    (MythicPlus and GuildAnalysis only warn; a failed MythicPlus is left out of the commit):
       MythicPlus       MythicPlusExporter       -> spa/src/mythic-plus-data (the /mythic-plus leaderboards)
       RaidLogs         RaidLogExporter          -> spa/src/raid-log-data (the /raid-logs pages)
       MythicPlusNames  MythicPlusGuildAndCharScan -> new guilds, guildless characters from M+ runs
@@ -66,7 +66,7 @@ $guildAnalysisGuilds = @(
 )
 
 $steps = @(
-    @{ Name = 'MythicPlus'; Project = 'MythicPlusExporter' },
+    @{ Name = 'MythicPlus'; Project = 'MythicPlusExporter'; OnFailure = @{ LeaveOut = 'spa/src/mythic-plus-data'; RefreshWith = 'Run-MythicPlus.cmd' } },
     @{ Name = 'RaidLogs'; Project = 'RaidLogExporter' },
     @{ Name = 'MythicPlusNames'; Project = 'MythicPlusGuildAndCharScan' },
     @{ Name = 'RaidLogNames'; Project = 'RaidLogGuildAndCharScan' },
@@ -191,6 +191,7 @@ if ($startIndex -lt $steps.Count) {
     }
 }
 
+$skippedSteps = @()
 for ($i = $startIndex; $i -lt $steps.Count; $i++) {
     $step = $steps[$i]
     Write-Log "=== [$($i + 1)/$($steps.Count)] $($step.Name): $($step.Project) ==="
@@ -225,6 +226,12 @@ for ($i = $startIndex; $i -lt $steps.Count; $i++) {
     $exitCode = $LASTEXITCODE
 
     $elapsed = Format-Duration $stepStopwatch.Elapsed
+    if ($exitCode -ne 0 -and $step.OnFailure) {
+        $skippedSteps += $step
+        Write-Log ("$($step.Name) failed with exit code $exitCode after $elapsed. Leaving $($step.OnFailure.LeaveOut) out of " +
+            'the commit, so the site keeps its last export, and going on with the next step.') 'Yellow'
+        continue
+    }
     if ($exitCode -ne 0) {
         Stop-Run "$($step.Name) failed with exit code $exitCode after $elapsed. Fix the problem, then resume with: .\Run-DailyUpdate.ps1 -From $($step.Name)"
     }
@@ -247,7 +254,8 @@ $missingGuilds = Get-LineCount (Join-Path $workDir 'MissingGuildsToScan.txt')
 $missingPlayers = Get-LineCount (Join-Path $workDir 'MissingPlayersToScan.txt')
 Write-Log "Left for next run: $missingGuilds guild(s), $missingPlayers character(s) (in api/.work)."
 
-$existingPublishPaths = @($publishPaths | Where-Object { Test-Path (Join-Path $repoRoot $_) })
+$leftOutPaths = @($skippedSteps | ForEach-Object { $_.OnFailure.LeaveOut })
+$existingPublishPaths = @($publishPaths | Where-Object { $leftOutPaths -notcontains $_ -and (Test-Path (Join-Path $repoRoot $_)) })
 Invoke-Git add -- @existingPublishPaths
 
 & git -C $repoRoot diff --cached --quiet -- @existingPublishPaths
@@ -265,6 +273,10 @@ else {
         Invoke-Git push --quiet origin main
         Write-Log 'Pushed to origin/main; GitHub Pages is building.' 'Green'
     }
+}
+
+foreach ($step in $skippedSteps) {
+    Write-Log "$($step.Name) failed, so its data wasn't published. Refresh it on its own with: $($step.OnFailure.RefreshWith)" 'Yellow'
 }
 
 Write-Log "Daily update finished in $(Format-Duration $runStopwatch.Elapsed)." 'Green'
