@@ -1,7 +1,7 @@
-{"version":4,"generatedAt":"2026-11-18T22:44:03Z","previousGeneratedAt":"2026-11-18T21:31:14Z","raid":{"id":1520,"slug":"emerald-nightmare","name":"The Emerald Nightmare"},"difficulties":[
+{"version":4,"generatedAt":"2026-11-18T23:12:10Z","previousGeneratedAt":"2026-11-18T22:44:03Z","raid":{"id":1520,"slug":"emerald-nightmare","name":"The Emerald Nightmare"},"difficulties":[
 {"id":17,"slug":"lfr","name":"Looking For Raid","shortName":"LFR","kills":0},
 {"id":14,"slug":"normal","name":"Normal","shortName":"N","kills":6027},
-{"id":15,"slug":"heroic","name":"Heroic","shortName":"HC","kills":7010},
+{"id":15,"slug":"heroic","name":"Heroic","shortName":"HC","kills":7012},
 {"id":16,"slug":"mythic","name":"Mythic","shortName":"M","kills":1045}],"bosses":[
 {"id":1853,"slug":"nythendra","name":"Nythendra"},
 {"id":1873,"slug":"ilgynoth","name":"Il'gynoth, The Heart of Corruption"},
@@ -14280,12 +14280,11 @@
 ["Tauri",1934017,1,16,1795037591,546218,88,1,0,12,20],
 ["Tauri",1934329,2,16,1795039246,328918,-1,0,10,10,20],
 ["Tauri",1934371,5,15,1795039532,308987,121,1,5,2,14],
-["Tauri",1934420,2,15,1795039809,302834,32,1,2,17,23]],"newLogs":[
-["Tauri",1934004],
-["Tauri",1934017],
-["Tauri",1934329],
-["Tauri",1934371],
-["Tauri",1934420]],"invalidLogs":[
+["Tauri",1934420,2,15,1795039809,302834,32,1,2,17,23],
+["Tauri",1934580,5,15,1795041102,294868,32,1,1,8,22],
+["Tauri",1934711,6,15,1795042100,303298,32,1,0,3,22]],"newLogs":[
+["Tauri",1934580],
+["Tauri",1934711]],"invalidLogs":[
 ["Tauri",1565371,"Invalid log. Reason: Warlock Enslave Demon on Taintheart Tormenter"],
 ["Tauri",1684227,"Invalid log. Reason: Warlock Enslave Demon on Taintheart Tormenter"],
 ["Tauri",1684463,"Invalid log. Reason: Warlock Enslave Demon on Taintheart Tormenter"],
@@ -15985,7 +15984,8 @@
 ["Tauri",15,"Evermoon",[1932346,197,106,90,77,134,157]],
 ["Tauri",15,"Evermoon",[1932086,243,337,188,135,263,227]],
 ["Tauri",15,"Evermoon",[1932966,121,77,75,73,71,98]],
-["Tauri",15,"Evermoon",[1932715,200,128,180,177,287,141]]],"top":[
+["Tauri",15,"Evermoon",[1932715,200,128,180,177,287,141]],
+["Tauri",15,"Evermoon",[1933480,183,193,148,416,160,131]]],"top":[
 {"boss":"nythendra","difficulty":"normal","dps":["Deadofbones","Evermoon",4,259,658345,"Tauri",1922966],"hps":["Larahh","Tauri",11,105,356564,"Tauri",1333561]},
 {"boss":"nythendra","difficulty":"heroic","dps":["Sósa","Evermoon",8,64,750230,"Tauri",1852781],"hps":["Sunjaytzu","Evermoon",10,270,581470,"Tauri",1505655]},
 {"boss":"nythendra","difficulty":"mythic","dps":["Dom","Evermoon",2,70,714097,"Tauri",1916549],"hps":["Dabelle","Evermoon",5,256,643068,"Tauri",1894229]},
