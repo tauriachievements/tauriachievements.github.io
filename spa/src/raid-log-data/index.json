@@ -1,8 +1,8 @@
-{"version":4,"generatedAt":"2026-11-20T22:51:32Z","previousGeneratedAt":"2026-11-20T21:48:26Z","raid":{"id":1520,"slug":"emerald-nightmare","name":"The Emerald Nightmare"},"difficulties":[
+{"version":4,"generatedAt":"2026-11-20T23:12:02Z","previousGeneratedAt":"2026-11-20T22:51:32Z","raid":{"id":1520,"slug":"emerald-nightmare","name":"The Emerald Nightmare"},"difficulties":[
 {"id":17,"slug":"lfr","name":"Looking For Raid","shortName":"LFR","kills":0},
-{"id":14,"slug":"normal","name":"Normal","shortName":"N","kills":6141},
+{"id":14,"slug":"normal","name":"Normal","shortName":"N","kills":6142},
 {"id":15,"slug":"heroic","name":"Heroic","shortName":"HC","kills":7211},
-{"id":16,"slug":"mythic","name":"Mythic","shortName":"M","kills":1089}],"bosses":[
+{"id":16,"slug":"mythic","name":"Mythic","shortName":"M","kills":1090}],"bosses":[
 {"id":1853,"slug":"nythendra","name":"Nythendra"},
 {"id":1873,"slug":"ilgynoth","name":"Il'gynoth, The Heart of Corruption"},
 {"id":1876,"slug":"elerethe-renferal","name":"Elerethe Renferal"},
@@ -14640,16 +14640,11 @@
 ["Tauri",1950413,5,14,1795212673,232591,-1,1,3,1,20],
 ["Tauri",1950484,6,14,1795213269,277503,-1,1,0,0,21],
 ["Tauri",1950497,6,15,1795213409,333234,-1,1,1,3,19],
-["Tauri",1950498,1,16,1795213409,522921,82,1,1,5,20]],"newLogs":[
-["Tauri",1950176],
-["Tauri",1950217],
-["Tauri",1950223],
-["Tauri",1950261],
-["Tauri",1950357],
-["Tauri",1950413],
-["Tauri",1950484],
-["Tauri",1950497],
-["Tauri",1950498]],"invalidLogs":[
+["Tauri",1950498,1,16,1795213409,522921,82,1,1,5,20],
+["Tauri",1950685,0,14,1795214837,306528,-1,0,0,1,10],
+["Tauri",1950837,4,16,1795215758,294042,82,1,2,4,20]],"newLogs":[
+["Tauri",1950685],
+["Tauri",1950837]],"invalidLogs":[
 ["Tauri",1565371,"Invalid log. Reason: Warlock Enslave Demon on Taintheart Tormenter"],
 ["Tauri",1684227,"Invalid log. Reason: Warlock Enslave Demon on Taintheart Tormenter"],
 ["Tauri",1684463,"Invalid log. Reason: Warlock Enslave Demon on Taintheart Tormenter"],
