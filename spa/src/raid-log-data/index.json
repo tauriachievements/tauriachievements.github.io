@@ -1,7 +1,7 @@
-{"version":4,"generatedAt":"2026-11-21T15:07:20Z","previousGeneratedAt":"2026-11-21T11:02:39Z","raid":{"id":1520,"slug":"emerald-nightmare","name":"The Emerald Nightmare"},"difficulties":[
+{"version":4,"generatedAt":"2026-11-21T17:05:39Z","previousGeneratedAt":"2026-11-21T15:07:20Z","raid":{"id":1520,"slug":"emerald-nightmare","name":"The Emerald Nightmare"},"difficulties":[
 {"id":17,"slug":"lfr","name":"Looking For Raid","shortName":"LFR","kills":0},
 {"id":14,"slug":"normal","name":"Normal","shortName":"N","kills":6174},
-{"id":15,"slug":"heroic","name":"Heroic","shortName":"HC","kills":7266},
+{"id":15,"slug":"heroic","name":"Heroic","shortName":"HC","kills":7274},
 {"id":16,"slug":"mythic","name":"Mythic","shortName":"M","kills":1098}],"bosses":[
 {"id":1853,"slug":"nythendra","name":"Nythendra"},
 {"id":1873,"slug":"ilgynoth","name":"Il'gynoth, The Heart of Corruption"},
@@ -14737,23 +14737,23 @@
 ["Tauri",1954485,5,15,1795268856,292063,2,1,0,6,18],
 ["Tauri",1954537,6,15,1795269506,264180,2,1,0,0,19],
 ["Tauri",1954760,0,16,1795271162,277176,43,0,4,10,20],
-["Tauri",1954988,3,16,1795272885,215090,43,0,1,1,20]],"newLogs":[
-["Tauri",1953937],
-["Tauri",1954024],
-["Tauri",1954093],
-["Tauri",1954181],
-["Tauri",1954193],
-["Tauri",1954231],
-["Tauri",1954275],
-["Tauri",1954290],
-["Tauri",1954309],
-["Tauri",1954347],
-["Tauri",1954366],
-["Tauri",1954433],
-["Tauri",1954485],
-["Tauri",1954537],
-["Tauri",1954760],
-["Tauri",1954988]],"invalidLogs":[
+["Tauri",1954988,3,16,1795272885,215090,43,0,1,1,20],
+["Tauri",1955196,0,15,1795274607,270261,-1,1,0,7,26],
+["Tauri",1955303,3,15,1795275542,202613,-1,1,0,13,28],
+["Tauri",1955361,4,15,1795276103,235808,-1,1,0,5,28],
+["Tauri",1955537,2,15,1795277604,322126,-1,1,1,17,26],
+["Tauri",1955587,1,15,1795278054,180375,-1,1,0,0,25],
+["Tauri",1955710,5,15,1795279177,284591,-1,1,0,12,25],
+["Tauri",1955780,6,15,1795279829,335636,-1,1,0,2,25],
+["WoD",300984,0,15,1795280273,220355,-1,1,0,0,10]],"newLogs":[
+["Tauri",1955196],
+["Tauri",1955303],
+["Tauri",1955361],
+["Tauri",1955537],
+["Tauri",1955587],
+["Tauri",1955710],
+["Tauri",1955780],
+["WoD",300984]],"invalidLogs":[
 ["Tauri",1565371,"Invalid log. Reason: Warlock Enslave Demon on Taintheart Tormenter"],
 ["Tauri",1684227,"Invalid log. Reason: Warlock Enslave Demon on Taintheart Tormenter"],
 ["Tauri",1684463,"Invalid log. Reason: Warlock Enslave Demon on Taintheart Tormenter"],
@@ -16508,7 +16508,8 @@
 ["Tauri",14,"Evermoon",[1951977,55,33,36,46,56,25]],
 ["Tauri",15,"Evermoon",[1951935,88,57,43,50,29,40]],
 ["Tauri",15,"Evermoon",[1953937,87,69,88,50,59,57]],
-["Tauri",15,"Evermoon",[1954193,82,34,57,67,52,52]]],"top":[
+["Tauri",15,"Evermoon",[1954193,82,34,57,67,52,52]],
+["Tauri",15,"Evermoon",[1955196,107,58,176,50,123,70]]],"top":[
 {"boss":"nythendra","difficulty":"normal","dps":["Deadofbones","Evermoon",4,259,658345,"Tauri",1922966],"hps":["Larahh","Tauri",11,105,356564,"Tauri",1333561]},
 {"boss":"nythendra","difficulty":"heroic","dps":["Sósa","Evermoon",8,64,750230,"Tauri",1852781],"hps":["Sunjaytzu","Evermoon",10,270,581470,"Tauri",1505655]},
 {"boss":"nythendra","difficulty":"mythic","dps":["Dom","Evermoon",2,70,714097,"Tauri",1916549],"hps":["Dabelle","Evermoon",5,256,713729,"Tauri",1948486]},
