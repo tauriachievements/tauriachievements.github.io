@@ -55,7 +55,8 @@ this file, so Claude Code reads it at the start of every session.
   write the data files into `spa/src/`. Solution: `api/AchievementLadder.sln`. Shared code is
   in `api/Tauri.Core`, tests in `api/tests`.
 - `.github/workflows/`:
-  - `static1.yml` deploys Pages on every push to `main` (`npm test`, then `npm run build`).
+  - `static1.yml` deploys Pages on every push to `main`: a `build` job runs `npm test` and
+    `npm run build` and uploads the site, then a separate `deploy` job publishes it.
   - `test.yml` runs the same `npm test` and production build on pull requests, so a PR that
     breaks the build or a bundle budget fails before it merges.
   - `api-ci.yml` checks CSharpier formatting, then builds and tests the solution, on every
@@ -232,6 +233,10 @@ There is no root package manager; each half has its own toolchain.
   `styleUrls` entries.
 - A cold full `ng test` run can time out a few DOM specs at 5 s. Rerun them before treating it
   as a regression.
+- The Pages upload and deploy stay in separate jobs in `static1.yml`. In one job,
+  `deploy-pages` asks for the artifact a fraction of a second after the upload finishes, and
+  GitHub sometimes lists none yet: "No artifacts named github-pages were found"
+  ([actions/deploy-pages#451](https://github.com/actions/deploy-pages/issues/451)).
 - Windows: `core.autocrlf=true`, and working files mix CRLF and LF, so exact-string
   replacements in the shell are fragile; use an EOL-tolerant edit. In Git Bash, `node -e '…'`
   strips backslashes (write scripts to files), `sed -i` saves a CRLF working file as LF (run
