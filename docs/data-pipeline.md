@@ -256,8 +256,12 @@ column with no heading right of Completed in a runs table, a camera mark on its 
 
 - An entry names the run by its dungeon's slug (its file name in `mythic-plus-data/`, such as
   `cos`), one player of its group, and when it finished in UTC, to the minute
-  (`2026-11-23T01:15Z`) or to the second. Nobody finishes two runs of one dungeon in the same
-  minute, so that's one run.
+  (`2026-11-23T01:15Z`) or to the second (`2026-11-23T01:15:35Z`). A time to the minute
+  matches the whole minute, a time to the second only that second.
+- The minute is nearly always enough, but the server can stamp two runs of one character in the
+  same dungeon within a minute: it stamped two of Nyenyec's Court of Stars runs 13 seconds apart
+  on 11 November 2026. Write the time to the second when the character has another run of that
+  dungeon in that minute.
 - A run's `id` can't name it: it's the run's place in its dungeon file by score, which moves
   whenever a better run lands. Nor can the clear time: a character can clear the same dungeon at
   the same level in the same whole second more than once.

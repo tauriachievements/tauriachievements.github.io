@@ -28,6 +28,13 @@ describe('runVideoUrl', () => {
     expect(runVideoUrl(run, [{ ...video, completedAt: '2026-11-23T01:15:35Z' }])).toBe(video.url);
   });
 
+  it('tells apart two runs of the player stamped in the same minute by a finish time written to the second', () => {
+    const exact = { ...video, completedAt: '2026-11-23T01:15:35Z' };
+
+    expect(runVideoUrl({ ...run, completedAt: '2026-11-23T01:15:22.000Z' }, [exact])).toBeUndefined();
+    expect(runVideoUrl(run, [exact])).toBe(video.url);
+  });
+
   it('matches the player name in any case', () => {
     expect(runVideoUrl(run, [{ ...video, player: 'pretz' }])).toBe(video.url);
   });

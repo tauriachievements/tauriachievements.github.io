@@ -18,20 +18,21 @@ export const VIDEO_ICON_PATH =
   'M4.5 5.5h9A2.5 2.5 0 0 1 16 8v8a2.5 2.5 0 0 1-2.5 2.5h-9A2.5 2.5 0 0 1 2 16V8a2.5 2.5 0 0 1 2.5-2.5z'
   + 'M17.5 10.2l3.7-2.6A.8.8 0 0 1 22.5 8.3v7.4a.8.8 0 0 1-1.3.7l-3.7-2.6z';
 
+const SECOND_MS = 1000;
 const MINUTE_MS = 60_000;
 
-function finishMinute(completedAt: string): number {
-  return Math.floor(Date.parse(completedAt) / MINUTE_MS);
+function finishedAtListedTime(listed: string, completedAt: string): boolean {
+  const step = /T\d{2}:\d{2}:\d{2}/.test(listed) ? SECOND_MS : MINUTE_MS;
+  return Math.floor(Date.parse(listed) / step) === Math.floor(Date.parse(completedAt) / step);
 }
 
 export function runVideoUrl(
   run: Pick<MythicPlusRun, 'dungeon' | 'completedAt' | 'roster'>,
   videos: readonly RunVideo[] = RUN_VIDEOS
 ): string | undefined {
-  const minute = finishMinute(run.completedAt);
   const names = new Set(run.roster.map(member => member.name.toLowerCase()));
 
   return videos.find(video => video.dungeon === run.dungeon
-    && finishMinute(video.completedAt) === minute
+    && finishedAtListedTime(video.completedAt, run.completedAt)
     && names.has(video.player.toLowerCase()))?.url;
 }
