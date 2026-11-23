@@ -8,7 +8,10 @@ export interface RunVideo {
 }
 
 export const RUN_VIDEOS: readonly RunVideo[] = [
-  { dungeon: 'cos', player: 'Pretz', completedAt: '2026-11-23T01:15Z', url: 'https://www.youtube.com/watch?v=b5DZMFugfXY' }
+  { dungeon: 'cos', player: 'Pretz', completedAt: '2026-11-23T01:15Z', url: 'https://www.youtube.com/watch?v=b5DZMFugfXY' },
+  { dungeon: 'mos', player: 'Pretz', completedAt: '2026-11-19T22:53Z', url: 'https://www.youtube.com/watch?v=n0PQ-sr0RD8' },
+  { dungeon: 'nl', player: 'Pretz', completedAt: '2026-11-20T02:10Z', url: 'https://www.youtube.com/watch?v=4klMTmePnoQ' },
+  { dungeon: 'brh', player: 'Pretz', completedAt: '2026-11-11T01:59Z', url: 'https://www.youtube.com/watch?v=_RHX3SeL8is' }
 ];
 
 export const VIDEO_ICON_PATH =
