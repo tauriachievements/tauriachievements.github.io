@@ -5,24 +5,20 @@
 
   @if (!isLoading() && !loadError()) {
     <div class="period-bar">
-      <div class="view-switch" role="group" aria-label="Show the whole season or this week" appGlide>
-        <button
-          type="button"
-          [class.active]="period() === 'season'"
-          [attr.aria-pressed]="period() === 'season'"
-          (click)="setPeriod('season')">Season</button>
-        <button
-          type="button"
-          [class.active]="period() === 'week'"
-          [attr.aria-pressed]="period() === 'week'"
-          [disabled]="!affixWeek()"
-          (click)="setPeriod('week')">This week</button>
-      </div>
-      @if (weekAffixes().length) {
-        <app-mythic-plus-week-affixes [affixes]="weekAffixes()" [compact]="true" />
-      }
-      @if (invalidRuns()) {
-        <a class="invalid-link" routerLink="/mythic-plus/invalid">List of invalid runs</a>
+      <app-mythic-plus-season-switch
+        [seasons]="seasons()"
+        [selected]="season()"
+        [week]="period() === 'week'"
+        [weekReady]="!!affixWeek()"
+        (seasonChange)="pickSeason($event)"
+        (weekChange)="setPeriod($event ? 'week' : 'season')" />
+      @if (!upcomingSeason()) {
+        @if (weekAffixes().length) {
+          <app-mythic-plus-week-affixes [affixes]="weekAffixes()" [compact]="true" />
+        }
+        @if (invalidRuns()) {
+          <a class="invalid-link" routerLink="/mythic-plus/invalid">List of invalid runs</a>
+        }
       }
       <a class="scores-link" routerLink="/mythic-plus/scoring">
         <span class="scores-link-icon" aria-hidden="true">?</span>
@@ -30,227 +26,231 @@
       </a>
     </div>
 
-    <nav class="dungeon-picker" aria-label="Filter runs by dungeon" appGlide>
-      <button
-        type="button"
-        class="dungeon-tile"
-        [class.active]="!selectedDungeon()"
-        [attr.aria-pressed]="!selectedDungeon()"
-        (click)="selectDungeon(undefined)">
-        <span class="dungeon-tile-all" aria-hidden="true">
-          <svg viewBox="0 0 24 24" focusable="false">
-            <rect x="3" y="3" width="8" height="8" rx="1.5" />
-            <rect x="13" y="3" width="8" height="8" rx="1.5" />
-            <rect x="3" y="13" width="8" height="8" rx="1.5" />
-            <rect x="13" y="13" width="8" height="8" rx="1.5" />
-          </svg>
-        </span>
-        <span>ALL</span>
-      </button>
-      @for (dungeon of dungeons(); track dungeon.id) {
+    @if (upcomingSeason(); as upcoming) {
+      <app-mythic-plus-season-waiting [season]="upcoming" [current]="seasons()[0]" (leave)="pickSeason($event)" />
+    } @else {
+      <nav class="dungeon-picker" aria-label="Filter runs by dungeon" appGlide>
         <button
           type="button"
           class="dungeon-tile"
-          [class.active]="selectedDungeon()?.id === dungeon.id"
-          [attr.aria-pressed]="selectedDungeon()?.id === dungeon.id"
-          [attr.aria-label]="dungeon.name"
-          [title]="dungeon.name"
-          (click)="selectDungeon(dungeon.id)">
-          <img [src]="dungeon.icon" alt="" loading="lazy" />
-          <span>{{ dungeon.shortName }}</span>
+          [class.active]="!selectedDungeon()"
+          [attr.aria-pressed]="!selectedDungeon()"
+          (click)="selectDungeon(undefined)">
+          <span class="dungeon-tile-all" aria-hidden="true">
+            <svg viewBox="0 0 24 24" focusable="false">
+              <rect x="3" y="3" width="8" height="8" rx="1.5" />
+              <rect x="13" y="3" width="8" height="8" rx="1.5" />
+              <rect x="3" y="13" width="8" height="8" rx="1.5" />
+              <rect x="13" y="13" width="8" height="8" rx="1.5" />
+            </svg>
+          </span>
+          <span>ALL</span>
         </button>
-      }
-    </nav>
+        @for (dungeon of dungeons(); track dungeon.id) {
+          <button
+            type="button"
+            class="dungeon-tile"
+            [class.active]="selectedDungeon()?.id === dungeon.id"
+            [attr.aria-pressed]="selectedDungeon()?.id === dungeon.id"
+            [attr.aria-label]="dungeon.name"
+            [title]="dungeon.name"
+            (click)="selectDungeon(dungeon.id)">
+            <img [src]="dungeon.icon" alt="" loading="lazy" />
+            <span>{{ dungeon.shortName }}</span>
+          </button>
+        }
+      </nav>
 
-    <app-load-state [loading]="runsLoading()" [skeleton]="runsSkeleton()" loadingText="Loading runs..." />
-    @if (!runsLoading()) {
-      <app-mythic-plus-spec-chart
-        class="spec-chart"
-        [runs]="dungeonRuns()"
-        [scopeLabel]="selectedDungeon()?.name ?? 'All dungeons'"
-        [seasonName]="period() === 'week' ? 'This week' : index()?.season?.name ?? ''"
-        [selectedClassId]="view() === 'players' ? classFilter() : undefined"
-        [selectedSpec]="view() === 'players' ? specFilter() : undefined"
-        [role]="chartRole()"
-        (roleChange)="setChartRole($event)"
-        (specSelect)="showSpecPlayers($event)" />
+      <app-load-state [loading]="runsLoading()" [skeleton]="runsSkeleton()" loadingText="Loading runs..." />
+      @if (!runsLoading()) {
+        <app-mythic-plus-spec-chart
+          class="spec-chart"
+          [runs]="dungeonRuns()"
+          [scopeLabel]="selectedDungeon()?.name ?? 'All dungeons'"
+          [seasonName]="period() === 'week' ? 'This week' : season()?.name ?? ''"
+          [selectedClassId]="view() === 'players' ? classFilter() : undefined"
+          [selectedSpec]="view() === 'players' ? specFilter() : undefined"
+          [role]="chartRole()"
+          (roleChange)="setChartRole($event)"
+          (specSelect)="showSpecPlayers($event)" />
 
-      <div class="toolbar" #leaderboard>
-        <div class="toolbar-title">
-          <h2>{{ selectedDungeon()?.name ?? 'All dungeons' }}</h2>
-          <span>Page {{ currentPage() }} of {{ totalPages() }} · {{ resultCount() | number }} {{ resultUnit() }}</span>
-        </div>
-        <div class="toolbar-actions">
-          @if (view() === 'runs') {
-            <div class="view-switch" role="group" aria-label="Order runs" appGlide>
+        <div class="toolbar" #leaderboard>
+          <div class="toolbar-title">
+            <h2>{{ selectedDungeon()?.name ?? 'All dungeons' }}</h2>
+            <span>Page {{ currentPage() }} of {{ totalPages() }} · {{ resultCount() | number }} {{ resultUnit() }}</span>
+          </div>
+          <div class="toolbar-actions">
+            @if (view() === 'runs') {
+              <div class="view-switch" role="group" aria-label="Order runs" appGlide>
+                <button
+                  type="button"
+                  [class.active]="runOrder() === 'best'"
+                  [attr.aria-pressed]="runOrder() === 'best'"
+                  (click)="setRunOrder('best')">Best</button>
+                <button
+                  type="button"
+                  [class.active]="runOrder() === 'latest'"
+                  [attr.aria-pressed]="runOrder() === 'latest'"
+                  (click)="setRunOrder('latest')">Latest</button>
+              </div>
+            }
+            <div class="view-switch" role="group" aria-label="Rank runs or players" appGlide>
               <button
                 type="button"
-                [class.active]="runOrder() === 'best'"
-                [attr.aria-pressed]="runOrder() === 'best'"
-                (click)="setRunOrder('best')">Best</button>
+                [class.active]="view() === 'runs'"
+                [attr.aria-pressed]="view() === 'runs'"
+                (click)="setView('runs')">Runs</button>
               <button
                 type="button"
-                [class.active]="runOrder() === 'latest'"
-                [attr.aria-pressed]="runOrder() === 'latest'"
-                (click)="setRunOrder('latest')">Latest</button>
+                [class.active]="view() === 'players' && !roleFilter()"
+                [attr.aria-pressed]="view() === 'players' && !roleFilter()"
+                (click)="setView('players')">Players</button>
+              <button
+                type="button"
+                [class.active]="view() === 'players' && !!roleFilter()"
+                [attr.aria-pressed]="view() === 'players' && !!roleFilter()"
+                (click)="showRoles()">Roles</button>
             </div>
-          }
-          <div class="view-switch" role="group" aria-label="Rank runs or players" appGlide>
-            <button
-              type="button"
-              [class.active]="view() === 'runs'"
-              [attr.aria-pressed]="view() === 'runs'"
-              (click)="setView('runs')">Runs</button>
-            <button
-              type="button"
-              [class.active]="view() === 'players' && !roleFilter()"
-              [attr.aria-pressed]="view() === 'players' && !roleFilter()"
-              (click)="setView('players')">Players</button>
-            <button
-              type="button"
-              [class.active]="view() === 'players' && !!roleFilter()"
-              [attr.aria-pressed]="view() === 'players' && !!roleFilter()"
-              (click)="showRoles()">Roles</button>
           </div>
         </div>
-      </div>
 
-      @if (characterSummary(); as summary) {
-        <p class="character-summary" aria-live="polite">
-          <span class="character-summary-count">{{ summary.count | number }}</span>
-          <span class="character-summary-label">
-            {{ summary.unit }} by
-            <strong [style.color]="summary.character.color">{{ summary.character.name }}</strong><span class="character-summary-realm"> ({{ summary.character.realm }})</span>
-            {{ summary.scope }}
-          </span>
-        </p>
-      }
+        @if (characterSummary(); as summary) {
+          <p class="character-summary" aria-live="polite">
+            <span class="character-summary-count">{{ summary.count | number }}</span>
+            <span class="character-summary-label">
+              {{ summary.unit }} by
+              <strong [style.color]="summary.character.color">{{ summary.character.name }}</strong><span class="character-summary-realm"> ({{ summary.character.realm }})</span>
+              {{ summary.scope }}
+            </span>
+          </p>
+        }
 
-      <div class="pager-row">
-        <app-pager [page]="currentPage()" [pages]="totalPages()" label="Leaderboard pages" (pageChange)="goToPage($event)">
-          @if (selectedDungeonTimer(); as timer) {
-            <span class="pager-timer">Timer {{ timer }}</span>
-          }
-        </app-pager>
-        <div id="mythic-plus-filters" class="leaderboard-filters" [class.filters-collapsed]="!filtersOpen()">
-          @if (view() === 'players') {
-            <app-mobile-filter-toggle
-              controlsId="mythic-plus-filters"
-              [expanded]="filtersOpen()"
-              [activeFilters]="activeFilterLabels()"
-              (expandedChange)="filtersOpen.set($event)" />
-            @if (roleFilter(); as currentRole) {
-              <div class="filter-slot role-slot">
-                <app-role-filter dropdownId="mythicPlusRole" [includeAll]="false" [selected]="currentRole" (selectedChange)="setRole($event)" />
-              </div>
+        <div class="pager-row">
+          <app-pager [page]="currentPage()" [pages]="totalPages()" label="Leaderboard pages" (pageChange)="goToPage($event)">
+            @if (selectedDungeonTimer(); as timer) {
+              <span class="pager-timer">Timer {{ timer }}</span>
             }
-            <button
-              type="button"
-              class="filter-reset collapsible-filter"
-              [disabled]="!activeFilterLabels().length"
-              aria-label="Reset realm, class and spec filters"
-              (click)="resetFilters()">
-              Reset
-            </button>
-            <div class="filter-slot collapsible-filter">
-              <app-filter-dropdown
-                dropdownId="mythicPlusRealm"
-                triggerId="mythicPlusRealmTrigger"
-                ariaLabel="Filter players by realm"
-                [options]="realmOptions()"
-                [selectedValue]="realmFilter()"
-                [compact]="true"
-                [highlightWhenSelected]="true"
-                (selectionChange)="setRealmFilter($event)" />
-            </div>
-            @if (!roleFilter()) {
-              <div class="filter-slot collapsible-filter">
-                <app-filter-dropdown
-                  dropdownId="mythicPlusClass"
-                  triggerId="mythicPlusClassTrigger"
-                  ariaLabel="Filter players by class"
-                  [options]="classOptions"
-                  [selectedValue]="classFilter()"
-                  [showIcons]="true"
-                  [compact]="true"
-                  [highlightWhenSelected]="true"
-                  (selectionChange)="setClassFilter($event)" />
-              </div>
-            }
-            @if (!roleFilter()) {
-              <div class="filter-slot collapsible-filter">
-                <app-filter-dropdown
-                  dropdownId="mythicPlusSpec"
-                  triggerId="mythicPlusSpecTrigger"
-                  ariaLabel="Filter players by spec"
-                  [options]="specOptions()"
-                  [selectedValue]="specFilter()"
-                  [showIcons]="true"
-                  [compact]="true"
-                  [highlightWhenSelected]="true"
-                  [disabled]="classFilter() === undefined"
-                  (selectionChange)="setSpecFilter($event)" />
-              </div>
-            }
-          }
-          @if (view() === 'runs' && characterFilter(); as character) {
-            <div class="character-chip">
-              <span class="character-chip-name" [style.color]="character.color">{{ character.name }}</span>
-              <span class="character-chip-realm">{{ character.realm }}</span>
-              <a class="character-chip-profile" [routerLink]="character.profileLink">Profile</a>
+          </app-pager>
+          <div id="mythic-plus-filters" class="leaderboard-filters" [class.filters-collapsed]="!filtersOpen()">
+            @if (view() === 'players') {
+              <app-mobile-filter-toggle
+                controlsId="mythic-plus-filters"
+                [expanded]="filtersOpen()"
+                [activeFilters]="activeFilterLabels()"
+                (expandedChange)="filtersOpen.set($event)" />
+              @if (roleFilter(); as currentRole) {
+                <div class="filter-slot role-slot">
+                  <app-role-filter dropdownId="mythicPlusRole" [includeAll]="false" [selected]="currentRole" (selectedChange)="setRole($event)" />
+                </div>
+              }
               <button
                 type="button"
-                class="character-chip-remove"
-                [title]="'Show every run, not only those with ' + character.name"
-                [attr.aria-label]="'Showing runs with ' + character.name + ' (' + character.realm + '). Remove filter'"
-                (click)="clearCharacterFilter()">
-                <span aria-hidden="true">✕</span>
+                class="filter-reset collapsible-filter"
+                [disabled]="!activeFilterLabels().length"
+                aria-label="Reset realm, class and spec filters"
+                (click)="resetFilters()">
+                Reset
               </button>
-            </div>
-          }
-          <label class="player-search">
-            <span class="visually-hidden">Search by player name</span>
-            <input
-              type="search"
-              placeholder="Search player..."
-              autocomplete="off"
-              enterkeyhint="search"
-              [value]="search()"
-              (input)="onSearch($event)" />
-          </label>
+              <div class="filter-slot collapsible-filter">
+                <app-filter-dropdown
+                  dropdownId="mythicPlusRealm"
+                  triggerId="mythicPlusRealmTrigger"
+                  ariaLabel="Filter players by realm"
+                  [options]="realmOptions()"
+                  [selectedValue]="realmFilter()"
+                  [compact]="true"
+                  [highlightWhenSelected]="true"
+                  (selectionChange)="setRealmFilter($event)" />
+              </div>
+              @if (!roleFilter()) {
+                <div class="filter-slot collapsible-filter">
+                  <app-filter-dropdown
+                    dropdownId="mythicPlusClass"
+                    triggerId="mythicPlusClassTrigger"
+                    ariaLabel="Filter players by class"
+                    [options]="classOptions"
+                    [selectedValue]="classFilter()"
+                    [showIcons]="true"
+                    [compact]="true"
+                    [highlightWhenSelected]="true"
+                    (selectionChange)="setClassFilter($event)" />
+                </div>
+              }
+              @if (!roleFilter()) {
+                <div class="filter-slot collapsible-filter">
+                  <app-filter-dropdown
+                    dropdownId="mythicPlusSpec"
+                    triggerId="mythicPlusSpecTrigger"
+                    ariaLabel="Filter players by spec"
+                    [options]="specOptions()"
+                    [selectedValue]="specFilter()"
+                    [showIcons]="true"
+                    [compact]="true"
+                    [highlightWhenSelected]="true"
+                    [disabled]="classFilter() === undefined"
+                    (selectionChange)="setSpecFilter($event)" />
+                </div>
+              }
+            }
+            @if (view() === 'runs' && characterFilter(); as character) {
+              <div class="character-chip">
+                <span class="character-chip-name" [style.color]="character.color">{{ character.name }}</span>
+                <span class="character-chip-realm">{{ character.realm }}</span>
+                <a class="character-chip-profile" [routerLink]="character.profileLink">Profile</a>
+                <button
+                  type="button"
+                  class="character-chip-remove"
+                  [title]="'Show every run, not only those with ' + character.name"
+                  [attr.aria-label]="'Showing runs with ' + character.name + ' (' + character.realm + '). Remove filter'"
+                  (click)="clearCharacterFilter()">
+                  <span aria-hidden="true">✕</span>
+                </button>
+              </div>
+            }
+            <label class="player-search">
+              <span class="visually-hidden">Search by player name</span>
+              <input
+                type="search"
+                placeholder="Search player..."
+                autocomplete="off"
+                enterkeyhint="search"
+                [value]="search()"
+                (input)="onSearch($event)" />
+            </label>
+          </div>
         </div>
-      </div>
 
-      @if (view() === 'runs') {
-        <app-mythic-plus-runs-list
-          [rows]="pagedRows()"
-          [expandedRunId]="expandedRunId()"
-          [emptyMessage]="emptyMessage()"
-          [cards]="cards()"
-          [completed]="true"
-          [runOrder]="runOrder()"
-          (runOrderChange)="setRunOrder($event)"
-          (toggleRun)="toggleRun($event)" />
+        @if (view() === 'runs') {
+          <app-mythic-plus-runs-list
+            [rows]="pagedRows()"
+            [expandedRunId]="expandedRunId()"
+            [emptyMessage]="emptyMessage()"
+            [cards]="cards()"
+            [completed]="true"
+            [runOrder]="runOrder()"
+            (runOrderChange)="setRunOrder($event)"
+            (toggleRun)="toggleRun($event)" />
+        }
+
+        @if (view() === 'players') {
+          <app-mythic-plus-players-list
+            [rows]="pagedPlayers()"
+            [dungeons]="playerDungeons()"
+            [singleDungeon]="!!selectedDungeon()"
+            [emptyMessage]="emptyMessage()"
+            [cards]="cards()"
+            [highlightKey]="characterFilter()?.key" />
+        }
+
+        <app-pager
+          class="bottom-pager"
+          [page]="currentPage()"
+          [pages]="totalPages()"
+          [count]="(resultCount() | number) + ' ' + resultUnit()"
+          label="Leaderboard pages, bottom"
+          [scrollTarget]="leaderboard"
+          (pageChange)="goToPage($event)" />
       }
-
-      @if (view() === 'players') {
-        <app-mythic-plus-players-list
-          [rows]="pagedPlayers()"
-          [dungeons]="playerDungeons()"
-          [singleDungeon]="!!selectedDungeon()"
-          [emptyMessage]="emptyMessage()"
-          [cards]="cards()"
-          [highlightKey]="characterFilter()?.key" />
-      }
-
-      <app-pager
-        class="bottom-pager"
-        [page]="currentPage()"
-        [pages]="totalPages()"
-        [count]="(resultCount() | number) + ' ' + resultUnit()"
-        label="Leaderboard pages, bottom"
-        [scrollTarget]="leaderboard"
-        (pageChange)="goToPage($event)" />
     }
   }
 </main>

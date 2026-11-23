@@ -2,6 +2,7 @@ import { DestroyRef, Injectable, computed, inject, signal } from '@angular/core'
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { MythicPlusIndex, MythicPlusRun, NEWER_DATA_MESSAGE } from './mythic-plus';
 import { MythicPlusDataService, NewerExportError } from './mythic-plus-data.service';
+import { chosenSeason, seasonChoices } from './mythic-plus-seasons';
 
 @Injectable()
 export class MythicPlusPageStore {
@@ -13,18 +14,26 @@ export class MythicPlusPageStore {
   readonly isLoading = signal(true);
   readonly loadError = signal<string | undefined>(undefined);
   readonly selectedDungeonId = signal<string | undefined>(undefined);
+  readonly seasonId = signal<string | undefined>(undefined);
   readonly restarts = signal(0);
 
   readonly dungeons = computed(() => this.index()?.dungeons ?? []);
   readonly selectedDungeon = computed(() =>
     this.dungeons().find(dungeon => dungeon.id === this.selectedDungeonId()));
+  readonly seasons = computed(() => seasonChoices(this.index()?.season));
+  readonly season = computed(() => chosenSeason(this.seasons(), this.seasonId()));
+  readonly upcomingSeason = computed(() => {
+    const season = this.season();
+    return season?.upcoming ? season : undefined;
+  });
 
   private loadedIndex?: MythicPlusIndex;
   private readonly requestedDungeons = new Set<string>();
   private reloadedForNewerData = false;
 
-  load(dungeonId: string | undefined): void {
+  load(dungeonId: string | undefined, seasonId: string | undefined): void {
     this.selectedDungeonId.set(dungeonId);
+    this.seasonId.set(seasonId);
     this.loadIndex();
   }
 
@@ -41,7 +50,7 @@ export class MythicPlusPageStore {
 
   loadScopeRuns(): void {
     const index = this.loadedIndex;
-    if (!index) {
+    if (!index || this.upcomingSeason()) {
       return;
     }
 

@@ -8,7 +8,7 @@ public static class MythicPlusCatalog
 {
     public static readonly MythicPlusSeason Season = new(
         "legion-s1",
-        "Legion Season 1",
+        "Season 1 - Patch 7.0.3",
         "Emerald Nightmare",
         "2026-09-16"
     );

@@ -2,6 +2,7 @@ import { DecimalPipe } from '@angular/common';
 import { ChangeDetectionStrategy, Component, DestroyRef, OnInit, computed, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, RouterLink } from '@angular/router';
+import { of, switchMap, tap } from 'rxjs';
 import {
   MythicPlusAffix,
   MythicPlusIndex,
@@ -31,6 +32,9 @@ import { FilterDropdownCoordinatorService } from '../../shared/filter-dropdown-c
 import { FilterDropdownOption, FilterDropdownValue } from '../../shared/filter-dropdown.types';
 import { MYTHIC_PLUS_CARDS_QUERY } from './mythic-plus-views';
 import { MythicPlusWeekAffixesComponent } from './mythic-plus-week-affixes.component';
+import { MythicPlusSeasonSwitchComponent } from './mythic-plus-season-switch.component';
+import { MythicPlusSeasonWaitingComponent } from './mythic-plus-season-waiting.component';
+import { chosenSeason, seasonChoices, seasonParam } from './mythic-plus-seasons';
 import { RaceBySpecComponent } from '../../shared/spec-charts/race-by-spec.component';
 import { RevealDirective } from '../../shared/motion/reveal.directive';
 import { ScrollToEndDirective } from '../../shared/motion/scroll-to-end.directive';
@@ -93,6 +97,8 @@ const isMiddle = (position: number, count: number) => position >= count / 3 && p
     TapTooltipDirective,
     FilterDropdownComponent,
     MythicPlusWeekAffixesComponent,
+    MythicPlusSeasonSwitchComponent,
+    MythicPlusSeasonWaitingComponent,
     RaceBySpecComponent,
     ScrollToEndDirective,
     GlideDirective,
@@ -125,6 +131,15 @@ export class MythicPlusStatsPageComponent implements OnInit {
   readonly isLoading = signal(true);
   readonly loadError = signal<string | undefined>(undefined);
   readonly period = signal<StatsPeriod>(this.route.snapshot.queryParamMap.get('period') === 'week' ? 'week' : 'season');
+  private readonly seasonId = signal<string | undefined>(this.route.snapshot.queryParamMap.get('season') ?? undefined);
+  readonly seasons = computed(() => seasonChoices(this.index()?.season));
+  readonly season = computed(() => chosenSeason(this.seasons(), this.seasonId()));
+  readonly upcomingSeason = computed(() => this.season()?.upcoming ? this.season() : undefined);
+  readonly urlParams = computed(() => ({
+    season: seasonParam(this.season()) ?? undefined,
+    period: this.period() === 'week' && !this.upcomingSeason() ? 'week' : undefined
+  }));
+  private runsLoaded = false;
   readonly daySplit = signal<DaySplit>('level');
   readonly dungeonSplit = signal<DungeonSplit>('result');
   readonly dungeonLegend = computed<ReadonlyArray<{ key: string; label: string }>>(() =>
@@ -320,18 +335,44 @@ export class MythicPlusStatsPageComponent implements OnInit {
       return;
     }
     this.period.set(period);
-    this.replaceUrl({ period: period === 'week' ? 'week' : null });
+    this.writeUrl();
+  }
+
+  pickSeason(seasonId: string): void {
+    if (seasonId === this.season()?.id) {
+      return;
+    }
+
+    this.seasonId.set(seasonId);
+    if (this.upcomingSeason()) {
+      this.period.set('season');
+    }
+    this.writeUrl();
+    if (!this.upcomingSeason() && !this.runsLoaded) {
+      this.loadData();
+    }
+  }
+
+  private writeUrl(): void {
+    const { season, period } = this.urlParams();
+    this.replaceUrl({ season: season ?? null, period: period ?? null });
   }
 
   loadData(): void {
     this.isLoading.set(true);
     this.loadError.set(undefined);
-    this.mythicPlusData.season()
-      .pipe(takeUntilDestroyed(this.destroyRef))
+    this.mythicPlusData.index()
+      .pipe(
+        tap(index => this.index.set(index)),
+        switchMap(() => this.upcomingSeason() ? of(undefined) : this.mythicPlusData.season()),
+        takeUntilDestroyed(this.destroyRef))
       .subscribe({
-        next: ({ index, runs }) => {
-          this.index.set(index);
-          this.allRuns.set(runs);
+        next: season => {
+          if (season) {
+            this.index.set(season.index);
+            this.allRuns.set(season.runs);
+            this.runsLoaded = true;
+          }
           this.isLoading.set(false);
         },
         error: error => {
