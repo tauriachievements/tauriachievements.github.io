@@ -246,6 +246,26 @@ gender, and when the last run under the old name finished (UTC, that run include
 - The list: Lastguard → Héll (Evermoon), last run as Lastguard 13 November 2026 17:23 Budapest
   time (16:23:51 UTC).
 
+## Corrected Mythic+ specs
+
+A run's players come with the spec the leaderboards give them. When that spec is wrong,
+`MythicPlusSpecCorrections` in MythicPlusExporter lists the correction: the dungeon's slug (its
+file name in `mythic-plus-data/`), the character's realm and name as the site shows them, when
+the run finished (UTC, to the second: the run's `completedAtUnix`), and the spec played, with its
+id and role.
+
+- Every export reads every run from the leaderboards again, so the exporter applies the list on
+  every export, after [renames](#renamed-mythic-characters) and before it scores or checks
+  anything. The listed spec wins over the leaderboards' every time, and the run counts under it
+  everywhere: the spec table, the spec filters and statistics, and the
+  [invalid-run rules](#invalid-mythic-runs).
+- A correction changes one character in one run: that dungeon, that character, that second.
+  The character's other runs keep the leaderboards' spec.
+- As with renames, a change needs no format bump: it shows after the next export. The run's line
+  in its dungeon file changes only by the character's spec.
+- The list: Dnx (Evermoon) played Affliction, not Destruction, in the Vault of the Wardens +15
+  finished 15 November 2026 11:59:58 Budapest time (10:59:58 UTC).
+
 ## Mythic+ run videos
 
 A video of a run is listed by hand in `RUN_VIDEOS`

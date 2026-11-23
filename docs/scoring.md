@@ -259,6 +259,11 @@ decision: ask first.** When a rule does change, change its tests first and see t
   before the rename under the old name, and only the later ones under the new name
   ([data-pipeline.md](data-pipeline.md#renamed-mythic-characters)). Tests:
   `MythicPlusRenamesTests`, `MythicPlusExportServiceTests` (`ExportAsync_ScoresARenamed…`).
+- A player's spec in a run listed in `MythicPlusSpecCorrections` is the listed one, whatever
+  the leaderboards say, for every spec filter, statistic and invalid-run rule
+  ([data-pipeline.md](data-pipeline.md#corrected-mythic-specs)). Tests:
+  `MythicPlusSpecCorrectionsTests`, `MythicPlusExportServiceTests`
+  (`ExportAsync_WritesACorrectedSpec…`).
 - **The scoring page** `/mythic-plus/scoring` explains all this with worked examples.
   `Score_MatchesTheScoringPageExamples` in `api/tests/AchievementLadder.Tests/MythicPlusExportServiceTests.cs`
   pins those examples, so change the page and the test together.
