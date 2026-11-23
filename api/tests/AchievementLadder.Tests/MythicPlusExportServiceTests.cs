@@ -436,6 +436,73 @@ public sealed class MythicPlusExportServiceTests
     }
 
     [Fact]
+    public async Task ExportAsync_WritesACorrectedSpecOverTheOneTheLeaderboardsGive()
+    {
+        var outputDirectory = CreateTempDirectory();
+        try
+        {
+            var dnxVaultRunFinished = new DateTimeOffset(
+                2026,
+                11,
+                15,
+                10,
+                59,
+                58,
+                TimeSpan.Zero
+            ).ToUnixTimeSeconds();
+            await new MythicPlusExportService(
+                outputDirectory,
+                new FakeChallengeApiClient(
+                    """
+                    {
+                      "dataUrlPrefix": "legion-",
+                      "challengemodemaps": {
+                        "207": { "challengeid": 207, "challengemapname": "Vault of the Wardens", "bronzemedaltime": 1980 }
+                      }
+                    }
+                    """,
+                    new()
+                    {
+                        [(Evermoon, 207)] = LeaderboardJson(
+                            Run(
+                                15,
+                                1_877_225,
+                                dnxVaultRunFinished,
+                                [],
+                                Member("Deepthrust", Evermoon, 12, "Vengeance", 0, "NFA"),
+                                Member("Dnx", Evermoon, 9, "Destruction", 2, "deeznuts")
+                            )
+                        ),
+                    }
+                ),
+                new FixedTimeProvider(new DateTimeOffset(2026, 11, 23, 9, 30, 0, TimeSpan.Zero))
+            ).ExportAsync(
+                new MythicPlusExporterOptions([Evermoon], AllowShrink: false),
+                CancellationToken.None
+            );
+
+            var index = ReadJson(outputDirectory, "index.json");
+            var specNames = index
+                .GetProperty("specs")
+                .EnumerateArray()
+                .Select(spec => spec.GetProperty("name").GetString())
+                .ToList();
+            var dnx = PlayerNames(index).IndexOf("Dnx");
+            var dnxSpec = ReadJson(outputDirectory, "votw.json")
+                .GetProperty("runs")[0][5]
+                .EnumerateArray()
+                .Single(member => member[0].GetInt32() == dnx)[1]
+                .GetInt32();
+            Assert.Equal("Affliction", specNames[dnxSpec]);
+            Assert.DoesNotContain("Destruction", specNames);
+        }
+        finally
+        {
+            Directory.Delete(outputDirectory, recursive: true);
+        }
+    }
+
+    [Fact]
     public async Task ExportAsync_KeepsEveryPlayerInPlaceAndAddsNewPlayersAtTheEnd()
     {
         var outputDirectory = CreateTempDirectory();
