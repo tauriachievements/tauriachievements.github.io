@@ -74,7 +74,7 @@
             }
           </span>
           <span class="profile-score-label">
-            {{ selectedSpec() ?? 'Mythic+' }} score@if (index()?.season?.name; as season) { · {{ season }}}
+            {{ selectedSpec() ?? 'Mythic+' }} score@if (seasonLabel(); as season) { · {{ season }}}
           @if (headerScanChange()?.isNew) {
             <span class="profile-new" title="New since the last scan">new</span>
           }

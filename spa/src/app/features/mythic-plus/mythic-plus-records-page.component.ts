@@ -27,6 +27,7 @@ import {
 } from './mythic-plus-records';
 import { MythicPlusRunDetailsComponent } from './mythic-plus-run-details.component';
 import { MemberView, RunView, toMemberView, toRunView } from './mythic-plus-views';
+import { seasonName } from './mythic-plus-seasons';
 import { CountUpDirective } from '../../shared/motion/count-up.directive';
 import { RevealDirective } from '../../shared/motion/reveal.directive';
 import { MythicPlusDataService, mythicPlusLoadError } from './mythic-plus-data.service';
@@ -117,6 +118,7 @@ export class MythicPlusRecordsPageComponent implements OnInit {
   }
 
   readonly index = signal<MythicPlusIndex | undefined>(undefined);
+  readonly seasonLabel = computed(() => seasonName(this.index()?.season));
   readonly lastEdited = computed(() => exportedAt(this.index()));
   readonly runs = signal<readonly MythicPlusRun[]>([]);
   readonly isLoading = signal(true);

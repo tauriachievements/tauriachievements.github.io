@@ -173,8 +173,9 @@ whose score changed, not the whole dataset.
 
 - `index.json`: `version`, when the leaderboards were read (`generatedAt`, UTC ISO 8601),
   `previousGeneratedAt` once there is an earlier export, the `tables` fingerprint (below), the
-  `season` (`MythicPlusCatalog.Season`: `id`, the `name` the pages show, "Season 1 - Patch
-  7.0.3", `raid` and `startDate`), `dungeons` and `affixes`, and the tables the dungeon files point into: `specs` as
+  `season` (`MythicPlusCatalog.Season`: `id`, `name` ("Season 1 - Patch 7.0.3"; the pages show
+  the name `MYTHIC_PLUS_SEASONS` gives the id, [frontend.md](frontend.md#mythic-seasons)), `raid`
+  and `startDate`), `dungeons` and `affixes`, and the tables the dungeon files point into: `specs` as
   objects and `players` as `[name, realm, guild, class, race, gender]`. A dungeon's `runCount`
   and `bestScore` count only the valid runs; `invalidRunCount` is there when it has invalid ones
   ([below](#invalid-mythic-runs)).

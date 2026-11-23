@@ -68,6 +68,7 @@ import {
   toMemberView,
   toRunView
 } from './mythic-plus-views';
+import { seasonName } from './mythic-plus-seasons';
 import { CountUpDirective } from '../../shared/motion/count-up.directive';
 import { characterTransitionName } from '../../shared/motion/motion';
 import { RevealDirective } from '../../shared/motion/reveal.directive';
@@ -148,6 +149,7 @@ export class MythicPlusProfilePageComponent implements OnInit {
   private readonly pageSize = computed(() => this.cards() ? MYTHIC_PLUS_CARDS_PAGE_SIZE : MYTHIC_PLUS_PAGE_SIZE);
 
   readonly index = signal<MythicPlusIndex | undefined>(undefined);
+  readonly seasonLabel = computed(() => seasonName(this.index()?.season));
   readonly lastEdited = computed(() => exportedAt(this.index()));
   readonly allRuns = signal<readonly MythicPlusRun[]>([]);
   private readonly allInvalidRuns = signal<readonly MythicPlusRun[]>([]);

@@ -214,15 +214,18 @@ instead.
 ### Mythic+ seasons
 
 The Mythic+ leaderboard, Stats and guild pages pick their season from a dropdown, with This
-week as a separate toggle beside it (`app-mythic-plus-season-switch`). `seasonChoices`
-(`mythic-plus-seasons.ts`) lists the exported season first, `index.json`'s `season`, whose name
-comes from `MythicPlusCatalog.Season` in the exporter. Then come the seasons in
-`UPCOMING_MYTHIC_PLUS_SEASONS` that haven't started ("Season 2 - Patch 7.1.0"). The exported
-season is the default and is never written to the URL; picking an upcoming one writes
-`?season=legion-s2`, turns This week off and shows `app-mythic-plus-season-waiting` in place of
-the page's data. While it shows, the page has loaded `index.json` only: the dungeon files load
-when a season with data is picked. An upcoming season whose id the export holds is listed as the
-exported season, so its `UPCOMING_MYTHIC_PLUS_SEASONS` entry can go.
+week as a separate toggle beside it (`app-mythic-plus-season-switch`). `MYTHIC_PLUS_SEASONS`
+(`mythic-plus-seasons.ts`) lists every season the site knows, oldest first, by id with the name
+it shows ("Season 1 - Patch 7.0.3"). `seasonChoices` lists the exported season, `index.json`'s
+`season`, first, then the seasons after it in that list, which haven't started ("Season 2 - Patch
+7.1.0"). `seasonName` gives a season the name the list holds for its id, or the exported `name`
+when the list doesn't hold it; the dropdown and every Mythic+ heading that names the season
+(Stats, Records, a character's score, a guild ladder, the leaderboard's spec chart) show that
+name, so a rename shows as soon as the site deploys. The exporter's `MythicPlusCatalog.Season`
+carries the same name. The exported season is the default and is never written to the URL;
+picking an upcoming one writes `?season=legion-s2`, turns This week off and shows
+`app-mythic-plus-season-waiting` in place of the page's data. While it shows, the page has
+loaded `index.json` only: the dungeon files load when a season with data is picked.
 
 ## Loading data
 

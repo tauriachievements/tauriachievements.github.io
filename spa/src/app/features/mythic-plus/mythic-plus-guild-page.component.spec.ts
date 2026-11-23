@@ -254,8 +254,8 @@ describe('MythicPlusGuildPageComponent', () => {
     const { harness, page, element } = await open('/mythic-plus/guild/evermoon/Skill%20Issue');
     const location = TestBed.inject(Location);
 
-    expect(element.querySelector('#mythicPlusSeasonTrigger .trigger-current')?.textContent?.trim()).toBe('Legion Season 1');
-    expect(texts(element, '#mythicPlusSeasonMenu [role="option"]')).toEqual(['Legion Season 1', 'Season 2 - Patch 7.1.0']);
+    expect(element.querySelector('#mythicPlusSeasonTrigger .trigger-current')?.textContent?.trim()).toBe('Season 1 - Patch 7.0.3');
+    expect(texts(element, '#mythicPlusSeasonMenu [role="option"]')).toEqual(['Season 1 - Patch 7.0.3', 'Season 2 - Patch 7.1.0']);
 
     element.querySelector<HTMLButtonElement>('.period-bar .week-toggle')?.click();
     harness.detectChanges();

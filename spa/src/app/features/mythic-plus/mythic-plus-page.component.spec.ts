@@ -312,7 +312,6 @@ describe('MythicPlusPageComponent invalid runs', () => {
 
 describe('MythicPlusPageComponent seasons', () => {
   const seasons = exportOf('hhhhhhhhhhhh', [['Exkeito', 'Evermoon', '', 11, 4, 0]]);
-  seasons.index.season = { ...seasons.index.season, name: 'Season 1 - Patch 7.0.3' };
   seasons.cos.runs = [[19, 1297289, 1791293804, 196, [9, 7, 13], [[0, 0]]]];
 
   async function open(url: string) {
