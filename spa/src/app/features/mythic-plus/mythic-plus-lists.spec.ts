@@ -122,6 +122,63 @@ describe('MythicPlusRunsListComponent', () => {
     expect(cards[0].querySelector('app-mythic-plus-run-details')).toBeNull();
   });
 
+  const videoUrl = 'https://www.youtube.com/watch?v=b5DZMFugfXY';
+
+  it('links a run\'s video from a nameless column right of Completed, without toggling the run', () => {
+    const fixture = TestBed.createComponent(MythicPlusRunsListComponent);
+    fixture.componentRef.setInput('rows', [{ ...runRow('a', 1), video: videoUrl }, runRow('b', 2)]);
+    fixture.componentRef.setInput('completed', true);
+    fixture.detectChanges();
+    const toggled: string[] = [];
+    fixture.componentInstance.toggleRun.subscribe(id => toggled.push(id));
+
+    const headers: HTMLElement[] = [...fixture.nativeElement.querySelectorAll('thead th')];
+    expect(headers.at(-2)?.classList).toContain('col-completed');
+    expect(headers.at(-1)?.querySelector('.visually-hidden')?.textContent).toBe('Video');
+    expect(headers.at(-1)?.textContent?.trim()).toBe('Video');
+
+    const rows: HTMLElement[] = [...fixture.nativeElement.querySelectorAll('tbody .run-row')];
+    const link = rows[0].querySelector<HTMLAnchorElement>('td.col-video:last-child a.video-link');
+    expect(link?.getAttribute('href')).toBe(videoUrl);
+    expect(link?.getAttribute('target')).toBe('_blank');
+    expect(link?.getAttribute('rel')).toBe('noopener noreferrer');
+    expect(link?.getAttribute('aria-label')).toBe('Watch the video of this run');
+    expect(rows[1].querySelector('a.video-link')).toBeNull();
+    expect(rows[1].querySelectorAll('td').length).toBe(rows[0].querySelectorAll('td').length);
+
+    link?.addEventListener('click', event => event.preventDefault());
+    link?.click();
+    expect(toggled).toEqual([]);
+  });
+
+  it('spans the details row across the video column', () => {
+    const fixture = TestBed.createComponent(MythicPlusRunsListComponent);
+    fixture.componentRef.setInput('rows', [runRow('a', 1)]);
+    fixture.componentRef.setInput('completed', true);
+    fixture.componentRef.setInput('expandedRunId', 'a');
+    fixture.detectChanges();
+
+    const columns = fixture.nativeElement.querySelectorAll('thead th').length;
+    expect(fixture.nativeElement.querySelector('.details-row td').getAttribute('colspan')).toBe(String(columns));
+  });
+
+  it('marks a card whose run has a video, and links the video from the run details', () => {
+    const fixture = TestBed.createComponent(MythicPlusRunsListComponent);
+    fixture.componentRef.setInput('rows', [{ ...runRow('a', 1), video: videoUrl }, runRow('b', 2)]);
+    fixture.componentRef.setInput('cards', true);
+    fixture.componentRef.setInput('completed', true);
+    fixture.componentRef.setInput('expandedRunId', 'a');
+    fixture.detectChanges();
+
+    const cards: HTMLElement[] = [...fixture.nativeElement.querySelectorAll('.run-card')];
+    expect(cards[0].querySelector('.run-card-summary .card-video')).not.toBeNull();
+    expect(cards[1].querySelector('.card-video')).toBeNull();
+    const watch = cards[0].querySelector<HTMLAnchorElement>('app-mythic-plus-run-details a.details-video');
+    expect(watch?.getAttribute('href')).toBe(videoUrl);
+    expect(watch?.getAttribute('target')).toBe('_blank');
+    expect(watch?.textContent?.trim()).toBe('Watch the video');
+  });
+
   it('shows the empty message instead of an empty list', () => {
     const fixture = TestBed.createComponent(MythicPlusRunsListComponent);
     fixture.componentRef.setInput('rows', []);

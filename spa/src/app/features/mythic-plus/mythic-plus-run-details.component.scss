@@ -29,6 +29,25 @@
 .details-result { color: #7fdc8f; font-size: .85rem; font-weight: 700; }
 .details-result.depleted { color: #e06666; }
 .details-date { color: #9a9a9a; font-size: .8rem; }
+
+.details-video {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 6px;
+  color: #e6e6e6;
+  font-size: .85rem;
+  font-weight: 700;
+  text-decoration: none;
+
+  svg { width: 18px; height: 18px; flex: none; fill: currentColor; }
+
+  &:focus-visible { color: $gold; outline: 2px solid $gold; outline-offset: 2px; }
+
+  @media (hover: hover) {
+    &:hover { color: $gold; text-decoration: underline; }
+  }
+}
 .run-invalid { margin-top: 6px; color: #ff9a9a; font-size: .8rem; }
 .invalid-tag { @include invalid-tag; margin-right: 4px; }
 

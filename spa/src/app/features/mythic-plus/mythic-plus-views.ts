@@ -18,6 +18,7 @@ import {
   upgradeCutoffs
 } from './mythic-plus';
 import { guildLadderLink, guildOf } from './mythic-plus-guild';
+import { RUN_VIDEOS, RunVideo, runVideoUrl } from './mythic-plus-videos';
 import { CLASS_NAMES, RACE_NAMES } from '../../game/wow';
 import { specIconFor } from '../../game/wow-specs';
 import { formatClock, formatDuration } from '../../shared/time-format';
@@ -65,6 +66,7 @@ export interface RunView {
   dps: MemberView[];
   roster: MemberView[];
   invalid?: string;
+  video?: string;
 }
 
 export interface RunRow extends RunView {
@@ -186,8 +188,10 @@ export function toRunView(
   run: MythicPlusRun,
   dungeon: MythicPlusDungeon,
   affixes: ReadonlyMap<number, MythicPlusAffix>,
-  colors: ScoreColors
+  colors: ScoreColors,
+  videos: readonly RunVideo[] = RUN_VIDEOS
 ): RunView {
+  const video = runVideoUrl(run, videos);
   const upgrades = keystoneUpgrades(run.clearTimeSeconds, dungeon.timerSeconds);
   const roster = sortRoster(run.roster).map(toMemberView);
 
@@ -214,6 +218,7 @@ export function toRunView(
     healers: roster.filter(member => member.role === 'healer'),
     dps: roster.filter(member => member.role === 'dps'),
     roster,
-    ...(run.invalid === undefined ? {} : { invalid: run.invalid })
+    ...(run.invalid === undefined ? {} : { invalid: run.invalid }),
+    ...(video === undefined ? {} : { video })
   };
 }

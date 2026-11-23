@@ -2,6 +2,7 @@ import { DatePipe } from '@angular/common';
 import { ChangeDetectionStrategy, Component, input } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { ROLE_LABELS, UPGRADE_CUTOFFS } from './mythic-plus';
+import { VIDEO_ICON_PATH } from './mythic-plus-videos';
 import { RunView } from './mythic-plus-views';
 
 @Component({
@@ -16,4 +17,5 @@ export class MythicPlusRunDetailsComponent {
 
   readonly roleLabels = ROLE_LABELS;
   readonly cutoffMarks = UPGRADE_CUTOFFS.filter(cutoff => cutoff.percent < 100);
+  readonly videoIconPath = VIDEO_ICON_PATH;
 }
