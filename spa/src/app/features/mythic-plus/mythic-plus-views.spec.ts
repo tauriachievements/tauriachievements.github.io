@@ -45,6 +45,15 @@ describe('toRunView', () => {
     expect(toRunView(run('cos', 12, '2026-11-01T20:00:00.000Z'), dungeon('cos'), new Map(), colors).invalid)
       .toBeUndefined();
   });
+
+  it('carries the video listed for the run, and none for a run without one', () => {
+    const videos = [{ dungeon: 'cos', player: 'Pretz', completedAt: '2026-11-01T20:00Z', url: 'https://www.youtube.com/watch?v=b5DZMFugfXY' }];
+    const filmed = run('cos', 25, '2026-11-01T20:00:12.000Z', [member('Pretz')]);
+
+    expect(toRunView(filmed, dungeon('cos'), new Map(), colors, videos).video).toBe('https://www.youtube.com/watch?v=b5DZMFugfXY');
+    expect(toRunView({ ...filmed, completedAt: '2026-11-02T20:00:12.000Z' }, dungeon('cos'), new Map(), colors, videos).video)
+      .toBeUndefined();
+  });
 });
 
 describe('bestRunCells', () => {

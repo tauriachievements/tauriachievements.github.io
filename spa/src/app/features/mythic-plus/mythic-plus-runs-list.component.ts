@@ -3,6 +3,7 @@ import { ChangeDetectionStrategy, Component, DestroyRef, inject, input, output, 
 import { RouterLink } from '@angular/router';
 import { upgradeStars } from './mythic-plus';
 import { MythicPlusRunDetailsComponent } from './mythic-plus-run-details.component';
+import { VIDEO_ICON_PATH } from './mythic-plus-videos';
 import { RunRow } from './mythic-plus-views';
 
 @Component({
@@ -45,6 +46,7 @@ export class MythicPlusRunsListComponent {
   }
 
   readonly upgradeStars = upgradeStars;
+  readonly videoIconPath = VIDEO_ICON_PATH;
 
   isExpanded(runId: string): boolean {
     return this.expandedRunId() === runId;

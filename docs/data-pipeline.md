@@ -246,6 +246,26 @@ gender, and when the last run under the old name finished (UTC, that run include
 - The list: Lastguard → Héll (Evermoon), last run as Lastguard 13 November 2026 17:23 Budapest
   time (16:23:51 UTC).
 
+## Mythic+ run videos
+
+A video of a run is listed by hand in `RUN_VIDEOS`
+(`spa/src/app/features/mythic-plus/mythic-plus-videos.ts`), not in the data files, so adding
+one needs no export: it shows after the next deploy. A run with a video gets a camera link in a
+column with no heading right of Completed in a runs table, a camera mark on its phone card, and
+"Watch the video" in its details. The link opens in a new tab.
+
+- An entry names the run by its dungeon's slug (its file name in `mythic-plus-data/`, such as
+  `cos`), one player of its group, and when it finished in UTC, to the minute
+  (`2026-11-23T01:15Z`) or to the second. Nobody finishes two runs of one dungeon in the same
+  minute, so that's one run.
+- A run's `id` can't name it: it's the run's place in its dungeon file by score, which moves
+  whenever a better run lands. Nor can the clear time: a character can clear the same dungeon at
+  the same level in the same whole second more than once.
+- The run's details show when it finished in the viewer's time zone (Budapest is UTC+1 in winter,
+  UTC+2 in summer). Its dungeon file has the exact time, as `completedAtUnix`.
+- The leaderboards name players as they are now, so after a rename the entry needs the new name
+  or another player of the group.
+
 ## Raid log files
 
 RaidLogExporter writes `raid-log-data/` for the `/raid-logs` pages, which decode it in

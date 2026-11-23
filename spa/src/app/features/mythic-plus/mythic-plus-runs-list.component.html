@@ -28,6 +28,9 @@
                   }
                 </span>
                 <span class="card-time">{{ row.clearTime }}@if (row.upgrades === 0) {<span class="visually-hidden"> over time</span>}</span>
+                @if (row.video) {
+                  <span class="card-video" title="Has a video"><svg viewBox="0 0 24 24" focusable="false" aria-hidden="true"><path [attr.d]="videoIconPath" /></svg><span class="visually-hidden">, has a video</span></span>
+                }
               </span>
               <span class="card-roster">
                 @for (member of row.roster; track `${member.name}-${member.realm}`) {
@@ -113,6 +116,7 @@
                 </button>
               } @else {Completed}
             </th>
+            <th scope="col" class="col-video"><span class="visually-hidden">Video</span></th>
           }
         </tr>
       </thead>
@@ -178,12 +182,24 @@
               <td class="col-completed" [title]="row.completedAt | date:'EEE, d MMM y · HH:mm'">
                 <time [attr.datetime]="row.completedAt">{{ completedAgo(row.completedAt) }}</time>
               </td>
+              <td class="col-video">
+                @if (row.video; as video) {
+                  <a
+                    class="video-link"
+                    [href]="video"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label="Watch the video of this run"
+                    title="Watch the video"
+                    (click)="$event.stopPropagation()"><svg viewBox="0 0 24 24" focusable="false" aria-hidden="true"><path [attr.d]="videoIconPath" /></svg></a>
+                }
+              </td>
             }
           </tr>
 
           @if (isExpanded(row.id)) {
             <tr class="details-row" [id]="'run-details-' + row.id" animate.leave="details-leaving">
-              <td [attr.colspan]="completed() ? 11 : 10">
+              <td [attr.colspan]="completed() ? 12 : 10">
                 <div class="details-reveal"><div class="details-clip"><app-mythic-plus-run-details [run]="row" /></div></div>
               </td>
             </tr>
@@ -191,7 +207,7 @@
         }
         @if (rows().length === 0) {
           <tr class="empty-row">
-            <td [attr.colspan]="completed() ? 11 : 10">{{ emptyMessage() }}</td>
+            <td [attr.colspan]="completed() ? 12 : 10">{{ emptyMessage() }}</td>
           </tr>
         }
       </tbody>
