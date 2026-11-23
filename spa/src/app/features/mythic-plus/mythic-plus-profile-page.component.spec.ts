@@ -162,6 +162,13 @@ describe('MythicPlusProfilePageComponent', () => {
     expect(page.timeline().at(-1)?.score).toBe(290);
   });
 
+  it("names the season beside the score by the site's name, not the exported one", async () => {
+    const { element } = await open('/mythic-plus/character/evermoon/Progtrix');
+
+    expect(element.querySelector('.profile-score-label')?.textContent?.replace(/\s+/g, ' ').trim())
+      .toBe('Mythic+ score · Season 1 - Patch 7.0.3');
+  });
+
   it('lists an invalid run in the history, tagged with its reason, without counting it anywhere else', async () => {
     const reason = 'Court of Stars +17 or higher, before the 9 November fixes';
     const withInvalid = { ...runs, cos: [[20, 1500000, unix('2026-09-21T18:00:00Z'), 200, [], [[1, 1], [0, 0]], reason] as MythicPlusRunEntry] };

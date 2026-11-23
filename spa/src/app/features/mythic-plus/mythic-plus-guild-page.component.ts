@@ -12,6 +12,7 @@ import {
 } from '@angular/core';
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Params, RouterLink } from '@angular/router';
+import { of, switchMap, tap } from 'rxjs';
 import { getGuildArmoryUrl } from '../../game/armory';
 import { injectCompactViewport } from '../../shared/compact-viewport';
 import { FilterDropdownComponent } from '../../shared/filter-dropdown.component';
@@ -61,6 +62,9 @@ import {
   toMemberView
 } from './mythic-plus-views';
 import { MythicPlusWeekAffixesComponent } from './mythic-plus-week-affixes.component';
+import { MythicPlusSeasonSwitchComponent } from './mythic-plus-season-switch.component';
+import { MythicPlusSeasonWaitingComponent } from './mythic-plus-season-waiting.component';
+import { chosenSeason, seasonChoices, seasonParam } from './mythic-plus-seasons';
 import { MythicPlusDataService, mythicPlusLoadError } from './mythic-plus-data.service';
 import { CLASS_FILTER_OPTIONS, CLASS_NAMES, RoleFilter, parseClassId, parseRoleFilter, realmSlug } from '../../game/wow';
 import { RoleFilterComponent } from '../../shared/role-filter.component';
@@ -88,6 +92,8 @@ const TOP_OVERALL = 100;
     RouterLink,
     MythicPlusPlayersListComponent,
     MythicPlusWeekAffixesComponent,
+    MythicPlusSeasonSwitchComponent,
+    MythicPlusSeasonWaitingComponent,
     FilterDropdownComponent,
     RoleFilterComponent,
     MobileFilterToggleComponent,
@@ -115,6 +121,7 @@ export class MythicPlusGuildPageComponent implements OnInit {
   readonly allRuns = signal<readonly MythicPlusRun[]>([]);
   readonly isLoading = signal(true);
   readonly loadError = signal<string | undefined>(undefined);
+  private runsLoaded = false;
 
   private readonly params = toSignal(this.route.paramMap, { initialValue: this.route.snapshot.paramMap });
   readonly urlRealm = computed(() => this.params().get('realm') ?? '');
@@ -122,6 +129,7 @@ export class MythicPlusGuildPageComponent implements OnInit {
 
   private readonly query = this.route.snapshot.queryParamMap;
   readonly period = signal<LadderPeriod>(this.query.get('period') === 'week' ? 'week' : 'season');
+  private readonly seasonId = signal<string | undefined>(this.query.get('season') ?? undefined);
   readonly selectedDungeonId = signal<string | undefined>(this.query.get('dungeon') ?? undefined);
   readonly roleFilter = signal<RoleFilter | undefined>(parseRoleFilter(this.query.get('role')));
   readonly classFilter = signal<number | undefined>(this.roleFilter() ? undefined : parseClassId(this.query.get('class')));
@@ -163,6 +171,10 @@ export class MythicPlusGuildPageComponent implements OnInit {
     const isMember = inGuild(guild);
     return this.players().filter(([, realm, guildName]) => isMember({ realm, guild: guildName })).length;
   });
+
+  readonly seasons = computed(() => seasonChoices(this.index()?.season));
+  readonly season = computed(() => chosenSeason(this.seasons(), this.seasonId()));
+  readonly upcomingSeason = computed(() => this.season()?.upcoming ? this.season() : undefined);
 
   readonly dungeons = computed(() => this.index()?.dungeons ?? []);
   readonly selectedDungeon = computed(() => this.dungeons().find(dungeon => dungeon.id === this.selectedDungeonId()));
@@ -357,6 +369,21 @@ export class MythicPlusGuildPageComponent implements OnInit {
     this.loadData();
   }
 
+  pickSeason(seasonId: string): void {
+    if (seasonId === this.season()?.id) {
+      return;
+    }
+
+    this.seasonId.set(seasonId);
+    if (this.upcomingSeason()) {
+      this.period.set('season');
+    }
+    this.resetRows();
+    if (!this.upcomingSeason() && !this.runsLoaded) {
+      this.loadData();
+    }
+  }
+
   setPeriod(period: LadderPeriod): void {
     if (period === this.period()) {
       return;
@@ -438,7 +465,8 @@ export class MythicPlusGuildPageComponent implements OnInit {
 
     const highlight = this.highlightParam();
     this.replaceUrl({
-      period: this.period() === 'week' ? 'week' : null,
+      season: seasonParam(this.season()),
+      period: this.period() === 'week' && !this.upcomingSeason() ? 'week' : null,
       dungeon: this.selectedDungeon()?.id ?? null,
       role: this.roleFilter() ?? null,
       class: this.classFilter() ?? null,
@@ -450,12 +478,18 @@ export class MythicPlusGuildPageComponent implements OnInit {
   loadData(): void {
     this.isLoading.set(true);
     this.loadError.set(undefined);
-    this.mythicPlusData.season()
-      .pipe(takeUntilDestroyed(this.destroyRef))
+    this.mythicPlusData.index()
+      .pipe(
+        tap(index => this.index.set(index)),
+        switchMap(() => this.upcomingSeason() ? of(undefined) : this.mythicPlusData.season()),
+        takeUntilDestroyed(this.destroyRef))
       .subscribe({
-        next: ({ index, runs }) => {
-          this.index.set(index);
-          this.allRuns.set(runs);
+        next: season => {
+          if (season) {
+            this.index.set(season.index);
+            this.allRuns.set(season.runs);
+            this.runsLoaded = true;
+          }
           this.isLoading.set(false);
         },
         error: error => {

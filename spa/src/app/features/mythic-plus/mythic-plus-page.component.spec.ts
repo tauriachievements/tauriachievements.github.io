@@ -28,6 +28,7 @@ const oct7 = exportOf('bbbbbbbbbbbb', [['Exkeito', 'Evermoon', '', 11, 4, 0]]);
 
 class FakeDataFiles {
   refreshes = 0;
+  fetches = 0;
   constructor(private held: MythicPlusIndex, private readonly deployed: ReturnType<typeof exportOf>) {}
 
   getJson<T>(): Observable<T> {
@@ -35,6 +36,7 @@ class FakeDataFiles {
   }
 
   fetchJson<T>(): Observable<T> {
+    this.fetches++;
     return of(this.deployed.cos as T);
   }
 
@@ -305,5 +307,82 @@ describe('MythicPlusPageComponent invalid runs', () => {
     const { element } = await open(exportOf('eeeeeeeeeeee', [['Exkeito', 'Evermoon', '', 11, 4, 0]]));
 
     expect(element.querySelector('a.invalid-link')).toBeNull();
+  });
+});
+
+describe('MythicPlusPageComponent seasons', () => {
+  const seasons = exportOf('hhhhhhhhhhhh', [['Exkeito', 'Evermoon', '', 11, 4, 0]]);
+  seasons.cos.runs = [[19, 1297289, 1791293804, 196, [9, 7, 13], [[0, 0]]]];
+
+  async function open(url: string) {
+    const dataFiles = new FakeDataFiles(seasons.index, seasons);
+    TestBed.configureTestingModule({
+      providers: [
+        provideRouter([{ path: 'mythic-plus', component: MythicPlusPageComponent }]),
+        { provide: DataFileService, useValue: dataFiles }
+      ]
+    });
+    const harness = await RouterTestingHarness.create();
+    const page = await harness.navigateByUrl(url, MythicPlusPageComponent);
+    harness.detectChanges();
+    return { harness, page, dataFiles, element: harness.routeNativeElement as HTMLElement, location: TestBed.inject(Location) };
+  }
+
+  const texts = (element: HTMLElement, selector: string) =>
+    [...element.querySelectorAll(selector)].map(node => node.textContent?.trim());
+  const shownSeason = (element: HTMLElement) =>
+    element.querySelector('#mythicPlusSeasonTrigger .trigger-current')?.textContent?.trim();
+  const weekToggle = (element: HTMLElement) => element.querySelector<HTMLButtonElement>('.period-bar .week-toggle');
+
+  it('picks the season from a dropdown of the exported season and Season 2, with This week as a toggle beside it', async () => {
+    const { element } = await open('/mythic-plus');
+
+    expect(shownSeason(element)).toBe('Season 1 - Patch 7.0.3');
+    expect(texts(element, '#mythicPlusSeasonMenu [role="option"]')).toEqual(['Season 1 - Patch 7.0.3', 'Season 2 - Patch 7.1.0']);
+    const week = weekToggle(element);
+    expect([week?.textContent?.trim(), week?.getAttribute('aria-pressed'), week?.disabled]).toEqual(['This week', 'false', false]);
+  });
+
+  it('turns This week on and off, keeping it in the address bar', async () => {
+    const { harness, page, element, location } = await open('/mythic-plus');
+
+    weekToggle(element)?.click();
+    harness.detectChanges();
+    expect([page.period(), location.path(), weekToggle(element)?.getAttribute('aria-pressed')])
+      .toEqual(['week', '/mythic-plus?period=week', 'true']);
+
+    weekToggle(element)?.click();
+    harness.detectChanges();
+    expect([page.period(), location.path()]).toEqual(['season', '/mythic-plus']);
+  });
+
+  it('opens the Season 2 waiting room from the address bar without downloading a dungeon file', async () => {
+    const { element, dataFiles } = await open('/mythic-plus?season=legion-s2');
+
+    expect(shownSeason(element)).toBe('Season 2 - Patch 7.1.0');
+    expect(element.querySelector('app-mythic-plus-season-waiting h2')?.textContent).toContain('Season 2 - Patch 7.1.0');
+    expect(element.querySelector('.dungeon-picker')).toBeNull();
+    expect(weekToggle(element)?.disabled).toBe(true);
+    expect(dataFiles.fetches).toBe(0);
+  });
+
+  it('switches This week off for Season 2 and keeps the season in the address bar', async () => {
+    const { page, location } = await open('/mythic-plus?period=week');
+
+    page.pickSeason('legion-s2');
+
+    expect([page.period(), location.path()]).toEqual(['season', '/mythic-plus?season=legion-s2']);
+  });
+
+  it('leaves the queue for the exported season and loads its runs', async () => {
+    const { harness, page, element, dataFiles, location } = await open('/mythic-plus?season=legion-s2');
+
+    element.querySelector<HTMLButtonElement>('app-mythic-plus-season-waiting .leave-queue')?.click();
+    harness.detectChanges();
+
+    expect(location.path()).toBe('/mythic-plus');
+    expect(dataFiles.fetches).toBe(1);
+    expect(page.dungeonRuns().length).toBe(1);
+    expect(element.querySelector('.dungeon-picker')).not.toBeNull();
   });
 });

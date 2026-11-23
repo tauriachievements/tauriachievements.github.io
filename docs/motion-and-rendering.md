@@ -74,6 +74,9 @@ touching motion or layering.
   `border-color`, so the button never gets a layer of its own and the label keeps LCD text.
   Hovering stops the pulse, plays one sheen and holds a steady halo; keyboard focus stops it so
   the focus ring shows; on /support it doesn't run.
+- **The Mythic+ waiting room's hourglass** (`app-mythic-plus-season-waiting`) turns over every
+  3 s: `mp-hourglass-turn` makes two half-turns in its 6 s loop, so it ends where it started and
+  loops without a jump. The sand doesn't move.
 - **Reduced motion:** wrap animation in the `motion-safe` mixin
   (`@media (prefers-reduced-motion: no-preference)`). The directives check
   `prefersReducedMotion()` and do nothing when it's on. View transitions are switched off

@@ -51,18 +51,19 @@ const index: MythicPlusIndex = {
 
 const runs: Record<string, MythicPlusRunEntry[]> = {
   nl: [
-    [16, 1500000, unix('2026-10-10T18:00:00Z'), 160, [], [[2, 2], [0, 0]]],
-    [14, 1600000, unix('2026-10-11T18:00:00Z'), 140, [], [[1, 1], [3, 3]]]
+    [16, 1500000, unix('2026-10-10T18:00:00Z'), 160, [9, 7, 13], [[2, 2], [0, 0]]],
+    [14, 1600000, unix('2026-10-11T18:00:00Z'), 140, [9, 7, 13], [[1, 1], [3, 3]]]
   ],
   dht: [
-    [15, 1500000, unix('2026-10-14T18:00:00Z'), 150, [], [[1, 1], [2, 2]]],
-    [12, 1600000, unix('2026-10-13T18:00:00Z'), 120, [], [[0, 4], [4, 3]]],
-    [13, 1700000, unix('2026-10-09T18:00:00Z'), 130, [], [[1, 1]]]
+    [15, 1500000, unix('2026-10-14T18:00:00Z'), 150, [9, 7, 13], [[1, 1], [2, 2]]],
+    [12, 1600000, unix('2026-10-13T18:00:00Z'), 120, [9, 7, 13], [[0, 4], [4, 3]]],
+    [13, 1700000, unix('2026-10-09T18:00:00Z'), 130, [9, 7, 13], [[1, 1]]]
   ]
 };
 
 class FakeDataFiles {
   refreshes = 0;
+  fetches = 0;
   constructor(private staleTables?: string, private readonly staysStale = false) {}
 
   getJson<T>(): Observable<T> {
@@ -70,6 +71,7 @@ class FakeDataFiles {
   }
 
   fetchJson<T>(path: string): Observable<T> {
+    this.fetches++;
     const dungeon = path.replace(/^.*\//, '').replace('.json', '');
     const file: MythicPlusDungeonFile = { version: 1, dungeon, tables: this.staleTables ?? index.tables, runs: runs[dungeon] };
     return of(file as T);
@@ -246,6 +248,58 @@ describe('MythicPlusGuildPageComponent', () => {
 
     expect(page.guild()).toBeUndefined();
     expect(element.querySelector('.not-found h1')?.textContent).toBe('No Mythic+ runs for Ghost Crew this season');
+  });
+
+  it('picks the season from a dropdown, with This week as a toggle beside it', async () => {
+    const { harness, page, element } = await open('/mythic-plus/guild/evermoon/Skill%20Issue');
+    const location = TestBed.inject(Location);
+
+    expect(element.querySelector('#mythicPlusSeasonTrigger .trigger-current')?.textContent?.trim()).toBe('Season 1 - Patch 7.0.3');
+    expect(texts(element, '#mythicPlusSeasonMenu [role="option"]')).toEqual(['Season 1 - Patch 7.0.3', 'Season 2 - Patch 7.1.0']);
+
+    element.querySelector<HTMLButtonElement>('.period-bar .week-toggle')?.click();
+    harness.detectChanges();
+    expect([page.period(), location.path()]).toEqual(['week', '/mythic-plus/guild/evermoon/Skill%20Issue?period=week']);
+  });
+
+  it("opens the Season 2 waiting room under the guild's name without downloading a dungeon file", async () => {
+    const dataFiles = new FakeDataFiles();
+    const { element } = await open('/mythic-plus/guild/evermoon/Skill%20Issue?season=legion-s2', dataFiles);
+
+    expect(element.querySelector('h1')?.textContent).toBe('Skill Issue');
+    expect(element.querySelector('.guild-heading .eyebrow')?.textContent).toBe('Mythic+ guild ladder · Season 2 - Patch 7.1.0');
+    expect(element.querySelector('app-mythic-plus-season-waiting h2')?.textContent).toContain('Season 2 - Patch 7.1.0');
+    expect(element.querySelector('.guild-header .summary')).toBeNull();
+    expect(element.querySelector('.dungeon-picker')).toBeNull();
+    expect(element.querySelector<HTMLButtonElement>('.period-bar .week-toggle')?.disabled).toBe(true);
+    expect(dataFiles.fetches).toBe(0);
+  });
+
+  it('keeps the picked season in the address bar, and leaving the queue loads the runs', async () => {
+    const dataFiles = new FakeDataFiles();
+    const { harness, page, element } = await open('/mythic-plus/guild/evermoon/Skill%20Issue?period=week', dataFiles);
+    const location = TestBed.inject(Location);
+
+    page.pickSeason('legion-s2');
+    harness.detectChanges();
+    expect([page.period(), location.path()]).toEqual(['season', '/mythic-plus/guild/evermoon/Skill%20Issue?season=legion-s2']);
+
+    element.querySelector<HTMLButtonElement>('app-mythic-plus-season-waiting .leave-queue')?.click();
+    harness.detectChanges();
+    expect(location.path()).toBe('/mythic-plus/guild/evermoon/Skill%20Issue');
+    expect(page.rows()).toHaveLength(3);
+  });
+
+  it('loads the runs when the exported season is picked after opening on Season 2', async () => {
+    const dataFiles = new FakeDataFiles();
+    const { harness, page } = await open('/mythic-plus/guild/evermoon/Skill%20Issue?season=legion-s2', dataFiles);
+    const fetchedBefore = dataFiles.fetches;
+
+    page.pickSeason('legion-s1');
+    harness.detectChanges();
+
+    expect([fetchedBefore, dataFiles.fetches]).toEqual([0, 2]);
+    expect(page.rows().map(row => row.member.name)).toEqual(['Polán', 'Dksmus', 'Newbie']);
   });
 
   it('loads everything again once when the dungeon files come from a newer export', async () => {

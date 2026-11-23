@@ -45,6 +45,9 @@ import {
   toRunView
 } from './mythic-plus-views';
 import { MythicPlusWeekAffixesComponent } from './mythic-plus-week-affixes.component';
+import { MythicPlusSeasonSwitchComponent } from './mythic-plus-season-switch.component';
+import { MythicPlusSeasonWaitingComponent } from './mythic-plus-season-waiting.component';
+import { seasonParam } from './mythic-plus-seasons';
 import { FilterDropdownComponent } from '../../shared/filter-dropdown.component';
 import { FilterDropdownCoordinatorService } from '../../shared/filter-dropdown-coordinator.service';
 import { FilterDropdownValue } from '../../shared/filter-dropdown.types';
@@ -93,6 +96,8 @@ interface CharacterFilter {
     RouterLink,
     MythicPlusSpecChartComponent,
     MythicPlusWeekAffixesComponent,
+    MythicPlusSeasonSwitchComponent,
+    MythicPlusSeasonWaitingComponent,
     MythicPlusRunsListComponent,
     MythicPlusPlayersListComponent,
     FilterDropdownComponent,
@@ -127,6 +132,9 @@ export class MythicPlusPageComponent implements OnInit {
   readonly loadError = this.store.loadError;
   readonly dungeons = this.store.dungeons;
   readonly selectedDungeon = this.store.selectedDungeon;
+  readonly seasons = this.store.seasons;
+  readonly season = this.store.season;
+  readonly upcomingSeason = this.store.upcomingSeason;
   readonly page = signal(parsePage(this.route.snapshot.queryParamMap.get('page')));
   readonly search = signal('');
   private readonly characterParam = signal(parseCharacterParam(this.route.snapshot.queryParamMap.get('character')));
@@ -212,7 +220,8 @@ export class MythicPlusPageComponent implements OnInit {
     this.selectedDungeon(),
     this.period() === 'week' ? this.affixWeek()?.since : undefined));
 
-  readonly runsLoading = computed(() => !this.isLoading() && !this.loadError() && this.scopeRuns() === undefined);
+  readonly runsLoading = computed(() =>
+    !this.isLoading() && !this.loadError() && !this.upcomingSeason() && this.scopeRuns() === undefined);
 
   readonly dungeonRuns = computed(() => this.scopeRuns() ?? []);
 
@@ -361,7 +370,8 @@ export class MythicPlusPageComponent implements OnInit {
   }));
 
   ngOnInit(): void {
-    this.store.load(this.route.snapshot.queryParamMap.get('dungeon') ?? undefined);
+    const query = this.route.snapshot.queryParamMap;
+    this.store.load(query.get('dungeon') ?? undefined, query.get('season') ?? undefined);
   }
 
   retryLoad(): void {
@@ -429,6 +439,21 @@ export class MythicPlusPageComponent implements OnInit {
     this.page.set(1);
     this.expandedRunId.set(undefined);
     this.syncQueryParams();
+  }
+
+  pickSeason(seasonId: string): void {
+    if (seasonId === this.season()?.id) {
+      return;
+    }
+
+    this.store.seasonId.set(seasonId);
+    if (this.upcomingSeason()) {
+      this.period.set('season');
+    }
+    this.page.set(1);
+    this.expandedRunId.set(undefined);
+    this.syncQueryParams();
+    this.store.loadScopeRuns();
   }
 
   setView(view: LeaderboardView): void {
@@ -511,8 +536,9 @@ export class MythicPlusPageComponent implements OnInit {
     const players = this.view() === 'players';
     const character = this.characterFilter();
     this.replaceUrl({
+      season: seasonParam(this.season()),
       dungeon: this.selectedDungeon()?.id ?? null,
-      period: this.period() === 'week' ? 'week' : null,
+      period: this.period() === 'week' && !this.upcomingSeason() ? 'week' : null,
       view: players ? 'players' : null,
       sort: !players && this.runOrder() === 'latest' ? 'latest' : null,
       realm: players ? this.realmFilter() ?? null : null,

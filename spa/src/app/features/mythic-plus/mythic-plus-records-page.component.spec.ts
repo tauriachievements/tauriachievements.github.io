@@ -124,6 +124,12 @@ describe('MythicPlusRecordsPageComponent', () => {
     ]);
   });
 
+  it("names the season in the heading by the site's name, not the exported one", async () => {
+    const { element } = await open('/mythic-plus/records');
+
+    expect(element.querySelector('h1')?.textContent).toBe('Mythic+ records · Season 1 - Patch 7.0.3');
+  });
+
   it('opens a record into the full run details', async () => {
     const { harness, element } = await open('/mythic-plus/records');
     const toggle = element.querySelector<HTMLButtonElement>('.record-card .details-toggle');

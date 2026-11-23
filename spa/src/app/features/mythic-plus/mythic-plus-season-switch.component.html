@@ -1,0 +1,21 @@
+<app-filter-dropdown
+  class="season-picker"
+  dropdownId="mythicPlusSeason"
+  triggerId="mythicPlusSeasonTrigger"
+  ariaLabel="Mythic+ season"
+  [options]="options()"
+  [selectedValue]="selectedId()"
+  [widthLabels]="labels()"
+  [compact]="true"
+  (selectionChange)="pick($event)" />
+<button
+  type="button"
+  class="week-toggle"
+  [class.active]="pressed()"
+  [attr.aria-pressed]="pressed()"
+  [disabled]="weekDisabled()"
+  [title]="upcoming() ? 'This season has not started yet' : 'Show only the runs of this affix week'"
+  (click)="toggleWeek()">
+  <span class="week-toggle-track" aria-hidden="true"></span>
+  This week
+</button>
