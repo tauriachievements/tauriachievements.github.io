@@ -74,7 +74,7 @@ const ROSTER_GROUPS: readonly { readonly id: RosterGroupId; readonly label: stri
 export function rosterGroups(players: readonly RosterPlayer[]): RosterGroup[] {
   return ROSTER_GROUPS.map(group => ({
     ...group,
-    players: players.filter(player => rosterGroupOf(player) === group.id)
+    players: players.filter(player => rosterGroupOf(player) === group.id).sort(byTraits)
   }));
 }
 
@@ -194,6 +194,10 @@ function shuffled<T>(items: readonly T[], random: () => number): T[] {
 
 function byName(a: RosterPlayer, b: RosterPlayer): number {
   return compareText(foldName(a.name), foldName(b.name)) || compareText(a.realm, b.realm);
+}
+
+function byTraits(a: RosterPlayer, b: RosterPlayer): number {
+  return (b.traits ?? -1) - (a.traits ?? -1) || byName(a, b);
 }
 
 function byTeamOrder(a: RosterPlayer, b: RosterPlayer): number {

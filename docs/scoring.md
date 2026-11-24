@@ -793,8 +793,9 @@ The unlisted `/rated-bg-picker` page splits the players who turned up into two t
   Melee, Ranged, then Healers. Ranged holds the ranged damage specs (`range` in `LEGION_SPECS`),
   Healers the healer specs, and Melee everyone else: the melee damage specs, tanks, and characters
   without a known spec or that the armory doesn't know. All three always show, and an empty one
-  says "Nobody on the list". Each group's heading counts its ticked players, and the bar above
-  the list counts the ticked players and healers.
+  says "Nobody on the list". Each group lists its players by traits, highest first, then by name,
+  with those whose traits aren't known last. Each group's heading counts its ticked players, and
+  the bar above the list counts the ticked players and healers.
 - **Shuffle needs exactly 20 ticked players with an even number of healers** (0 included); the
   page never ticks a 21st. While an odd number of healers is ticked, Shuffle stays off and the
   bar says why.

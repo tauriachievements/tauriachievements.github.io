@@ -87,7 +87,7 @@ describe('rosterPlayers', () => {
 });
 
 describe('rosterGroups', () => {
-  it('lists the melee with the tanks and unknown specs, then the ranged, then the healers, each by name', () => {
+  it('lists the melee with the tanks and unknown specs, then the ranged, then the healers', () => {
     const groups = rosterGroups(rosterPlayers(roster([
       entry('Zowy'),
       entry('Xyhop', { class: 5, spec: 'Shadow' }),
@@ -100,10 +100,24 @@ describe('rosterGroups', () => {
     ])));
 
     expect(groups.map(group => [group.label, group.players.map(player => player.name)])).toEqual([
-      ['Melee', ['Guardian', 'Nospec', 'Typo', 'Zowy']],
+      ['Melee', ['Guardian', 'Nospec', 'Zowy', 'Typo']],
       ['Ranged', ['Bomboclats', 'Xyhop']],
       ['Healers', ['Lakmir', 'Lythus']]
     ]);
+  });
+
+  it('sorts each group by traits, highest first, then by name, with unknown traits last', () => {
+    const [melee] = rosterGroups(rosterPlayers(roster([
+      entry('Allisa', { traits: 38 }),
+      entry('Dkügli', { traits: 54 }),
+      entry('Demifae', { traits: 54 }),
+      entry('Noartifact', { traits: undefined }),
+      { name: 'Typo', realm: 'Evermoon', notFound: true },
+      entry('Pesi', { traits: 43 })
+    ])));
+
+    expect(melee.players.map(player => player.name))
+      .toEqual(['Demifae', 'Dkügli', 'Pesi', 'Allisa', 'Noartifact', 'Typo']);
   });
 
   it('keeps all three groups when one has nobody in it', () => {
