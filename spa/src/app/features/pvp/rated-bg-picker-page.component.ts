@@ -17,23 +17,32 @@ import { ActivatedRoute } from '@angular/router';
 import { DataFileService } from '../../core/data-file.service';
 import { setPageHeader } from '../../core/page-header';
 import { injectReplaceUrl } from '../../core/url-state';
+import { FilterDropdownCoordinatorService } from '../../shared/filter-dropdown-coordinator.service';
+import { FilterDropdownComponent } from '../../shared/filter-dropdown.component';
+import { FilterDropdownValue } from '../../shared/filter-dropdown.types';
 import { LoadStateComponent } from '../../shared/load-state.component';
 import { prefersReducedMotion } from '../../shared/motion/motion';
 import {
+  COMPOSITION_CHOICES,
+  DEFAULT_COMPOSITION,
   FLAG_CARRIER_COUNT,
-  PICK_COUNT,
+  MATCH_SIZE,
+  Match,
+  NO_BENCH_HISTORY,
   RATED_BG_ROSTER_FILE,
   RatedBgRosterFile,
+  RosterGroupId,
   RosterPlayer,
-  Teams,
+  TeamComposition,
   canShuffle,
-  countHealers,
-  healerWarning,
+  compositionOf,
+  linkedMatch,
   markTeamFlagCarrier,
   parseTeams,
+  playMatch,
   rosterGroups,
   rosterPlayers,
-  shuffleTeams,
+  shuffleWarning,
   teamGroups,
   teamSummary,
   teamsParams,
@@ -41,13 +50,15 @@ import {
   toggleFlagCarrier,
   togglePick
 } from './rated-bg-picker';
+import { RatedBgMarkComponent } from './rated-bg-mark.component';
 import { RatedBgPlayerComponent } from './rated-bg-player.component';
 
 @Component({
   selector: 'app-rated-bg-picker-page',
   templateUrl: './rated-bg-picker-page.component.html',
   styleUrls: ['./rated-bg-picker-page.component.scss'],
-  imports: [DecimalPipe, LoadStateComponent, RatedBgPlayerComponent],
+  imports: [DecimalPipe, FilterDropdownComponent, LoadStateComponent, RatedBgMarkComponent, RatedBgPlayerComponent],
+  providers: [FilterDropdownCoordinatorService],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class RatedBgPickerPageComponent implements OnInit {
@@ -55,27 +66,43 @@ export class RatedBgPickerPageComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly destroyRef = inject(DestroyRef);
   private readonly injector = inject(Injector);
+  private readonly dropdowns = inject(FilterDropdownCoordinatorService);
   private readonly replaceUrl = injectReplaceUrl();
   private readonly teamsSection = viewChild<ElementRef<HTMLElement>>('teamsSection');
 
-  readonly pickCount = PICK_COUNT;
+  readonly compositionChoices = COMPOSITION_CHOICES.map(choice => {
+    const options = choice.counts.map(count => ({ value: count, label: `${count}` }));
+    return {
+      ...choice,
+      dropdownId: `ratedBg${choice.label}`,
+      options,
+      widthLabels: options.map(option => option.label)
+    };
+  });
   readonly isLoading = signal(true);
   readonly loadError = signal<string | undefined>(undefined);
   readonly players = signal<readonly RosterPlayer[]>([]);
   readonly picked = signal<ReadonlySet<string>>(new Set());
-  readonly teams = signal<Teams | undefined>(undefined);
+  readonly composition = signal<TeamComposition>(DEFAULT_COMPOSITION);
+  readonly match = signal<Match | undefined>(undefined);
   readonly flagCarriers = signal<ReadonlySet<string>>(new Set());
   readonly staleLink = signal(false);
+  private readonly benchHistory = signal(NO_BENCH_HISTORY);
   private readonly generatedAt = signal<string | undefined>(undefined);
 
+  readonly teams = computed(() => this.match()?.teams);
+  readonly bench = computed(() => this.match()?.bench ?? []);
+  readonly locked = computed(() => this.teams() !== undefined);
   readonly pickedCount = computed(() => this.picked().size);
   private readonly pickedPlayers = computed(() => {
     const picked = this.picked();
     return this.players().filter(player => picked.has(player.key));
   });
-  readonly pickedHealers = computed(() => countHealers(this.pickedPlayers()));
-  readonly healerWarning = computed(() => healerWarning(this.pickedHealers()));
-  readonly readyToShuffle = computed(() => canShuffle(this.pickedPlayers()));
+  readonly shuffleWarning = computed(() => shuffleWarning(this.pickedPlayers(), this.composition()));
+  readonly readyToShuffle = computed(() => canShuffle(this.pickedPlayers(), this.composition()));
+  readonly benchCount = computed(() => this.readyToShuffle() ? this.pickedCount() - MATCH_SIZE : 0);
+  readonly compositionOpen = computed(() =>
+    this.compositionChoices.some(choice => this.dropdowns.isOpen(choice.dropdownId)));
   readonly groups = computed(() => {
     const picked = this.picked();
     return rosterGroups(this.players()).map(group => ({
@@ -85,13 +112,15 @@ export class RatedBgPickerPageComponent implements OnInit {
         .filter(player => picked.has(player.key)).length
     }));
   });
-  readonly teamViews = computed(() =>
-    this.teams()?.map((players, index) => ({
+  readonly teamViews = computed(() => {
+    const match = this.match();
+    return match?.teams.map((players, index) => ({
       label: `Team ${index + 1}`,
       groups: teamGroups(players),
-      summary: teamSummary(players)
-    }))
-  );
+      summary: teamSummary(players),
+      backFromBench: players.filter(player => match.backFromBench.has(player.key)).length
+    }));
+  });
   private readonly lastEdited = computed(() => {
     const generatedAt = this.generatedAt();
     return generatedAt ? new Date(generatedAt) : undefined;
@@ -134,12 +163,8 @@ export class RatedBgPickerPageComponent implements OnInit {
     return this.picked().has(player.key);
   }
 
-  isLocked(player: RosterPlayer): boolean {
-    return this.teams() !== undefined || (this.pickedCount() >= PICK_COUNT && !this.isPicked(player));
-  }
-
   toggle(player: RosterPlayer): void {
-    if (this.teams()) {
+    if (this.locked()) {
       return;
     }
 
@@ -147,12 +172,22 @@ export class RatedBgPickerPageComponent implements OnInit {
     this.flagCarriers.update(flagCarriers => tickedFlagCarriers(flagCarriers, this.picked()));
   }
 
+  setComposition(id: RosterGroupId, count: FilterDropdownValue): void {
+    if (typeof count === 'number') {
+      this.composition.update(composition => ({ ...composition, [id]: count }));
+    }
+  }
+
   isFlagCarrier(player: RosterPlayer): boolean {
     return this.flagCarriers().has(player.key);
   }
 
+  isBackFromBench(player: RosterPlayer): boolean {
+    return this.match()?.backFromBench.has(player.key) ?? false;
+  }
+
   canMarkFlagCarrier(player: RosterPlayer): boolean {
-    return !this.teams() && (this.isFlagCarrier(player) || this.flagCarriers().size < FLAG_CARRIER_COUNT);
+    return !this.locked() && (this.isFlagCarrier(player) || this.flagCarriers().size < FLAG_CARRIER_COUNT);
   }
 
   toggleFlagCarrier(player: RosterPlayer): void {
@@ -170,24 +205,27 @@ export class RatedBgPickerPageComponent implements OnInit {
 
   shuffle(): void {
     const players = this.pickedPlayers();
-    if (!canShuffle(players)) {
+    if (!canShuffle(players, this.composition())) {
       return;
     }
 
-    this.teams.set(shuffleTeams(players, Math.random, this.flagCarriers()));
+    const { match, history } = playMatch(players, this.composition(), this.benchHistory(), this.flagCarriers());
+    this.match.set(match);
+    this.benchHistory.set(history);
     this.staleLink.set(false);
     this.writeUrl();
     afterNextRender(() => this.scrollToTeams(), { injector: this.injector });
   }
 
   changePlayers(): void {
-    this.teams.set(undefined);
+    this.match.set(undefined);
     this.writeUrl();
   }
 
   clear(): void {
     this.picked.set(new Set());
-    this.teams.set(undefined);
+    this.match.set(undefined);
+    this.benchHistory.set(NO_BENCH_HISTORY);
     this.clearFlagCarriers();
     this.staleLink.set(false);
     this.writeUrl();
@@ -202,7 +240,10 @@ export class RatedBgPickerPageComponent implements OnInit {
 
     const teams = parseTeams(params.get('a'), params.get('b'), players);
     if (teams) {
-      this.teams.set(teams);
+      const { match, history } = linkedMatch(teams);
+      this.match.set(match);
+      this.benchHistory.set(history);
+      this.composition.set(compositionOf(teams) ?? DEFAULT_COMPOSITION);
       this.picked.set(new Set([...teams[0], ...teams[1]].map(player => player.key)));
       return;
     }

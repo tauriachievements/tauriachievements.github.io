@@ -21,13 +21,16 @@
           <section class="picker-card team" [attr.aria-label]="team.label">
             <header class="team-header">
               <h2>{{ team.label }}</h2>
-              <p class="team-summary">{{ team.summary.healers }} {{ team.summary.healers === 1 ? 'healer' : 'healers' }}@if (team.summary.averageItemLevel !== undefined) { · avg ilvl {{ team.summary.averageItemLevel | number: '1.1-1' }}}</p>
+              <p class="team-summary">{{ team.summary.healers }} {{ team.summary.healers === 1 ? 'healer' : 'healers' }}@if (team.summary.averageItemLevel !== undefined) { · avg ilvl {{ team.summary.averageItemLevel | number: '1.1-1' }}}@if (team.backFromBench) {<span class="bench-note-separator"> · </span><span class="bench-note"><app-rated-bg-mark kind="back-from-bench" [decorative]="true" />{{ team.backFromBench }} back from the bench</span>}</p>
             </header>
             @for (group of team.groups; track group.id) {
               <ol class="team-players" [attr.aria-label]="group.label">
                 @for (player of group.players; track player.key) {
-                  <li class="player-row" [class.flag-carrier-marked]="isFlagCarrier(player)">
-                    <app-rated-bg-player [player]="player" />
+                  <li
+                    class="player-row"
+                    [class.flag-carrier-marked]="isFlagCarrier(player)"
+                    [class.back-from-bench]="isBackFromBench(player)">
+                    <app-rated-bg-player [player]="player" [mark]="isBackFromBench(player) ? 'back-from-bench' : undefined" />
                     <button
                       type="button"
                       class="flag-carrier"
@@ -42,14 +45,46 @@
             }
           </section>
         }
+
+        @if (bench().length) {
+          <section class="picker-card bench" aria-label="Bench">
+            <header class="team-header">
+              <h2 class="bench-title"><app-rated-bg-mark kind="benched" [decorative]="true" />Bench</h2>
+              <p class="team-summary">{{ bench().length }} {{ bench().length === 1 ? 'player' : 'players' }}</p>
+            </header>
+            <ol class="bench-players">
+              @for (player of bench(); track player.key) {
+                <li class="player-row"><app-rated-bg-player [player]="player" mark="benched" /></li>
+              }
+            </ol>
+          </section>
+        }
       </section>
     }
 
+    <div class="picker-card composition" [class.open]="compositionOpen()" role="group" aria-labelledby="ratedBgCompositionLabel">
+      <span id="ratedBgCompositionLabel" class="composition-label">Each team</span>
+      @for (choice of compositionChoices; track choice.id) {
+        <div class="composition-choice">
+          <span class="composition-choice-label" aria-hidden="true">{{ choice.label }}</span>
+          <app-filter-dropdown
+            [dropdownId]="choice.dropdownId"
+            [triggerId]="choice.dropdownId + 'Trigger'"
+            [ariaLabel]="choice.label + ' per team'"
+            [options]="choice.options"
+            [selectedValue]="composition()[choice.id]"
+            [widthLabels]="choice.widthLabels"
+            [compact]="true"
+            (selectionChange)="setComposition(choice.id, $event)" />
+        </div>
+      }
+    </div>
+
     <div class="picker-card toolbar">
-      <p class="pick-count" aria-live="polite">{{ pickedCount() }} of {{ pickCount }} ticked · {{ pickedHealers() }} {{ pickedHealers() === 1 ? 'healer' : 'healers' }}@if (!teams() && healerWarning(); as warning) {<span class="healer-warning"> · {{ warning }}</span>}</p>
+      <p class="pick-count" aria-live="polite">{{ pickedCount() }} ticked@if (shuffleWarning(); as warning) {<span class="shuffle-warning"> · {{ warning }}</span>} @else if (benchCount()) {<span class="bench-count"> · {{ benchCount() }} on the bench</span>}</p>
       <div class="toolbar-buttons">
         @if (teams()) {
-          <button type="button" class="action primary shuffle-again" (click)="shuffle()">Shuffle again</button>
+          <button type="button" class="action primary shuffle-again" [disabled]="!readyToShuffle()" (click)="shuffle()">Shuffle again</button>
           <button type="button" class="action change-players" (click)="changePlayers()">Change players</button>
         } @else {
           <button type="button" class="action primary shuffle" [disabled]="!readyToShuffle()" (click)="shuffle()">
@@ -77,9 +112,9 @@
                     class="pick-item"
                     [class.class-start]="firstPlayer && !firstClass"
                     [class.picked]="isPicked(player)"
-                    [class.locked]="isLocked(player)">
+                    [class.locked]="locked()">
                     <label class="player-row pick-row">
-                      <input type="checkbox" [checked]="isPicked(player)" [disabled]="isLocked(player)" (change)="toggle(player)" />
+                      <input type="checkbox" [checked]="isPicked(player)" [disabled]="locked()" (change)="toggle(player)" />
                       <app-rated-bg-player [player]="player" />
                     </label>
                     @if (isPicked(player)) {

@@ -19,8 +19,16 @@
   }
 }
 
+.player-name-cell {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  min-width: 0;
+}
+
 .player-name {
   @include truncate;
+  min-width: 0;
   font-size: 0.9rem;
   font-weight: 700;
 

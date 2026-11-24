@@ -1,0 +1,15 @@
+:host {
+  display: inline-flex;
+  flex: none;
+  width: 15px;
+  height: 15px;
+}
+
+svg {
+  width: 100%;
+  height: 100%;
+  fill: currentColor;
+}
+
+:host(.benched) { color: #b5b5b5; }
+:host(.back-from-bench) { color: #3fb68b; }
