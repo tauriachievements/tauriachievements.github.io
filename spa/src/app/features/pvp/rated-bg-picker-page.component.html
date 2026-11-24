@@ -23,21 +23,23 @@
               <h2>{{ team.label }}</h2>
               <p class="team-summary">{{ team.summary.healers }} {{ team.summary.healers === 1 ? 'healer' : 'healers' }}@if (team.summary.averageItemLevel !== undefined) { · avg ilvl {{ team.summary.averageItemLevel | number: '1.1-1' }}}</p>
             </header>
-            <ol class="team-players">
-              @for (player of team.players; track player.key) {
-                <li class="player-row" [class.flag-carrier-marked]="isFlagCarrier(teamIndex, player)">
-                  <app-rated-bg-player [player]="player" />
-                  <button
-                    type="button"
-                    class="flag-carrier"
-                    [class.marked]="isFlagCarrier(teamIndex, player)"
-                    [attr.aria-pressed]="isFlagCarrier(teamIndex, player)"
-                    [attr.aria-label]="(isFlagCarrier(teamIndex, player) ? 'Remove ' : 'Mark ') + player.name + ' as possible flag carrier'"
-                    [title]="isFlagCarrier(teamIndex, player) ? 'Remove possible flag carrier' : 'Mark as possible flag carrier'"
-                    (click)="toggleFlagCarrier(teamIndex, player)">FC</button>
-                </li>
-              }
-            </ol>
+            @for (group of team.groups; track group.id) {
+              <ol class="team-players" [attr.aria-label]="group.label">
+                @for (player of group.players; track player.key) {
+                  <li class="player-row" [class.flag-carrier-marked]="isFlagCarrier(teamIndex, player)">
+                    <app-rated-bg-player [player]="player" />
+                    <button
+                      type="button"
+                      class="flag-carrier"
+                      [class.marked]="isFlagCarrier(teamIndex, player)"
+                      [attr.aria-pressed]="isFlagCarrier(teamIndex, player)"
+                      [attr.aria-label]="(isFlagCarrier(teamIndex, player) ? 'Remove ' : 'Mark ') + player.name + ' as possible flag carrier'"
+                      [title]="isFlagCarrier(teamIndex, player) ? 'Remove possible flag carrier' : 'Mark as possible flag carrier'"
+                      (click)="toggleFlagCarrier(teamIndex, player)">FC</button>
+                  </li>
+                }
+              </ol>
+            }
           </section>
         }
       </section>

@@ -788,7 +788,7 @@ decision: ask first.** When a rule does change, change its tests first and see t
 The unlisted `/rated-bg-picker` page splits the players who turned up into two teams of 10.
 
 - **Code:** `rosterGroups`, `canShuffle`, `healerWarning`, `shuffleTeams`, `togglePick`,
-  `parseTeams` and `teamSummary` in `spa/src/app/features/pvp/rated-bg-picker.ts`.
+  `parseTeams`, `teamGroups` and `teamSummary` in `spa/src/app/features/pvp/rated-bg-picker.ts`.
 - The list shows three groups, side by side from 1000 px and one under the other below that:
   Melee, Ranged, then Healers. Ranged holds the ranged damage specs (`range` in `LEGION_SPECS`),
   Healers the healer specs, and Melee everyone else: the melee damage specs, tanks, and characters
@@ -816,8 +816,10 @@ The unlisted `/rated-bg-picker` page splits the players who turned up into two t
   active spec. A character the armory doesn't know has no role and counts as a non-healer.
 - A shared link opens on the teams it names, even when a respec since has left their healers
   uneven: the link records the teams as they were picked.
-- A team lists tanks, then healers, then the rest, each by name. Its heading counts its healers
-  and averages the item levels it knows. After a shuffle, each team can mark one player as its
+- A team lists its players in the list's groups and order: Melee, then Ranged, then Healers, each
+  class by class, then by spec and traits, as above. A gap with no heading separates the groups,
+  and a group the team has nobody in is left out. The team's heading counts its healers and
+  averages the item levels it knows. After a shuffle, each team can mark one player as its
   possible flag carrier with the `FC` button. The marks are local to that result, aren't part of
   its shared link, and clear on a reshuffle or when changing players.
 - Traits are the count of that spec's artifact: the guild pages' count (the artifact with the

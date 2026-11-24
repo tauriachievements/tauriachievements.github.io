@@ -47,8 +47,6 @@ export interface TeamSummary {
   readonly averageItemLevel?: number;
 }
 
-const ROLE_ORDER: Readonly<Record<Role, number>> = { tank: 0, healer: 1, dps: 2 };
-
 export function rosterPlayers(file: RatedBgRosterFile): RosterPlayer[] {
   if (file.version !== RATED_BG_ROSTER_VERSION) {
     throw new Error(`The player list is in format ${file.version}, and this page reads format ${RATED_BG_ROSTER_VERSION}.`);
@@ -81,6 +79,18 @@ export function rosterGroups(players: readonly RosterPlayer[]): RosterGroup[] {
     ...group,
     classes: rosterClasses(players.filter(player => rosterGroupOf(player) === group.id))
   }));
+}
+
+export interface TeamGroup {
+  readonly id: RosterGroupId;
+  readonly label: string;
+  readonly players: readonly RosterPlayer[];
+}
+
+export function teamGroups(team: readonly RosterPlayer[]): TeamGroup[] {
+  return rosterGroups(team)
+    .map(({ id, label, classes }) => ({ id, label, players: classes.flatMap(rosterClass => rosterClass.players) }))
+    .filter(group => group.players.length > 0);
 }
 
 export function countHealers(players: readonly RosterPlayer[]): number {
@@ -132,8 +142,8 @@ export function shuffleTeams(players: readonly RosterPlayer[], random: () => num
   const healerTeams = splitEvenly(healers, firstHealers, random, CLASS_THEN_SPEC);
   const otherTeams = splitEvenly(others, firstOthers, random, CLASS_THEN_SPEC);
   return [
-    [...healerTeams[0], ...otherTeams[0]].sort(byTeamOrder),
-    [...healerTeams[1], ...otherTeams[1]].sort(byTeamOrder)
+    inTeamOrder([...healerTeams[0], ...otherTeams[0]]),
+    inTeamOrder([...healerTeams[1], ...otherTeams[1]])
   ];
 }
 
@@ -187,8 +197,12 @@ function toRosterPlayer(entry: RatedBgRosterEntry): RosterPlayer {
 function teamFromParam(value: string | null, playersByKey: ReadonlyMap<string, RosterPlayer>): RosterPlayer[] | undefined {
   const team = (value ? value.split(',') : []).map(key => playersByKey.get(key));
   return team.length === TEAM_SIZE && team.every(player => player !== undefined)
-    ? (team as RosterPlayer[]).sort(byTeamOrder)
+    ? inTeamOrder(team as RosterPlayer[])
     : undefined;
+}
+
+function inTeamOrder(team: readonly RosterPlayer[]): RosterPlayer[] {
+  return teamGroups(team).flatMap(group => group.players);
 }
 
 function isHealer(player: RosterPlayer): boolean {
@@ -282,14 +296,6 @@ function bySpecThenTraits(a: RosterPlayer, b: RosterPlayer): number {
     || compareText(a.spec ?? '', b.spec ?? '')
     || (b.traits ?? -1) - (a.traits ?? -1)
     || byName(a, b);
-}
-
-function byTeamOrder(a: RosterPlayer, b: RosterPlayer): number {
-  return roleOrder(a) - roleOrder(b) || byName(a, b);
-}
-
-function roleOrder(player: RosterPlayer): number {
-  return player.role ? ROLE_ORDER[player.role] : Object.keys(ROLE_ORDER).length;
 }
 
 function compareText(a: string, b: string): number {

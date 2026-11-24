@@ -237,6 +237,24 @@ describe('RatedBgPickerPageComponent', () => {
     expect(checkboxes(element).every(box => box.disabled)).toBe(true);
   });
 
+  it("lists each team's melee, ranged and healers as separate lists, in that order", async () => {
+    const key = (index: number) => `Player${String(index).padStart(2, '0')}-Evermoon`;
+    const first = [0, 1, 4, 5, 6, 10, 11, 12, 13, 14].reverse().map(key);
+    const second = [2, 3, 7, 8, 9, 15, 16, 17, 18, 19].map(key);
+    const { element } = await openPage(`/rated-bg-picker?a=${first.join(',')}&b=${second.join(',')}`);
+
+    const firstTeamLists = [...element.querySelectorAll('.team')[0].querySelectorAll('.team-players')].map(list => [
+      list.getAttribute('aria-label'),
+      [...list.querySelectorAll('.player-name')].map(name => name.textContent?.trim())
+    ]);
+
+    expect(firstTeamLists).toEqual([
+      ['Melee', ['Player10', 'Player11', 'Player12', 'Player13', 'Player14']],
+      ['Ranged', ['Player04', 'Player05', 'Player06']],
+      ['Healers', ['Player00', 'Player01']]
+    ]);
+  });
+
   it('says so when a shared link no longer matches the list, and drops it from the address', async () => {
     const { element, location } = await openPage('/rated-bg-picker?a=Gone-Evermoon&b=Player01-Evermoon');
 

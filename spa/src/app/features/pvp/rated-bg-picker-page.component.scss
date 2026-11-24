@@ -94,6 +94,8 @@ $second-team-color: #e5484d;
   min-height: 34px;
 }
 
+.team-players + .team-players { margin-top: 12px; }
+
 .team-players .player-row {
   grid-template-columns: $icons-width minmax(0, 1fr) $number-width $number-width $carrier-width;
   padding-block: 2px;
