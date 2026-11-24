@@ -4,6 +4,7 @@ $icons-width: 68px;
 $phone-icons-width: 60px;
 $number-width: 2.75rem;
 $phone-number-width: 2.4rem;
+$columns-breakpoint: 1000px;
 $first-team-color: #4a9eff;
 $second-team-color: #e5484d;
 
@@ -164,8 +165,20 @@ $second-team-color: #e5484d;
   }
 }
 
-.roster-card {
+.roster-columns {
+  display: grid;
+  gap: 14px;
+}
+
+.roster-group {
   padding: 4px 14px 10px;
+}
+
+.group-empty {
+  margin: 6px 0 4px;
+  color: #8f8a7d;
+  font-size: 0.8rem;
+  font-style: italic;
 }
 
 .list-head,
@@ -198,12 +211,6 @@ $second-team-color: #e5484d;
   font-weight: 600;
   letter-spacing: 0.04em;
   text-transform: none;
-}
-
-.roster-group + .roster-group {
-  margin-top: 8px;
-  padding-top: 4px;
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .roster li + li { border-top: 1px solid rgba(255, 255, 255, 0.05); }
@@ -242,6 +249,17 @@ $second-team-color: #e5484d;
   .pick-row { min-height: 40px; }
 }
 
+@media (min-width: $columns-breakpoint) {
+  .picker-page { width: min(1120px, calc(100% - 32px)); }
+
+  .roster-columns { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+
+  .roster-group .player-row {
+    column-gap: 6px;
+    grid-template-columns: 20px $icons-width minmax(0, 1fr) $phone-number-width $phone-number-width;
+  }
+}
+
 @media (max-width: $phone-breakpoint) {
   .picker-page {
     gap: 10px;
@@ -254,8 +272,10 @@ $second-team-color: #e5484d;
     gap: 10px;
   }
 
+  .roster-columns { gap: 10px; }
+
   .team,
-  .roster-card { padding-inline: 10px; }
+  .roster-group { padding-inline: 10px; }
 
   .toolbar { padding: 8px 10px; }
 

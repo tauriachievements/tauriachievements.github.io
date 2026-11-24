@@ -57,19 +57,21 @@ describe('rosterPlayers', () => {
     expect(rosterPlayers(roster([entry('Morron', { realm: 'Tauri' })]))[0].key).toBe('Morron-Tauri');
   });
 
-  it("gives each player the role of its spec", () => {
+  it("gives each player the role and range of its spec", () => {
     const players = rosterPlayers(roster([
       entry('Lythus', { class: 2, spec: 'Holy' }),
       entry('Xyhop', { class: 5, spec: 'Shadow' }),
+      entry('Pesi', { class: 1, spec: 'Arms' }),
       entry('Zowy', { class: 1, spec: 'Protection' }),
       entry('Nospec', { spec: undefined })
     ]));
 
-    expect(players.map(player => [player.name, player.role])).toEqual([
-      ['Lythus', 'healer'],
-      ['Nospec', undefined],
-      ['Xyhop', 'dps'],
-      ['Zowy', 'tank']
+    expect(players.map(player => [player.name, player.role, player.range])).toEqual([
+      ['Lythus', 'healer', undefined],
+      ['Nospec', undefined, undefined],
+      ['Pesi', 'dps', 'melee'],
+      ['Xyhop', 'dps', 'ranged'],
+      ['Zowy', 'tank', undefined]
     ]);
   });
 
@@ -85,23 +87,28 @@ describe('rosterPlayers', () => {
 });
 
 describe('rosterGroups', () => {
-  it('lists the healers first, then everyone else as DPS, each by name', () => {
+  it('lists the melee with the tanks and unknown specs, then the ranged, then the healers, each by name', () => {
     const groups = rosterGroups(rosterPlayers(roster([
       entry('Zowy'),
+      entry('Xyhop', { class: 5, spec: 'Shadow' }),
       entry('Lythus', { class: 2, spec: 'Holy' }),
       entry('Guardian', { class: 11, spec: 'Guardian' }),
+      entry('Bomboclats', { class: 3, spec: 'Marksmanship' }),
       entry('Lakmir', { class: 10, spec: 'Mistweaver' }),
+      entry('Nospec', { spec: undefined }),
       { name: 'Typo', realm: 'Evermoon', notFound: true }
     ])));
 
     expect(groups.map(group => [group.label, group.players.map(player => player.name)])).toEqual([
-      ['Healers', ['Lakmir', 'Lythus']],
-      ['DPS', ['Guardian', 'Typo', 'Zowy']]
+      ['Melee', ['Guardian', 'Nospec', 'Typo', 'Zowy']],
+      ['Ranged', ['Bomboclats', 'Xyhop']],
+      ['Healers', ['Lakmir', 'Lythus']]
     ]);
   });
 
-  it('leaves out a group with nobody in it', () => {
-    expect(rosterGroups(rosterPlayers(roster([entry('Zowy')]))).map(group => group.label)).toEqual(['DPS']);
+  it('keeps all three groups when one has nobody in it', () => {
+    expect(rosterGroups(rosterPlayers(roster([entry('Zowy')]))).map(group => [group.label, group.players.length]))
+      .toEqual([['Melee', 1], ['Ranged', 0], ['Healers', 0]]);
   });
 });
 

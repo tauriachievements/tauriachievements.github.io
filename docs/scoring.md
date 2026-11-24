@@ -789,9 +789,12 @@ The unlisted `/rated-bg-picker` page splits the players who turned up into two t
 
 - **Code:** `rosterGroups`, `canShuffle`, `healerWarning`, `shuffleTeams`, `togglePick`,
   `parseTeams` and `teamSummary` in `spa/src/app/features/pvp/rated-bg-picker.ts`.
-- The list shows two groups: Healers, then DPS, which holds everyone who isn't on a healer spec
-  (tanks and characters the armory doesn't know included). Each group's heading counts its ticked
-  players, and the bar above the list counts the ticked players and healers.
+- The list shows three groups, side by side from 1000 px and one under the other below that:
+  Melee, Ranged, then Healers. Ranged holds the ranged damage specs (`range` in `LEGION_SPECS`),
+  Healers the healer specs, and Melee everyone else: the melee damage specs, tanks, and characters
+  without a known spec or that the armory doesn't know. All three always show, and an empty one
+  says "Nobody on the list". Each group's heading counts its ticked players, and the bar above
+  the list counts the ticked players and healers.
 - **Shuffle needs exactly 20 ticked players with an even number of healers** (0 included); the
   page never ticks a 21st. While an odd number of healers is ticked, Shuffle stays off and the
   bar says why.

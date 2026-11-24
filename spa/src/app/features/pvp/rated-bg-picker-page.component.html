@@ -53,26 +53,30 @@
       </div>
     </div>
 
-    <section class="picker-card roster-card">
+    <div class="roster-columns">
       @for (group of groups(); track group.id) {
-        <div class="roster-group">
+        <section class="picker-card roster-group">
           <div class="player-row list-head">
             <h2 class="head-player group-label">{{ group.label }}<span class="group-count"> · {{ group.ticked }} ticked</span></h2>
             <span aria-hidden="true">Traits</span>
             <span aria-hidden="true">ilvl</span>
           </div>
-          <ul class="roster" [attr.aria-label]="group.label">
-            @for (player of group.players; track player.key) {
-              <li>
-                <label class="player-row pick-row" [class.picked]="isPicked(player)" [class.locked]="isLocked(player)">
-                  <input type="checkbox" [checked]="isPicked(player)" [disabled]="isLocked(player)" (change)="toggle(player)" />
-                  <app-rated-bg-player [player]="player" />
-                </label>
-              </li>
-            }
-          </ul>
-        </div>
+          @if (group.players.length) {
+            <ul class="roster" [attr.aria-label]="group.label">
+              @for (player of group.players; track player.key) {
+                <li>
+                  <label class="player-row pick-row" [class.picked]="isPicked(player)" [class.locked]="isLocked(player)">
+                    <input type="checkbox" [checked]="isPicked(player)" [disabled]="isLocked(player)" (change)="toggle(player)" />
+                    <app-rated-bg-player [player]="player" />
+                  </label>
+                </li>
+              }
+            </ul>
+          } @else {
+            <p class="group-empty">Nobody on the list</p>
+          }
+        </section>
       }
-    </section>
+    </div>
   }
 </main>

@@ -1,5 +1,5 @@
-import { Role } from '../../game/wow';
-import { specRoleFor } from '../../game/wow-specs';
+import { DamageRange, Role } from '../../game/wow';
+import { specFor } from '../../game/wow-specs';
 import { foldName } from '../../shared/search-suggestions';
 
 export const RATED_BG_ROSTER_FILE = 'rated-bg-roster.json';
@@ -35,6 +35,7 @@ export interface RosterPlayer {
   readonly classId: number;
   readonly spec?: string;
   readonly role?: Role;
+  readonly range?: DamageRange;
   readonly traits?: number;
   readonly itemLevel?: number;
 }
@@ -56,18 +57,25 @@ export function rosterPlayers(file: RatedBgRosterFile): RosterPlayer[] {
   return file.players.map(toRosterPlayer).sort(byName);
 }
 
+export type RosterGroupId = 'melee' | 'ranged' | 'healers';
+
 export interface RosterGroup {
-  readonly id: 'healers' | 'dps';
+  readonly id: RosterGroupId;
   readonly label: string;
   readonly players: readonly RosterPlayer[];
 }
 
+const ROSTER_GROUPS: readonly { readonly id: RosterGroupId; readonly label: string }[] = [
+  { id: 'melee', label: 'Melee' },
+  { id: 'ranged', label: 'Ranged' },
+  { id: 'healers', label: 'Healers' }
+];
+
 export function rosterGroups(players: readonly RosterPlayer[]): RosterGroup[] {
-  const groups: RosterGroup[] = [
-    { id: 'healers', label: 'Healers', players: players.filter(isHealer) },
-    { id: 'dps', label: 'DPS', players: players.filter(player => !isHealer(player)) }
-  ];
-  return groups.filter(group => group.players.length > 0);
+  return ROSTER_GROUPS.map(group => ({
+    ...group,
+    players: players.filter(player => rosterGroupOf(player) === group.id)
+  }));
 }
 
 export function countHealers(players: readonly RosterPlayer[]): number {
@@ -140,6 +148,7 @@ export function teamSummary(team: readonly RosterPlayer[]): TeamSummary {
 
 function toRosterPlayer(entry: RatedBgRosterEntry): RosterPlayer {
   const classId = entry.class ?? 0;
+  const spec = entry.spec ? specFor(classId, entry.spec) : undefined;
   return {
     key: `${entry.name}-${entry.realm}`,
     name: entry.name,
@@ -149,7 +158,8 @@ function toRosterPlayer(entry: RatedBgRosterEntry): RosterPlayer {
     gender: entry.gender ?? 0,
     classId,
     spec: entry.spec,
-    role: entry.spec ? specRoleFor(classId, entry.spec) : undefined,
+    role: spec?.role,
+    range: spec?.range,
     traits: entry.traits,
     itemLevel: entry.itemLevel
   };
@@ -164,6 +174,13 @@ function teamFromParam(value: string | null, playersByKey: ReadonlyMap<string, R
 
 function isHealer(player: RosterPlayer): boolean {
   return player.role === 'healer';
+}
+
+function rosterGroupOf(player: RosterPlayer): RosterGroupId {
+  if (isHealer(player)) {
+    return 'healers';
+  }
+  return player.range === 'ranged' ? 'ranged' : 'melee';
 }
 
 function shuffled<T>(items: readonly T[], random: () => number): T[] {
