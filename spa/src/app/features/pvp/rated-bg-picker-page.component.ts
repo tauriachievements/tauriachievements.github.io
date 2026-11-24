@@ -32,6 +32,7 @@ import {
   rosterGroups,
   rosterPlayers,
   shuffleTeams,
+  teamGroups,
   teamSummary,
   teamsParams,
   togglePick
@@ -83,7 +84,11 @@ export class RatedBgPickerPageComponent implements OnInit {
     }));
   });
   readonly teamViews = computed(() =>
-    this.teams()?.map((players, index) => ({ label: `Team ${index + 1}`, players, summary: teamSummary(players) }))
+    this.teams()?.map((players, index) => ({
+      label: `Team ${index + 1}`,
+      groups: teamGroups(players),
+      summary: teamSummary(players)
+    }))
   );
   private readonly lastEdited = computed(() => {
     const generatedAt = this.generatedAt();

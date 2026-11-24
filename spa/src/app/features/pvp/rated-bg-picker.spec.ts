@@ -13,6 +13,7 @@ import {
   rosterGroups,
   rosterPlayers,
   shuffleTeams,
+  teamGroups,
   teamSummary,
   teamsParams,
   togglePick
@@ -321,21 +322,50 @@ describe('shuffleTeams', () => {
     expect([...firstTeamOfPlayer19].sort()).toEqual([false, true]);
   });
 
-  it('lists each team tanks first, then healers, then the rest, each by name', () => {
+  it('lists each team as its healers, ranged and melee, each by class as in the list', () => {
     const players = rosterPlayers(roster([
       entry('Zed'), entry('Amy'),
       entry('Tank', { class: 11, spec: 'Guardian' }),
       entry('Heal', { class: 5, spec: 'Holy' }),
+      entry('Shadow', { class: 5, spec: 'Shadow' }),
       entry('Unknown', { spec: undefined })
     ]));
-    const [first, second] = shuffleTeams(players, seeded(3));
-    const order = (team: readonly RosterPlayer[]) => [...team].map(player => player.name);
-    const expected = ['Tank', 'Heal', 'Amy', 'Zed', 'Unknown'];
 
-    expect(first.length + second.length).toBe(expected.length);
-    for (const team of [first, second]) {
-      expect(order(team)).toEqual(expected.filter(name => order(team).includes(name)));
+    for (let seed = 0; seed < 20; seed++) {
+      for (const team of shuffleTeams(players, seeded(seed))) {
+        expect(team.map(player => player.name))
+          .toEqual(teamGroups(team).flatMap(group => group.players.map(player => player.name)));
+      }
     }
+  });
+});
+
+describe('teamGroups', () => {
+  it("splits a team into its healers, ranged and melee, each by class, spec and traits as in the list", () => {
+    const team = rosterPlayers(roster([
+      entry('Lythus', { class: 2, spec: 'Holy' }),
+      entry('Zowy', { class: 1, spec: 'Fury' }),
+      entry('Xyhop', { class: 5, spec: 'Shadow' }),
+      entry('Lakmir', { class: 10, spec: 'Mistweaver' }),
+      entry('Rcodio', { class: 6, spec: 'Unholy', traits: 37 }),
+      entry('Sósa', { class: 8, spec: 'Frost' }),
+      entry('Trelhy', { class: 4, spec: 'Assassination' }),
+      entry('Cicámqu', { class: 11, spec: 'Feral' }),
+      entry('Zerololq', { class: 6, spec: 'Unholy', traits: 38 }),
+      entry('Spuky', { class: 7, spec: 'Restoration' })
+    ]));
+
+    expect(teamGroups(team).map(group => [group.label, group.players.map(player => player.name)])).toEqual([
+      ['Healers', ['Lakmir', 'Lythus', 'Spuky']],
+      ['Ranged', ['Sósa', 'Xyhop']],
+      ['Melee', ['Zerololq', 'Rcodio', 'Cicámqu', 'Trelhy', 'Zowy']]
+    ]);
+  });
+
+  it('leaves out a group with nobody in it', () => {
+    const team = rosterPlayers(roster([entry('Zowy'), entry('Lythus', { class: 2, spec: 'Holy' })]));
+
+    expect(teamGroups(team).map(group => group.id)).toEqual(['healers', 'melee']);
   });
 });
 
