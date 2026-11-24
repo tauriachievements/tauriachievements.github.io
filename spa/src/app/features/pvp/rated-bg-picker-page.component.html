@@ -21,7 +21,7 @@
           <section class="picker-card team" [attr.aria-label]="team.label">
             <header class="team-header">
               <h2>{{ team.label }}</h2>
-              <p class="team-summary">{{ team.summary.healers }} {{ team.summary.healers === 1 ? 'healer' : 'healers' }}@if (team.summary.averageItemLevel !== undefined) { · avg ilvl {{ team.summary.averageItemLevel | number: '1.1-1' }}}@if (team.backFromBench) { · <span class="bench-note">{{ team.backFromBench }} back from the bench</span>}</p>
+              <p class="team-summary">{{ team.summary.healers }} {{ team.summary.healers === 1 ? 'healer' : 'healers' }}@if (team.summary.averageItemLevel !== undefined) { · avg ilvl {{ team.summary.averageItemLevel | number: '1.1-1' }}}@if (team.backFromBench) {<span class="bench-note-separator"> · </span><span class="bench-note"><app-rated-bg-mark kind="back-from-bench" [decorative]="true" />{{ team.backFromBench }} back from the bench</span>}</p>
             </header>
             @for (group of team.groups; track group.id) {
               <ol class="team-players" [attr.aria-label]="group.label">
@@ -30,10 +30,7 @@
                     class="player-row"
                     [class.flag-carrier-marked]="isFlagCarrier(player)"
                     [class.back-from-bench]="isBackFromBench(player)">
-                    <app-rated-bg-player [player]="player" />
-                    @if (isBackFromBench(player)) {
-                      <span class="visually-hidden">back from the bench</span>
-                    }
+                    <app-rated-bg-player [player]="player" [mark]="isBackFromBench(player) ? 'back-from-bench' : undefined" />
                     <button
                       type="button"
                       class="flag-carrier"
@@ -52,12 +49,12 @@
         @if (bench().length) {
           <section class="picker-card bench" aria-label="Bench">
             <header class="team-header">
-              <h2>Bench</h2>
+              <h2 class="bench-title"><app-rated-bg-mark kind="benched" [decorative]="true" />Bench</h2>
               <p class="team-summary">{{ bench().length }} {{ bench().length === 1 ? 'player' : 'players' }}</p>
             </header>
             <ol class="bench-players">
               @for (player of bench(); track player.key) {
-                <li class="player-row"><app-rated-bg-player [player]="player" /></li>
+                <li class="player-row"><app-rated-bg-player [player]="player" mark="benched" /></li>
               }
             </ol>
           </section>

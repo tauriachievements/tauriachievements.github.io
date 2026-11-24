@@ -250,8 +250,32 @@ describe('RatedBgPickerPageComponent', () => {
     expect(benchNames(element).filter(name => firstBench.includes(name))).toEqual([]);
     for (const team of element.querySelectorAll('.team')) {
       const said = team.querySelector('.team-summary')?.textContent?.match(/(\d+) back from the bench/)?.[1] ?? '0';
-      expect(said).toBe(`${team.querySelectorAll('.back-from-bench').length}`);
+      expect(said).toBe(`${team.querySelectorAll('li.back-from-bench').length}`);
     }
+  });
+
+  it('marks each benched player with a bench icon, and each player back from the bench with a return icon', async () => {
+    const { harness, element } = await openPage('/rated-bg-picker');
+    await tick(harness, element, 24);
+    await press(harness, element, '.shuffle');
+
+    const benchMarks = [...element.querySelectorAll('.bench-players li')]
+      .map(row => row.querySelector('app-rated-bg-mark.benched')?.getAttribute('aria-label'));
+    expect(benchMarks).toEqual(['On the bench', 'On the bench', 'On the bench', 'On the bench']);
+    expect(element.querySelector('.bench h2 app-rated-bg-mark.benched')?.getAttribute('aria-hidden')).toBe('true');
+    expect(element.querySelectorAll('.team app-rated-bg-mark')).toHaveLength(0);
+
+    await press(harness, element, '.shuffle-again');
+
+    const rowMarks = [...element.querySelectorAll('.team .player-row app-rated-bg-mark')].map(mark => [
+      mark.closest('li')?.classList.contains('back-from-bench'),
+      mark.classList.contains('back-from-bench'),
+      mark.getAttribute('aria-label')
+    ]);
+    expect(rowMarks).toEqual(Array.from({ length: 4 }, () => [true, true, 'Back from the bench']));
+    const teamsWithReturns = [...element.querySelectorAll('.team')].filter(team => team.querySelector('li.back-from-bench'));
+    expect(element.querySelectorAll('.team .bench-note app-rated-bg-mark.back-from-bench[aria-hidden="true"]'))
+      .toHaveLength(teamsWithReturns.length);
   });
 
   it('shows no bench when the ticked players fill both teams exactly', async () => {

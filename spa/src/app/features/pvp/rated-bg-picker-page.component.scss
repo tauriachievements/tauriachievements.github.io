@@ -123,8 +123,27 @@ $text: #e0e0e0;
 }
 
 .bench-note {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
   color: $bench-color;
   white-space: nowrap;
+
+  app-rated-bg-mark {
+    width: 13px;
+    height: 13px;
+  }
+}
+
+.bench-title {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+
+  app-rated-bg-mark {
+    width: 17px;
+    height: 17px;
+  }
 }
 
 .bench {
@@ -402,6 +421,13 @@ $text: #e0e0e0;
   .roster-group { padding-inline: 10px; }
 
   .team-players .player-row.back-from-bench::before { left: -7px; }
+
+  .bench-note-separator { display: none; }
+
+  .bench-note {
+    display: flex;
+    margin-top: 2px;
+  }
 
   .bench-players {
     grid-template-columns: minmax(0, 1fr);

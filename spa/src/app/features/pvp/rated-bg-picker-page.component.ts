@@ -50,13 +50,14 @@ import {
   toggleFlagCarrier,
   togglePick
 } from './rated-bg-picker';
+import { RatedBgMarkComponent } from './rated-bg-mark.component';
 import { RatedBgPlayerComponent } from './rated-bg-player.component';
 
 @Component({
   selector: 'app-rated-bg-picker-page',
   templateUrl: './rated-bg-picker-page.component.html',
   styleUrls: ['./rated-bg-picker-page.component.scss'],
-  imports: [DecimalPipe, FilterDropdownComponent, LoadStateComponent, RatedBgPlayerComponent],
+  imports: [DecimalPipe, FilterDropdownComponent, LoadStateComponent, RatedBgMarkComponent, RatedBgPlayerComponent],
   providers: [FilterDropdownCoordinatorService],
   changeDetection: ChangeDetectionStrategy.OnPush
 })

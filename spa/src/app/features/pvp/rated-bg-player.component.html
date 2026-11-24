@@ -7,7 +7,12 @@
     <img class="race-icon" [src]="raceIcon()" [alt]="raceName()" [title]="raceName()" width="20" height="20" />
   }
 </span>
-<span class="player-name" [class.missing]="!player().found" [style.color]="classColor()" [title]="player().name + '-' + player().realm">{{ player().name }}</span>
+<span class="player-name-cell">
+  <span class="player-name" [class.missing]="!player().found" [style.color]="classColor()" [title]="player().name + '-' + player().realm">{{ player().name }}</span>
+  @if (mark(); as mark) {
+    <app-rated-bg-mark [kind]="mark" />
+  }
+</span>
 @if (player().found) {
   <span class="player-traits">{{ player().traits ?? '–' }}<span class="visually-hidden"> traits</span></span>
   <span class="player-item-level">{{ player().itemLevel ?? '–' }}<span class="visually-hidden"> item level</span></span>
