@@ -2,7 +2,12 @@ using Tauri.Core.Helpers;
 
 namespace RatedBgRosterExporter;
 
-public sealed record RosterCharacter(string Name, string ApiRealm, string DisplayRealm);
+public sealed record RosterCharacter(
+    string Name,
+    string ApiRealm,
+    string DisplayRealm,
+    string? MainSpec = null
+);
 
 public static class RatedBgRosterList
 {
@@ -22,19 +27,22 @@ public static class RatedBgRosterList
                 continue;
             }
 
-            var separator = line.LastIndexOf('-');
-            var name = separator > 0 ? line[..separator].Trim() : string.Empty;
+            var parts = line.Split('-', StringSplitOptions.TrimEntries);
+            var name = parts[0];
+            var mainSpec = parts.Length == 3 ? parts[2] : null;
             if (
-                name.Length == 0
+                parts.Length is not (2 or 3)
+                || name.Length == 0
+                || mainSpec is ""
                 || !CharacterHelpers.TryResolveRealm(
-                    line[(separator + 1)..],
+                    parts[1],
                     out var apiRealm,
                     out var displayRealm
                 )
             )
             {
                 errors.Add(
-                    $"Line {index + 1}: \"{line}\" isn't Name-Realm with the realm Evermoon, Tauri or WoD."
+                    $"Line {index + 1}: \"{line}\" isn't Name-Realm or Name-Realm-Spec with the realm Evermoon, Tauri or WoD."
                 );
                 continue;
             }
@@ -45,7 +53,7 @@ public static class RatedBgRosterList
                 continue;
             }
 
-            characters.Add(new RosterCharacter(name, apiRealm, displayRealm));
+            characters.Add(new RosterCharacter(name, apiRealm, displayRealm, mainSpec));
         }
 
         if (errors.Count > 0)
