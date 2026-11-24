@@ -810,8 +810,18 @@ The unlisted `/rated-bg-picker` page splits the players who turned up into two t
   Warrior one each; 3 Unholy and 1 Frost Death Knight become Unholy + Frost against 2 Unholy. A
   tank counts with its class. Which team gets the extra player of an odd-sized class or spec, and
   who plays on which side, is random. A character without a known spec is split with its class;
-  one the armory doesn't know stays random. Item level, melee/ranged and a class's healers
-  against its damage players are not balanced.
+  one the armory doesn't know stays random. Item level and a class's healers against its damage
+  players are not balanced.
+- **The ranged are split as evenly as possible, and so are the melee.** Ranged and melee are the
+  list's groups: the ranged damage specs, and everyone else who isn't a healer. Ranged sits below
+  the class and spec splits rather than above them, so it never costs a class its even split: the
+  shuffle draws class-balanced teams again until the ranged differ by at most one (at most 1,000
+  tries, shared with the flag carrier rule below). As each team has the same number of
+  non-healers, the melee then differ by at most one too. So 6 ranged split 3 and 3, where a class
+  split alone could leave a single-player Warlock and Shadow Priest on one side and a single
+  Rogue and Feral Druid on the other, 4 ranged against 2. On the roster in November 2026, a
+  class-balanced draw already split the ranged evenly 81% of the time on average and 51% for the
+  hardest pick of 20.
 - A player's role is the role of the spec the roster file gives them
   ([data-pipeline.md](data-pipeline.md#rated-bg-roster)): the main spec the hand list names for
   them, else the spec of their artifact with the most traits, as on the guild pages, else their
@@ -825,10 +835,10 @@ The unlisted `/rated-bg-picker` page splits the players who turned up into two t
 - **Flag carriers are optional; with two marked, each team gets one.** Before the shuffle, the
   `FC` button on a ticked player marks them as a flag carrier, two at most. After a shuffle, each
   team can mark one, and marking another player of that team moves its mark. With two marked,
-  the shuffle reshuffles until they land on different teams (at most 1,000 tries), so every split
-  above holds exactly as without them. On the roster in November 2026, a plain shuffle already
-  split a pair 53% of the time on average and 40% for the hardest pair, so it takes about two
-  tries. One mark changes nothing about the shuffle. The marks stay through Shuffle again and
+  the shuffle draws again until they land on different teams, so every split above holds exactly
+  as without them. On the roster in November 2026, a draw met both the ranged and the flag
+  carrier rule 43% of the time on average and 22% for the hardest pair, a handful of tries at
+  most. One mark changes nothing about the shuffle. The marks stay through Shuffle again and
   Change players, go when their player is unticked or on Clear, and aren't part of the shared
   link.
 - Traits are the count of that spec's artifact: the guild pages' count (the artifact with the

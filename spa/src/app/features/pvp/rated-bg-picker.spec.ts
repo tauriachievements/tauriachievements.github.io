@@ -385,6 +385,44 @@ describe('shuffleTeams', () => {
     }
   });
 
+  it('splits the ranged and so the melee as evenly as possible, keeping every class and spec split', () => {
+    const players = rosterPlayers(roster([
+      entry('Wxz', { class: 11, spec: 'Restoration' }),
+      entry('Lythus', { class: 2, spec: 'Holy' }),
+      entry('Quro', { class: 5, spec: 'Holy' }),
+      entry('Lakmir', { class: 10, spec: 'Mistweaver' }),
+      entry('Holyrose', { class: 2, spec: 'Holy' }),
+      entry('Spuky', { class: 7, spec: 'Restoration' }),
+      entry('Bomboclats', { class: 3, spec: 'Marksmanship' }),
+      entry('Nimphel', { class: 3, spec: 'Marksmanship' }),
+      entry('Sósa', { class: 8, spec: 'Frost' }),
+      entry('Harqu', { class: 8, spec: 'Fire' }),
+      entry('Xyhop', { class: 5, spec: 'Shadow' }),
+      entry('Dnx', { class: 9, spec: 'Affliction' }),
+      entry('Zerololq', { class: 6, spec: 'Frost' }),
+      entry('Dkügli', { class: 6, spec: 'Unholy' }),
+      entry('Heaven', { class: 11, spec: 'Feral' }),
+      entry('Zsozé', { class: 10, spec: 'Windwalker' }),
+      entry('Majä', { class: 10, spec: 'Windwalker' }),
+      entry('Trelhy', { class: 4, spec: 'Assassination' }),
+      entry('Zowy', { class: 1, spec: 'Fury' }),
+      entry('Morron', { class: 1, spec: 'Arms' })
+    ]));
+    const rangedIn = (team: readonly RosterPlayer[]) => team.filter(player => player.range === 'ranged').length;
+
+    for (const flagCarriers of [new Set<string>(), new Set(['Zsozé-Evermoon', 'Majä-Evermoon'])]) {
+      const rangedOfTeamOne = new Set<string>();
+      for (let seed = 0; seed < 50; seed++) {
+        const teams = shuffleTeams(players, seeded(seed), flagCarriers);
+
+        expect(teams.map(rangedIn)).toEqual([3, 3]);
+        expectEvenSplit(players, teams);
+        rangedOfTeamOne.add(teams[0].filter(player => player.range === 'ranged').map(player => player.name).sort().join());
+      }
+      expect(rangedOfTeamOne.size).toBeGreaterThan(1);
+    }
+  });
+
   it('shuffles as usual around a single flag carrier', () => {
     const players = groupOfTwenty();
 

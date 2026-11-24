@@ -140,8 +140,9 @@ export function shuffleTeams(
   random: () => number = Math.random,
   flagCarriers: ReadonlySet<string> = new Set()
 ): Teams {
+  const fits = (teams: Teams) => splitsRangedEvenly(teams) && splitsFlagCarriers(teams, flagCarriers);
   let teams = balancedTeams(players, random);
-  for (let attempt = 1; attempt < MAX_SHUFFLES && !splitsFlagCarriers(teams, flagCarriers); attempt++) {
+  for (let attempt = 1; attempt < MAX_SHUFFLES && !fits(teams); attempt++) {
     teams = balancedTeams(players, random);
   }
   return teams;
@@ -240,6 +241,11 @@ function toggleWithin(keys: ReadonlySet<string>, key: string, limit: number): Re
     next.add(key);
   }
   return next;
+}
+
+function splitsRangedEvenly([first, second]: Teams): boolean {
+  const rangedIn = (team: readonly RosterPlayer[]) => team.filter(player => rosterGroupOf(player) === 'ranged').length;
+  return Math.abs(rangedIn(first) - rangedIn(second)) <= 1;
 }
 
 function splitsFlagCarriers(teams: Teams, flagCarriers: ReadonlySet<string>): boolean {
