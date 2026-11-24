@@ -77,7 +77,9 @@ export class RatedBgPickerPageComponent implements OnInit {
     const picked = this.picked();
     return rosterGroups(this.players()).map(group => ({
       ...group,
-      ticked: group.players.filter(player => picked.has(player.key)).length
+      ticked: group.classes
+        .flatMap(rosterClass => rosterClass.players)
+        .filter(player => picked.has(player.key)).length
     }));
   });
   readonly teamViews = computed(() =>

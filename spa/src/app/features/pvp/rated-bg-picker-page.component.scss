@@ -238,6 +238,11 @@ $second-team-color: #e5484d;
 
 .roster li + li { border-top: 1px solid rgba(255, 255, 255, 0.05); }
 
+.roster li + li.class-start {
+  margin-top: 12px;
+  border-top: 0;
+}
+
 .pick-row {
   margin: 0 -6px;
   padding: 3px 6px;
