@@ -1,0 +1,78 @@
+<main class="raid-page">
+  @if (run(); as current) {
+    <a class="back-link" [routerLink]="logLink(current.last)"><span aria-hidden="true">‹</span> Back to the {{ current.last.boss.shortName }} log</a>
+  } @else {
+    <a class="back-link" routerLink="/raid-logs"><span aria-hidden="true">‹</span> Back to Raid Logs</a>
+  }
+
+  <app-load-state [loading]="isLoading()" [error]="loadError()" [skeleton]="['hero', 'tiles:4', 'rows:7']" loadingText="Reading the full run..." (retry)="reload()" />
+
+  @if (!isLoading() && !loadError() && run(); as current) {
+    <header class="run-header">
+      <img class="run-portrait" [src]="current.last.boss.portrait" alt="" />
+      <div class="run-heading">
+        <p class="eyebrow">
+          <span class="difficulty-dot" [class]="current.difficulty.slug" aria-hidden="true"></span>
+          {{ index()!.raid.name }} · <span class="difficulty-text" [class]="current.difficulty.slug">{{ current.difficulty.name }}</span> full run
+        </p>
+        <h1>
+          <span class="faction" [class]="'faction-' + current.faction" aria-hidden="true"></span>
+          @if (current.guild; as guild) {
+            <a [routerLink]="guildLink(guild)" [queryParams]="{ difficulty: current.difficulty.slug }">{{ guild.name }}</a>
+          } @else {Pickup group}
+        </h1>
+        <p class="run-meta">
+          {{ current.realm }} · finished <time [attr.datetime]="current.endedAt | date:'yyyy-MM-ddTHH:mm:ss'">{{ current.endedAt | date:'EEEE d MMMM y, HH:mm' }}</time>
+        </p>
+        <span class="clear-links">
+          <a class="clear-leaderboard-link" routerLink="/raid-logs/clears" [queryParams]="{ difficulty: current.difficulty.slug, groups: current.guild ? null : 'all' }">Full clear leaderboard</a>
+        </span>
+      </div>
+    </header>
+
+    <dl class="summary">
+      <div>
+        <dt>Clear time</dt>
+        <dd>{{ formatFightTime(current.clearMs) }}<span class="summary-note">First pull to final kill</span></dd>
+      </div>
+      <div>
+        <dt>Bosses</dt>
+        <dd>{{ current.kills.length }}/{{ index()!.bosses.length }}<span class="summary-note">One raid instance</span></dd>
+      </div>
+      <div>
+        <dt>Wipes</dt>
+        <dd>{{ current.wipes }}<span class="summary-note">Across every boss</span></dd>
+      </div>
+      <div>
+        <dt>Players</dt>
+        <dd>{{ current.last.memberCount }}<span class="summary-note">On the final boss</span></dd>
+      </div>
+    </dl>
+
+    <section class="section" aria-labelledby="boss-kills-title">
+      <header class="section-header">
+        <h2 id="boss-kills-title">Boss kills</h2>
+        <p>Open any boss to see its players, performance and loot.</p>
+      </header>
+      <ol class="boss-kills">
+        @for (kill of current.kills; track kill.realm + ':' + kill.logId; let position = $index) {
+          <li>
+            <a class="boss-kill" [routerLink]="logLink(kill)">
+              <span class="kill-position">{{ position + 1 }}</span>
+              <img [src]="kill.boss.portrait" alt="" loading="lazy" />
+              <span class="kill-identity">
+                <strong>{{ kill.boss.shortName }}</strong>
+                <span>Boss {{ position + 1 }} · <time [attr.datetime]="kill.killedAt | date:'yyyy-MM-ddTHH:mm:ss'">{{ kill.killedAt | date:'HH:mm' }}</time></span>
+              </span>
+              <span class="kill-stats">
+                <span><small>Fight time</small><strong>{{ formatFightTime(kill.fightMs) }}</strong></span>
+                <span><small>Wipes</small><strong>{{ kill.wipes }}</strong></span>
+              </span>
+              <span class="open-log" aria-hidden="true">›</span>
+            </a>
+          </li>
+        }
+      </ol>
+    </section>
+  }
+</main>

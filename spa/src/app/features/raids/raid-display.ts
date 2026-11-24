@@ -70,6 +70,10 @@ export function raidLogLink(kill: Pick<RaidKill, 'realm' | 'logId'>): Array<stri
   return ['/raid-logs', 'log', realmSlug(kill.realm), kill.logId];
 }
 
+export function raidRunLink(kill: Pick<RaidKill, 'realm' | 'logId'>): Array<string | number> {
+  return ['/raid-logs', 'run', realmSlug(kill.realm), kill.logId];
+}
+
 export function raidBossLink(boss: Pick<RaidBoss, 'slug'>): string[] {
   return ['/raid-logs', 'boss', boss.slug];
 }
