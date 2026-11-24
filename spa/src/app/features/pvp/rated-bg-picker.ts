@@ -129,8 +129,8 @@ export function shuffleTeams(players: readonly RosterPlayer[], random: () => num
     firstOthers += others.length % 2 === 1 && random() < 0.5 ? 1 : 0;
   }
 
-  const healerTeams = splitSpecsEvenly(healers, firstHealers, random);
-  const otherTeams = splitSpecsEvenly(others, firstOthers, random);
+  const healerTeams = splitEvenly(healers, firstHealers, random, CLASS_THEN_SPEC);
+  const otherTeams = splitEvenly(others, firstOthers, random, CLASS_THEN_SPEC);
   return [
     [...healerTeams[0], ...otherTeams[0]].sort(byTeamOrder),
     [...healerTeams[1], ...otherTeams[1]].sort(byTeamOrder)
@@ -220,14 +220,27 @@ function classOrder(classId: number): number {
   return index === -1 ? CLASSES_BY_NAME.length : index;
 }
 
-function splitSpecsEvenly(
+type SplitKey = (player: RosterPlayer) => string;
+
+const CLASS_THEN_SPEC: readonly SplitKey[] = [
+  player => player.classId ? `${player.classId}` : `unknown:${player.key}`,
+  player => player.spec ?? `unknown:${player.key}`
+];
+
+function splitEvenly(
   players: readonly RosterPlayer[],
   firstTeamSize: number,
-  random: () => number
+  random: () => number,
+  [splitKey, ...finerKeys]: readonly SplitKey[]
 ): [RosterPlayer[], RosterPlayer[]] {
+  if (!splitKey) {
+    const playersInRandomOrder = shuffled(players, random);
+    return [playersInRandomOrder.slice(0, firstTeamSize), playersInRandomOrder.slice(firstTeamSize)];
+  }
+
   const buckets = new Map<string, RosterPlayer[]>();
   for (const player of players) {
-    const key = player.spec ? `${player.classId}:${player.spec}` : `unknown:${player.key}`;
+    const key = splitKey(player);
     const bucket = buckets.get(key) ?? [];
     bucket.push(player);
     buckets.set(key, bucket);
@@ -242,10 +255,10 @@ function splitSpecsEvenly(
   const teams: [RosterPlayer[], RosterPlayer[]] = [[], []];
 
   for (const group of groups) {
-    const playersInRandomOrder = shuffled(group, random);
     const firstCount = Math.floor(group.length / 2) + (firstTeamExtras.has(group) ? 1 : 0);
-    teams[0].push(...playersInRandomOrder.slice(0, firstCount));
-    teams[1].push(...playersInRandomOrder.slice(firstCount));
+    const [first, second] = splitEvenly(group, firstCount, random, finerKeys);
+    teams[0].push(...first);
+    teams[1].push(...second);
   }
 
   return teams;

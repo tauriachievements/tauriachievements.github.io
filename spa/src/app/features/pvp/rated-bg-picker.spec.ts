@@ -266,6 +266,48 @@ describe('shuffleTeams', () => {
     }
   });
 
+  it('splits each class as evenly as possible before its specs', () => {
+    const players = rosterPlayers(roster([
+      entry('Llýnch', { class: 5, spec: 'Holy' }),
+      entry('Widuxgodx', { class: 10, spec: 'Mistweaver' }),
+      entry('Wxz', { class: 11, spec: 'Restoration' }),
+      entry('Lakmir', { class: 10, spec: 'Mistweaver' }),
+      entry('Lythus', { class: 2, spec: 'Holy' }),
+      entry('Spuky', { class: 7, spec: 'Restoration' }),
+      entry('Allisa', { class: 6, spec: 'Unholy' }),
+      entry('Dkügli', { class: 6, spec: 'Unholy' }),
+      entry('Rcodio', { class: 6, spec: 'Unholy' }),
+      entry('Zerololq', { class: 6, spec: 'Frost' }),
+      entry('Morron', { class: 1, spec: 'Arms' }),
+      entry('Zowy', { class: 1, spec: 'Fury' }),
+      entry('Majä', { class: 10, spec: 'Windwalker' }),
+      entry('Zsozé', { class: 10, spec: 'Windwalker' }),
+      entry('Cicámqu', { class: 11, spec: 'Feral' }),
+      entry('Dnx', { class: 9, spec: 'Affliction' }),
+      entry('Maviellian', { class: 3, spec: 'Marksmanship' }),
+      entry('Sósa', { class: 8, spec: 'Frost' }),
+      entry('Xyhop', { class: 5, spec: 'Shadow' }),
+      entry('Trelhy', { class: 4, spec: 'Assassination' })
+    ]));
+    const count = (team: readonly RosterPlayer[], healers: boolean, key: (player: RosterPlayer) => string, value: string) =>
+      team.filter(player => (player.role === 'healer') === healers && key(player) === value).length;
+    const byClass = (player: RosterPlayer) => `${player.classId}`;
+    const bySpec = (player: RosterPlayer) => `${player.classId}:${player.spec}`;
+
+    for (let seed = 0; seed < 50; seed++) {
+      const teams = shuffleTeams(players, seeded(seed));
+
+      expect(teams.map(healerCount)).toEqual([3, 3]);
+      for (const healers of [true, false]) {
+        for (const key of [byClass, bySpec]) {
+          for (const value of new Set(players.map(key))) {
+            expect(Math.abs(count(teams[0], healers, key, value) - count(teams[1], healers, key, value))).toBeLessThanOrEqual(1);
+          }
+        }
+      }
+    }
+  });
+
   it('leaves to chance which team gets the odd healer and who plays on which team', () => {
     const extraHealerTeams = new Set<number>();
     const firstTeamOfPlayer19 = new Set<boolean>();
