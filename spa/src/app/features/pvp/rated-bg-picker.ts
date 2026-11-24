@@ -87,10 +87,13 @@ export interface TeamGroup {
   readonly players: readonly RosterPlayer[];
 }
 
+const TEAM_GROUP_ORDER: readonly RosterGroupId[] = ['healers', 'ranged', 'melee'];
+
 export function teamGroups(team: readonly RosterPlayer[]): TeamGroup[] {
   return rosterGroups(team)
     .map(({ id, label, classes }) => ({ id, label, players: classes.flatMap(rosterClass => rosterClass.players) }))
-    .filter(group => group.players.length > 0);
+    .filter(group => group.players.length > 0)
+    .sort((a, b) => TEAM_GROUP_ORDER.indexOf(a.id) - TEAM_GROUP_ORDER.indexOf(b.id));
 }
 
 export function countHealers(players: readonly RosterPlayer[]): number {

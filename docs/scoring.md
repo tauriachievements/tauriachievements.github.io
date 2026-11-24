@@ -816,7 +816,7 @@ The unlisted `/rated-bg-picker` page splits the players who turned up into two t
   active spec. A character the armory doesn't know has no role and counts as a non-healer.
 - A shared link opens on the teams it names, even when a respec since has left their healers
   uneven: the link records the teams as they were picked.
-- A team lists its players in the list's groups and order: Melee, then Ranged, then Healers, each
+- A team lists its players in the list's groups, but Healers first, then Ranged, then Melee, each
   class by class, then by spec and traits, as above. A gap with no heading separates the groups,
   and a group the team has nobody in is left out. The team's heading counts its healers and
   averages the item levels it knows. After a shuffle, each team can mark one player as its
