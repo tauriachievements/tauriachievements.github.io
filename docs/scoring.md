@@ -584,8 +584,9 @@ decision: ask first.** When a rule does change, change its tests first and see t
 - A clear with an invalid log ([below](#invalid-raid-logs)) doesn't count.
 - The clear time links to the last boss's log, and each block of the bosses strip, placed by
   its pull and its fight time, links to that boss's log. A log that finished a clear shows
-  "Finished a full clear in …", linking to the clears of its difficulty (with All groups for a
-  pickup clear). A week's "Full clear" on a guild page links to its last boss's log.
+  "View full run", linking to that clear's summary and every boss log. The full-run page links
+  separately to the clears of its difficulty (with All groups for a pickup clear). A week's
+  "Full clear" on a guild page links to its last boss's log.
 - **Tests:** `raid-clears.spec.ts`, the clears case in `raid-logs.spec.ts`, and
   `ExportAsync_ListsEachInstanceWithEveryBossDownAsAClear` and
   `ParseLog_ReadsTheInstanceTheKillWasIn` in `RaidLogExportServiceTests`.

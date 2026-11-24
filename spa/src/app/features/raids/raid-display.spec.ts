@@ -11,7 +11,8 @@ import {
   nameMatches,
   parseBossView,
   raidLogLink,
-  raidRaceIcon
+  raidRaceIcon,
+  raidRunLink
 } from './raid-display';
 
 describe('parseBossView', () => {
@@ -64,6 +65,10 @@ describe('formatting', () => {
 
   it('links a log by its realm and id', () => {
     expect(raidLogLink({ realm: 'WoD', logId: 283007 })).toEqual(['/raid-logs', 'log', 'wod', 283007]);
+  });
+
+  it('links a full run by the realm and id of its last kill', () => {
+    expect(raidRunLink({ realm: 'WoD', logId: 283007 })).toEqual(['/raid-logs', 'run', 'wod', 283007]);
   });
 });
 

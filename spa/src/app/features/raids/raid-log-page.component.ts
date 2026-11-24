@@ -20,7 +20,8 @@ import {
   raidBossLink,
   raidCharacterLink,
   raidGuildLink,
-  raidRaceIcon
+  raidRaceIcon,
+  raidRunLink
 } from './raid-display';
 import {
   RaidCharacter,
@@ -183,6 +184,7 @@ export class RaidLogPageComponent {
   readonly formatPerSecond = formatPerSecond;
   readonly itemIcon = itemIconUrl;
   readonly itemUrl = itemUrl;
+  readonly runLink = raidRunLink;
 
   private subscription?: Subscription;
 

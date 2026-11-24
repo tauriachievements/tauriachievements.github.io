@@ -56,6 +56,7 @@ export const VISUAL_PAGES: readonly VisualPage[] = [
   { name: 'raid-logs-boss', path: '/raid-logs/boss/xavius?difficulty=mythic', wide: true },
   { name: 'raid-logs-boss-fastest', path: '/raid-logs/boss/ursoc?difficulty=heroic&tab=fastest', wide: true },
   { name: 'raid-log', path: '/raid-logs/log/tauri/1684762', wide: true },
+  { name: 'raid-full-run', path: '/raid-logs/run/tauri/1753931', wide: true },
   { name: 'raid-logs-guild', path: '/raid-logs/guild/evermoon/Miracle?difficulty=mythic' },
   { name: 'raid-logs-character', path: '/raid-logs/character/evermoon/Gankuh?difficulty=mythic&metric=dps' },
   { name: 'raid-logs-invalid', path: '/raid-logs/invalid' },

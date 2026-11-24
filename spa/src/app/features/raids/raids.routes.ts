@@ -59,6 +59,11 @@ export const RAIDS_ROUTES: Routes = [
       .then(module => module.RaidLogPageComponent)
   },
   {
+    path: 'raid-logs/run/:realm/:id',
+    loadComponent: () => import('./raid-full-run-page.component')
+      .then(module => module.RaidFullRunPageComponent)
+  },
+  {
     path: 'raid-logs/guild/:realm/:name',
     loadComponent: () => import('./raid-logs-guild-page.component')
       .then(module => module.RaidLogsGuildPageComponent)

@@ -27,6 +27,7 @@ describe('findNavLocation', () => {
     expect(locate('/mythic-plus/guild/evermoon/Skill%20Issue')).toBe('Mythic+ / Leaderboard');
     expect(locate('/raid-logs/boss/xavius-heroic')).toBe('Raids / Raid Logs');
     expect(locate('/raid-logs/log/evermoon/12345')).toBe('Raids / Raid Logs');
+    expect(locate('/raid-logs/run/evermoon/12345')).toBe('Raids / Raid Logs');
     expect(locate('/raid-logs/guild/tauri/Some%20Guild')).toBe('Raids / Guild Progression');
     expect(locate('/raid-logs/character/tauri/Name')).toBe('Raids / Character Rankings');
   });
