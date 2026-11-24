@@ -48,7 +48,7 @@ public sealed class RatedBgRosterExportService(string outputDirectory, ITauriApi
         if (failed.Count > 0)
         {
             throw new InvalidOperationException(
-                $"Could not read {failed.Count} of {characters.Count} characters, so nothing was written: "
+                $"Could not export {failed.Count} of {characters.Count} characters, so nothing was written: "
                     + string.Join(
                         ", ",
                         failed.Select(read =>
@@ -108,6 +108,27 @@ public sealed class RatedBgRosterExportService(string outputDirectory, ITauriApi
         var specialization = string.IsNullOrWhiteSpace(artifacts?.Specialization)
             ? CharacterArtifactReader.ReadActiveSpecialization(response)
             : artifacts.Specialization;
+        var traits = artifacts?.TraitCount;
+
+        if (character.MainSpec is { } mainSpec)
+        {
+            var weapon = artifacts?.Weapons.FirstOrDefault(weapon =>
+                string.Equals(weapon.Specialization, mainSpec, StringComparison.OrdinalIgnoreCase)
+            );
+            if (weapon is null)
+            {
+                return new CharacterRead(
+                    character,
+                    null,
+                    $"no {mainSpec} artifact: check the spec in {RatedBgRosterList.FileName}",
+                    []
+                );
+            }
+
+            specialization = weapon.Specialization;
+            traits = weapon.Traits;
+        }
+
         var name = ReadString(response, "name");
 
         var player = new RosterPlayer(
@@ -118,7 +139,7 @@ public sealed class RatedBgRosterExportService(string outputDirectory, ITauriApi
             ReadInt(response, "gender"),
             ReadInt(response, "class"),
             specialization,
-            artifacts?.TraitCount,
+            traits,
             CharacterResponseMapper.ReadItemLevel(response)
         );
         var warnings = (artifacts?.UnknownArtifacts ?? [])

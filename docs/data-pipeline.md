@@ -460,21 +460,27 @@ The unlisted `/rated-bg-picker` page lists the players interested in rated battl
 `Evermoon`, `Tauri` or `WoD` in any case (`Xyhop-Evermoon`, `Morron-Tauri`). Blank lines are
 skipped, and so is a trailing comma.
 
+A player's main spec can follow the realm after another dash, in any case
+(`Llýnch-Evermoon-Holy`, `Rexxar-Tauri-Beast Mastery`). Name one when a player plays a spec whose
+artifact has fewer traits than another of theirs: without it the roster takes the artifact with
+the most traits.
+
 To change the list, edit the file and run `api/Run-RatedBgRoster.cmd`. It runs
 RatedBgRosterExporter, then commits the list and the roster file together as
 `sync rated bg roster data` and pushes, with the same `main` checks as `Run-Arena.cmd`. A name
 added to the list shows on the page only after that run.
 
 - RatedBgRosterExporter reads the list before it calls the API, and stops on a line that isn't
-  `Name-Realm`, on a character listed twice, or on a list with nobody on it, naming the lines.
+  `Name-Realm` or `Name-Realm-Spec`, on a character listed twice (whatever spec each line
+  names), or on a list with nobody on it, naming the lines.
 - It makes one `character-artifact` request per character, all at once through
   `ITauriApiClient`: that response also carries the character sheet's fields
   ([tauri-api.md](tauri-api.md#characters-and-guilds)).
-- **All or nothing:** when any character can't be read, it writes nothing, names them, and exits
-  with 1, so the cmd commits nothing. A character the armory doesn't know (error code 6) doesn't
-  stop it: it's written with `notFound`, the page shows "Not on the armory", and the console names
-  it so the list can be checked. There's no shrink guard: the player count is the list's, which
-  you edit.
+- **All or nothing:** when any character can't be read, or has no artifact of the spec the list
+  names for them (a typo, say), it writes nothing, names them, and exits with 1, so the cmd
+  commits nothing. A character the armory doesn't know (error code 6) doesn't stop it: it's
+  written with `notFound`, the page shows "Not on the armory", and the console names it so the
+  list can be checked. There's no shrink guard: the player count is the list's, which you edit.
 
 ```
 { "version": 1, "generatedAt": "2026-11-24T12:29:26Z",
@@ -482,10 +488,12 @@ added to the list shows on the page only after that run.
 ```
 
 One player per line, in the list's order, LF. `name` is the name as the armory spells it
-(`bomboclats` in the list becomes `Bomboclats`). `spec` is the spec of the artifact with the most
-traits, else the active spec, and `traits` that artifact's count, both as on the guild pages
-(`CharacterArtifactReader`); `itemLevel` is the API's `avgitemlevel`, the ladder's figure. A field
-the API doesn't give is left out, and a character it doesn't know is `{ name, realm, notFound: true }`.
+(`bomboclats` in the list becomes `Bomboclats`). `spec` is the main spec the list names, else the
+spec of the artifact with the most traits, else the active spec, and `traits` that spec's
+artifact's count, spelled as the roster spells specs (`holy` in the list becomes `Holy`). Without
+a named spec both are as on the guild pages (`CharacterArtifactReader`). `itemLevel` is the API's
+`avgitemlevel`, the ladder's figure. A field the API doesn't give is left out, and a character it
+doesn't know is `{ name, realm, notFound: true }`.
 The page reads the file with `rosterPlayers` (`rated-bg-picker.ts`), which refuses another
 `version`; its rules are in [scoring.md](scoring.md#rated-bg-picker-teams).
 

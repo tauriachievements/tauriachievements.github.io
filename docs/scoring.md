@@ -807,17 +807,18 @@ The unlisted `/rated-bg-picker` page splits the players who turned up into two t
   Players within each class/spec and the side that gets the extra player from an odd-sized spec
   are random. Characters without a known spec stay random. Item level is not balanced.
 - A player's role is the role of the spec the roster file gives them
-  ([data-pipeline.md](data-pipeline.md#rated-bg-roster)): the spec of their artifact with the
-  most traits, as on the guild pages, else their active spec. A character the armory doesn't know
-  has no role and counts as a non-healer.
+  ([data-pipeline.md](data-pipeline.md#rated-bg-roster)): the main spec the hand list names for
+  them, else the spec of their artifact with the most traits, as on the guild pages, else their
+  active spec. A character the armory doesn't know has no role and counts as a non-healer.
 - A shared link opens on the teams it names, even when a respec since has left their healers
   uneven: the link records the teams as they were picked.
 - A team lists tanks, then healers, then the rest, each by name. Its heading counts its healers
   and averages the item levels it knows. After a shuffle, each team can mark one player as its
   possible flag carrier with the `FC` button. The marks are local to that result, aren't part of
   its shared link, and clear on a reshuffle or when changing players.
-- Traits are the guild pages' count (the artifact with the most traits), and the item level is
-  the API's `avgitemlevel`, the ladder's figure, not the guild pages' own average of the
-  equipped items ([tauri-api.md](tauri-api.md#characters-and-guilds)).
+- Traits are the count of that spec's artifact: the guild pages' count (the artifact with the
+  most traits) unless the list names a main spec. The item level is the API's `avgitemlevel`,
+  the ladder's figure, not the guild pages' own average of the equipped items
+  ([tauri-api.md](tauri-api.md#characters-and-guilds)).
 - **Tests:** `rated-bg-picker.spec.ts`, `rated-bg-picker-page.component.spec.ts`,
   `RatedBgRosterExportServiceTests`, `CharacterArtifactReaderTests`.

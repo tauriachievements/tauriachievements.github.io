@@ -44,6 +44,57 @@ public sealed class RatedBgRosterExportServiceTests : IDisposable
     }
 
     [Fact]
+    public void Parse_ReadsAMainSpecAfterTheRealm()
+    {
+        var characters = RatedBgRosterList.Parse([
+            "Llýnch-Evermoon-Holy",
+            "Rexxar-Tauri-Beast Mastery,",
+            " Spuky - evermoon - restoration ",
+            "Xyhop-Evermoon",
+        ]);
+
+        Assert.Equal(
+            [
+                new RosterCharacter("Llýnch", "[EN] Evermoon", "Evermoon", "Holy"),
+                new RosterCharacter("Rexxar", "[HU] Tauri WoW Server", "Tauri", "Beast Mastery"),
+                new RosterCharacter("Spuky", "[EN] Evermoon", "Evermoon", "restoration"),
+                new RosterCharacter("Xyhop", "[EN] Evermoon", "Evermoon"),
+            ],
+            characters
+        );
+    }
+
+    [Fact]
+    public void Parse_RejectsAnEmptySpecAMisplacedSpecAndAnExtraPart()
+    {
+        var error = Assert.Throws<FormatException>(() =>
+            RatedBgRosterList.Parse([
+                "Xyhop-Evermoon",
+                "Llýnch-Evermoon-",
+                "Llýnch-Evermoon Holy",
+                "Spuky-Restoration-Evermoon",
+                "Spuky-Evermoon-Restoration-Elemental",
+            ])
+        );
+
+        Assert.DoesNotContain("Line 1", error.Message);
+        Assert.Contains("Line 2", error.Message);
+        Assert.Contains("Line 3", error.Message);
+        Assert.Contains("Line 4", error.Message);
+        Assert.Contains("Line 5", error.Message);
+    }
+
+    [Fact]
+    public void Parse_RejectsACharacterListedTwiceWithADifferentSpec()
+    {
+        var error = Assert.Throws<FormatException>(() =>
+            RatedBgRosterList.Parse(["Llýnch-Evermoon-Holy", "llýnch-evermoon-Discipline"])
+        );
+
+        Assert.Contains("Line 2", error.Message);
+    }
+
+    [Fact]
     public void Parse_RejectsALineThatIsNotNameRealm()
     {
         var error = Assert.Throws<FormatException>(() =>
@@ -180,6 +231,59 @@ public sealed class RatedBgRosterExportServiceTests : IDisposable
         Assert.Equal("Subtlety", player.GetProperty("spec").GetString());
         Assert.Equal(0, player.GetProperty("traits").GetInt32());
         Assert.Equal(2, player.GetProperty("itemLevel").GetInt32());
+    }
+
+    [Fact]
+    public async Task ExportAsync_TakesTheSpecAndTraitsOfTheArtifactTheListNames()
+    {
+        var apiClient = new FakeArtifactApiClient(
+            new Dictionary<string, object>
+            {
+                ["Llýnch"] = Character(
+                    "Llýnch",
+                    race: 10,
+                    gender: 1,
+                    @class: 5,
+                    itemLevel: 887,
+                    Artifact(128825, 35),
+                    Artifact(128868, 37)
+                ),
+            }
+        );
+
+        var result = await ExportAsync(
+            apiClient,
+            new RosterCharacter("Llýnch", "[EN] Evermoon", "Evermoon", "holy")
+        );
+
+        var player = (await ReadPlayersAsync(result.OutputPath))[0];
+        Assert.Equal("Holy", player.GetProperty("spec").GetString());
+        Assert.Equal(35, player.GetProperty("traits").GetInt32());
+    }
+
+    [Fact]
+    public async Task ExportAsync_WritesNothingWhenACharacterHasNoArtifactOfTheSpecTheListNames()
+    {
+        Directory.CreateDirectory(_outputDirectory);
+        var outputPath = Path.Combine(_outputDirectory, RatedBgRosterExportService.FileName);
+        await File.WriteAllTextAsync(outputPath, "previous");
+        var apiClient = new FakeArtifactApiClient(
+            new Dictionary<string, object>
+            {
+                ["Llýnch"] = Character("Llýnch", 10, 1, 5, 887, Artifact(128868, 37)),
+            }
+        );
+
+        var error = await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            ExportAsync(
+                apiClient,
+                new RosterCharacter("Llýnch", "[EN] Evermoon", "Evermoon", "Holly")
+            )
+        );
+
+        Assert.Contains("Llýnch-Evermoon", error.Message);
+        Assert.Contains("no Holly artifact", error.Message);
+        Assert.Equal("previous", await File.ReadAllTextAsync(outputPath));
     }
 
     [Fact]

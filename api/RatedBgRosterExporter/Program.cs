@@ -12,8 +12,9 @@ internal static class Program
         Usage:
           dotnet run --project RatedBgRosterExporter
 
-        Reads AchievementLadder/Data/rated-bg-players.txt (one Name-Realm per line, kept by hand)
-        and writes each player's race, class, spec, artifact traits and item level to
+        Reads AchievementLadder/Data/rated-bg-players.txt (one Name-Realm per line, kept by hand,
+        optionally followed by the player's main spec: Llýnch-Evermoon-Holy) and writes each
+        player's race, class, spec, artifact traits and item level to
         spa/src/rated-bg-roster.json.
 
         Options:
