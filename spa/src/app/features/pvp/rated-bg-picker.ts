@@ -1,4 +1,4 @@
-import { DamageRange, Role } from '../../game/wow';
+import { CLASSES_BY_NAME, DamageRange, Role } from '../../game/wow';
 import { specFor } from '../../game/wow-specs';
 import { foldName } from '../../shared/search-suggestions';
 
@@ -59,10 +59,15 @@ export function rosterPlayers(file: RatedBgRosterFile): RosterPlayer[] {
 
 export type RosterGroupId = 'melee' | 'ranged' | 'healers';
 
+export interface RosterClass {
+  readonly classId: number;
+  readonly players: readonly RosterPlayer[];
+}
+
 export interface RosterGroup {
   readonly id: RosterGroupId;
   readonly label: string;
-  readonly players: readonly RosterPlayer[];
+  readonly classes: readonly RosterClass[];
 }
 
 const ROSTER_GROUPS: readonly { readonly id: RosterGroupId; readonly label: string }[] = [
@@ -74,7 +79,7 @@ const ROSTER_GROUPS: readonly { readonly id: RosterGroupId; readonly label: stri
 export function rosterGroups(players: readonly RosterPlayer[]): RosterGroup[] {
   return ROSTER_GROUPS.map(group => ({
     ...group,
-    players: players.filter(player => rosterGroupOf(player) === group.id).sort(byTraits)
+    classes: rosterClasses(players.filter(player => rosterGroupOf(player) === group.id))
   }));
 }
 
@@ -197,6 +202,24 @@ function rosterGroupOf(player: RosterPlayer): RosterGroupId {
   return player.range === 'ranged' ? 'ranged' : 'melee';
 }
 
+function rosterClasses(players: readonly RosterPlayer[]): RosterClass[] {
+  const playersByClass = new Map<number, RosterPlayer[]>();
+  for (const player of players) {
+    const classPlayers = playersByClass.get(player.classId) ?? [];
+    classPlayers.push(player);
+    playersByClass.set(player.classId, classPlayers);
+  }
+
+  return [...playersByClass]
+    .sort(([a], [b]) => classOrder(a) - classOrder(b))
+    .map(([classId, classPlayers]) => ({ classId, players: classPlayers.sort(bySpecThenTraits) }));
+}
+
+function classOrder(classId: number): number {
+  const index = CLASSES_BY_NAME.findIndex(({ id }) => id === classId);
+  return index === -1 ? CLASSES_BY_NAME.length : index;
+}
+
 function splitSpecsEvenly(
   players: readonly RosterPlayer[],
   firstTeamSize: number,
@@ -241,8 +264,11 @@ function byName(a: RosterPlayer, b: RosterPlayer): number {
   return compareText(foldName(a.name), foldName(b.name)) || compareText(a.realm, b.realm);
 }
 
-function byTraits(a: RosterPlayer, b: RosterPlayer): number {
-  return (b.traits ?? -1) - (a.traits ?? -1) || byName(a, b);
+function bySpecThenTraits(a: RosterPlayer, b: RosterPlayer): number {
+  return Number(a.spec === undefined) - Number(b.spec === undefined)
+    || compareText(a.spec ?? '', b.spec ?? '')
+    || (b.traits ?? -1) - (a.traits ?? -1)
+    || byName(a, b);
 }
 
 function byTeamOrder(a: RosterPlayer, b: RosterPlayer): number {

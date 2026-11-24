@@ -3,6 +3,7 @@ import {
   PICK_COUNT,
   RatedBgRosterEntry,
   RatedBgRosterFile,
+  RosterGroup,
   RosterPlayer,
   TEAM_SIZE,
   canShuffle,
@@ -45,6 +46,9 @@ function twenty(healers: number): RosterPlayer[] {
 }
 
 const healerCount = (team: readonly RosterPlayer[]) => team.filter(player => player.role === 'healer').length;
+
+const groupNames = (group: RosterGroup) =>
+  group.classes.flatMap(rosterClass => rosterClass.players.map(player => player.name));
 
 describe('rosterPlayers', () => {
   it('lists every player by name, ignoring case and accents', () => {
@@ -99,29 +103,67 @@ describe('rosterGroups', () => {
       { name: 'Typo', realm: 'Evermoon', notFound: true }
     ])));
 
-    expect(groups.map(group => [group.label, group.players.map(player => player.name)])).toEqual([
-      ['Melee', ['Guardian', 'Nospec', 'Zowy', 'Typo']],
+    expect(groups.map(group => [group.label, groupNames(group)])).toEqual([
+      ['Melee', ['Guardian', 'Zowy', 'Nospec', 'Typo']],
       ['Ranged', ['Bomboclats', 'Xyhop']],
       ['Healers', ['Lakmir', 'Lythus']]
     ]);
   });
 
-  it('sorts each group by traits, highest first, then by name, with unknown traits last', () => {
+  it('groups each list by class, classes in alphabetical order and an unknown class last', () => {
+    const [melee] = rosterGroups(rosterPlayers(roster([
+      entry('Pesi', { class: 1, spec: 'Arms' }),
+      { name: 'Typo', realm: 'Evermoon', notFound: true },
+      entry('Dom', { class: 2, spec: 'Retribution' }),
+      entry('Keilalt', { class: 12, spec: 'Havoc' }),
+      entry('Dkügli', { class: 6, spec: 'Unholy' }),
+      entry('Zowy', { class: 1, spec: 'Protection' }),
+      entry('Heaven', { class: 11, spec: 'Feral' }),
+      entry('Allisa', { class: 6, spec: 'Frost' })
+    ])));
+
+    expect(melee.classes.map(rosterClass => [rosterClass.classId, rosterClass.players.map(player => player.name)])).toEqual([
+      [6, ['Allisa', 'Dkügli']],
+      [12, ['Keilalt']],
+      [11, ['Heaven']],
+      [2, ['Dom']],
+      [1, ['Pesi', 'Zowy']],
+      [0, ['Typo']]
+    ]);
+  });
+
+  it('sorts each class by spec in alphabetical order, with an unknown spec last', () => {
+    const [melee] = rosterGroups(rosterPlayers(roster([
+      entry('Zowy', { spec: 'Protection', traits: 54 }),
+      entry('Nospec', { spec: undefined, traits: 60 }),
+      entry('Demifae', { spec: 'Fury', traits: 50 }),
+      entry('Pesi', { spec: 'Arms', traits: 43 }),
+      entry('Rcodio', { class: 6, spec: 'Unholy', traits: 54 }),
+      entry('Zerololq', { class: 6, spec: 'Frost', traits: 38 })
+    ])));
+
+    expect(melee.classes.map(rosterClass => rosterClass.players.map(player => player.name))).toEqual([
+      ['Zerololq', 'Rcodio'],
+      ['Pesi', 'Demifae', 'Zowy', 'Nospec']
+    ]);
+  });
+
+  it('sorts each spec by traits, highest first, then by name, with unknown traits last', () => {
     const [melee] = rosterGroups(rosterPlayers(roster([
       entry('Allisa', { traits: 38 }),
+      entry('Morron', { spec: 'Fury', traits: 36 }),
       entry('Dkügli', { traits: 54 }),
+      entry('Trelhy', { spec: 'Fury', traits: 49 }),
       entry('Demifae', { traits: 54 }),
       entry('Noartifact', { traits: undefined }),
-      { name: 'Typo', realm: 'Evermoon', notFound: true },
       entry('Pesi', { traits: 43 })
     ])));
 
-    expect(melee.players.map(player => player.name))
-      .toEqual(['Demifae', 'Dkügli', 'Pesi', 'Allisa', 'Noartifact', 'Typo']);
+    expect(groupNames(melee)).toEqual(['Demifae', 'Dkügli', 'Pesi', 'Allisa', 'Noartifact', 'Trelhy', 'Morron']);
   });
 
   it('keeps all three groups when one has nobody in it', () => {
-    expect(rosterGroups(rosterPlayers(roster([entry('Zowy')]))).map(group => [group.label, group.players.length]))
+    expect(rosterGroups(rosterPlayers(roster([entry('Zowy')]))).map(group => [group.label, group.classes.length]))
       .toEqual([['Melee', 1], ['Ranged', 0], ['Healers', 0]]);
   });
 });

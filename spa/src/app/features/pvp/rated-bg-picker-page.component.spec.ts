@@ -76,7 +76,7 @@ async function press(harness: RouterTestingHarness, element: HTMLElement, select
 }
 
 describe('RatedBgPickerPageComponent', () => {
-  it("lists every player with their race, class and spec icons, traits and item level", async () => {
+  it("lists every player with their class, spec and race icons, traits and item level", async () => {
     const { element } = await openPage('/rated-bg-picker', {
       version: 1,
       generatedAt: '2026-11-24T12:29:26Z',
@@ -91,7 +91,7 @@ describe('RatedBgPickerPageComponent', () => {
     const row = (name: string) => rows.find(item => item.querySelector('.player-name')?.textContent?.trim() === name);
     const xyhop = row('Xyhop');
     expect([...xyhop?.querySelectorAll('.player-icons img') ?? []].map(icon => icon.getAttribute('alt')))
-      .toEqual(['Goblin', 'Priest', 'Shadow']);
+      .toEqual(['Priest', 'Shadow', 'Goblin']);
     expect(xyhop?.querySelector('.player-traits')?.textContent).toContain('42');
     expect(xyhop?.querySelector('.player-item-level')?.textContent).toContain('886');
     expect(row('Typo')?.textContent).toContain('Not on the armory');
@@ -110,6 +110,24 @@ describe('RatedBgPickerPageComponent', () => {
     expect(columns[0].names).toHaveLength(12);
     expect(columns[1].names).toEqual(['Player04', 'Player05', 'Player06', 'Player07', 'Player08', 'Player09']);
     expect(columns[2].names).toEqual(['Player00', 'Player01', 'Player02', 'Player03']);
+  });
+
+  it('groups a column by class in alphabetical order, each by spec then traits, with a gap before each new class', async () => {
+    const { element } = await openPage('/rated-bg-picker', {
+      version: 1,
+      generatedAt: '2026-11-24T12:29:26Z',
+      players: [
+        entry(0, { class: 1, spec: 'Arms', traits: 45 }),
+        entry(1, { class: 6, spec: 'Frost', traits: 40 }),
+        entry(2, { class: 1, spec: 'Arms', traits: 50 }),
+        entry(3, { class: 6, spec: 'Unholy', traits: 52 })
+      ]
+    });
+
+    const rows = [...element.querySelectorAll('.roster-group:first-child .roster li')].map(row =>
+      [row.querySelector('.player-name')?.textContent?.trim(), row.classList.contains('class-start')]);
+
+    expect(rows).toEqual([['Player01', false], ['Player03', false], ['Player02', true], ['Player00', false]]);
   });
 
   it('says so in a column with nobody in it', async () => {

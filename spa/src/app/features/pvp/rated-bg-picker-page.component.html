@@ -71,15 +71,17 @@
             <span aria-hidden="true">Traits</span>
             <span aria-hidden="true">ilvl</span>
           </div>
-          @if (group.players.length) {
+          @if (group.classes.length) {
             <ul class="roster" [attr.aria-label]="group.label">
-              @for (player of group.players; track player.key) {
-                <li>
-                  <label class="player-row pick-row" [class.picked]="isPicked(player)" [class.locked]="isLocked(player)">
-                    <input type="checkbox" [checked]="isPicked(player)" [disabled]="isLocked(player)" (change)="toggle(player)" />
-                    <app-rated-bg-player [player]="player" />
-                  </label>
-                </li>
+              @for (rosterClass of group.classes; track rosterClass.classId; let firstClass = $first) {
+                @for (player of rosterClass.players; track player.key; let firstPlayer = $first) {
+                  <li [class.class-start]="firstPlayer && !firstClass">
+                    <label class="player-row pick-row" [class.picked]="isPicked(player)" [class.locked]="isLocked(player)">
+                      <input type="checkbox" [checked]="isPicked(player)" [disabled]="isLocked(player)" (change)="toggle(player)" />
+                      <app-rated-bg-player [player]="player" />
+                    </label>
+                  </li>
+                }
               }
             </ul>
           } @else {
