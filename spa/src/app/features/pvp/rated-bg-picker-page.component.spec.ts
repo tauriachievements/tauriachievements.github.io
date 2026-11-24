@@ -181,6 +181,33 @@ describe('RatedBgPickerPageComponent', () => {
     expect(params.get('b')?.split(',').map(key => key.replace('-Evermoon', ''))).toEqual(teams[1]);
   });
 
+  it('marks one possible flag carrier per team and clears the marks on reshuffle', async () => {
+    const { harness, element } = await openPage('/rated-bg-picker');
+    await tick(harness, element, 20);
+    await press(harness, element, '.shuffle');
+
+    const teamButtons = () => [...element.querySelectorAll<HTMLElement>('.team')].map(team =>
+      [...team.querySelectorAll<HTMLButtonElement>('.flag-carrier')]);
+    const [firstTeam, secondTeam] = teamButtons();
+
+    firstTeam[0].click();
+    secondTeam[0].click();
+    harness.detectChanges();
+    await harness.fixture.whenStable();
+    expect(firstTeam[0].getAttribute('aria-pressed')).toBe('true');
+    expect(secondTeam[0].getAttribute('aria-pressed')).toBe('true');
+
+    firstTeam[1].click();
+    harness.detectChanges();
+    await harness.fixture.whenStable();
+    expect(firstTeam[0].getAttribute('aria-pressed')).toBe('false');
+    expect(firstTeam[1].getAttribute('aria-pressed')).toBe('true');
+    expect(secondTeam[0].getAttribute('aria-pressed')).toBe('true');
+
+    await press(harness, element, '.shuffle-again');
+    expect(teamButtons().flat().every(candidate => candidate.getAttribute('aria-pressed') === 'false')).toBe(true);
+  });
+
   it('opens a shared link on its teams, with their players ticked and the ticks locked', async () => {
     const first = Array.from({ length: 10 }, (_, index) => `Player${String(index).padStart(2, '0')}-Evermoon`);
     const second = Array.from({ length: 10 }, (_, index) => `Player${String(index + 10).padStart(2, '0')}-Evermoon`);

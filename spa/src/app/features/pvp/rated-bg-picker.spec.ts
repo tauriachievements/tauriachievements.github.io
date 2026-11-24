@@ -198,6 +198,32 @@ describe('shuffleTeams', () => {
     }
   });
 
+  it('splits every known class and spec as evenly as possible', () => {
+    const players = rosterPlayers(roster([
+      entry('Holy1', { class: 5, spec: 'Holy' }),
+      entry('Holy2', { class: 5, spec: 'Holy' }),
+      entry('Marks1', { class: 3, spec: 'Marksmanship' }),
+      entry('Marks2', { class: 3, spec: 'Marksmanship' }),
+      entry('Marks3', { class: 3, spec: 'Marksmanship' }),
+      ...Array.from({ length: 5 }, (_, index) => entry(`Arms${index + 1}`)),
+      ...Array.from({ length: 4 }, (_, index) => entry(`Shadow${index + 1}`, { class: 5, spec: 'Shadow' })),
+      ...Array.from({ length: 6 }, (_, index) => entry(`Havoc${index + 1}`, { class: 12, spec: 'Havoc' }))
+    ]));
+
+    for (let seed = 0; seed < 50; seed++) {
+      const teams = shuffleTeams(players, seeded(seed));
+      const classSpecs = new Set(players.map(player => `${player.classId}:${player.spec}`));
+
+      expect(teams.map(team => team.length)).toEqual([TEAM_SIZE, TEAM_SIZE]);
+      expect(teams.map(healerCount)).toEqual([1, 1]);
+      for (const classSpec of classSpecs) {
+        const count = (team: readonly RosterPlayer[]) =>
+          team.filter(player => `${player.classId}:${player.spec}` === classSpec).length;
+        expect(Math.abs(count(teams[0]) - count(teams[1]))).toBeLessThanOrEqual(1);
+      }
+    }
+  });
+
   it('leaves to chance which team gets the odd healer and who plays on which team', () => {
     const extraHealerTeams = new Set<number>();
     const firstTeamOfPlayer19 = new Set<boolean>();

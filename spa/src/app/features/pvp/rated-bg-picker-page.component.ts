@@ -38,6 +38,8 @@ import {
 } from './rated-bg-picker';
 import { RatedBgPlayerComponent } from './rated-bg-player.component';
 
+type FlagCarriers = readonly [string | undefined, string | undefined];
+
 @Component({
   selector: 'app-rated-bg-picker-page',
   templateUrl: './rated-bg-picker-page.component.html',
@@ -59,6 +61,7 @@ export class RatedBgPickerPageComponent implements OnInit {
   readonly players = signal<readonly RosterPlayer[]>([]);
   readonly picked = signal<ReadonlySet<string>>(new Set());
   readonly teams = signal<Teams | undefined>(undefined);
+  readonly flagCarriers = signal<FlagCarriers>([undefined, undefined]);
   readonly staleLink = signal(false);
   private readonly generatedAt = signal<string | undefined>(undefined);
 
@@ -134,6 +137,18 @@ export class RatedBgPickerPageComponent implements OnInit {
     this.picked.update(picked => togglePick(picked, player.key));
   }
 
+  isFlagCarrier(teamIndex: number, player: RosterPlayer): boolean {
+    return this.flagCarriers()[teamIndex] === player.key;
+  }
+
+  toggleFlagCarrier(teamIndex: number, player: RosterPlayer): void {
+    this.flagCarriers.update(flagCarriers => {
+      const next: [string | undefined, string | undefined] = [...flagCarriers];
+      next[teamIndex] = next[teamIndex] === player.key ? undefined : player.key;
+      return next;
+    });
+  }
+
   shuffle(): void {
     const players = this.pickedPlayers();
     if (!canShuffle(players)) {
@@ -141,6 +156,7 @@ export class RatedBgPickerPageComponent implements OnInit {
     }
 
     this.teams.set(shuffleTeams(players));
+    this.clearFlagCarriers();
     this.staleLink.set(false);
     this.writeUrl();
     afterNextRender(() => this.scrollToTeams(), { injector: this.injector });
@@ -148,17 +164,20 @@ export class RatedBgPickerPageComponent implements OnInit {
 
   changePlayers(): void {
     this.teams.set(undefined);
+    this.clearFlagCarriers();
     this.writeUrl();
   }
 
   clear(): void {
     this.picked.set(new Set());
     this.teams.set(undefined);
+    this.clearFlagCarriers();
     this.staleLink.set(false);
     this.writeUrl();
   }
 
   private openSharedTeams(players: readonly RosterPlayer[]): void {
+    this.clearFlagCarriers();
     const params = this.route.snapshot.queryParamMap;
     if (!params.has('a') && !params.has('b')) {
       return;
@@ -173,6 +192,10 @@ export class RatedBgPickerPageComponent implements OnInit {
 
     this.staleLink.set(true);
     this.writeUrl();
+  }
+
+  private clearFlagCarriers(): void {
+    this.flagCarriers.set([undefined, undefined]);
   }
 
   private scrollToTeams(): void {

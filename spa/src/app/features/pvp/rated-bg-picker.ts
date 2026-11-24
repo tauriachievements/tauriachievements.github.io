@@ -108,14 +108,28 @@ export function togglePick(picked: ReadonlySet<string>, key: string): ReadonlySe
 }
 
 export function shuffleTeams(players: readonly RosterPlayer[], random: () => number = Math.random): Teams {
-  const order = [
-    ...shuffled(players.filter(isHealer), random),
-    ...shuffled(players.filter(player => !isHealer(player)), random)
+  const healers = players.filter(isHealer);
+  const others = players.filter(player => !isHealer(player));
+  let firstHealers = Math.floor(healers.length / 2);
+  let firstOthers = Math.floor(others.length / 2);
+
+  if (healers.length % 2 === 1 && others.length % 2 === 1) {
+    if (random() < 0.5) {
+      firstHealers++;
+    } else {
+      firstOthers++;
+    }
+  } else {
+    firstHealers += healers.length % 2 === 1 && random() < 0.5 ? 1 : 0;
+    firstOthers += others.length % 2 === 1 && random() < 0.5 ? 1 : 0;
+  }
+
+  const healerTeams = splitSpecsEvenly(healers, firstHealers, random);
+  const otherTeams = splitSpecsEvenly(others, firstOthers, random);
+  return [
+    [...healerTeams[0], ...otherTeams[0]].sort(byTeamOrder),
+    [...healerTeams[1], ...otherTeams[1]].sort(byTeamOrder)
   ];
-  const firstTeam = random() < 0.5 ? 0 : 1;
-  const teams: [RosterPlayer[], RosterPlayer[]] = [[], []];
-  order.forEach((player, index) => teams[(index + firstTeam) % 2].push(player));
-  return [teams[0].sort(byTeamOrder), teams[1].sort(byTeamOrder)];
 }
 
 export function teamsParams(teams: Teams | undefined): { a: string | null; b: string | null } {
@@ -181,6 +195,37 @@ function rosterGroupOf(player: RosterPlayer): RosterGroupId {
     return 'healers';
   }
   return player.range === 'ranged' ? 'ranged' : 'melee';
+}
+
+function splitSpecsEvenly(
+  players: readonly RosterPlayer[],
+  firstTeamSize: number,
+  random: () => number
+): [RosterPlayer[], RosterPlayer[]] {
+  const buckets = new Map<string, RosterPlayer[]>();
+  for (const player of players) {
+    const key = player.spec ? `${player.classId}:${player.spec}` : `unknown:${player.key}`;
+    const bucket = buckets.get(key) ?? [];
+    bucket.push(player);
+    buckets.set(key, bucket);
+  }
+
+  const groups = [...buckets.values()];
+  const baseFirstSize = groups.reduce((sum, group) => sum + Math.floor(group.length / 2), 0);
+  const firstTeamExtras = new Set(
+    shuffled(groups.filter(group => group.length % 2 === 1), random)
+      .slice(0, firstTeamSize - baseFirstSize)
+  );
+  const teams: [RosterPlayer[], RosterPlayer[]] = [[], []];
+
+  for (const group of groups) {
+    const playersInRandomOrder = shuffled(group, random);
+    const firstCount = Math.floor(group.length / 2) + (firstTeamExtras.has(group) ? 1 : 0);
+    teams[0].push(...playersInRandomOrder.slice(0, firstCount));
+    teams[1].push(...playersInRandomOrder.slice(firstCount));
+  }
+
+  return teams;
 }
 
 function shuffled<T>(items: readonly T[], random: () => number): T[] {
