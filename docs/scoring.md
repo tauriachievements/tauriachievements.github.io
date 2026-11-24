@@ -785,11 +785,13 @@ decision: ask first.** When a rule does change, change its tests first and see t
 
 ## Rated BG Picker teams
 
-The unlisted `/rated-bg-picker` page splits the players who turned up into two teams of 10.
+The unlisted `/rated-bg-picker` page splits the players who turned up into two teams of 10 and
+puts everyone else on the bench, taking turns from match to match.
 
-- **Code:** `rosterGroups`, `canShuffle`, `healerWarning`, `shuffleTeams`, `togglePick`,
-  `toggleFlagCarrier`, `tickedFlagCarriers`, `markTeamFlagCarrier`, `parseTeams`, `teamGroups`
-  and `teamSummary` in `spa/src/app/features/pvp/rated-bg-picker.ts`.
+- **Code:** `rosterGroups`, `shuffleWarning`, `canShuffle`, `playMatch`, `shuffleTeams`,
+  `linkedMatch`, `compositionOf`, `togglePick`, `toggleFlagCarrier`, `tickedFlagCarriers`,
+  `markTeamFlagCarrier`, `parseTeams`, `teamGroups` and `teamSummary` in
+  `spa/src/app/features/pvp/rated-bg-picker.ts`.
 - The list shows three groups, side by side from 1000 px and one under the other below that:
   Melee, Ranged, then Healers. Ranged holds the ranged damage specs (`range` in `LEGION_SPECS`),
   Healers the healer specs, and Melee everyone else: the melee damage specs, tanks, and characters
@@ -799,48 +801,61 @@ The unlisted `/rated-bg-picker` page splits the players who turned up into two t
   characters the armory doesn't know last. Within a class, players go by spec in alphabetical
   order (no known spec last), then by traits, highest first, then by name, with those whose traits
   aren't known last. Each group's heading counts its ticked players, and the bar above the list
-  counts the ticked players and healers.
-- **Shuffle needs exactly 20 ticked players with an even number of healers** (0 included); the
-  page never ticks a 21st. While an odd number of healers is ticked, Shuffle stays off and the
-  bar adds "tick an even number" after the healer count, on the same line, so the bar keeps its
-  height.
-- **Each team gets half the healers, then each class is split as evenly as possible, then each
-  spec within its class.** The healers and the rest (damage and tanks) are split separately, each
-  class by class. So 2 healers split 1 and 1, 4 Death Knights 2 and 2, and an Arms and a Fury
-  Warrior one each; 3 Unholy and 1 Frost Death Knight become Unholy + Frost against 2 Unholy. A
-  tank counts with its class. Which team gets the extra player of an odd-sized class or spec, and
-  who plays on which side, is random. A character without a known spec is split with its class;
-  one the armory doesn't know stays random. Item level and a class's healers against its damage
-  players are not balanced.
-- **The ranged are split as evenly as possible, and so are the melee.** Ranged and melee are the
-  list's groups: the ranged damage specs, and everyone else who isn't a healer. Ranged sits below
-  the class and spec splits rather than above them, so it never costs a class its even split: the
-  shuffle draws class-balanced teams again until the ranged differ by at most one (at most 1,000
-  tries, shared with the flag carrier rule below). As each team has the same number of
-  non-healers, the melee then differ by at most one too. So 6 ranged split 3 and 3, where a class
-  split alone could leave a single-player Warlock and Shadow Priest on one side and a single
-  Rogue and Feral Druid on the other, 4 ranged against 2. On the roster in November 2026, a
-  class-balanced draw already split the ranged evenly 81% of the time on average and 51% for the
-  hardest pick of 20.
+  counts all the ticked players.
+- **Any number of players can be ticked.** Three dropdowns under "Each team", above the bar, set
+  how many healers (1 to 4), ranged (1 to 5) and melee (1 to 5) each team gets, 2, 4 and 4 at
+  first (`COMPOSITION_CHOICES`, `DEFAULT_COMPOSITION`). Healers, ranged and melee are the list's
+  three groups. Clear keeps the dropdowns; a reload sets them back to 2, 4 and 4.
+- **Shuffle needs the three to add up to 10, and enough ticked players in each group for both
+  teams.** Until then Shuffle stays off and the bar says why after the count, on the same line, so
+  the bar keeps its height: "11 per team, a team is 10", or "tick 1 more healer and 2 more
+  ranged". With nobody ticked it only checks the 10. Once Shuffle is on, the bar says how many
+  will sit out: "24 ticked · 4 on the bench".
+- **Each team gets exactly the healers, ranged and melee the dropdowns ask for, and the rest of the
+  ticked players sit out.** In each group, who sits out is decided in this order:
+  1. a marked flag carrier always plays;
+  2. whoever has sat out the fewest matches so far sits out first;
+  3. between two who have sat out as often, one who played the last match sits out before one
+     who didn't (who sat it out, or was ticked after it);
+  4. the rest is random.
+
+  So the last match's bench plays the next one whenever its group has enough others to sit out,
+  and nobody in a group sits out twice before everyone in it has sat out once. When more than half
+  of a group sits out, some sit out two matches in a row. The page keeps the count while it is
+  open: Change players keeps it, and Clear and a reload start it again.
+- The bench shows under the two teams, in the teams' order: healers, ranged, then melee, each
+  class by class. After the next shuffle, each player back from the bench has a green stripe
+  beside their row, and their team's heading counts them: "2 back from the bench".
+- **Each group is split evenly between the teams, then each class within the group, then each
+  spec within its class.** Healers, ranged and melee are split separately, each class by class. So
+  4 Death Knights split 2 and 2, and an Arms and a Fury Warrior one each; 3 Unholy and 1 Frost
+  Death Knight become Unholy + Frost against 2 Unholy. A tank counts with its class among the
+  melee. Which team gets the extra player of an odd-sized class or spec, and who plays on which
+  side, is random. A character without a known spec is split with its class; one the armory
+  doesn't know stays random. Item level is not balanced, and neither is a class across groups: a
+  Restoration and a Feral Druid, or an Elemental and an Enhancement Shaman, can land on the same
+  team.
 - A player's role is the role of the spec the roster file gives them
   ([data-pipeline.md](data-pipeline.md#rated-bg-roster)): the main spec the hand list names for
   them, else the spec of their artifact with the most traits, as on the guild pages, else their
-  active spec. A character the armory doesn't know has no role and counts as a non-healer.
-- A shared link opens on the teams it names, even when a respec since has left their healers
-  uneven: the link records the teams as they were picked.
+  active spec. A character the armory doesn't know has no role and counts as melee.
+- A shared link opens on the teams it names, with nobody on the bench, even when a respec since
+  has left their groups uneven: the link records the teams as they were picked. When both teams
+  have the same number of healers, ranged and melee, and each number is on its dropdown, the
+  dropdowns take those numbers (`compositionOf`); otherwise they stay at 2, 4 and 4. The link's
+  players count as having played the last match, so after Change players, a player ticked again
+  plays the next match before them.
 - A team lists its players in the list's groups, but Healers first, then Ranged, then Melee, each
   class by class, then by spec and traits, as above. A gap with no heading separates the groups,
   and a group the team has nobody in is left out. The team's heading counts its healers and
   averages the item levels it knows.
 - **Flag carriers are optional; with two marked, each team gets one.** Before the shuffle, the
   `FC` button on a ticked player marks them as a flag carrier, two at most. After a shuffle, each
-  team can mark one, and marking another player of that team moves its mark. With two marked,
-  the shuffle draws again until they land on different teams, so every split above holds exactly
-  as without them. On the roster in November 2026, a draw met both the ranged and the flag
-  carrier rule 43% of the time on average and 22% for the hardest pair, a handful of tries at
-  most. One mark changes nothing about the shuffle. The marks stay through Shuffle again and
-  Change players, go when their player is unticked or on Clear, and aren't part of the shared
-  link.
+  team can mark one, and marking another player of that team moves its mark. A marked player is
+  never benched. With two marked, the shuffle draws again until they land on different teams (at
+  most 1,000 tries), so every split above holds exactly as without them. One mark changes nothing
+  about the shuffle. The marks stay through Shuffle again and Change players, go when their player
+  is unticked or on Clear, and aren't part of the shared link.
 - Traits are the count of that spec's artifact: the guild pages' count (the artifact with the
   most traits) unless the list names a main spec. The item level is the API's `avgitemlevel`,
   the ladder's figure, not the guild pages' own average of the equipped items

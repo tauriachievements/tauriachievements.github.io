@@ -1,20 +1,26 @@
 import { describe, expect, it } from 'vitest';
 import {
-  PICK_COUNT,
+  COMPOSITION_CHOICES,
+  DEFAULT_COMPOSITION,
+  FLAG_CARRIER_COUNT,
+  MATCH_SIZE,
+  NO_BENCH_HISTORY,
   RatedBgRosterEntry,
   RatedBgRosterFile,
   RosterGroup,
   RosterPlayer,
   TEAM_SIZE,
-  FLAG_CARRIER_COUNT,
+  Teams,
   canShuffle,
-  countHealers,
-  healerWarning,
+  compositionOf,
+  linkedMatch,
   markTeamFlagCarrier,
   parseTeams,
   rosterGroups,
+  playMatch,
   rosterPlayers,
   shuffleTeams,
+  shuffleWarning,
   teamGroups,
   teamSummary,
   teamsParams,
@@ -43,7 +49,7 @@ function seeded(seed: number): () => number {
 }
 
 function twenty(healers: number): RosterPlayer[] {
-  return rosterPlayers(roster(Array.from({ length: PICK_COUNT }, (_, index) =>
+  return rosterPlayers(roster(Array.from({ length: MATCH_SIZE }, (_, index) =>
     index < healers
       ? entry(`Healer${index}`, { class: 5, spec: 'Holy' })
       : entry(`Player${index}`)
@@ -51,6 +57,21 @@ function twenty(healers: number): RosterPlayer[] {
 }
 
 const healerCount = (team: readonly RosterPlayer[]) => team.filter(player => player.role === 'healer').length;
+
+function ticked(healers: number, ranged: number, melee: number): RosterPlayer[] {
+  return rosterPlayers(roster([
+    ...Array.from({ length: healers }, (_, index) => entry(`Healer${index}`, { class: 5, spec: 'Holy' })),
+    ...Array.from({ length: ranged }, (_, index) => entry(`Ranged${index}`, { class: 8, spec: 'Fire' })),
+    ...Array.from({ length: melee }, (_, index) => entry(`Melee${index}`))
+  ]));
+}
+
+const groupCounts = (players: readonly RosterPlayer[]) =>
+  Object.fromEntries(teamGroups(players).map(group => [group.id, group.players.length]));
+
+const keysOf = (players: readonly RosterPlayer[]) => players.map(player => player.key).sort();
+
+const namesOf = (players: readonly RosterPlayer[]) => players.map(player => player.name).sort();
 
 function groupOfTwenty(): RosterPlayer[] {
   return rosterPlayers(roster([
@@ -215,26 +236,56 @@ describe('rosterGroups', () => {
   });
 });
 
-describe('canShuffle', () => {
-  it(`needs ${PICK_COUNT} players with an even number of healers`, () => {
-    expect([0, 2, 4, 6].map(healers => canShuffle(twenty(healers)))).toEqual([true, true, true, true]);
-    expect([1, 3, 5].map(healers => canShuffle(twenty(healers)))).toEqual([false, false, false]);
-    expect(canShuffle(twenty(2).slice(1))).toBe(false);
-  });
-
-  it('counts the healers among the players', () => {
-    expect(countHealers(twenty(3))).toBe(3);
+describe('COMPOSITION_CHOICES', () => {
+  it('offers 1 to 4 healers and 1 to 5 ranged and melee per team, 2, 4 and 4 at first', () => {
+    expect(COMPOSITION_CHOICES.map(choice => [choice.id, choice.label, choice.counts])).toEqual([
+      ['healers', 'Healers', [1, 2, 3, 4]],
+      ['ranged', 'Ranged', [1, 2, 3, 4, 5]],
+      ['melee', 'Melee', [1, 2, 3, 4, 5]]
+    ]);
+    expect(DEFAULT_COMPOSITION).toEqual({ healers: 2, ranged: 4, melee: 4 });
   });
 });
 
-describe('healerWarning', () => {
-  it('asks for an even number of healers while an odd number is ticked', () => {
-    expect(healerWarning(3)).toBe('tick an even number');
-    expect(healerWarning(1)).toBe('tick an even number');
+describe('shuffleWarning and canShuffle', () => {
+  it(`needs the healers, ranged and melee per team to add up to a team of ${TEAM_SIZE}`, () => {
+    const picked = ticked(6, 10, 10);
+
+    expect(shuffleWarning(picked, { healers: 3, ranged: 4, melee: 4 })).toBe('11 per team, a team is 10');
+    expect(shuffleWarning(picked, { healers: 2, ranged: 3, melee: 4 })).toBe('9 per team, a team is 10');
+    expect(canShuffle(picked, { healers: 3, ranged: 4, melee: 4 })).toBe(false);
+    expect(shuffleWarning(picked, { healers: 3, ranged: 3, melee: 4 })).toBeUndefined();
+    expect(canShuffle(picked, { healers: 3, ranged: 3, melee: 4 })).toBe(true);
   });
 
-  it('says nothing for an even number', () => {
-    expect([0, 2, 4].map(healerWarning)).toEqual([undefined, undefined, undefined]);
+  it('names each group with too few ticked for both teams', () => {
+    expect(shuffleWarning(ticked(3, 8, 8), DEFAULT_COMPOSITION)).toBe('tick 1 more healer');
+    expect(shuffleWarning(ticked(2, 7, 8), DEFAULT_COMPOSITION)).toBe('tick 2 more healers and 1 more ranged');
+    expect(shuffleWarning(ticked(3, 6, 5), DEFAULT_COMPOSITION)).toBe('tick 1 more healer, 2 more ranged and 3 more melee');
+    expect([ticked(3, 8, 8), ticked(2, 7, 8), ticked(4, 8, 7)].map(picked => canShuffle(picked, DEFAULT_COMPOSITION)))
+      .toEqual([false, false, false]);
+  });
+
+  it(`shuffles any number of ticked players from ${MATCH_SIZE} up once every group has enough`, () => {
+    expect(canShuffle(ticked(4, 8, 8), DEFAULT_COMPOSITION)).toBe(true);
+    expect(canShuffle(ticked(5, 10, 11), DEFAULT_COMPOSITION)).toBe(true);
+    expect(shuffleWarning(ticked(5, 10, 11), DEFAULT_COMPOSITION)).toBeUndefined();
+  });
+
+  it('counts tanks and characters without a known spec as melee', () => {
+    const picked = rosterPlayers(roster([
+      ...ticked(4, 8, 6).map(player => entry(player.name, { class: player.classId, spec: player.spec })),
+      entry('Guardian', { class: 11, spec: 'Guardian' }),
+      entry('Nospec', { spec: undefined })
+    ]));
+
+    expect(canShuffle(picked, DEFAULT_COMPOSITION)).toBe(true);
+  });
+
+  it('asks for no players while nobody is ticked, but still checks the team size', () => {
+    expect(shuffleWarning([], DEFAULT_COMPOSITION)).toBeUndefined();
+    expect(canShuffle([], DEFAULT_COMPOSITION)).toBe(false);
+    expect(shuffleWarning([], { healers: 3, ranged: 4, melee: 4 })).toBe('11 per team, a team is 10');
   });
 });
 
@@ -246,11 +297,11 @@ describe('togglePick', () => {
     expect([...togglePick(ticked, 'Xyhop-Evermoon')]).toEqual([]);
   });
 
-  it(`never ticks more than ${PICK_COUNT} players`, () => {
-    const full = new Set(Array.from({ length: PICK_COUNT }, (_, index) => `Player${index}-Evermoon`));
+  it('ticks any number of players', () => {
+    const many = new Set(Array.from({ length: 30 }, (_, index) => `Player${index}-Evermoon`));
 
-    expect(togglePick(full, 'Extra-Evermoon').size).toBe(PICK_COUNT);
-    expect(togglePick(full, 'Player0-Evermoon').size).toBe(PICK_COUNT - 1);
+    expect(togglePick(many, 'Extra-Evermoon').size).toBe(31);
+    expect(togglePick(many, 'Player0-Evermoon').size).toBe(29);
   });
 });
 
@@ -294,7 +345,7 @@ describe('markTeamFlagCarrier', () => {
 });
 
 describe('shuffleTeams', () => {
-  it(`makes two teams of ${TEAM_SIZE} out of the ${PICK_COUNT} ticked players`, () => {
+  it(`makes two teams of ${TEAM_SIZE} out of ${MATCH_SIZE} players`, () => {
     const players = twenty(3);
     const [first, second] = shuffleTeams(players, seeded(1));
 
@@ -460,6 +511,158 @@ describe('shuffleTeams', () => {
           .toEqual(teamGroups(team).flatMap(group => group.players.map(player => player.name)));
       }
     }
+  });
+});
+
+describe('playMatch', () => {
+  const noFlagCarriers: ReadonlySet<string> = new Set();
+  const play = (picked: readonly RosterPlayer[], history = NO_BENCH_HISTORY, seed = 1, flagCarriers = noFlagCarriers) =>
+    playMatch(picked, DEFAULT_COMPOSITION, history, flagCarriers, seeded(seed));
+
+  it('fills each team with the healers, ranged and melee the dropdowns ask for, and benches the rest', () => {
+    const picked = ticked(5, 10, 11);
+
+    for (let seed = 0; seed < 30; seed++) {
+      const { match } = play(picked, NO_BENCH_HISTORY, seed);
+
+      expect(match.teams.map(groupCounts)).toEqual([
+        { healers: 2, ranged: 4, melee: 4 },
+        { healers: 2, ranged: 4, melee: 4 }
+      ]);
+      expect(groupCounts(match.bench)).toEqual({ healers: 1, ranged: 2, melee: 3 });
+      expect(keysOf([...match.teams[0], ...match.teams[1], ...match.bench])).toEqual(keysOf(picked));
+    }
+  });
+
+  it('follows any composition that adds up to a team', () => {
+    const { match } = playMatch(ticked(6, 8, 8), { healers: 3, ranged: 3, melee: 4 }, NO_BENCH_HISTORY, noFlagCarriers, seeded(4));
+
+    expect(match.teams.map(groupCounts)).toEqual([
+      { healers: 3, ranged: 3, melee: 4 },
+      { healers: 3, ranged: 3, melee: 4 }
+    ]);
+    expect(groupCounts(match.bench)).toEqual({ ranged: 2 });
+  });
+
+  it('lists the bench as its healers, ranged and melee, each by class as in the list', () => {
+    const { match } = play(ticked(6, 10, 11));
+
+    expect(match.bench.map(player => player.name))
+      .toEqual(teamGroups(match.bench).flatMap(group => group.players.map(player => player.name)));
+  });
+
+  it('benches nobody when the ticked players fill both teams exactly', () => {
+    const { match } = play(ticked(4, 8, 8));
+
+    expect(match.bench).toEqual([]);
+    expect(match.teams.map(team => team.length)).toEqual([TEAM_SIZE, TEAM_SIZE]);
+  });
+
+  it('leaves to chance who sits out the first match', () => {
+    const benches = new Set<string>();
+    for (let seed = 0; seed < 20; seed++) {
+      benches.add(namesOf(play(ticked(4, 8, 11), NO_BENCH_HISTORY, seed).match.bench).join());
+    }
+
+    expect(benches.size).toBeGreaterThan(1);
+  });
+
+  it('never benches a flag carrier, and puts one on each team', () => {
+    const picked = ticked(5, 10, 11);
+    const flagCarriers = new Set(['Healer0-Evermoon', 'Melee0-Evermoon']);
+
+    for (let seed = 0; seed < 30; seed++) {
+      const { match } = play(picked, NO_BENCH_HISTORY, seed, flagCarriers);
+
+      expect(match.bench.filter(player => flagCarriers.has(player.key))).toEqual([]);
+      expect(match.teams.map(team => team.filter(player => flagCarriers.has(player.key)).length)).toEqual([1, 1]);
+    }
+  });
+
+  it("plays the last match's bench first, marked as back from the bench, and benches players who played it", () => {
+    const picked = ticked(5, 10, 11);
+
+    for (let seed = 0; seed < 20; seed++) {
+      const first = play(picked, NO_BENCH_HISTORY, seed);
+      const second = play(picked, first.history, seed + 100);
+      const firstBench = keysOf(first.match.bench);
+
+      expect(first.match.backFromBench.size).toBe(0);
+      expect([...second.match.backFromBench].sort()).toEqual(firstBench);
+      expect(second.match.bench.filter(player => firstBench.includes(player.key))).toEqual([]);
+    }
+  });
+
+  it('rotates the bench, so nobody sits out twice before everyone in their group has once', () => {
+    const picked = ticked(4, 8, 11);
+    const melee = picked.filter(player => player.name.startsWith('Melee'));
+
+    for (let seed = 0; seed < 10; seed++) {
+      const sitOuts = new Map(picked.map(player => [player.key, 0]));
+      let history = NO_BENCH_HISTORY;
+      let lastBench: string[] = [];
+      for (let match = 0; match < 8; match++) {
+        const result = play(picked, history, seed * 10 + match);
+        const bench = keysOf(result.match.bench);
+        bench.forEach(key => sitOuts.set(key, (sitOuts.get(key) ?? 0) + 1));
+        const meleeSitOuts = melee.map(player => sitOuts.get(player.key) ?? 0);
+
+        expect(bench).toHaveLength(3);
+        expect(bench.filter(key => lastBench.includes(key))).toEqual([]);
+        expect(Math.max(...meleeSitOuts) - Math.min(...meleeSitOuts)).toBeLessThanOrEqual(1);
+        history = result.history;
+        lastBench = bench;
+      }
+    }
+  });
+
+  it('plays a player ticked since the last match before those who played it', () => {
+    const everyone = ticked(4, 8, 11);
+    const first = play(everyone.filter(player => player.name !== 'Melee10'), NO_BENCH_HISTORY, 3);
+
+    for (let seed = 0; seed < 20; seed++) {
+      const second = play(everyone, first.history, seed);
+
+      expect(namesOf(second.match.bench)).not.toContain('Melee10');
+      expect(second.match.backFromBench.has('Melee10-Evermoon')).toBe(false);
+    }
+  });
+});
+
+describe('linkedMatch', () => {
+  it("opens a link's teams with nobody on the bench, and counts its players as having played", () => {
+    const linked = ticked(4, 8, 8);
+    const teams = shuffleTeams(linked, seeded(5));
+    const latecomers = ticked(4, 8, 10).filter(player => ['Melee8', 'Melee9'].includes(player.name));
+    const { match, history } = linkedMatch(teams);
+
+    expect(match).toEqual({ teams, bench: [], backFromBench: new Set() });
+    for (let seed = 0; seed < 20; seed++) {
+      const next = playMatch([...linked, ...latecomers], DEFAULT_COMPOSITION, history, new Set(), seeded(seed));
+
+      expect(next.match.bench).toHaveLength(2);
+      expect(namesOf(next.match.bench).filter(name => ['Melee8', 'Melee9'].includes(name))).toEqual([]);
+    }
+  });
+});
+
+describe('compositionOf', () => {
+  it('reads the healers, ranged and melee per team when both teams have the same', () => {
+    const { match } = playMatch(ticked(6, 6, 8), { healers: 3, ranged: 3, melee: 4 }, NO_BENCH_HISTORY, new Set(), seeded(2));
+
+    expect(compositionOf(match.teams)).toEqual({ healers: 3, ranged: 3, melee: 4 });
+  });
+
+  it('has none when the teams differ, or a count is not on its dropdown', () => {
+    const split = (players: readonly RosterPlayer[], firstNames: readonly string[]): Teams => [
+      players.filter(player => firstNames.includes(player.name)),
+      players.filter(player => !firstNames.includes(player.name))
+    ];
+    const uneven = split(ticked(4, 8, 8), ['Healer0', 'Ranged0', 'Ranged1', 'Ranged2', 'Ranged3', 'Melee0', 'Melee1', 'Melee2', 'Melee3', 'Melee4']);
+    const noHealers = split(ticked(0, 10, 10), ['Ranged0', 'Ranged1', 'Ranged2', 'Ranged3', 'Ranged4', 'Melee0', 'Melee1', 'Melee2', 'Melee3', 'Melee4']);
+    const sixMelee = split(ticked(2, 6, 12), ['Healer0', 'Ranged0', 'Ranged1', 'Ranged2', 'Melee0', 'Melee1', 'Melee2', 'Melee3', 'Melee4', 'Melee5']);
+
+    expect([uneven, noHealers, sixMelee].map(compositionOf)).toEqual([undefined, undefined, undefined]);
   });
 });
 

@@ -9,6 +9,7 @@ $carrier-width: 2rem;
 $columns-breakpoint: 1000px;
 $first-team-color: #4a9eff;
 $second-team-color: #e5484d;
+$bench-color: #3fb68b;
 $card: #161616;
 $line: rgba(255, 255, 255, 0.08);
 $row-line: rgba(255, 255, 255, 0.04);
@@ -102,12 +103,83 @@ $text: #e0e0e0;
 .team-players + .team-players { margin-top: 12px; }
 
 .team-players .player-row {
+  position: relative;
   grid-template-columns: $icons-width minmax(0, 1fr) $number-width $number-width $carrier-width;
   padding-block: 2px;
 
   & + .player-row { border-top: 1px solid $row-line; }
   &.flag-carrier-marked { background: rgba(255, 255, 255, 0.05); }
+
+  &.back-from-bench::before {
+    position: absolute;
+    top: 6px;
+    bottom: 6px;
+    left: -9px;
+    width: 3px;
+    border-radius: 2px;
+    background: $bench-color;
+    content: '';
+  }
 }
+
+.bench-note {
+  color: $bench-color;
+  white-space: nowrap;
+}
+
+.bench {
+  grid-column: 1 / -1;
+  padding: 12px 14px 8px;
+  border-top: 3px solid #5a5a5a;
+}
+
+.bench-players {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  column-gap: 28px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  .player-row {
+    grid-template-columns: $icons-width minmax(0, 1fr) $number-width $number-width;
+    padding-block: 2px;
+    border-top: 1px solid $row-line;
+
+    &:nth-child(-n + 2) { border-top: 0; }
+  }
+}
+
+.composition {
+  position: relative;
+  z-index: 4;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 20px;
+  padding: 8px 14px;
+
+  &.open { z-index: 6; }
+}
+
+.composition-label,
+.composition-choice-label {
+  color: $muted;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+.composition-choice {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  app-filter-dropdown { width: max-content; }
+}
+
+.composition-choice-label { color: $text; }
 
 .flag-carrier {
   display: grid;
@@ -159,11 +231,14 @@ $text: #e0e0e0;
   white-space: nowrap;
 }
 
-.healer-warning {
-  color: #ffb27a;
+.shuffle-warning,
+.bench-count {
   font-size: 0.78rem;
   font-weight: 400;
 }
+
+.shuffle-warning { color: #ffb27a; }
+.bench-count { color: $muted; }
 
 .toolbar-buttons {
   display: flex;
@@ -323,7 +398,39 @@ $text: #e0e0e0;
   .roster-columns { gap: 10px; }
 
   .team,
+  .bench,
   .roster-group { padding-inline: 10px; }
+
+  .team-players .player-row.back-from-bench::before { left: -7px; }
+
+  .bench-players {
+    grid-template-columns: minmax(0, 1fr);
+
+    .player-row {
+      grid-template-columns: $phone-icons-width minmax(0, 1fr) $phone-number-width $phone-number-width;
+
+      &:nth-child(2) { border-top: 1px solid $row-line; }
+    }
+  }
+
+  .composition {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 4px 8px;
+    padding: 8px 10px 10px;
+  }
+
+  .composition-label { grid-column: 1 / -1; }
+
+  .composition-choice {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 4px;
+
+    app-filter-dropdown { width: auto; }
+  }
+
+  .composition-choice-label { color: $muted; }
 
   .toolbar {
     flex-direction: column;
@@ -341,7 +448,13 @@ $text: #e0e0e0;
 
 @media (max-width: $narrow-phone-breakpoint) {
   .pick-count { font-size: 0.82rem; }
-  .healer-warning { font-size: 0.72rem; }
+
+  .shuffle-warning,
+  .bench-count { font-size: 0.72rem; }
+
+  .bench-players .player-row {
+    grid-template-columns: $narrow-icons-width minmax(0, 1fr) $phone-number-width $phone-number-width;
+  }
 
   .team-players .player-row {
     grid-template-columns: $narrow-icons-width minmax(0, 1fr) $phone-number-width $phone-number-width $carrier-width;

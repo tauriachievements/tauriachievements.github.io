@@ -30,13 +30,13 @@ function roster(count: number): RatedBgRosterFile {
     players: Array.from({ length: count }, (_, index) =>
       index < 4
         ? entry(index, { class: 5, spec: 'Holy' })
-        : index < 10
+        : index < 12
           ? entry(index, { class: 3, spec: 'Marksmanship' })
           : entry(index))
   };
 }
 
-async function openPage(url: string, file: RatedBgRosterFile = roster(22)) {
+async function openPage(url: string, file: RatedBgRosterFile = roster(24)) {
   TestBed.configureTestingModule({
     providers: [
       provideRouter([{ path: 'rated-bg-picker', component: RatedBgPickerPageComponent }]),
@@ -80,6 +80,33 @@ async function press(harness: RouterTestingHarness, element: HTMLElement, select
   await harness.fixture.whenStable();
 }
 
+async function choose(harness: RouterTestingHarness, element: HTMLElement, dropdown: string, label: string) {
+  await press(harness, element, `#${dropdown}Trigger`);
+  [...element.querySelectorAll<HTMLButtonElement>(`#${dropdown}Menu .dropdown-option`)]
+    .find(option => option.textContent?.trim() === label)
+    ?.click();
+  harness.detectChanges();
+  await harness.fixture.whenStable();
+}
+
+const chosen = (element: HTMLElement) =>
+  ['ratedBgHealers', 'ratedBgRanged', 'ratedBgMelee'].map(dropdown =>
+    element.querySelector(`#${dropdown}Trigger .trigger-current`)?.textContent?.trim());
+
+const barText = (element: HTMLElement) =>
+  element.querySelector('.pick-count')?.textContent?.replace(/\s+/g, ' ').trim();
+
+const benchNames = (element: HTMLElement) =>
+  [...element.querySelectorAll('.bench .player-name')].map(name => name.textContent?.trim() ?? '');
+
+const backFromBench = (element: HTMLElement) =>
+  [...element.querySelectorAll('.team .back-from-bench .player-name')].map(name => name.textContent?.trim() ?? '');
+
+const teamListSizes = (element: HTMLElement) =>
+  [...element.querySelectorAll('.team')].map(team =>
+    [...team.querySelectorAll('.team-players')].map(list =>
+      `${list.getAttribute('aria-label')} ${list.querySelectorAll('li').length}`));
+
 describe('RatedBgPickerPageComponent', () => {
   it("lists every player with their class, spec and race icons, traits and item level", async () => {
     const { element } = await openPage('/rated-bg-picker', {
@@ -113,7 +140,7 @@ describe('RatedBgPickerPageComponent', () => {
 
     expect(columns.map(column => column.label)).toEqual(['Melee · 12 ticked', 'Ranged · 2 ticked', 'Healers · 0 ticked']);
     expect(columns[0].names).toHaveLength(12);
-    expect(columns[1].names).toEqual(['Player04', 'Player05', 'Player06', 'Player07', 'Player08', 'Player09']);
+    expect(columns[1].names).toEqual(['Player04', 'Player05', 'Player06', 'Player07', 'Player08', 'Player09', 'Player10', 'Player11']);
     expect(columns[2].names).toEqual(['Player00', 'Player01', 'Player02', 'Player03']);
   });
 
@@ -147,68 +174,118 @@ describe('RatedBgPickerPageComponent', () => {
     expect(empty).toEqual([undefined, 'Nobody on the list', 'Nobody on the list']);
   });
 
-  it('shuffles only with an even number of healers ticked', async () => {
+  it('ticks any number of players, and shuffles once each group has enough for both teams', async () => {
     const { harness, element } = await openPage('/rated-bg-picker');
-    for (const box of checkboxes(element).slice(1, 21)) {
+
+    await tick(harness, element, 20);
+    expect(button(element, '.shuffle')?.disabled).toBe(true);
+    expect(barText(element)).toBe('20 ticked · tick 4 more healers');
+    expect(element.querySelector('.pick-count .shuffle-warning')).not.toBeNull();
+
+    for (const box of checkboxes(element).slice(20)) {
       box.click();
     }
     harness.detectChanges();
     await harness.fixture.whenStable();
 
-    expect(button(element, '.shuffle')?.disabled).toBe(true);
-    expect(element.querySelector('.pick-count')?.textContent?.replace(/\s+/g, ' ').trim())
-      .toBe('20 of 20 ticked · 3 healers · tick an even number');
-    expect(element.querySelector('.pick-count .healer-warning')).not.toBeNull();
-
-    checkboxes(element)[20].click();
-    harness.detectChanges();
-    await harness.fixture.whenStable();
-    checkboxes(element)[0].click();
-    harness.detectChanges();
-    await harness.fixture.whenStable();
-
+    expect(checkboxes(element).filter(box => box.checked)).toHaveLength(24);
+    expect(checkboxes(element).some(box => box.disabled)).toBe(false);
+    expect(barText(element)).toBe('24 ticked · 4 on the bench');
+    expect(element.querySelector('.shuffle-warning')).toBeNull();
     expect(button(element, '.shuffle')?.disabled).toBe(false);
-    expect(element.querySelector('.healer-warning')).toBeNull();
   });
 
-  it('shuffles only with 20 ticked, and never ticks a 21st player', async () => {
+  it('shuffles only when the healers, ranged and melee per team add up to 10, and fills each team that way', async () => {
     const { harness, element } = await openPage('/rated-bg-picker');
+    await tick(harness, element, 24);
+    expect(chosen(element)).toEqual(['2', '4', '4']);
 
-    await tick(harness, element, 19);
+    await choose(harness, element, 'ratedBgMelee', '5');
+    expect(chosen(element)).toEqual(['2', '4', '5']);
+    expect(barText(element)).toBe('24 ticked · 11 per team, a team is 10');
     expect(button(element, '.shuffle')?.disabled).toBe(true);
-    expect(element.querySelector('.pick-count')?.textContent).toContain('19 of 20');
 
-    checkboxes(element)[19].click();
-    harness.detectChanges();
-    await harness.fixture.whenStable();
-    checkboxes(element)[20].click();
-    harness.detectChanges();
-    await harness.fixture.whenStable();
+    await choose(harness, element, 'ratedBgRanged', '3');
+    expect(barText(element)).toBe('24 ticked · 4 on the bench');
 
-    expect(checkboxes(element).filter(box => box.checked)).toHaveLength(20);
-    expect(checkboxes(element).slice(20).map(box => box.disabled)).toEqual([true, true]);
-    expect(button(element, '.shuffle')?.disabled).toBe(false);
+    await press(harness, element, '.shuffle');
+    expect(teamListSizes(element)).toEqual([
+      ['Healers 2', 'Ranged 3', 'Melee 5'],
+      ['Healers 2', 'Ranged 3', 'Melee 5']
+    ]);
+    expect(benchNames(element)).toHaveLength(4);
   });
 
   it('splits the ticked players into two teams of 10 and writes them to the address', async () => {
     const { harness, element, location } = await openPage('/rated-bg-picker');
-    await tick(harness, element, 20);
+    await tick(harness, element, 24);
 
     await press(harness, element, '.shuffle');
 
     const teams = teamNames(element);
     expect(teams.map(team => team.length)).toEqual([10, 10]);
-    expect([...element.querySelectorAll('.team-summary')].map(summary => summary.textContent?.trim().split(' · ')[0]))
-      .toEqual(['1 healer', '1 healer']);
+    expect([...element.querySelectorAll('.team .team-summary')].map(summary => summary.textContent?.trim().split(' · ')[0]))
+      .toEqual(['2 healers', '2 healers']);
     const [, query] = location.path().split('?');
     const params = new URLSearchParams(query);
     expect(params.get('a')?.split(',').map(key => key.replace('-Evermoon', ''))).toEqual(teams[0]);
     expect(params.get('b')?.split(',').map(key => key.replace('-Evermoon', ''))).toEqual(teams[1]);
   });
 
+  it('lists the bench, and the next shuffle plays it first, marked as back from the bench', async () => {
+    const { harness, element } = await openPage('/rated-bg-picker');
+    await tick(harness, element, 24);
+
+    await press(harness, element, '.shuffle');
+    const firstBench = benchNames(element);
+    expect(firstBench).toHaveLength(4);
+    expect(element.querySelector('.bench .team-summary')?.textContent?.trim()).toBe('4 players');
+    expect(teamNames(element).flat().filter(name => firstBench.includes(name ?? ''))).toEqual([]);
+    expect(backFromBench(element)).toEqual([]);
+    expect(barText(element)).toBe('24 ticked · 4 on the bench');
+
+    await press(harness, element, '.shuffle-again');
+    expect(backFromBench(element).sort()).toEqual([...firstBench].sort());
+    expect(benchNames(element)).toHaveLength(4);
+    expect(benchNames(element).filter(name => firstBench.includes(name))).toEqual([]);
+    for (const team of element.querySelectorAll('.team')) {
+      const said = team.querySelector('.team-summary')?.textContent?.match(/(\d+) back from the bench/)?.[1] ?? '0';
+      expect(said).toBe(`${team.querySelectorAll('.back-from-bench').length}`);
+    }
+  });
+
+  it('shows no bench when the ticked players fill both teams exactly', async () => {
+    const { harness, element } = await openPage('/rated-bg-picker', roster(20));
+    await tick(harness, element, 20);
+    expect(barText(element)).toBe('20 ticked');
+
+    await press(harness, element, '.shuffle');
+
+    expect(teamNames(element).map(team => team.length)).toEqual([10, 10]);
+    expect(element.querySelector('.bench')).toBeNull();
+  });
+
+  it('Change players keeps the bench rotation, and Clear starts it again', async () => {
+    const { harness, element } = await openPage('/rated-bg-picker');
+    await tick(harness, element, 24);
+    await press(harness, element, '.shuffle');
+    const firstBench = benchNames(element);
+
+    await press(harness, element, '.change-players');
+    expect(element.querySelector('.bench')).toBeNull();
+    await press(harness, element, '.shuffle');
+    expect(backFromBench(element).sort()).toEqual([...firstBench].sort());
+
+    await press(harness, element, '.change-players');
+    await press(harness, element, '.clear');
+    await tick(harness, element, 24);
+    await press(harness, element, '.shuffle');
+    expect(backFromBench(element)).toEqual([]);
+  });
+
   it('marks one possible flag carrier per team, and a reshuffle keeps them on different teams', async () => {
     const { harness, element } = await openPage('/rated-bg-picker');
-    await tick(harness, element, 20);
+    await tick(harness, element, 24);
     await press(harness, element, '.shuffle');
 
     const teamButtons = () => [...element.querySelectorAll<HTMLElement>('.team')].map(team =>
@@ -237,9 +314,9 @@ describe('RatedBgPickerPageComponent', () => {
 
   it('marks up to two ticked players as flag carriers before the shuffle, and puts one on each team', async () => {
     const { harness, element } = await openPage('/rated-bg-picker');
-    await tick(harness, element, 20);
+    await tick(harness, element, 24);
     const rosterButtons = () => [...element.querySelectorAll<HTMLButtonElement>('.roster .flag-carrier')];
-    expect(rosterButtons()).toHaveLength(20);
+    expect(rosterButtons()).toHaveLength(24);
 
     rosterButtons()[0].click();
     rosterButtons()[1].click();
@@ -286,6 +363,17 @@ describe('RatedBgPickerPageComponent', () => {
     expect(teamNames(element).flat().sort()).toEqual([...first, ...second].map(key => key.replace('-Evermoon', '')).sort());
     expect(checkboxes(element).filter(box => box.checked)).toHaveLength(20);
     expect(checkboxes(element).every(box => box.disabled)).toBe(true);
+    expect(element.querySelector('.bench')).toBeNull();
+  });
+
+  it("sets the dropdowns to a shared link's healers, ranged and melee per team", async () => {
+    const key = (index: number) => `Player${String(index).padStart(2, '0')}-Evermoon`;
+    const first = [0, 1, 4, 5, 6, 12, 13, 14, 15, 16].map(key);
+    const second = [2, 3, 7, 8, 9, 17, 18, 19, 20, 21].map(key);
+    const { element } = await openPage(`/rated-bg-picker?a=${first.join(',')}&b=${second.join(',')}`);
+
+    expect(chosen(element)).toEqual(['2', '3', '5']);
+    expect(button(element, '.shuffle-again')?.disabled).toBe(false);
   });
 
   it("lists each team's healers, ranged and melee as separate lists, in that order", async () => {
@@ -301,8 +389,8 @@ describe('RatedBgPickerPageComponent', () => {
 
     expect(firstTeamLists).toEqual([
       ['Healers', ['Player00', 'Player01']],
-      ['Ranged', ['Player04', 'Player05', 'Player06']],
-      ['Melee', ['Player10', 'Player11', 'Player12', 'Player13', 'Player14']]
+      ['Ranged', ['Player04', 'Player05', 'Player06', 'Player10', 'Player11']],
+      ['Melee', ['Player12', 'Player13', 'Player14']]
     ]);
   });
 
@@ -316,13 +404,13 @@ describe('RatedBgPickerPageComponent', () => {
 
   it('Change players hides the teams, keeps the ticks and clears the address', async () => {
     const { harness, element, location } = await openPage('/rated-bg-picker');
-    await tick(harness, element, 20);
+    await tick(harness, element, 24);
     await press(harness, element, '.shuffle');
 
     await press(harness, element, '.change-players');
 
     expect(element.querySelectorAll('.team')).toHaveLength(0);
-    expect(checkboxes(element).filter(box => box.checked)).toHaveLength(20);
+    expect(checkboxes(element).filter(box => box.checked)).toHaveLength(24);
     expect(checkboxes(element)[0].disabled).toBe(false);
     expect(location.path()).toBe('/rated-bg-picker');
   });

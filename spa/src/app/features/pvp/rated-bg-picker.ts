@@ -5,7 +5,7 @@ import { foldName } from '../../shared/search-suggestions';
 export const RATED_BG_ROSTER_FILE = 'rated-bg-roster.json';
 export const RATED_BG_ROSTER_VERSION = 1;
 export const TEAM_SIZE = 10;
-export const PICK_COUNT = 2 * TEAM_SIZE;
+export const MATCH_SIZE = 2 * TEAM_SIZE;
 export const FLAG_CARRIER_COUNT = 2;
 const MAX_SHUFFLES = 1000;
 
@@ -98,20 +98,55 @@ export function teamGroups(team: readonly RosterPlayer[]): TeamGroup[] {
     .sort((a, b) => TEAM_GROUP_ORDER.indexOf(a.id) - TEAM_GROUP_ORDER.indexOf(b.id));
 }
 
-export function countHealers(players: readonly RosterPlayer[]): number {
-  return players.filter(isHealer).length;
+export type TeamComposition = Readonly<Record<RosterGroupId, number>>;
+
+export interface CompositionChoice {
+  readonly id: RosterGroupId;
+  readonly label: string;
+  readonly counts: readonly number[];
 }
 
-export function canShuffle(picked: readonly RosterPlayer[]): boolean {
-  return picked.length === PICK_COUNT && countHealers(picked) % 2 === 0;
+export const COMPOSITION_CHOICES: readonly CompositionChoice[] = [
+  { id: 'healers', label: 'Healers', counts: [1, 2, 3, 4] },
+  { id: 'ranged', label: 'Ranged', counts: [1, 2, 3, 4, 5] },
+  { id: 'melee', label: 'Melee', counts: [1, 2, 3, 4, 5] }
+];
+
+export const DEFAULT_COMPOSITION: TeamComposition = { healers: 2, ranged: 4, melee: 4 };
+
+export function shuffleWarning(picked: readonly RosterPlayer[], composition: TeamComposition): string | undefined {
+  const perTeam = COMPOSITION_CHOICES.reduce((sum, { id }) => sum + composition[id], 0);
+  if (perTeam !== TEAM_SIZE) {
+    return `${perTeam} per team, a team is ${TEAM_SIZE}`;
+  }
+  if (!picked.length) {
+    return undefined;
+  }
+
+  const missing = COMPOSITION_CHOICES.flatMap(({ id }) => {
+    const short = 2 * composition[id] - groupSize(picked, id);
+    return short > 0 ? [`${short} more ${groupNoun(id, short)}`] : [];
+  });
+  return missing.length ? `tick ${listed(missing)}` : undefined;
 }
 
-export function healerWarning(pickedHealers: number): string | undefined {
-  return pickedHealers % 2 === 0 ? undefined : 'tick an even number';
+export function canShuffle(picked: readonly RosterPlayer[], composition: TeamComposition): boolean {
+  return picked.length > 0 && shuffleWarning(picked, composition) === undefined;
+}
+
+export function compositionOf(teams: Teams): TeamComposition | undefined {
+  const [first, second] = teams.map(team => ({
+    healers: groupSize(team, 'healers'),
+    ranged: groupSize(team, 'ranged'),
+    melee: groupSize(team, 'melee')
+  }));
+  return COMPOSITION_CHOICES.every(({ id, counts }) => first[id] === second[id] && counts.includes(first[id]))
+    ? first
+    : undefined;
 }
 
 export function togglePick(picked: ReadonlySet<string>, key: string): ReadonlySet<string> {
-  return toggleWithin(picked, key, PICK_COUNT);
+  return toggleWithin(picked, key, Infinity);
 }
 
 export function toggleFlagCarrier(flagCarriers: ReadonlySet<string>, key: string): ReadonlySet<string> {
@@ -135,42 +170,99 @@ export function markTeamFlagCarrier(
   return new Set([...[...flagCarriers].filter(marked => !teamKeys.has(marked)), key]);
 }
 
+export interface BenchHistory {
+  readonly sitOuts: ReadonlyMap<string, number>;
+  readonly lastMatch: ReadonlySet<string>;
+  readonly lastBench: ReadonlySet<string>;
+}
+
+export const NO_BENCH_HISTORY: BenchHistory = { sitOuts: new Map(), lastMatch: new Set(), lastBench: new Set() };
+
+export interface Match {
+  readonly teams: Teams;
+  readonly bench: readonly RosterPlayer[];
+  readonly backFromBench: ReadonlySet<string>;
+}
+
+export interface MatchResult {
+  readonly match: Match;
+  readonly history: BenchHistory;
+}
+
+export function playMatch(
+  picked: readonly RosterPlayer[],
+  composition: TeamComposition,
+  history: BenchHistory,
+  flagCarriers: ReadonlySet<string>,
+  random: () => number = Math.random
+): MatchResult {
+  const bench = COMPOSITION_CHOICES.flatMap(({ id }) => benchFrom(
+    picked.filter(player => rosterGroupOf(player) === id),
+    2 * composition[id],
+    history,
+    flagCarriers,
+    random
+  ));
+  const benchKeys = new Set(bench.map(player => player.key));
+  const playing = picked.filter(player => !benchKeys.has(player.key));
+
+  return {
+    match: {
+      teams: shuffleTeams(playing, random, flagCarriers),
+      bench: inTeamOrder(bench),
+      backFromBench: new Set(playing.filter(player => history.lastBench.has(player.key)).map(player => player.key))
+    },
+    history: {
+      sitOuts: new Map([
+        ...history.sitOuts,
+        ...bench.map(player => [player.key, sitOutsOf(history, player) + 1] as const)
+      ]),
+      lastMatch: new Set(playing.map(player => player.key)),
+      lastBench: benchKeys
+    }
+  };
+}
+
+export function linkedMatch(teams: Teams): MatchResult {
+  return {
+    match: { teams, bench: [], backFromBench: new Set() },
+    history: { ...NO_BENCH_HISTORY, lastMatch: new Set([...teams[0], ...teams[1]].map(player => player.key)) }
+  };
+}
+
 export function shuffleTeams(
   players: readonly RosterPlayer[],
   random: () => number = Math.random,
   flagCarriers: ReadonlySet<string> = new Set()
 ): Teams {
-  const fits = (teams: Teams) => splitsRangedEvenly(teams) && splitsFlagCarriers(teams, flagCarriers);
   let teams = balancedTeams(players, random);
-  for (let attempt = 1; attempt < MAX_SHUFFLES && !fits(teams); attempt++) {
+  for (let attempt = 1; attempt < MAX_SHUFFLES && !splitsFlagCarriers(teams, flagCarriers); attempt++) {
     teams = balancedTeams(players, random);
   }
   return teams;
 }
 
+function benchFrom(
+  group: readonly RosterPlayer[],
+  playing: number,
+  history: BenchHistory,
+  flagCarriers: ReadonlySet<string>,
+  random: () => number
+): RosterPlayer[] {
+  const missedLastMatch = (player: RosterPlayer) => Number(!history.lastMatch.has(player.key));
+  return shuffled(group.filter(player => !flagCarriers.has(player.key)), random)
+    .sort((a, b) => sitOutsOf(history, a) - sitOutsOf(history, b) || missedLastMatch(a) - missedLastMatch(b))
+    .slice(0, Math.max(0, group.length - playing));
+}
+
+function sitOutsOf(history: BenchHistory, player: RosterPlayer): number {
+  return history.sitOuts.get(player.key) ?? 0;
+}
+
 function balancedTeams(players: readonly RosterPlayer[], random: () => number): Teams {
-  const healers = players.filter(isHealer);
-  const others = players.filter(player => !isHealer(player));
-  let firstHealers = Math.floor(healers.length / 2);
-  let firstOthers = Math.floor(others.length / 2);
-
-  if (healers.length % 2 === 1 && others.length % 2 === 1) {
-    if (random() < 0.5) {
-      firstHealers++;
-    } else {
-      firstOthers++;
-    }
-  } else {
-    firstHealers += healers.length % 2 === 1 && random() < 0.5 ? 1 : 0;
-    firstOthers += others.length % 2 === 1 && random() < 0.5 ? 1 : 0;
-  }
-
-  const healerTeams = splitEvenly(healers, firstHealers, random, CLASS_THEN_SPEC);
-  const otherTeams = splitEvenly(others, firstOthers, random, CLASS_THEN_SPEC);
-  return [
-    inTeamOrder([...healerTeams[0], ...otherTeams[0]]),
-    inTeamOrder([...healerTeams[1], ...otherTeams[1]])
-  ];
+  const firstTeamSize = Math.floor(players.length / 2) + (players.length % 2 === 1 && random() < 0.5 ? 1 : 0);
+  const [first, second] = splitEvenly(players, firstTeamSize, random, GROUP_THEN_CLASS_THEN_SPEC);
+  return [inTeamOrder(first), inTeamOrder(second)];
 }
 
 export function teamsParams(teams: Teams | undefined): { a: string | null; b: string | null } {
@@ -188,13 +280,13 @@ export function parseTeams(a: string | null, b: string | null, players: readonly
   }
 
   const distinct = new Set([...first, ...second].map(player => player.key));
-  return distinct.size === PICK_COUNT ? [first, second] : undefined;
+  return distinct.size === MATCH_SIZE ? [first, second] : undefined;
 }
 
 export function teamSummary(team: readonly RosterPlayer[]): TeamSummary {
   const itemLevels = team.flatMap(player => player.itemLevel === undefined ? [] : [player.itemLevel]);
   return {
-    healers: countHealers(team),
+    healers: groupSize(team, 'healers'),
     averageItemLevel: itemLevels.length
       ? itemLevels.reduce((sum, itemLevel) => sum + itemLevel, 0) / itemLevels.length
       : undefined
@@ -243,11 +335,6 @@ function toggleWithin(keys: ReadonlySet<string>, key: string, limit: number): Re
   return next;
 }
 
-function splitsRangedEvenly([first, second]: Teams): boolean {
-  const rangedIn = (team: readonly RosterPlayer[]) => team.filter(player => rosterGroupOf(player) === 'ranged').length;
-  return Math.abs(rangedIn(first) - rangedIn(second)) <= 1;
-}
-
 function splitsFlagCarriers(teams: Teams, flagCarriers: ReadonlySet<string>): boolean {
   const carriersIn = (team: readonly RosterPlayer[]) => team.filter(player => flagCarriers.has(player.key)).length;
   return carriersIn([...teams[0], ...teams[1]]) < FLAG_CARRIER_COUNT || teams.every(team => carriersIn(team) === 1);
@@ -262,6 +349,21 @@ function rosterGroupOf(player: RosterPlayer): RosterGroupId {
     return 'healers';
   }
   return player.range === 'ranged' ? 'ranged' : 'melee';
+}
+
+function groupSize(players: readonly RosterPlayer[], id: RosterGroupId): number {
+  return players.filter(player => rosterGroupOf(player) === id).length;
+}
+
+function groupNoun(id: RosterGroupId, count: number): string {
+  if (id !== 'healers') {
+    return id;
+  }
+  return count === 1 ? 'healer' : 'healers';
+}
+
+function listed(items: readonly string[]): string {
+  return items.length < 2 ? items.join('') : `${items.slice(0, -1).join(', ')} and ${items[items.length - 1]}`;
 }
 
 function rosterClasses(players: readonly RosterPlayer[]): RosterClass[] {
@@ -284,7 +386,8 @@ function classOrder(classId: number): number {
 
 type SplitKey = (player: RosterPlayer) => string;
 
-const CLASS_THEN_SPEC: readonly SplitKey[] = [
+const GROUP_THEN_CLASS_THEN_SPEC: readonly SplitKey[] = [
+  rosterGroupOf,
   player => player.classId ? `${player.classId}` : `unknown:${player.key}`,
   player => player.spec ?? `unknown:${player.key}`
 ];
