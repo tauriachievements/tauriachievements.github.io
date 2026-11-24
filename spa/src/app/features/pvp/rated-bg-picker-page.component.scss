@@ -111,12 +111,24 @@ $second-team-color: #e5484d;
   background: #19160f;
 }
 
+.pick-status {
+  display: grid;
+  gap: 2px;
+}
+
 .pick-count {
   margin: 0;
   color: #f3f3f3;
   font-size: 0.9rem;
   font-weight: 700;
   font-variant-numeric: tabular-nums;
+}
+
+.healer-warning {
+  margin: 0;
+  color: #ffb27a;
+  font-size: 0.78rem;
+  line-height: 1.35;
 }
 
 .toolbar-buttons {
@@ -169,12 +181,29 @@ $second-team-color: #e5484d;
   letter-spacing: 0.08em;
   text-transform: uppercase;
 
-  span { text-align: right; }
+  > span { text-align: right; }
 
   .head-player {
     grid-column: 1 / 4;
+    margin: 0;
+    font: inherit;
     text-align: left;
   }
+}
+
+.group-label { color: #d8cfb8; }
+
+.group-count {
+  color: #8f8a7d;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: none;
+}
+
+.roster-group + .roster-group {
+  margin-top: 8px;
+  padding-top: 4px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .roster li + li { border-top: 1px solid rgba(255, 255, 255, 0.05); }

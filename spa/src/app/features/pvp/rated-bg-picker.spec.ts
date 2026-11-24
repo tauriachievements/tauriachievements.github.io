@@ -5,7 +5,11 @@ import {
   RatedBgRosterFile,
   RosterPlayer,
   TEAM_SIZE,
+  canShuffle,
+  countHealers,
+  healerWarning,
   parseTeams,
+  rosterGroups,
   rosterPlayers,
   shuffleTeams,
   teamSummary,
@@ -80,6 +84,50 @@ describe('rosterPlayers', () => {
   });
 });
 
+describe('rosterGroups', () => {
+  it('lists the healers first, then everyone else as DPS, each by name', () => {
+    const groups = rosterGroups(rosterPlayers(roster([
+      entry('Zowy'),
+      entry('Lythus', { class: 2, spec: 'Holy' }),
+      entry('Guardian', { class: 11, spec: 'Guardian' }),
+      entry('Lakmir', { class: 10, spec: 'Mistweaver' }),
+      { name: 'Typo', realm: 'Evermoon', notFound: true }
+    ])));
+
+    expect(groups.map(group => [group.label, group.players.map(player => player.name)])).toEqual([
+      ['Healers', ['Lakmir', 'Lythus']],
+      ['DPS', ['Guardian', 'Typo', 'Zowy']]
+    ]);
+  });
+
+  it('leaves out a group with nobody in it', () => {
+    expect(rosterGroups(rosterPlayers(roster([entry('Zowy')]))).map(group => group.label)).toEqual(['DPS']);
+  });
+});
+
+describe('canShuffle', () => {
+  it(`needs ${PICK_COUNT} players with an even number of healers`, () => {
+    expect([0, 2, 4, 6].map(healers => canShuffle(twenty(healers)))).toEqual([true, true, true, true]);
+    expect([1, 3, 5].map(healers => canShuffle(twenty(healers)))).toEqual([false, false, false]);
+    expect(canShuffle(twenty(2).slice(1))).toBe(false);
+  });
+
+  it('counts the healers among the players', () => {
+    expect(countHealers(twenty(3))).toBe(3);
+  });
+});
+
+describe('healerWarning', () => {
+  it('asks for an even number of healers while an odd number is ticked', () => {
+    expect(healerWarning(3)).toBe('Tick an even number of healers to shuffle: 3 healers are ticked.');
+    expect(healerWarning(1)).toBe('Tick an even number of healers to shuffle: 1 healer is ticked.');
+  });
+
+  it('says nothing for an even number', () => {
+    expect([0, 2, 4].map(healerWarning)).toEqual([undefined, undefined, undefined]);
+  });
+});
+
 describe('togglePick', () => {
   it('ticks a player and unticks a ticked one', () => {
     const ticked = togglePick(new Set(), 'Xyhop-Evermoon');
@@ -113,6 +161,19 @@ describe('shuffleTeams', () => {
         expect(healerCount(first) + healerCount(second)).toBe(healers);
         expect(Math.abs(healerCount(first) - healerCount(second))).toBeLessThanOrEqual(1);
       }
+    }
+  });
+
+  it('gives each team exactly half of an even number of healers, at random', () => {
+    for (const healers of [2, 4, 6]) {
+      const healersOfTeamOne = new Set<string>();
+      for (let seed = 0; seed < 50; seed++) {
+        const [first, second] = shuffleTeams(twenty(healers), seeded(seed));
+
+        expect([healerCount(first), healerCount(second)]).toEqual([healers / 2, healers / 2]);
+        healersOfTeamOne.add(first.filter(player => player.role === 'healer').map(player => player.name).join());
+      }
+      expect(healersOfTeamOne.size).toBeGreaterThan(1);
     }
   });
 

@@ -34,13 +34,18 @@
     }
 
     <div class="picker-card toolbar">
-      <p class="pick-count" aria-live="polite">{{ pickedCount() }} of {{ pickCount }} ticked</p>
+      <div class="pick-status" aria-live="polite">
+        <p class="pick-count">{{ pickedCount() }} of {{ pickCount }} ticked · {{ pickedHealers() }} {{ pickedHealers() === 1 ? 'healer' : 'healers' }}</p>
+        @if (!teams() && healerWarning(); as warning) {
+          <p class="healer-warning">{{ warning }}</p>
+        }
+      </div>
       <div class="toolbar-buttons">
         @if (teams()) {
           <button type="button" class="action primary shuffle-again" (click)="shuffle()">Shuffle again</button>
           <button type="button" class="action change-players" (click)="changePlayers()">Change players</button>
         } @else {
-          <button type="button" class="action primary shuffle" [disabled]="pickedCount() !== pickCount" (click)="shuffle()">
+          <button type="button" class="action primary shuffle" [disabled]="!readyToShuffle()" (click)="shuffle()">
             Shuffle
           </button>
           <button type="button" class="action clear" [disabled]="pickedCount() === 0" (click)="clear()">Clear</button>
@@ -49,21 +54,25 @@
     </div>
 
     <section class="picker-card roster-card">
-      <div class="player-row list-head" aria-hidden="true">
-        <span class="head-player">Player</span>
-        <span>Traits</span>
-        <span>ilvl</span>
-      </div>
-      <ul class="roster" aria-label="Players">
-        @for (player of players(); track player.key) {
-          <li>
-            <label class="player-row pick-row" [class.picked]="isPicked(player)" [class.locked]="isLocked(player)">
-              <input type="checkbox" [checked]="isPicked(player)" [disabled]="isLocked(player)" (change)="toggle(player)" />
-              <app-rated-bg-player [player]="player" />
-            </label>
-          </li>
-        }
-      </ul>
+      @for (group of groups(); track group.id) {
+        <div class="roster-group">
+          <div class="player-row list-head">
+            <h2 class="head-player group-label">{{ group.label }}<span class="group-count"> · {{ group.ticked }} ticked</span></h2>
+            <span aria-hidden="true">Traits</span>
+            <span aria-hidden="true">ilvl</span>
+          </div>
+          <ul class="roster" [attr.aria-label]="group.label">
+            @for (player of group.players; track player.key) {
+              <li>
+                <label class="player-row pick-row" [class.picked]="isPicked(player)" [class.locked]="isLocked(player)">
+                  <input type="checkbox" [checked]="isPicked(player)" [disabled]="isLocked(player)" (change)="toggle(player)" />
+                  <app-rated-bg-player [player]="player" />
+                </label>
+              </li>
+            }
+          </ul>
+        </div>
+      }
     </section>
   }
 </main>

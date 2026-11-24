@@ -56,6 +56,37 @@ export function rosterPlayers(file: RatedBgRosterFile): RosterPlayer[] {
   return file.players.map(toRosterPlayer).sort(byName);
 }
 
+export interface RosterGroup {
+  readonly id: 'healers' | 'dps';
+  readonly label: string;
+  readonly players: readonly RosterPlayer[];
+}
+
+export function rosterGroups(players: readonly RosterPlayer[]): RosterGroup[] {
+  const groups: RosterGroup[] = [
+    { id: 'healers', label: 'Healers', players: players.filter(isHealer) },
+    { id: 'dps', label: 'DPS', players: players.filter(player => !isHealer(player)) }
+  ];
+  return groups.filter(group => group.players.length > 0);
+}
+
+export function countHealers(players: readonly RosterPlayer[]): number {
+  return players.filter(isHealer).length;
+}
+
+export function canShuffle(picked: readonly RosterPlayer[]): boolean {
+  return picked.length === PICK_COUNT && countHealers(picked) % 2 === 0;
+}
+
+export function healerWarning(pickedHealers: number): string | undefined {
+  if (pickedHealers % 2 === 0) {
+    return undefined;
+  }
+
+  const ticked = pickedHealers === 1 ? '1 healer is' : `${pickedHealers} healers are`;
+  return `Tick an even number of healers to shuffle: ${ticked} ticked.`;
+}
+
 export function togglePick(picked: ReadonlySet<string>, key: string): ReadonlySet<string> {
   if (!picked.has(key) && picked.size >= PICK_COUNT) {
     return picked;
@@ -100,7 +131,7 @@ export function parseTeams(a: string | null, b: string | null, players: readonly
 export function teamSummary(team: readonly RosterPlayer[]): TeamSummary {
   const itemLevels = team.flatMap(player => player.itemLevel === undefined ? [] : [player.itemLevel]);
   return {
-    healers: team.filter(isHealer).length,
+    healers: countHealers(team),
     averageItemLevel: itemLevels.length
       ? itemLevels.reduce((sum, itemLevel) => sum + itemLevel, 0) / itemLevels.length
       : undefined

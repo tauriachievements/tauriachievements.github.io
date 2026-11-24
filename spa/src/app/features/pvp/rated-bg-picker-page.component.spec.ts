@@ -28,7 +28,7 @@ function roster(count: number): RatedBgRosterFile {
     version: 1,
     generatedAt: '2026-11-24T12:29:26Z',
     players: Array.from({ length: count }, (_, index) =>
-      index < 3 ? entry(index, { class: 5, spec: 'Holy' }) : entry(index))
+      index < 4 ? entry(index, { class: 5, spec: 'Holy' }) : entry(index))
   };
 }
 
@@ -93,6 +93,42 @@ describe('RatedBgPickerPageComponent', () => {
     expect(rows[0].textContent).toContain('Not on the armory');
   });
 
+  it('lists the healers and the DPS in two groups, each with how many are ticked', async () => {
+    const { harness, element } = await openPage('/rated-bg-picker');
+    await tick(harness, element, 5);
+
+    const groups = [...element.querySelectorAll('.roster-group')].map(group => ({
+      label: group.querySelector('.group-label')?.textContent?.replace(/\s+/g, ' ').trim(),
+      names: [...group.querySelectorAll('.player-name')].map(name => name.textContent?.trim())
+    }));
+
+    expect(groups.map(group => group.label)).toEqual(['Healers · 4 ticked', 'DPS · 1 ticked']);
+    expect(groups[0].names).toEqual(['Player00', 'Player01', 'Player02', 'Player03']);
+    expect(groups[1].names).toHaveLength(18);
+  });
+
+  it('shuffles only with an even number of healers ticked', async () => {
+    const { harness, element } = await openPage('/rated-bg-picker');
+    for (const box of checkboxes(element).slice(1, 21)) {
+      box.click();
+    }
+    harness.detectChanges();
+    await harness.fixture.whenStable();
+
+    expect(button(element, '.shuffle')?.disabled).toBe(true);
+    expect(element.querySelector('.healer-warning')?.textContent).toContain('3 healers');
+
+    checkboxes(element)[20].click();
+    harness.detectChanges();
+    await harness.fixture.whenStable();
+    checkboxes(element)[0].click();
+    harness.detectChanges();
+    await harness.fixture.whenStable();
+
+    expect(button(element, '.shuffle')?.disabled).toBe(false);
+    expect(element.querySelector('.healer-warning')).toBeNull();
+  });
+
   it('shuffles only with 20 ticked, and never ticks a 21st player', async () => {
     const { harness, element } = await openPage('/rated-bg-picker');
 
@@ -120,6 +156,8 @@ describe('RatedBgPickerPageComponent', () => {
 
     const teams = teamNames(element);
     expect(teams.map(team => team.length)).toEqual([10, 10]);
+    expect([...element.querySelectorAll('.team-summary')].map(summary => summary.textContent?.trim().split(' · ')[0]))
+      .toEqual(['2 healers', '2 healers']);
     const [, query] = location.path().split('?');
     const params = new URLSearchParams(query);
     expect(params.get('a')?.split(',').map(key => key.replace('-Evermoon', ''))).toEqual(teams[0]);

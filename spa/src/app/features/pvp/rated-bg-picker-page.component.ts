@@ -25,7 +25,11 @@ import {
   RatedBgRosterFile,
   RosterPlayer,
   Teams,
+  canShuffle,
+  countHealers,
+  healerWarning,
   parseTeams,
+  rosterGroups,
   rosterPlayers,
   shuffleTeams,
   teamSummary,
@@ -59,6 +63,20 @@ export class RatedBgPickerPageComponent implements OnInit {
   private readonly generatedAt = signal<string | undefined>(undefined);
 
   readonly pickedCount = computed(() => this.picked().size);
+  private readonly pickedPlayers = computed(() => {
+    const picked = this.picked();
+    return this.players().filter(player => picked.has(player.key));
+  });
+  readonly pickedHealers = computed(() => countHealers(this.pickedPlayers()));
+  readonly healerWarning = computed(() => healerWarning(this.pickedHealers()));
+  readonly readyToShuffle = computed(() => canShuffle(this.pickedPlayers()));
+  readonly groups = computed(() => {
+    const picked = this.picked();
+    return rosterGroups(this.players()).map(group => ({
+      ...group,
+      ticked: group.players.filter(player => picked.has(player.key)).length
+    }));
+  });
   readonly teamViews = computed(() =>
     this.teams()?.map((players, index) => ({ label: `Team ${index + 1}`, players, summary: teamSummary(players) }))
   );
@@ -117,9 +135,8 @@ export class RatedBgPickerPageComponent implements OnInit {
   }
 
   shuffle(): void {
-    const picked = this.picked();
-    const players = this.players().filter(player => picked.has(player.key));
-    if (players.length !== PICK_COUNT) {
+    const players = this.pickedPlayers();
+    if (!canShuffle(players)) {
       return;
     }
 
