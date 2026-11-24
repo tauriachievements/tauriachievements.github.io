@@ -1,0 +1,76 @@
+<main class="picker-page">
+  <section class="picker-card picker-intro">
+    <h1>Rated BG Picker</h1>
+    <p>
+      Tick the players who are here today. With {{ pickCount }} ticked, Shuffle splits them into two teams of
+      {{ teamSize }} and shares the healers out evenly. Send the page's link to the group and everyone sees the
+      same teams.
+    </p>
+  </section>
+
+  <app-load-state
+    [loading]="isLoading()"
+    [error]="loadError()"
+    [skeleton]="['rows:12']"
+    loadingText="Loading the players..."
+    (retry)="loadData()" />
+
+  @if (!isLoading() && !loadError()) {
+    @if (staleLink()) {
+      <p class="stale-link" role="status">
+        The teams in that link no longer match the player list. Tick today's players and shuffle again.
+      </p>
+    }
+
+    @if (teamViews(); as teams) {
+      <section #teamsSection class="teams" aria-label="Teams">
+        @for (team of teams; track team.label) {
+          <section class="picker-card team" [attr.aria-label]="team.label">
+            <header class="team-header">
+              <h2>{{ team.label }}</h2>
+              <p class="team-summary">{{ team.summary.healers }} {{ team.summary.healers === 1 ? 'healer' : 'healers' }}@if (team.summary.averageItemLevel !== undefined) { · avg ilvl {{ team.summary.averageItemLevel | number: '1.1-1' }}}</p>
+            </header>
+            <ol class="team-players">
+              @for (player of team.players; track player.key) {
+                <li class="player-row"><app-rated-bg-player [player]="player" /></li>
+              }
+            </ol>
+          </section>
+        }
+      </section>
+    }
+
+    <div class="picker-card toolbar">
+      <p class="pick-count" aria-live="polite">{{ pickedCount() }} of {{ pickCount }} ticked</p>
+      <div class="toolbar-buttons">
+        @if (teams()) {
+          <button type="button" class="action primary shuffle-again" (click)="shuffle()">Shuffle again</button>
+          <button type="button" class="action change-players" (click)="changePlayers()">Change players</button>
+        } @else {
+          <button type="button" class="action primary shuffle" [disabled]="pickedCount() !== pickCount" (click)="shuffle()">
+            Shuffle
+          </button>
+          <button type="button" class="action clear" [disabled]="pickedCount() === 0" (click)="clear()">Clear</button>
+        }
+      </div>
+    </div>
+
+    <section class="picker-card roster-card">
+      <div class="player-row list-head" aria-hidden="true">
+        <span class="head-player">Player</span>
+        <span>Traits</span>
+        <span>ilvl</span>
+      </div>
+      <ul class="roster" aria-label="Players">
+        @for (player of players(); track player.key) {
+          <li>
+            <label class="player-row pick-row" [class.picked]="isPicked(player)" [class.locked]="isLocked(player)">
+              <input type="checkbox" [checked]="isPicked(player)" [disabled]="isLocked(player)" (change)="toggle(player)" />
+              <app-rated-bg-player [player]="player" />
+            </label>
+          </li>
+        }
+      </ul>
+    </section>
+  }
+</main>

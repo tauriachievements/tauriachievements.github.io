@@ -76,5 +76,19 @@ public sealed class CharacterResponseMapperTests
         Assert.Null(player.Level10Date);
     }
 
+    [Theory]
+    [InlineData("""{ "avgitemlevel": 886 }""", 886)]
+    [InlineData("""{ "avgitemlevel": 885.5 }""", 885.5)]
+    public void ReadItemLevel_TakesTheApisAverageItemLevel(string json, double expected)
+    {
+        Assert.Equal((decimal)expected, CharacterResponseMapper.ReadItemLevel(Parse(json)));
+    }
+
+    [Fact]
+    public void ReadItemLevel_WithoutAnAverageItemLevelIsUnknown()
+    {
+        Assert.Null(CharacterResponseMapper.ReadItemLevel(Parse("{}")));
+    }
+
     private static JsonElement Parse(string json) => JsonDocument.Parse(json).RootElement.Clone();
 }

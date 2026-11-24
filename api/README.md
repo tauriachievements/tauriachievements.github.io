@@ -51,6 +51,7 @@ workflow and its output contract.
 | `RaidLogExporter` | Exports every Emerald Nightmare boss kill with per-player damage, healing, talents, trinkets and loot for the `/raid-logs` pages, reading only kills the last export lacks, plus every spec's talent tiers and each talent's tooltip from TauriShoot. |
 | `RaidLogGuildAndCharScan` | Looks up the current guild of everyone with an Emerald Nightmare kill and adds new guilds and guildless characters to the scan inputs. |
 | `GuildAnalysisExporter` | Exports a guild's level 110 members with artifact traits, Artifact Knowledge, item level and legendaries for the hidden guild pages. |
+| `RatedBgRosterExporter` | Exports the race, class, spec, artifact traits and item level of the players in `Data/rated-bg-players.txt` for the unlisted `/rated-bg-picker` page. |
 | `QuickUpdate` | Runs the Mythic+, raid log and arena ladder exports in one process for `Run-QuickUpdate.cmd`, and ends with how long they took and what each one added. |
 | `EndlessGuildExporter` | Produces a formatted Excel guild roster. |
 
@@ -114,6 +115,7 @@ concurrency, timeouts, and retry behavior; see
 | Collect guilds and guildless characters from Mythic+ runs | `dotnet run --project MythicPlusGuildAndCharScan` |
 | Collect guilds and guildless characters from Emerald Nightmare raiders | `dotnet run --project RaidLogGuildAndCharScan` |
 | Export one guild's statistics | `dotnet run --project GuildAnalysisExporter -- Evermoon Endless` |
+| Refresh the Rated BG Picker's players and publish them | `Run-RatedBgRoster.cmd` (`dotnet run --project RatedBgRosterExporter` only writes the file) |
 | Export the Endless workbook | `dotnet run --project EndlessGuildExporter` |
 
 Commands with additional options expose usage through `--help` or document their arguments
@@ -153,6 +155,7 @@ The solution's focused tests cover:
 - Guild export retry rounds, retry-only merges, and dead-guild pruning with its safety cap
 - Mythic+ scoring, leaderboard parsing, cross-realm merging, and the no-partial-publish and shrink guards
 - Arena ladder parsing, and the no-partial-publish and shrink guards
+- Artifact trait counting, and the rated BG roster's hand-kept list and no-partial-publish rule
 
 Run the same Release validation used by CI:
 

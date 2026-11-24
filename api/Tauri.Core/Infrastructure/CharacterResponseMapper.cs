@@ -7,6 +7,12 @@ public static class CharacterResponseMapper
 {
     public const int Level10AchievementId = 6;
 
+    public static decimal? ReadItemLevel(JsonElement response) =>
+        response.TryGetProperty("avgitemlevel", out var value)
+        && value.TryGetDecimal(out var averageItemLevel)
+            ? averageItemLevel
+            : null;
+
     public static Player CreatePlayer(
         JsonElement response,
         IReadOnlyDictionary<int, DateTimeOffset?> achievements,
@@ -26,11 +32,7 @@ public static class CharacterResponseMapper
         int achievementsTotal = response.TryGetProperty("achievements_total", out value)
             ? value.GetInt32()
             : 0;
-        decimal? itemLevel =
-            response.TryGetProperty("avgitemlevel", out value)
-            && value.TryGetDecimal(out var averageItemLevel)
-                ? averageItemLevel
-                : null;
+        decimal? itemLevel = ReadItemLevel(response);
         string faction = response.TryGetProperty("faction_string_class", out value)
             ? (value.GetString() ?? string.Empty)
             : string.Empty;

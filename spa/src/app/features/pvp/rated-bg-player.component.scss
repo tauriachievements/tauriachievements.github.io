@@ -1,0 +1,56 @@
+@use '../../shared/mythic-plus-shared' as *;
+
+:host {
+  display: contents;
+}
+
+@include visually-hidden;
+
+.player-icons {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+
+  img {
+    display: block;
+    width: 20px;
+    height: 20px;
+    border-radius: 4px;
+  }
+}
+
+.player-name {
+  @include truncate;
+  font-size: 0.9rem;
+  font-weight: 700;
+
+  &.missing { color: #8f8a7d; }
+}
+
+.player-traits,
+.player-item-level {
+  color: #e8e3d6;
+  font-size: 0.85rem;
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+
+.player-missing {
+  grid-column: span 2;
+  color: #8f8a7d;
+  font-size: 0.72rem;
+  font-style: italic;
+  text-align: right;
+  white-space: nowrap;
+}
+
+@media (max-width: $phone-breakpoint) {
+  .player-icons {
+    gap: 3px;
+
+    img {
+      width: 18px;
+      height: 18px;
+    }
+  }
+}

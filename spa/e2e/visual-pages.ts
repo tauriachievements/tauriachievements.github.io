@@ -29,6 +29,16 @@ export const VISUAL_PAGES: readonly VisualPage[] = [
   { name: 'battleground', path: '/battleground' },
   { name: 'rated-battleground', path: '/rated-battleground' },
   { name: 'rated-battleground-matches', path: '/rated-battleground?view=matches' },
+  { name: 'rated-bg-picker', path: '/rated-bg-picker' },
+  {
+    name: 'rated-bg-picker-teams',
+    path: '/rated-bg-picker'
+      + '?a=Xyhop-Evermoon,Zerololq-Evermoon,Zowy-Evermoon,Bomboclats-Evermoon,Lyantha-Evermoon,'
+      + 'Demifae-Evermoon,Lythus-Evermoon,Trelhy-Evermoon,Lakmir-Evermoon,Pesi-Evermoon'
+      + '&b=Morron-Tauri,Allisa-Evermoon,Dnx-Evermoon,Dom-Evermoon,Harqu-Evermoon,'
+      + 'Solaureus-Evermoon,Heaven-Tauri,Rcodio-Evermoon,Maj%C3%A4-Evermoon,Ll%C3%BDnch-Evermoon',
+    wide: true
+  },
   { name: 'raid-logs', path: '/raid-logs' },
   { name: 'raid-logs-heroic', path: '/raid-logs?difficulty=heroic' },
   { name: 'raid-logs-guilds', path: '/raid-logs/guilds' },

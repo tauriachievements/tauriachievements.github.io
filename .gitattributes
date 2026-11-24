@@ -6,3 +6,5 @@ spa/src/raid-log-data/** text eol=lf
 spa/src/arena-ladder-*.json text eol=lf
 # AchievementLadder writes RareItemFindings.json with LF as well.
 spa/src/RareItemFindings.json text eol=lf
+# RatedBgRosterExporter writes LF as well.
+spa/src/rated-bg-roster.json text eol=lf

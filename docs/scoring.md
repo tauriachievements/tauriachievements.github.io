@@ -782,3 +782,26 @@ decision: ask first.** When a rule does change, change its tests first and see t
   played on shows no changes.
 - Gains are green and drops red, as on the Arena page.
 - **Tests:** `rated-battleground-stats.spec.ts`, `BattlegroundCollectorServiceTests`.
+
+## Rated BG Picker teams
+
+The unlisted `/rated-bg-picker` page splits the players who turned up into two teams of 10.
+
+- **Code:** `shuffleTeams`, `togglePick`, `parseTeams` and `teamSummary` in
+  `spa/src/app/features/pvp/rated-bg-picker.ts`.
+- Shuffle needs exactly 20 ticked players; the page never ticks a 21st.
+- **Healers split evenly:** the healers go into the teams in turn, then the rest, each group in
+  a random order, and a coin toss picks which team gets the first. So the healer counts differ by
+  one at most, and which team gets the odd healer is chance. Nothing else is balanced, item level
+  included.
+- A player's role is the role of the spec the roster file gives them
+  ([data-pipeline.md](data-pipeline.md#rated-bg-roster)): the spec of their artifact with the
+  most traits, as on the guild pages, else their active spec. A character the armory doesn't know
+  has no role and counts as a non-healer.
+- A team lists tanks, then healers, then the rest, each by name. Its heading counts its healers
+  and averages the item levels it knows.
+- Traits are the guild pages' count (the artifact with the most traits), and the item level is
+  the API's `avgitemlevel`, the ladder's figure, not the guild pages' own average of the
+  equipped items ([tauri-api.md](tauri-api.md#characters-and-guilds)).
+- **Tests:** `rated-bg-picker.spec.ts`, `rated-bg-picker-page.component.spec.ts`,
+  `RatedBgRosterExportServiceTests`, `CharacterArtifactReaderTests`.
