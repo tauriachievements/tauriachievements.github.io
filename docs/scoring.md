@@ -799,10 +799,10 @@ The unlisted `/rated-bg-picker` page splits the players who turned up into two t
 - **Shuffle needs exactly 20 ticked players with an even number of healers** (0 included); the
   page never ticks a 21st. While an odd number of healers is ticked, Shuffle stays off and the
   bar says why.
-- **Each team gets half the healers:** the healers go into the teams in turn, then the rest, each
-  group in a random order, and a coin toss picks which team gets the first. So 2 healers split
-  1 and 1, 4 split 2 and 2, 6 split 3 and 3, and who goes where is chance. Nothing else is
-  balanced, item level included.
+- **Each team gets half the healers and each known class/spec is split as evenly as possible.**
+  So 2 healers split 1 and 1, 4 split 2 and 2, and 2 Marksmanship hunters split 1 and 1.
+  Players within each class/spec and the side that gets the extra player from an odd-sized spec
+  are random. Characters without a known spec stay random. Item level is not balanced.
 - A player's role is the role of the spec the roster file gives them
   ([data-pipeline.md](data-pipeline.md#rated-bg-roster)): the spec of their artifact with the
   most traits, as on the guild pages, else their active spec. A character the armory doesn't know
@@ -810,7 +810,9 @@ The unlisted `/rated-bg-picker` page splits the players who turned up into two t
 - A shared link opens on the teams it names, even when a respec since has left their healers
   uneven: the link records the teams as they were picked.
 - A team lists tanks, then healers, then the rest, each by name. Its heading counts its healers
-  and averages the item levels it knows.
+  and averages the item levels it knows. After a shuffle, each team can mark one player as its
+  possible flag carrier with the `FC` button. The marks are local to that result, aren't part of
+  its shared link, and clear on a reshuffle or when changing players.
 - Traits are the guild pages' count (the artifact with the most traits), and the item level is
   the API's `avgitemlevel`, the ladder's figure, not the guild pages' own average of the
   equipped items ([tauri-api.md](tauri-api.md#characters-and-guilds)).

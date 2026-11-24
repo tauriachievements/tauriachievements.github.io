@@ -17,7 +17,7 @@
 
     @if (teamViews(); as teams) {
       <section #teamsSection class="teams" aria-label="Teams">
-        @for (team of teams; track team.label) {
+        @for (team of teams; track team.label; let teamIndex = $index) {
           <section class="picker-card team" [attr.aria-label]="team.label">
             <header class="team-header">
               <h2>{{ team.label }}</h2>
@@ -25,7 +25,17 @@
             </header>
             <ol class="team-players">
               @for (player of team.players; track player.key) {
-                <li class="player-row"><app-rated-bg-player [player]="player" /></li>
+                <li class="player-row" [class.flag-carrier-marked]="isFlagCarrier(teamIndex, player)">
+                  <app-rated-bg-player [player]="player" />
+                  <button
+                    type="button"
+                    class="flag-carrier"
+                    [class.marked]="isFlagCarrier(teamIndex, player)"
+                    [attr.aria-pressed]="isFlagCarrier(teamIndex, player)"
+                    [attr.aria-label]="(isFlagCarrier(teamIndex, player) ? 'Remove ' : 'Mark ') + player.name + ' as possible flag carrier'"
+                    [title]="isFlagCarrier(teamIndex, player) ? 'Remove possible flag carrier' : 'Mark as possible flag carrier'"
+                    (click)="toggleFlagCarrier(teamIndex, player)">FC</button>
+                </li>
               }
             </ol>
           </section>

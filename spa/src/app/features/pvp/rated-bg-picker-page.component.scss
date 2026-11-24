@@ -4,6 +4,7 @@ $icons-width: 68px;
 $phone-icons-width: 60px;
 $number-width: 2.75rem;
 $phone-number-width: 2.4rem;
+$carrier-width: 2rem;
 $columns-breakpoint: 1000px;
 $first-team-color: #4a9eff;
 $second-team-color: #e5484d;
@@ -94,9 +95,31 @@ $second-team-color: #e5484d;
 }
 
 .team-players .player-row {
-  grid-template-columns: $icons-width minmax(0, 1fr) $number-width $number-width;
+  grid-template-columns: $icons-width minmax(0, 1fr) $number-width $number-width $carrier-width;
+  padding-block: 2px;
 
   & + .player-row { border-top: 1px solid rgba(255, 255, 255, 0.05); }
+  &.flag-carrier-marked { background: rgba(247, 181, 0, 0.08); }
+}
+
+.flag-carrier {
+  display: grid;
+  place-items: center;
+  width: $carrier-width;
+  min-height: 26px;
+  padding: 0;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.04);
+  color: #8f8a7d;
+  font: inherit;
+  font-size: 0.68rem;
+  font-weight: 800;
+  cursor: pointer;
+
+  &:hover { border-color: rgba(247, 181, 0, 0.7); color: #f3f3f3; }
+  &:focus-visible { outline: 2px solid $gold; outline-offset: 2px; }
+  &.marked { border-color: $gold; background: $gold; color: #1a1400; }
 }
 
 .toolbar {
@@ -282,7 +305,7 @@ $second-team-color: #e5484d;
   .player-row { column-gap: 6px; }
 
   .team-players .player-row {
-    grid-template-columns: $phone-icons-width minmax(0, 1fr) $phone-number-width $phone-number-width;
+    grid-template-columns: $phone-icons-width minmax(0, 1fr) $phone-number-width $phone-number-width $carrier-width;
   }
 
   .list-head,
