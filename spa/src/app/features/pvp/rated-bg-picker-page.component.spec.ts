@@ -28,7 +28,11 @@ function roster(count: number): RatedBgRosterFile {
     version: 1,
     generatedAt: '2026-11-24T12:29:26Z',
     players: Array.from({ length: count }, (_, index) =>
-      index < 4 ? entry(index, { class: 5, spec: 'Holy' }) : entry(index))
+      index < 4
+        ? entry(index, { class: 5, spec: 'Holy' })
+        : index < 10
+          ? entry(index, { class: 3, spec: 'Marksmanship' })
+          : entry(index))
   };
 }
 
@@ -84,27 +88,40 @@ describe('RatedBgPickerPageComponent', () => {
     const rows = [...element.querySelectorAll('.roster li')];
 
     expect(rows).toHaveLength(2);
-    const xyhop = rows[1];
-    expect(xyhop.querySelector('.player-name')?.textContent?.trim()).toBe('Xyhop');
-    expect([...xyhop.querySelectorAll('.player-icons img')].map(icon => icon.getAttribute('alt')))
+    const row = (name: string) => rows.find(item => item.querySelector('.player-name')?.textContent?.trim() === name);
+    const xyhop = row('Xyhop');
+    expect([...xyhop?.querySelectorAll('.player-icons img') ?? []].map(icon => icon.getAttribute('alt')))
       .toEqual(['Goblin', 'Priest', 'Shadow']);
-    expect(xyhop.querySelector('.player-traits')?.textContent).toContain('42');
-    expect(xyhop.querySelector('.player-item-level')?.textContent).toContain('886');
-    expect(rows[0].textContent).toContain('Not on the armory');
+    expect(xyhop?.querySelector('.player-traits')?.textContent).toContain('42');
+    expect(xyhop?.querySelector('.player-item-level')?.textContent).toContain('886');
+    expect(row('Typo')?.textContent).toContain('Not on the armory');
   });
 
-  it('lists the healers and the DPS in two groups, each with how many are ticked', async () => {
+  it('lists the melee, the ranged and the healers in three columns, each with how many are ticked', async () => {
     const { harness, element } = await openPage('/rated-bg-picker');
-    await tick(harness, element, 5);
+    await tick(harness, element, 14);
 
-    const groups = [...element.querySelectorAll('.roster-group')].map(group => ({
+    const columns = [...element.querySelectorAll('.roster-columns > .roster-group')].map(group => ({
       label: group.querySelector('.group-label')?.textContent?.replace(/\s+/g, ' ').trim(),
       names: [...group.querySelectorAll('.player-name')].map(name => name.textContent?.trim())
     }));
 
-    expect(groups.map(group => group.label)).toEqual(['Healers · 4 ticked', 'DPS · 1 ticked']);
-    expect(groups[0].names).toEqual(['Player00', 'Player01', 'Player02', 'Player03']);
-    expect(groups[1].names).toHaveLength(18);
+    expect(columns.map(column => column.label)).toEqual(['Melee · 12 ticked', 'Ranged · 2 ticked', 'Healers · 0 ticked']);
+    expect(columns[0].names).toHaveLength(12);
+    expect(columns[1].names).toEqual(['Player04', 'Player05', 'Player06', 'Player07', 'Player08', 'Player09']);
+    expect(columns[2].names).toEqual(['Player00', 'Player01', 'Player02', 'Player03']);
+  });
+
+  it('says so in a column with nobody in it', async () => {
+    const { element } = await openPage('/rated-bg-picker', {
+      version: 1,
+      generatedAt: '2026-11-24T12:29:26Z',
+      players: [entry(0)]
+    });
+
+    const empty = [...element.querySelectorAll('.roster-group')].map(group => group.querySelector('.group-empty')?.textContent?.trim());
+
+    expect(empty).toEqual([undefined, 'Nobody on the list', 'Nobody on the list']);
   });
 
   it('shuffles only with an even number of healers ticked', async () => {
@@ -157,7 +174,7 @@ describe('RatedBgPickerPageComponent', () => {
     const teams = teamNames(element);
     expect(teams.map(team => team.length)).toEqual([10, 10]);
     expect([...element.querySelectorAll('.team-summary')].map(summary => summary.textContent?.trim().split(' · ')[0]))
-      .toEqual(['2 healers', '2 healers']);
+      .toEqual(['1 healer', '1 healer']);
     const [, query] = location.path().split('?');
     const params = new URLSearchParams(query);
     expect(params.get('a')?.split(',').map(key => key.replace('-Evermoon', ''))).toEqual(teams[0]);
