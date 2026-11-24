@@ -6,9 +6,11 @@ import {
   RosterGroup,
   RosterPlayer,
   TEAM_SIZE,
+  FLAG_CARRIER_COUNT,
   canShuffle,
   countHealers,
   healerWarning,
+  markTeamFlagCarrier,
   parseTeams,
   rosterGroups,
   rosterPlayers,
@@ -16,6 +18,8 @@ import {
   teamGroups,
   teamSummary,
   teamsParams,
+  tickedFlagCarriers,
+  toggleFlagCarrier,
   togglePick
 } from './rated-bg-picker';
 
@@ -47,6 +51,48 @@ function twenty(healers: number): RosterPlayer[] {
 }
 
 const healerCount = (team: readonly RosterPlayer[]) => team.filter(player => player.role === 'healer').length;
+
+function groupOfTwenty(): RosterPlayer[] {
+  return rosterPlayers(roster([
+    entry('Llýnch', { class: 5, spec: 'Holy' }),
+    entry('Widuxgodx', { class: 10, spec: 'Mistweaver' }),
+    entry('Wxz', { class: 11, spec: 'Restoration' }),
+    entry('Lakmir', { class: 10, spec: 'Mistweaver' }),
+    entry('Lythus', { class: 2, spec: 'Holy' }),
+    entry('Spuky', { class: 7, spec: 'Restoration' }),
+    entry('Allisa', { class: 6, spec: 'Unholy' }),
+    entry('Dkügli', { class: 6, spec: 'Unholy' }),
+    entry('Rcodio', { class: 6, spec: 'Unholy' }),
+    entry('Zerololq', { class: 6, spec: 'Frost' }),
+    entry('Morron', { class: 1, spec: 'Arms' }),
+    entry('Zowy', { class: 1, spec: 'Fury' }),
+    entry('Majä', { class: 10, spec: 'Windwalker' }),
+    entry('Zsozé', { class: 10, spec: 'Windwalker' }),
+    entry('Cicámqu', { class: 11, spec: 'Feral' }),
+    entry('Dnx', { class: 9, spec: 'Affliction' }),
+    entry('Maviellian', { class: 3, spec: 'Marksmanship' }),
+    entry('Sósa', { class: 8, spec: 'Frost' }),
+    entry('Xyhop', { class: 5, spec: 'Shadow' }),
+    entry('Trelhy', { class: 4, spec: 'Assassination' })
+  ]));
+}
+
+function expectEvenSplit(players: readonly RosterPlayer[], teams: readonly (readonly RosterPlayer[])[]): void {
+  const count = (team: readonly RosterPlayer[], healers: boolean, key: (player: RosterPlayer) => string, value: string) =>
+    team.filter(player => (player.role === 'healer') === healers && key(player) === value).length;
+  const byClass = (player: RosterPlayer) => `${player.classId}`;
+  const bySpec = (player: RosterPlayer) => `${player.classId}:${player.spec}`;
+
+  expect(teams.map(team => team.length)).toEqual([TEAM_SIZE, TEAM_SIZE]);
+  expect(teams.map(healerCount)).toEqual([healerCount(players) / 2, healerCount(players) / 2]);
+  for (const healers of [true, false]) {
+    for (const key of [byClass, bySpec]) {
+      for (const value of new Set(players.map(key))) {
+        expect(Math.abs(count(teams[0], healers, key, value) - count(teams[1], healers, key, value))).toBeLessThanOrEqual(1);
+      }
+    }
+  }
+}
 
 const groupNames = (group: RosterGroup) =>
   group.classes.flatMap(rosterClass => rosterClass.players.map(player => player.name));
@@ -183,8 +229,8 @@ describe('canShuffle', () => {
 
 describe('healerWarning', () => {
   it('asks for an even number of healers while an odd number is ticked', () => {
-    expect(healerWarning(3)).toBe('Tick an even number of healers to shuffle: 3 healers are ticked.');
-    expect(healerWarning(1)).toBe('Tick an even number of healers to shuffle: 1 healer is ticked.');
+    expect(healerWarning(3)).toBe('tick an even number');
+    expect(healerWarning(1)).toBe('tick an even number');
   });
 
   it('says nothing for an even number', () => {
@@ -205,6 +251,45 @@ describe('togglePick', () => {
 
     expect(togglePick(full, 'Extra-Evermoon').size).toBe(PICK_COUNT);
     expect(togglePick(full, 'Player0-Evermoon').size).toBe(PICK_COUNT - 1);
+  });
+});
+
+describe('toggleFlagCarrier', () => {
+  it('marks a player and unmarks a marked one', () => {
+    const marked = toggleFlagCarrier(new Set(), 'Cicámqu-Evermoon');
+
+    expect([...marked]).toEqual(['Cicámqu-Evermoon']);
+    expect([...toggleFlagCarrier(marked, 'Cicámqu-Evermoon')]).toEqual([]);
+  });
+
+  it(`never marks more than ${FLAG_CARRIER_COUNT} players`, () => {
+    const full = new Set(['Cicámqu-Evermoon', 'Zowy-Evermoon']);
+
+    expect([...toggleFlagCarrier(full, 'Heaven-Tauri')]).toEqual(['Cicámqu-Evermoon', 'Zowy-Evermoon']);
+    expect([...toggleFlagCarrier(full, 'Zowy-Evermoon')]).toEqual(['Cicámqu-Evermoon']);
+  });
+});
+
+describe('tickedFlagCarriers', () => {
+  it('drops the mark of a player who is no longer ticked', () => {
+    const marked = new Set(['Cicámqu-Evermoon', 'Zowy-Evermoon']);
+
+    expect([...tickedFlagCarriers(marked, new Set(['Zowy-Evermoon', 'Heaven-Tauri']))]).toEqual(['Zowy-Evermoon']);
+  });
+});
+
+describe('markTeamFlagCarrier', () => {
+  const team = twenty(2).slice(0, TEAM_SIZE);
+  const [first, second] = team.map(player => player.key);
+
+  it("moves the team's mark to the player and keeps the other team's", () => {
+    const marked = markTeamFlagCarrier(new Set([first, 'Other-Evermoon']), team, second);
+
+    expect([...marked].sort()).toEqual(['Other-Evermoon', second].sort());
+  });
+
+  it('unmarks a marked player', () => {
+    expect([...markTeamFlagCarrier(new Set([first, 'Other-Evermoon']), team, first)]).toEqual(['Other-Evermoon']);
   });
 });
 
@@ -268,44 +353,44 @@ describe('shuffleTeams', () => {
   });
 
   it('splits each class as evenly as possible before its specs', () => {
-    const players = rosterPlayers(roster([
-      entry('Llýnch', { class: 5, spec: 'Holy' }),
-      entry('Widuxgodx', { class: 10, spec: 'Mistweaver' }),
-      entry('Wxz', { class: 11, spec: 'Restoration' }),
-      entry('Lakmir', { class: 10, spec: 'Mistweaver' }),
-      entry('Lythus', { class: 2, spec: 'Holy' }),
-      entry('Spuky', { class: 7, spec: 'Restoration' }),
-      entry('Allisa', { class: 6, spec: 'Unholy' }),
-      entry('Dkügli', { class: 6, spec: 'Unholy' }),
-      entry('Rcodio', { class: 6, spec: 'Unholy' }),
-      entry('Zerololq', { class: 6, spec: 'Frost' }),
-      entry('Morron', { class: 1, spec: 'Arms' }),
-      entry('Zowy', { class: 1, spec: 'Fury' }),
-      entry('Majä', { class: 10, spec: 'Windwalker' }),
-      entry('Zsozé', { class: 10, spec: 'Windwalker' }),
-      entry('Cicámqu', { class: 11, spec: 'Feral' }),
-      entry('Dnx', { class: 9, spec: 'Affliction' }),
-      entry('Maviellian', { class: 3, spec: 'Marksmanship' }),
-      entry('Sósa', { class: 8, spec: 'Frost' }),
-      entry('Xyhop', { class: 5, spec: 'Shadow' }),
-      entry('Trelhy', { class: 4, spec: 'Assassination' })
-    ]));
-    const count = (team: readonly RosterPlayer[], healers: boolean, key: (player: RosterPlayer) => string, value: string) =>
-      team.filter(player => (player.role === 'healer') === healers && key(player) === value).length;
-    const byClass = (player: RosterPlayer) => `${player.classId}`;
-    const bySpec = (player: RosterPlayer) => `${player.classId}:${player.spec}`;
+    const players = groupOfTwenty();
 
     for (let seed = 0; seed < 50; seed++) {
-      const teams = shuffleTeams(players, seeded(seed));
+      expectEvenSplit(players, shuffleTeams(players, seeded(seed)));
+    }
+  });
 
-      expect(teams.map(healerCount)).toEqual([3, 3]);
-      for (const healers of [true, false]) {
-        for (const key of [byClass, bySpec]) {
-          for (const value of new Set(players.map(key))) {
-            expect(Math.abs(count(teams[0], healers, key, value) - count(teams[1], healers, key, value))).toBeLessThanOrEqual(1);
-          }
-        }
+  it('puts one of two flag carriers on each team, every split as even as without them', () => {
+    const players = groupOfTwenty();
+    const pairs = [
+      ['Cicámqu', 'Trelhy'],
+      ['Llýnch', 'Dnx'],
+      ['Allisa', 'Dkügli'],
+      ['Zerololq', 'Rcodio'],
+      ['Lythus', 'Spuky'],
+      ['Morron', 'Zowy']
+    ];
+
+    for (const pair of pairs) {
+      const flagCarriers = new Set(pair.map(name => `${name}-Evermoon`));
+      const teamsOfFirst = new Set<number>();
+      for (let seed = 0; seed < 50; seed++) {
+        const teams = shuffleTeams(players, seeded(seed), flagCarriers);
+
+        expect(teams.map(team => team.filter(player => flagCarriers.has(player.key)).length)).toEqual([1, 1]);
+        expectEvenSplit(players, teams);
+        teamsOfFirst.add(teams[0].some(player => player.name === pair[0]) ? 0 : 1);
       }
+      expect([...teamsOfFirst].sort()).toEqual([0, 1]);
+    }
+  });
+
+  it('shuffles as usual around a single flag carrier', () => {
+    const players = groupOfTwenty();
+
+    for (let seed = 0; seed < 20; seed++) {
+      expect(shuffleTeams(players, seeded(seed), new Set(['Cicámqu-Evermoon'])))
+        .toEqual(shuffleTeams(players, seeded(seed)));
     }
   });
 

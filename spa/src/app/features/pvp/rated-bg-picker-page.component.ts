@@ -20,6 +20,7 @@ import { injectReplaceUrl } from '../../core/url-state';
 import { LoadStateComponent } from '../../shared/load-state.component';
 import { prefersReducedMotion } from '../../shared/motion/motion';
 import {
+  FLAG_CARRIER_COUNT,
   PICK_COUNT,
   RATED_BG_ROSTER_FILE,
   RatedBgRosterFile,
@@ -28,6 +29,7 @@ import {
   canShuffle,
   countHealers,
   healerWarning,
+  markTeamFlagCarrier,
   parseTeams,
   rosterGroups,
   rosterPlayers,
@@ -35,11 +37,11 @@ import {
   teamGroups,
   teamSummary,
   teamsParams,
+  tickedFlagCarriers,
+  toggleFlagCarrier,
   togglePick
 } from './rated-bg-picker';
 import { RatedBgPlayerComponent } from './rated-bg-player.component';
-
-type FlagCarriers = readonly [string | undefined, string | undefined];
 
 @Component({
   selector: 'app-rated-bg-picker-page',
@@ -62,7 +64,7 @@ export class RatedBgPickerPageComponent implements OnInit {
   readonly players = signal<readonly RosterPlayer[]>([]);
   readonly picked = signal<ReadonlySet<string>>(new Set());
   readonly teams = signal<Teams | undefined>(undefined);
-  readonly flagCarriers = signal<FlagCarriers>([undefined, undefined]);
+  readonly flagCarriers = signal<ReadonlySet<string>>(new Set());
   readonly staleLink = signal(false);
   private readonly generatedAt = signal<string | undefined>(undefined);
 
@@ -142,18 +144,28 @@ export class RatedBgPickerPageComponent implements OnInit {
     }
 
     this.picked.update(picked => togglePick(picked, player.key));
+    this.flagCarriers.update(flagCarriers => tickedFlagCarriers(flagCarriers, this.picked()));
   }
 
-  isFlagCarrier(teamIndex: number, player: RosterPlayer): boolean {
-    return this.flagCarriers()[teamIndex] === player.key;
+  isFlagCarrier(player: RosterPlayer): boolean {
+    return this.flagCarriers().has(player.key);
   }
 
-  toggleFlagCarrier(teamIndex: number, player: RosterPlayer): void {
-    this.flagCarriers.update(flagCarriers => {
-      const next: [string | undefined, string | undefined] = [...flagCarriers];
-      next[teamIndex] = next[teamIndex] === player.key ? undefined : player.key;
-      return next;
-    });
+  canMarkFlagCarrier(player: RosterPlayer): boolean {
+    return !this.teams() && (this.isFlagCarrier(player) || this.flagCarriers().size < FLAG_CARRIER_COUNT);
+  }
+
+  toggleFlagCarrier(player: RosterPlayer): void {
+    if (this.canMarkFlagCarrier(player)) {
+      this.flagCarriers.update(flagCarriers => toggleFlagCarrier(flagCarriers, player.key));
+    }
+  }
+
+  markTeamFlagCarrier(teamIndex: number, player: RosterPlayer): void {
+    const team = this.teams()?.[teamIndex];
+    if (team) {
+      this.flagCarriers.update(flagCarriers => markTeamFlagCarrier(flagCarriers, team, player.key));
+    }
   }
 
   shuffle(): void {
@@ -162,8 +174,7 @@ export class RatedBgPickerPageComponent implements OnInit {
       return;
     }
 
-    this.teams.set(shuffleTeams(players));
-    this.clearFlagCarriers();
+    this.teams.set(shuffleTeams(players, Math.random, this.flagCarriers()));
     this.staleLink.set(false);
     this.writeUrl();
     afterNextRender(() => this.scrollToTeams(), { injector: this.injector });
@@ -171,7 +182,6 @@ export class RatedBgPickerPageComponent implements OnInit {
 
   changePlayers(): void {
     this.teams.set(undefined);
-    this.clearFlagCarriers();
     this.writeUrl();
   }
 
@@ -202,7 +212,7 @@ export class RatedBgPickerPageComponent implements OnInit {
   }
 
   private clearFlagCarriers(): void {
-    this.flagCarriers.set([undefined, undefined]);
+    this.flagCarriers.set(new Set());
   }
 
   private scrollToTeams(): void {

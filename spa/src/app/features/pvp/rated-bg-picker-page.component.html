@@ -26,16 +26,16 @@
             @for (group of team.groups; track group.id) {
               <ol class="team-players" [attr.aria-label]="group.label">
                 @for (player of group.players; track player.key) {
-                  <li class="player-row" [class.flag-carrier-marked]="isFlagCarrier(teamIndex, player)">
+                  <li class="player-row" [class.flag-carrier-marked]="isFlagCarrier(player)">
                     <app-rated-bg-player [player]="player" />
                     <button
                       type="button"
                       class="flag-carrier"
-                      [class.marked]="isFlagCarrier(teamIndex, player)"
-                      [attr.aria-pressed]="isFlagCarrier(teamIndex, player)"
-                      [attr.aria-label]="(isFlagCarrier(teamIndex, player) ? 'Remove ' : 'Mark ') + player.name + ' as possible flag carrier'"
-                      [title]="isFlagCarrier(teamIndex, player) ? 'Remove possible flag carrier' : 'Mark as possible flag carrier'"
-                      (click)="toggleFlagCarrier(teamIndex, player)">FC</button>
+                      [class.marked]="isFlagCarrier(player)"
+                      [attr.aria-pressed]="isFlagCarrier(player)"
+                      [attr.aria-label]="(isFlagCarrier(player) ? 'Remove ' : 'Mark ') + player.name + ' as possible flag carrier'"
+                      [title]="isFlagCarrier(player) ? 'Remove possible flag carrier' : 'Mark as possible flag carrier'"
+                      (click)="markTeamFlagCarrier(teamIndex, player)">FC</button>
                   </li>
                 }
               </ol>
@@ -46,12 +46,7 @@
     }
 
     <div class="picker-card toolbar">
-      <div class="pick-status" aria-live="polite">
-        <p class="pick-count">{{ pickedCount() }} of {{ pickCount }} ticked · {{ pickedHealers() }} {{ pickedHealers() === 1 ? 'healer' : 'healers' }}</p>
-        @if (!teams() && healerWarning(); as warning) {
-          <p class="healer-warning">{{ warning }}</p>
-        }
-      </div>
+      <p class="pick-count" aria-live="polite">{{ pickedCount() }} of {{ pickCount }} ticked · {{ pickedHealers() }} {{ pickedHealers() === 1 ? 'healer' : 'healers' }}@if (!teams() && healerWarning(); as warning) {<span class="healer-warning"> · {{ warning }}</span>}</p>
       <div class="toolbar-buttons">
         @if (teams()) {
           <button type="button" class="action primary shuffle-again" (click)="shuffle()">Shuffle again</button>
@@ -72,16 +67,32 @@
             <h2 class="head-player group-label">{{ group.label }}<span class="group-count"> · {{ group.ticked }} ticked</span></h2>
             <span aria-hidden="true">Traits</span>
             <span aria-hidden="true">ilvl</span>
+            <span aria-hidden="true">FC</span>
           </div>
           @if (group.classes.length) {
             <ul class="roster" [attr.aria-label]="group.label">
               @for (rosterClass of group.classes; track rosterClass.classId; let firstClass = $first) {
                 @for (player of rosterClass.players; track player.key; let firstPlayer = $first) {
-                  <li [class.class-start]="firstPlayer && !firstClass">
-                    <label class="player-row pick-row" [class.picked]="isPicked(player)" [class.locked]="isLocked(player)">
+                  <li
+                    class="pick-item"
+                    [class.class-start]="firstPlayer && !firstClass"
+                    [class.picked]="isPicked(player)"
+                    [class.locked]="isLocked(player)">
+                    <label class="player-row pick-row">
                       <input type="checkbox" [checked]="isPicked(player)" [disabled]="isLocked(player)" (change)="toggle(player)" />
                       <app-rated-bg-player [player]="player" />
                     </label>
+                    @if (isPicked(player)) {
+                      <button
+                        type="button"
+                        class="flag-carrier"
+                        [class.marked]="isFlagCarrier(player)"
+                        [disabled]="!canMarkFlagCarrier(player)"
+                        [attr.aria-pressed]="isFlagCarrier(player)"
+                        [attr.aria-label]="(isFlagCarrier(player) ? 'Remove ' : 'Mark ') + player.name + ' as flag carrier, so the shuffle puts the two on different teams'"
+                        [title]="isFlagCarrier(player) ? 'Remove flag carrier' : 'Mark as flag carrier: the two marked go on different teams'"
+                        (click)="toggleFlagCarrier(player)">FC</button>
+                    }
                   </li>
                 }
               }

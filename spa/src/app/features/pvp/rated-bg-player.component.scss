@@ -24,12 +24,12 @@
   font-size: 0.9rem;
   font-weight: 700;
 
-  &.missing { color: #8f8a7d; }
+  &.missing { color: #9a9a9a; }
 }
 
 .player-traits,
 .player-item-level {
-  color: #e8e3d6;
+  color: #e0e0e0;
   font-size: 0.85rem;
   font-variant-numeric: tabular-nums;
   text-align: right;
@@ -37,7 +37,7 @@
 
 .player-missing {
   grid-column: span 2;
-  color: #8f8a7d;
+  color: #9a9a9a;
   font-size: 0.72rem;
   font-style: italic;
   text-align: right;
@@ -53,4 +53,8 @@
       height: 18px;
     }
   }
+}
+
+@media (max-width: $narrow-phone-breakpoint) {
+  .player-icons .race-icon { display: none; }
 }

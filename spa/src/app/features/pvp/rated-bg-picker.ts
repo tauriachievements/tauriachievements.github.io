@@ -6,6 +6,8 @@ export const RATED_BG_ROSTER_FILE = 'rated-bg-roster.json';
 export const RATED_BG_ROSTER_VERSION = 1;
 export const TEAM_SIZE = 10;
 export const PICK_COUNT = 2 * TEAM_SIZE;
+export const FLAG_CARRIER_COUNT = 2;
+const MAX_SHUFFLES = 1000;
 
 export interface RatedBgRosterEntry {
   readonly name: string;
@@ -105,27 +107,47 @@ export function canShuffle(picked: readonly RosterPlayer[]): boolean {
 }
 
 export function healerWarning(pickedHealers: number): string | undefined {
-  if (pickedHealers % 2 === 0) {
-    return undefined;
-  }
-
-  const ticked = pickedHealers === 1 ? '1 healer is' : `${pickedHealers} healers are`;
-  return `Tick an even number of healers to shuffle: ${ticked} ticked.`;
+  return pickedHealers % 2 === 0 ? undefined : 'tick an even number';
 }
 
 export function togglePick(picked: ReadonlySet<string>, key: string): ReadonlySet<string> {
-  if (!picked.has(key) && picked.size >= PICK_COUNT) {
-    return picked;
-  }
-
-  const next = new Set(picked);
-  if (!next.delete(key)) {
-    next.add(key);
-  }
-  return next;
+  return toggleWithin(picked, key, PICK_COUNT);
 }
 
-export function shuffleTeams(players: readonly RosterPlayer[], random: () => number = Math.random): Teams {
+export function toggleFlagCarrier(flagCarriers: ReadonlySet<string>, key: string): ReadonlySet<string> {
+  return toggleWithin(flagCarriers, key, FLAG_CARRIER_COUNT);
+}
+
+export function tickedFlagCarriers(flagCarriers: ReadonlySet<string>, picked: ReadonlySet<string>): ReadonlySet<string> {
+  return new Set([...flagCarriers].filter(key => picked.has(key)));
+}
+
+export function markTeamFlagCarrier(
+  flagCarriers: ReadonlySet<string>,
+  team: readonly RosterPlayer[],
+  key: string
+): ReadonlySet<string> {
+  if (flagCarriers.has(key)) {
+    return toggleFlagCarrier(flagCarriers, key);
+  }
+
+  const teamKeys = new Set(team.map(player => player.key));
+  return new Set([...[...flagCarriers].filter(marked => !teamKeys.has(marked)), key]);
+}
+
+export function shuffleTeams(
+  players: readonly RosterPlayer[],
+  random: () => number = Math.random,
+  flagCarriers: ReadonlySet<string> = new Set()
+): Teams {
+  let teams = balancedTeams(players, random);
+  for (let attempt = 1; attempt < MAX_SHUFFLES && !splitsFlagCarriers(teams, flagCarriers); attempt++) {
+    teams = balancedTeams(players, random);
+  }
+  return teams;
+}
+
+function balancedTeams(players: readonly RosterPlayer[], random: () => number): Teams {
   const healers = players.filter(isHealer);
   const others = players.filter(player => !isHealer(player));
   let firstHealers = Math.floor(healers.length / 2);
@@ -206,6 +228,23 @@ function teamFromParam(value: string | null, playersByKey: ReadonlyMap<string, R
 
 function inTeamOrder(team: readonly RosterPlayer[]): RosterPlayer[] {
   return teamGroups(team).flatMap(group => group.players);
+}
+
+function toggleWithin(keys: ReadonlySet<string>, key: string, limit: number): ReadonlySet<string> {
+  if (!keys.has(key) && keys.size >= limit) {
+    return keys;
+  }
+
+  const next = new Set(keys);
+  if (!next.delete(key)) {
+    next.add(key);
+  }
+  return next;
+}
+
+function splitsFlagCarriers(teams: Teams, flagCarriers: ReadonlySet<string>): boolean {
+  const carriersIn = (team: readonly RosterPlayer[]) => team.filter(player => flagCarriers.has(player.key)).length;
+  return carriersIn([...teams[0], ...teams[1]]) < FLAG_CARRIER_COUNT || teams.every(team => carriersIn(team) === 1);
 }
 
 function isHealer(player: RosterPlayer): boolean {
