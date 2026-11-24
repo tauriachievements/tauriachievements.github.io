@@ -802,10 +802,14 @@ The unlisted `/rated-bg-picker` page splits the players who turned up into two t
 - **Shuffle needs exactly 20 ticked players with an even number of healers** (0 included); the
   page never ticks a 21st. While an odd number of healers is ticked, Shuffle stays off and the
   bar says why.
-- **Each team gets half the healers and each known class/spec is split as evenly as possible.**
-  So 2 healers split 1 and 1, 4 split 2 and 2, and 2 Marksmanship hunters split 1 and 1.
-  Players within each class/spec and the side that gets the extra player from an odd-sized spec
-  are random. Characters without a known spec stay random. Item level is not balanced.
+- **Each team gets half the healers, then each class is split as evenly as possible, then each
+  spec within its class.** The healers and the rest (damage and tanks) are split separately, each
+  class by class. So 2 healers split 1 and 1, 4 Death Knights 2 and 2, and an Arms and a Fury
+  Warrior one each; 3 Unholy and 1 Frost Death Knight become Unholy + Frost against 2 Unholy. A
+  tank counts with its class. Which team gets the extra player of an odd-sized class or spec, and
+  who plays on which side, is random. A character without a known spec is split with its class;
+  one the armory doesn't know stays random. Item level, melee/ranged and a class's healers
+  against its damage players are not balanced.
 - A player's role is the role of the spec the roster file gives them
   ([data-pipeline.md](data-pipeline.md#rated-bg-roster)): the main spec the hand list names for
   them, else the spec of their artifact with the most traits, as on the guild pages, else their
