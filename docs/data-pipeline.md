@@ -23,6 +23,7 @@ Tauri API ──► api/ console apps ──► spa/src/ data files ──► co
 | `RareItemFindings.json` | `AchievementLadder` ([below](#rare-item-findings)) | `sync data` | Rare Items' New findings page |
 | `elite-pvp-items.json` | built once from TauriShoot, then kept by hand ([below](#elite-pvp-items)) | `feat:` / `chore:` | Rare Items page, `AchievementLadder` |
 | `battlegrounds.json`, `battleground-collector-state.json`, `rated-battlegrounds.json` | `BattlegroundCollector` | `sync data` | Battleground and Rated Battleground pages |
+| `rated-bg-roster.json` | `RatedBgRosterExporter`, from `Run-RatedBgRoster.cmd` only ([below](#rated-bg-roster)) | `sync rated bg roster data` | the unlisted Rated BG Picker |
 | `arena-ladder-2v2.json`, `arena-ladder-3v3.json` | `ArenaLadderExporter` | `sync data`, `sync arena data` from `Run-Arena.cmd`, or the `Run-QuickUpdate.cmd` commit ([below](#the-daily-update)) | Arena and Arena Statistics pages |
 | `mythic-plus-data/` | `MythicPlusExporter` | `sync data`, `sync mythic plus data` from `Run-MythicPlus.cmd`, or the `Run-QuickUpdate.cmd` commit | `/mythic-plus/*` |
 | `raid-log-data/` | `RaidLogExporter` | `sync data`, `sync raid logs data` from `Run-RaidLogs.cmd`, or the `Run-QuickUpdate.cmd` commit | `/raid-logs/*` |
@@ -36,9 +37,10 @@ new guilds and guildless characters to the realm lists;
 `valid-realm-first-characters.txt`. `sync data` commits these lists too. The scans only append,
 and skip a name already listed, ignoring case. `guildless-characters.txt` holds one
 `Name-[EN] Evermoon` line per character, always with the API realm name, whatever spelling the
-source used (`GuildListFiles`). Two files there are kept
+source used (`GuildListFiles`). Three files there are kept
 by hand: `invalid-raid-logs.txt`, the raid kills that don't count ([below](#invalid-raid-logs)),
-and `rare-items.txt`, the rare items that aren't elite PvP pieces, as `Name - ID` lines.
+`rated-bg-players.txt`, the Rated BG Picker's players ([below](#rated-bg-roster)), and
+`rare-items.txt`, the rare items that aren't elite PvP pieces, as `Name - ID` lines.
 AchievementLadder looks for those items and every piece in `spa/src/elite-pvp-items.json` in each
 character's appearance collection, and writes the owners to `RareItems.json` and what's new
 since the last scan to `RareItemFindings.json` ([below](#rare-item-findings)).
@@ -97,6 +99,8 @@ So a night's run is one commit and one Pages deploy, the guild pages included.
 - `Run-MythicPlus.cmd`, `Run-RaidLogs.cmd` and `Run-Arena.cmd` refresh one dataset on its
   own. Their arguments go to the exporter (`Run-MythicPlus.cmd --allow-shrink` at a season
   reset).
+- `Run-RatedBgRoster.cmd` refreshes the Rated BG Picker's players ([below](#rated-bg-roster)).
+  It isn't a step of the daily update, so the roster changes only when you run it.
 - `Run-QuickUpdate.cmd` is the refresh to run during the day. It runs the `QuickUpdate` console
   app, which runs the Mythic+, raid log and arena ladder exports, in that order, in one process,
   and publishes what changed in one commit. The message names the changed datasets in the same
@@ -448,6 +452,43 @@ on 12 days between 17 Sept and 26 Oct 2026), so the page keeps showing the lates
 changes until new ones arrive. Both are `null` until the first scan after they were added finds
 a rated game.
 
+## Rated BG roster
+
+The unlisted `/rated-bg-picker` page lists the players interested in rated battlegrounds, from
+`spa/src/rated-bg-roster.json`. The list itself is kept by hand in
+`api/AchievementLadder/Data/rated-bg-players.txt`: one `Name-Realm` per line, the realm
+`Evermoon`, `Tauri` or `WoD` in any case (`Xyhop-Evermoon`, `Morron-Tauri`). Blank lines are
+skipped, and so is a trailing comma.
+
+To change the list, edit the file and run `api/Run-RatedBgRoster.cmd`. It runs
+RatedBgRosterExporter, then commits the list and the roster file together as
+`sync rated bg roster data` and pushes, with the same `main` checks as `Run-Arena.cmd`. A name
+added to the list shows on the page only after that run.
+
+- RatedBgRosterExporter reads the list before it calls the API, and stops on a line that isn't
+  `Name-Realm`, on a character listed twice, or on a list with nobody on it, naming the lines.
+- It makes one `character-artifact` request per character, all at once through
+  `ITauriApiClient`: that response also carries the character sheet's fields
+  ([tauri-api.md](tauri-api.md#characters-and-guilds)).
+- **All or nothing:** when any character can't be read, it writes nothing, names them, and exits
+  with 1, so the cmd commits nothing. A character the armory doesn't know (error code 6) doesn't
+  stop it: it's written with `notFound`, the page shows "Not on the armory", and the console names
+  it so the list can be checked. There's no shrink guard: the player count is the list's, which
+  you edit.
+
+```
+{ "version": 1, "generatedAt": "2026-11-24T12:29:26Z",
+  "players": [{ name, realm, race, gender, class, spec, traits, itemLevel }, ...] }
+```
+
+One player per line, in the list's order, LF. `name` is the name as the armory spells it
+(`bomboclats` in the list becomes `Bomboclats`). `spec` is the spec of the artifact with the most
+traits, else the active spec, and `traits` that artifact's count, both as on the guild pages
+(`CharacterArtifactReader`); `itemLevel` is the API's `avgitemlevel`, the ladder's figure. A field
+the API doesn't give is left out, and a character it doesn't know is `{ name, realm, notFound: true }`.
+The page reads the file with `rosterPlayers` (`rated-bg-picker.ts`), which refuses another
+`version`; its rules are in [scoring.md](scoring.md#rated-bg-picker-teams).
+
 ## Rare item findings
 
 `spa/src/RareItemFindings.json` holds what each of the last 7 AchievementLadder scans found
@@ -672,7 +713,7 @@ tables, so they don't. The page code has its own guard for a code deploy
   many character and guild names are Cyrillic or accented.
 - GuildAnalysisExporter's `guild-analysis/` file names drop accents ("Témérité" becomes
   "Temerite"), so their URLs never need encoding.
-- MythicPlusExporter, RaidLogExporter and ArenaLadderExporter write LF, and so does
+- MythicPlusExporter, RaidLogExporter, ArenaLadderExporter and RatedBgRosterExporter write LF, and so does
   AchievementLadder for `RareItemFindings.json`. The root
   `.gitattributes` keeps their files LF on checkout, so `core.autocrlf` doesn't warn on every
   commit. A new exporter that writes LF needs a line there too.

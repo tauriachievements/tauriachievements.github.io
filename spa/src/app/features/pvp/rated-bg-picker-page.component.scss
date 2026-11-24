@@ -1,0 +1,272 @@
+@use '../../shared/mythic-plus-shared' as *;
+
+$icons-width: 68px;
+$phone-icons-width: 60px;
+$number-width: 2.75rem;
+$phone-number-width: 2.4rem;
+$first-team-color: #4a9eff;
+$second-team-color: #e5484d;
+
+:host {
+  display: block;
+  width: 100%;
+  min-height: 100vh;
+  background:
+    radial-gradient(circle at 50% -10%, rgba(247, 181, 0, 0.12), transparent 38rem),
+    #050505;
+}
+
+.picker-page {
+  display: grid;
+  gap: 14px;
+  width: min(760px, calc(100% - 32px));
+  margin: 0 auto;
+  padding: 54px 0 36px;
+}
+
+.picker-card {
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  border-radius: 14px;
+  background: linear-gradient(145deg, rgba(33, 30, 22, 0.96), rgba(14, 13, 10, 0.98));
+  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.45);
+}
+
+@include visually-hidden;
+
+.stale-link {
+  margin: 0;
+  padding: 10px 14px;
+  border: 1px solid rgba(247, 181, 0, 0.35);
+  border-radius: 10px;
+  background: rgba(247, 181, 0, 0.08);
+  color: #fff3cf;
+  font-size: 0.85rem;
+}
+
+.teams {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+  scroll-margin-top: calc(var(--update-bar-height) + 12px);
+}
+
+.team {
+  padding: 12px 14px 8px;
+  border-top: 3px solid $first-team-color;
+
+  & + .team { border-top-color: $second-team-color; }
+}
+
+.team-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 2px 10px;
+  margin-bottom: 6px;
+
+  h2 {
+    margin: 0;
+    color: #f3f3f3;
+    font-size: 1rem;
+  }
+}
+
+.team-summary {
+  margin: 0;
+  color: #a39e91;
+  font-size: 0.78rem;
+}
+
+.team-players,
+.roster {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.player-row {
+  display: grid;
+  align-items: center;
+  column-gap: 8px;
+  min-height: 34px;
+}
+
+.team-players .player-row {
+  grid-template-columns: $icons-width minmax(0, 1fr) $number-width $number-width;
+
+  & + .player-row { border-top: 1px solid rgba(255, 255, 255, 0.05); }
+}
+
+.toolbar {
+  position: sticky;
+  top: var(--update-bar-height);
+  z-index: 5;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px 12px;
+  padding: 10px 14px;
+  background: #19160f;
+}
+
+.pick-status {
+  display: grid;
+  gap: 2px;
+}
+
+.pick-count {
+  margin: 0;
+  color: #f3f3f3;
+  font-size: 0.9rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.healer-warning {
+  margin: 0;
+  color: #ffb27a;
+  font-size: 0.78rem;
+  line-height: 1.35;
+}
+
+.toolbar-buttons {
+  display: flex;
+  gap: 8px;
+}
+
+.action {
+  min-height: 36px;
+  padding: 0 14px;
+  border: 1px solid rgba(247, 181, 0, 0.25);
+  border-radius: 7px;
+  background: #30262c;
+  color: #f3f3f3;
+  font: inherit;
+  font-size: 0.85rem;
+  font-weight: 700;
+  cursor: pointer;
+
+  &.primary {
+    border-color: $gold;
+    background: $gold;
+    color: #1a1400;
+  }
+
+  &:hover:not(:disabled) { border-color: rgba(247, 181, 0, 0.7); }
+  &.primary:hover:not(:disabled) { background: #ffc629; }
+  &:focus-visible { outline: 2px solid $gold; outline-offset: 2px; }
+
+  &:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+  }
+}
+
+.roster-card {
+  padding: 4px 14px 10px;
+}
+
+.list-head,
+.pick-row {
+  grid-template-columns: 20px $icons-width minmax(0, 1fr) $number-width $number-width;
+}
+
+.list-head {
+  min-height: 30px;
+  color: #8f8a7d;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+
+  > span { text-align: right; }
+
+  .head-player {
+    grid-column: 1 / 4;
+    margin: 0;
+    font: inherit;
+    text-align: left;
+  }
+}
+
+.group-label { color: #d8cfb8; }
+
+.group-count {
+  color: #8f8a7d;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: none;
+}
+
+.roster-group + .roster-group {
+  margin-top: 8px;
+  padding-top: 4px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.roster li + li { border-top: 1px solid rgba(255, 255, 255, 0.05); }
+
+.pick-row {
+  margin: 0 -6px;
+  padding: 3px 6px;
+  border-radius: 7px;
+  cursor: pointer;
+
+  input {
+    width: 18px;
+    height: 18px;
+    margin: 0;
+    accent-color: $gold;
+    cursor: inherit;
+  }
+
+  &.picked { background: rgba(247, 181, 0, 0.08); }
+  &.locked { cursor: default; }
+  &.locked:not(.picked) { opacity: 0.45; }
+
+  &:has(input:focus-visible) {
+    outline: 2px solid $gold;
+    outline-offset: -2px;
+  }
+}
+
+@media (hover: hover) {
+  .pick-row:not(.locked):hover { background: rgba(255, 255, 255, 0.05); }
+  .pick-row.picked:not(.locked):hover { background: rgba(247, 181, 0, 0.13); }
+}
+
+@media (pointer: coarse) {
+  .action { min-height: 40px; }
+  .pick-row { min-height: 40px; }
+}
+
+@media (max-width: $phone-breakpoint) {
+  .picker-page {
+    gap: 10px;
+    width: calc(100% - 20px);
+    padding-top: 40px;
+  }
+
+  .teams {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 10px;
+  }
+
+  .team,
+  .roster-card { padding-inline: 10px; }
+
+  .toolbar { padding: 8px 10px; }
+
+  .player-row { column-gap: 6px; }
+
+  .team-players .player-row {
+    grid-template-columns: $phone-icons-width minmax(0, 1fr) $phone-number-width $phone-number-width;
+  }
+
+  .list-head,
+  .pick-row {
+    grid-template-columns: 20px $phone-icons-width minmax(0, 1fr) $phone-number-width $phone-number-width;
+  }
+}

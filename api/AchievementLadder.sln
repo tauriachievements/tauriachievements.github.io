@@ -35,6 +35,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ArenaLadderExporter", "Aren
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "QuickUpdate", "QuickUpdate\QuickUpdate.csproj", "{22BFB0ED-DA31-4999-8CD3-9D0CA0EEF0B5}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RatedBgRosterExporter", "RatedBgRosterExporter\RatedBgRosterExporter.csproj", "{2FF4B30A-334F-4EEF-866D-4C20DAFC174F}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -237,6 +239,18 @@ Global
 		{22BFB0ED-DA31-4999-8CD3-9D0CA0EEF0B5}.Release|x64.Build.0 = Release|Any CPU
 		{22BFB0ED-DA31-4999-8CD3-9D0CA0EEF0B5}.Release|x86.ActiveCfg = Release|Any CPU
 		{22BFB0ED-DA31-4999-8CD3-9D0CA0EEF0B5}.Release|x86.Build.0 = Release|Any CPU
+		{2FF4B30A-334F-4EEF-866D-4C20DAFC174F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2FF4B30A-334F-4EEF-866D-4C20DAFC174F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2FF4B30A-334F-4EEF-866D-4C20DAFC174F}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{2FF4B30A-334F-4EEF-866D-4C20DAFC174F}.Debug|x64.Build.0 = Debug|Any CPU
+		{2FF4B30A-334F-4EEF-866D-4C20DAFC174F}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{2FF4B30A-334F-4EEF-866D-4C20DAFC174F}.Debug|x86.Build.0 = Debug|Any CPU
+		{2FF4B30A-334F-4EEF-866D-4C20DAFC174F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2FF4B30A-334F-4EEF-866D-4C20DAFC174F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2FF4B30A-334F-4EEF-866D-4C20DAFC174F}.Release|x64.ActiveCfg = Release|Any CPU
+		{2FF4B30A-334F-4EEF-866D-4C20DAFC174F}.Release|x64.Build.0 = Release|Any CPU
+		{2FF4B30A-334F-4EEF-866D-4C20DAFC174F}.Release|x86.ActiveCfg = Release|Any CPU
+		{2FF4B30A-334F-4EEF-866D-4C20DAFC174F}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

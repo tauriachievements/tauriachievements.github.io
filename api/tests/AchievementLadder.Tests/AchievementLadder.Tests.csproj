@@ -26,5 +26,6 @@
     <ProjectReference Include="..\..\ArenaLadderExporter\ArenaLadderExporter.csproj" />
     <ProjectReference Include="..\..\GuildAnalysisExporter\GuildAnalysisExporter.csproj" />
     <ProjectReference Include="..\..\QuickUpdate\QuickUpdate.csproj" />
+    <ProjectReference Include="..\..\RatedBgRosterExporter\RatedBgRosterExporter.csproj" />
   </ItemGroup>
 </Project>

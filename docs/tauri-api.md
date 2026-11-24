@@ -43,8 +43,17 @@ response first.
 - `character-sheet` `level` is the character's level. GuildAnalysisExporter keeps only level 110
   characters, and leaves out one whose sheet doesn't load in that run. Code:
   `GuildAnalysisExporter/GuildMemberExportService`.
+- `avgitemlevel` is the item level the ladder shows: `CharacterScanner` reads it from
+  `character-achievements` (`CharacterResponseMapper.ReadItemLevel`). Observed 2026-11-24:
+  `character-sheet` and `character-artifact` carry it too, with the same value.
+  GuildAnalysisExporter works out its own average from the equipped items instead
+  (`CharacterItemLevelCalculator`).
 - `character-artifact` returns every artifact the character owns (main-hand piece only, one per
-  spec). Code: `GuildAnalysisExporter/GuildMemberExportService`.
+  spec). Code: `CharacterArtifactReader` in `Tauri.Core`, used by GuildAnalysisExporter and
+  RatedBgRosterExporter. Observed 2026-11-24: its response also carries the `character-sheet`
+  fields (`name` as the armory spells it, `race`, `gender`, `class`, `level`, `avgitemlevel`,
+  `activeSpec`, `talents_legion_<n>`), so RatedBgRosterExporter makes this one request per
+  character.
   - **Traits** = the sum of `purchasedrank` over `artifacts[].artifact.artifactpowers`, for the
     artifact with the highest sum. The free first trait (`isfirstbonus`) and relic ranks don't
     count.

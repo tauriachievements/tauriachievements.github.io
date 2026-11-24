@@ -64,6 +64,70 @@ public sealed class GuildMemberExportServiceTests : IDisposable
         );
     }
 
+    [Fact]
+    public async Task ExportAsync_WritesTheBestArtifactsTraitsAndEachSpecsArtifact()
+    {
+        var apiClient = new FakeGuildMemberApiClient(
+            ["Alpha"],
+            new Dictionary<string, int> { ["Alpha"] = 110 },
+            new Dictionary<string, object>
+            {
+                ["Alpha"] = new
+                {
+                    artifact_knowledge = 25,
+                    activeSpec = 1,
+                    talents_legion_1 = "priest&holy&cABc",
+                    artifacts = new object[]
+                    {
+                        Artifact(128868, "Light's Wrath", relics: 1, 10, 20),
+                        Artifact(128827, "Xal'atath, Blade of the Black Empire", relics: 3, 4, 38),
+                        Artifact(133755, "Underlight Angler", relics: 0, 5),
+                    },
+                },
+            }
+        );
+
+        var result = await ExportAsync(apiClient);
+
+        var player = Assert.Single(await ReadPlayersAsync(result.OutputPath));
+        Assert.Equal("Shadow", player.GetProperty("specialization").GetString());
+        Assert.Equal(
+            "Xal'atath, Blade of the Black Empire",
+            player.GetProperty("artifactWeapon").GetString()
+        );
+        Assert.Equal(3, player.GetProperty("artifactRelics").GetInt32());
+        Assert.Equal(42, player.GetProperty("artifactTraits").GetInt32());
+        Assert.Equal(25, player.GetProperty("artifactKnowledge").GetInt32());
+        Assert.Equal(
+            [
+                ("Shadow", "Xal'atath, Blade of the Black Empire", 42),
+                ("Discipline", "Light's Wrath", 30),
+            ],
+            player
+                .GetProperty("artifacts")
+                .EnumerateArray()
+                .Select(weapon =>
+                    (
+                        weapon.GetProperty("specialization").GetString(),
+                        weapon.GetProperty("name").GetString(),
+                        weapon.GetProperty("traits").GetInt32()
+                    )
+                )
+        );
+    }
+
+    private static object Artifact(int id, string name, int relics, params int[] ranks) =>
+        new
+        {
+            ID = id,
+            name,
+            SocketContainedGem = Enumerable.Range(0, relics).Select(_ => new { }).ToArray(),
+            artifact = new
+            {
+                artifactpowers = ranks.Select(rank => new { purchasedrank = rank }).ToArray(),
+            },
+        };
+
     private async Task<GuildMemberExportResult> ExportAsync(ITauriApiClient apiClient)
     {
         using var itemClient = new TauriShootItemClient();
@@ -86,7 +150,8 @@ public sealed class GuildMemberExportServiceTests : IDisposable
 
     private sealed class FakeGuildMemberApiClient(
         IReadOnlyList<string> memberNames,
-        IReadOnlyDictionary<string, int> levelsBySheet
+        IReadOnlyDictionary<string, int> levelsBySheet,
+        IReadOnlyDictionary<string, object>? artifactsByCharacter = null
     ) : ITauriApiClient
     {
         private readonly ConcurrentQueue<(string Endpoint, string Character)> _requests = new();
@@ -128,6 +193,9 @@ public sealed class GuildMemberExportServiceTests : IDisposable
                                 @class = 1,
                             }
                         ),
+                    "character-artifact"
+                        when artifactsByCharacter?.TryGetValue(character, out var artifacts)
+                            == true => Success(artifacts!),
                     "character-artifact" => Success(new { artifacts = Array.Empty<object>() }),
                     _ => TauriApiResponseResult.Failure("Request timed out."),
                 }

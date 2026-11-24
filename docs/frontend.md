@@ -116,7 +116,8 @@ the page's store. The component keeps the URL, the filters and the event handler
   redirect, and the owner sends the guild its new link.
 - Unlisted routes are unlisted on purpose: the guild pages (`<key>-<guid>`), the Rare Items
   page and its New findings page (`<rare items path>/new-findings`, linked only from the Rare
-  Items page). Don't add them to the nav or link to them from public pages.
+  Items page), and the Rated BG Picker (`/rated-bg-picker`, one group's team picker). Don't add
+  them to the nav or link to them from public pages.
 - Pages hosting: GitHub Pages serves `src/404.html` for any unknown path. It redirects to
   `/?p=<path>`, and `index.html` restores the path before Angular starts. Paths that contain a
   dot aren't redirected, so route parameters can't hold dots.
@@ -179,6 +180,7 @@ The query parameters each page reads:
 | `/arena` | `bracket`: `2v2` (default) or `3v3`; `games`: the minimum rated games for an active player, `50` (default), `45`, `40`, `35` or `30` ([scoring.md](scoring.md#arena-titles)); `class` (a class id); `spec` (a spec name, only with `class`); `page` |
 | `/arena/stats` | `bracket`: `2v2` (default) or `3v3`; `rating`: a current-rating floor, `1500`, `1750`, `2000`, `2200` or `2500` (every character by default; [scoring.md](scoring.md#spec-and-race-popularity)); `role` |
 | `/rated-battleground` | `view`: `players` (default) or `matches`; `page` (the players view) |
+| `/rated-bg-picker` (unlisted) | `a` and `b`: the two teams after a shuffle, each its 10 players as `Name-Realm` joined by commas. A link opens on those teams with their players ticked; a link whose teams aren't 10 different players from the list each says so and is dropped from the address ([scoring.md](scoring.md#rated-bg-picker-teams)) |
 | `/mythic-plus` | `season` (a season that hasn't started, `legion-s2`: its waiting room; [below](#mythic-seasons)), `view` (`runs`, `players`), `sort` (`best`, `latest`), `period` (`season`, `week`), `dungeon`, `realm`, `class`, `spec`, `role` (the players view's Roles: `tank`, `healer`, `dps`, `melee`, `ranged`), `chartRole` (the spec chart's role), `page`, `character` (`Name-Realm`: the runs view shows only theirs, the players view picks out their row) |
 | `/stats` | `realm` (`evermoon`, `tauri`, `wod`; all realms by default), `level` (`100`, `90`, `80`, `all`; 110 by default) |
 | `/mythic-plus/stats` | `season`, `period` |

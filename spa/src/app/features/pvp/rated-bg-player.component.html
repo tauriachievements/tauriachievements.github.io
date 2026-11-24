@@ -1,0 +1,16 @@
+<span class="player-icons">
+  @if (player().found) {
+    <img [src]="raceIcon()" [alt]="raceName()" [title]="raceName()" width="20" height="20" />
+    <img [src]="classIcon()" [alt]="className()" [title]="className()" width="20" height="20" />
+    @if (specIcon(); as icon) {
+      <img [src]="icon" [alt]="player().spec" [title]="player().spec + ' ' + className()" width="20" height="20" />
+    }
+  }
+</span>
+<span class="player-name" [class.missing]="!player().found" [style.color]="classColor()" [title]="player().name + '-' + player().realm">{{ player().name }}</span>
+@if (player().found) {
+  <span class="player-traits">{{ player().traits ?? '–' }}<span class="visually-hidden"> traits</span></span>
+  <span class="player-item-level">{{ player().itemLevel ?? '–' }}<span class="visually-hidden"> item level</span></span>
+} @else {
+  <span class="player-missing">Not on the armory</span>
+}
