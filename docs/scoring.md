@@ -788,7 +788,8 @@ decision: ask first.** When a rule does change, change its tests first and see t
 The unlisted `/rated-bg-picker` page splits the players who turned up into two teams of 10.
 
 - **Code:** `rosterGroups`, `canShuffle`, `healerWarning`, `shuffleTeams`, `togglePick`,
-  `parseTeams`, `teamGroups` and `teamSummary` in `spa/src/app/features/pvp/rated-bg-picker.ts`.
+  `toggleFlagCarrier`, `tickedFlagCarriers`, `markTeamFlagCarrier`, `parseTeams`, `teamGroups`
+  and `teamSummary` in `spa/src/app/features/pvp/rated-bg-picker.ts`.
 - The list shows three groups, side by side from 1000 px and one under the other below that:
   Melee, Ranged, then Healers. Ranged holds the ranged damage specs (`range` in `LEGION_SPECS`),
   Healers the healer specs, and Melee everyone else: the melee damage specs, tanks, and characters
@@ -801,15 +802,26 @@ The unlisted `/rated-bg-picker` page splits the players who turned up into two t
   counts the ticked players and healers.
 - **Shuffle needs exactly 20 ticked players with an even number of healers** (0 included); the
   page never ticks a 21st. While an odd number of healers is ticked, Shuffle stays off and the
-  bar says why.
+  bar adds "tick an even number" after the healer count, on the same line, so the bar keeps its
+  height.
 - **Each team gets half the healers, then each class is split as evenly as possible, then each
   spec within its class.** The healers and the rest (damage and tanks) are split separately, each
   class by class. So 2 healers split 1 and 1, 4 Death Knights 2 and 2, and an Arms and a Fury
   Warrior one each; 3 Unholy and 1 Frost Death Knight become Unholy + Frost against 2 Unholy. A
   tank counts with its class. Which team gets the extra player of an odd-sized class or spec, and
   who plays on which side, is random. A character without a known spec is split with its class;
-  one the armory doesn't know stays random. Item level, melee/ranged and a class's healers
-  against its damage players are not balanced.
+  one the armory doesn't know stays random. Item level and a class's healers against its damage
+  players are not balanced.
+- **The ranged are split as evenly as possible, and so are the melee.** Ranged and melee are the
+  list's groups: the ranged damage specs, and everyone else who isn't a healer. Ranged sits below
+  the class and spec splits rather than above them, so it never costs a class its even split: the
+  shuffle draws class-balanced teams again until the ranged differ by at most one (at most 1,000
+  tries, shared with the flag carrier rule below). As each team has the same number of
+  non-healers, the melee then differ by at most one too. So 6 ranged split 3 and 3, where a class
+  split alone could leave a single-player Warlock and Shadow Priest on one side and a single
+  Rogue and Feral Druid on the other, 4 ranged against 2. On the roster in November 2026, a
+  class-balanced draw already split the ranged evenly 81% of the time on average and 51% for the
+  hardest pick of 20.
 - A player's role is the role of the spec the roster file gives them
   ([data-pipeline.md](data-pipeline.md#rated-bg-roster)): the main spec the hand list names for
   them, else the spec of their artifact with the most traits, as on the guild pages, else their
@@ -819,9 +831,16 @@ The unlisted `/rated-bg-picker` page splits the players who turned up into two t
 - A team lists its players in the list's groups, but Healers first, then Ranged, then Melee, each
   class by class, then by spec and traits, as above. A gap with no heading separates the groups,
   and a group the team has nobody in is left out. The team's heading counts its healers and
-  averages the item levels it knows. After a shuffle, each team can mark one player as its
-  possible flag carrier with the `FC` button. The marks are local to that result, aren't part of
-  its shared link, and clear on a reshuffle or when changing players.
+  averages the item levels it knows.
+- **Flag carriers are optional; with two marked, each team gets one.** Before the shuffle, the
+  `FC` button on a ticked player marks them as a flag carrier, two at most. After a shuffle, each
+  team can mark one, and marking another player of that team moves its mark. With two marked,
+  the shuffle draws again until they land on different teams, so every split above holds exactly
+  as without them. On the roster in November 2026, a draw met both the ranged and the flag
+  carrier rule 43% of the time on average and 22% for the hardest pair, a handful of tries at
+  most. One mark changes nothing about the shuffle. The marks stay through Shuffle again and
+  Change players, go when their player is unticked or on Clear, and aren't part of the shared
+  link.
 - Traits are the count of that spec's artifact: the guild pages' count (the artifact with the
   most traits) unless the list names a main spec. The item level is the API's `avgitemlevel`,
   the ladder's figure, not the guild pages' own average of the equipped items

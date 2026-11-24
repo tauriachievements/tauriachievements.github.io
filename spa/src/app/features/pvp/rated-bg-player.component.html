@@ -4,7 +4,7 @@
     @if (specIcon(); as icon) {
       <img [src]="icon" [alt]="player().spec" [title]="player().spec + ' ' + className()" width="20" height="20" />
     }
-    <img [src]="raceIcon()" [alt]="raceName()" [title]="raceName()" width="20" height="20" />
+    <img class="race-icon" [src]="raceIcon()" [alt]="raceName()" [title]="raceName()" width="20" height="20" />
   }
 </span>
 <span class="player-name" [class.missing]="!player().found" [style.color]="classColor()" [title]="player().name + '-' + player().realm">{{ player().name }}</span>

@@ -69,6 +69,11 @@ async function tick(harness: RouterTestingHarness, element: HTMLElement, count: 
   await harness.fixture.whenStable();
 }
 
+const markedInTeams = (element: HTMLElement) =>
+  [...element.querySelectorAll('.team')].map(team =>
+    [...team.querySelectorAll('.flag-carrier[aria-pressed="true"]')]
+      .map(carrier => carrier.closest('li')?.querySelector('.player-name')?.textContent?.trim()));
+
 async function press(harness: RouterTestingHarness, element: HTMLElement, selector: string) {
   button(element, selector)?.click();
   harness.detectChanges();
@@ -151,7 +156,9 @@ describe('RatedBgPickerPageComponent', () => {
     await harness.fixture.whenStable();
 
     expect(button(element, '.shuffle')?.disabled).toBe(true);
-    expect(element.querySelector('.healer-warning')?.textContent).toContain('3 healers');
+    expect(element.querySelector('.pick-count')?.textContent?.replace(/\s+/g, ' ').trim())
+      .toBe('20 of 20 ticked · 3 healers · tick an even number');
+    expect(element.querySelector('.pick-count .healer-warning')).not.toBeNull();
 
     checkboxes(element)[20].click();
     harness.detectChanges();
@@ -199,7 +206,7 @@ describe('RatedBgPickerPageComponent', () => {
     expect(params.get('b')?.split(',').map(key => key.replace('-Evermoon', ''))).toEqual(teams[1]);
   });
 
-  it('marks one possible flag carrier per team and clears the marks on reshuffle', async () => {
+  it('marks one possible flag carrier per team, and a reshuffle keeps them on different teams', async () => {
     const { harness, element } = await openPage('/rated-bg-picker');
     await tick(harness, element, 20);
     await press(harness, element, '.shuffle');
@@ -221,9 +228,53 @@ describe('RatedBgPickerPageComponent', () => {
     expect(firstTeam[0].getAttribute('aria-pressed')).toBe('false');
     expect(firstTeam[1].getAttribute('aria-pressed')).toBe('true');
     expect(secondTeam[0].getAttribute('aria-pressed')).toBe('true');
+    const carriers = [firstTeam[1], secondTeam[0]].map(carrier => carrier.closest('li')?.querySelector('.player-name')?.textContent?.trim());
 
     await press(harness, element, '.shuffle-again');
-    expect(teamButtons().flat().every(candidate => candidate.getAttribute('aria-pressed') === 'false')).toBe(true);
+    expect(markedInTeams(element).map(team => team.length)).toEqual([1, 1]);
+    expect(markedInTeams(element).flat().sort()).toEqual(carriers.sort());
+  });
+
+  it('marks up to two ticked players as flag carriers before the shuffle, and puts one on each team', async () => {
+    const { harness, element } = await openPage('/rated-bg-picker');
+    await tick(harness, element, 20);
+    const rosterButtons = () => [...element.querySelectorAll<HTMLButtonElement>('.roster .flag-carrier')];
+    expect(rosterButtons()).toHaveLength(20);
+
+    rosterButtons()[0].click();
+    rosterButtons()[1].click();
+    harness.detectChanges();
+    await harness.fixture.whenStable();
+    expect(rosterButtons().map(carrier => carrier.getAttribute('aria-pressed')).filter(pressed => pressed === 'true')).toHaveLength(2);
+    expect(rosterButtons().slice(2).every(carrier => carrier.disabled)).toBe(true);
+    const carriers = rosterButtons().slice(0, 2).map(carrier => carrier.closest('li')?.querySelector('.player-name')?.textContent?.trim());
+
+    await press(harness, element, '.shuffle');
+
+    expect(markedInTeams(element).map(team => team.length)).toEqual([1, 1]);
+    expect(markedInTeams(element).flat().sort()).toEqual(carriers.sort());
+    expect(rosterButtons().every(carrier => carrier.disabled)).toBe(true);
+
+    await press(harness, element, '.change-players');
+    expect(rosterButtons().filter(carrier => carrier.getAttribute('aria-pressed') === 'true')).toHaveLength(2);
+  });
+
+  it('offers no flag carrier button on an unticked player, and drops the mark when the player is unticked', async () => {
+    const { harness, element } = await openPage('/rated-bg-picker');
+    await tick(harness, element, 1);
+    const firstRow = () => element.querySelector('.roster li');
+    expect(element.querySelectorAll('.roster .flag-carrier')).toHaveLength(1);
+
+    firstRow()?.querySelector<HTMLButtonElement>('.flag-carrier')?.click();
+    harness.detectChanges();
+    await harness.fixture.whenStable();
+    expect(firstRow()?.querySelector('.flag-carrier')?.getAttribute('aria-pressed')).toBe('true');
+
+    await tick(harness, element, 1);
+    expect(element.querySelectorAll('.roster .flag-carrier')).toHaveLength(0);
+
+    await tick(harness, element, 1);
+    expect(firstRow()?.querySelector('.flag-carrier')?.getAttribute('aria-pressed')).toBe('false');
   });
 
   it('opens a shared link on its teams, with their players ticked and the ticks locked', async () => {
@@ -276,13 +327,17 @@ describe('RatedBgPickerPageComponent', () => {
     expect(location.path()).toBe('/rated-bg-picker');
   });
 
-  it('Clear unticks everyone', async () => {
+  it('Clear unticks everyone and drops the flag carrier marks', async () => {
     const { harness, element } = await openPage('/rated-bg-picker');
     await tick(harness, element, 5);
     expect(checkboxes(element).filter(box => box.checked)).toHaveLength(5);
+    await press(harness, element, '.roster .flag-carrier');
+    expect(element.querySelectorAll('.roster .flag-carrier[aria-pressed="true"]')).toHaveLength(1);
 
     await press(harness, element, '.clear');
 
     expect(checkboxes(element).filter(box => box.checked)).toHaveLength(0);
+    await tick(harness, element, 5);
+    expect(element.querySelectorAll('.roster .flag-carrier[aria-pressed="true"]')).toHaveLength(0);
   });
 });
