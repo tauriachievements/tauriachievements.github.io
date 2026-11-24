@@ -31,23 +31,7 @@ $second-team-color: #e5484d;
   box-shadow: 0 18px 50px rgba(0, 0, 0, 0.45);
 }
 
-.picker-intro {
-  padding: 16px 20px;
-
-  h1 {
-    margin: 0 0 6px;
-    color: $gold;
-    font-size: 1.35rem;
-  }
-
-  p {
-    max-width: 62ch;
-    margin: 0;
-    color: #c9c3b4;
-    font-size: 0.9rem;
-    line-height: 1.5;
-  }
-}
+@include visually-hidden;
 
 .stale-link {
   margin: 0;
@@ -235,8 +219,6 @@ $second-team-color: #e5484d;
     width: calc(100% - 20px);
     padding-top: 40px;
   }
-
-  .picker-intro { padding: 14px; }
 
   .teams {
     grid-template-columns: minmax(0, 1fr);

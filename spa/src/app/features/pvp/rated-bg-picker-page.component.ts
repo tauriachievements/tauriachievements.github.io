@@ -24,7 +24,6 @@ import {
   RATED_BG_ROSTER_FILE,
   RatedBgRosterFile,
   RosterPlayer,
-  TEAM_SIZE,
   Teams,
   parseTeams,
   rosterPlayers,
@@ -51,7 +50,6 @@ export class RatedBgPickerPageComponent implements OnInit {
   private readonly teamsSection = viewChild<ElementRef<HTMLElement>>('teamsSection');
 
   readonly pickCount = PICK_COUNT;
-  readonly teamSize = TEAM_SIZE;
   readonly isLoading = signal(true);
   readonly loadError = signal<string | undefined>(undefined);
   readonly players = signal<readonly RosterPlayer[]>([]);
