@@ -1,15 +1,18 @@
 import { describe, expect, it } from 'vitest';
 import {
+  BenchHistory,
   COMPOSITION_CHOICES,
   DEFAULT_COMPOSITION,
   FLAG_CARRIER_COUNT,
   MATCH_SIZE,
+  MatchResult,
   NO_BENCH_HISTORY,
   RatedBgRosterEntry,
   RatedBgRosterFile,
   RosterGroup,
   RosterPlayer,
   TEAM_SIZE,
+  TeamComposition,
   Teams,
   canShuffle,
   compositionOf,
@@ -114,6 +117,44 @@ function expectEvenSplit(players: readonly RosterPlayer[], teams: readonly (read
     }
   }
 }
+
+const SCREENSHOT_HEALERS: RatedBgRosterEntry[] = [
+  entry('Lakmir', { class: 10, spec: 'Mistweaver' }),
+  entry('Widuxgodx', { class: 10, spec: 'Mistweaver' }),
+  entry('Shake', { class: 2, spec: 'Holy' }),
+  entry('Lythus', { class: 2, spec: 'Holy' }),
+  entry('Holyrose', { class: 2, spec: 'Holy' }),
+  entry('Spuky', { class: 7, spec: 'Restoration' }),
+  entry('Yodadru', { class: 11, spec: 'Restoration' }),
+  entry('Wxz', { class: 11, spec: 'Restoration' }),
+  entry('Quro', { class: 5, spec: 'Holy' }),
+  entry('Llýnch', { class: 5, spec: 'Holy' })
+];
+
+const SCREENSHOT_HUNTERS: RatedBgRosterEntry[] = ['Bomboclats', 'Maviellian', 'Nimphel', 'Lyantha']
+  .map(name => entry(name, { class: 3, spec: 'Marksmanship' }));
+
+const SCREENSHOT_OTHER_RANGED: RatedBgRosterEntry[] = [
+  entry('Sósa', { class: 8, spec: 'Frost' }),
+  entry('Doelen', { class: 5, spec: 'Shadow' }),
+  entry('Xyhop', { class: 5, spec: 'Shadow' }),
+  entry('Dnx', { class: 9, spec: 'Affliction' })
+];
+
+const SCREENSHOT_MELEE: RatedBgRosterEntry[] = [
+  entry('Majä', { class: 10, spec: 'Windwalker' }),
+  entry('Zsozé', { class: 10, spec: 'Brewmaster' }),
+  entry('Solaureus', { class: 2, spec: 'Retribution' }),
+  entry('Trelhy', { class: 4, spec: 'Assassination' }),
+  entry('Ticho', { class: 4, spec: 'Subtlety' }),
+  entry('Morron', { class: 1, spec: 'Arms' }),
+  entry('Zowy', { class: 1, spec: 'Fury' }),
+  entry('Rcodio', { class: 6, spec: 'Unholy' }),
+  entry('Allisa', { class: 6, spec: 'Unholy' }),
+  entry('Dkügli', { class: 6, spec: 'Unholy' }),
+  entry('Zerololq', { class: 6, spec: 'Frost' }),
+  entry('Cicámqu', { class: 11, spec: 'Feral' })
+];
 
 const groupNames = (group: RosterGroup) =>
   group.classes.flatMap(rosterClass => rosterClass.players.map(player => player.name));
@@ -593,7 +634,112 @@ describe('playMatch', () => {
     }
   });
 
-  it('rotates the bench, so nobody sits out twice before everyone in their group has once', () => {
+  function playMatches(
+    picked: readonly RosterPlayer[],
+    composition: TeamComposition,
+    seed: number,
+    count: number,
+    history = NO_BENCH_HISTORY
+  ): MatchResult[] {
+    const results: MatchResult[] = [];
+    for (let match = 0; match < count; match++) {
+      const result = playMatch(picked, composition, results.at(-1)?.history ?? history, noFlagCarriers, seeded(seed * 100 + match));
+      results.push(result);
+    }
+    return results;
+  }
+
+  const groupOf = (player: RosterPlayer) => teamGroups([player])[0].id;
+
+  const classCount = (team: readonly RosterPlayer[], group: string, classId: number) =>
+    team.filter(player => groupOf(player) === group && player.classId === classId).length;
+
+  it('never splits the four hunters 2–1: when one hunter sits out, a second does too', () => {
+    const picked = rosterPlayers(roster([...SCREENSHOT_HEALERS, ...SCREENSHOT_HUNTERS, ...SCREENSHOT_OTHER_RANGED, ...SCREENSHOT_MELEE]));
+    const classesWithSecondPlayer = (['ranged', 'melee'] as const).flatMap(group => {
+      const classIds = picked.filter(player => groupOf(player) === group).map(player => player.classId);
+      return [...new Set(classIds.filter((classId, index) => classIds.indexOf(classId) !== index))]
+        .map(classId => ({ group, classId }));
+    });
+
+    for (let seed = 0; seed < 20; seed++) {
+      for (const { match } of playMatches(picked, { healers: 3, ranged: 3, melee: 4 }, seed, 12)) {
+        for (const { group, classId } of classesWithSecondPlayer) {
+          const [first, second] = match.teams.map(team => classCount(team, group, classId));
+          expect({ group, classId, first }).toEqual({ group, classId, first: second });
+        }
+      }
+    }
+  });
+
+  it('plays two of three hunters, one on each team, and benches the third, every match', () => {
+    const picked = rosterPlayers(roster([
+      ...SCREENSHOT_HEALERS.slice(0, 6),
+      ...SCREENSHOT_HUNTERS.slice(0, 3),
+      ...SCREENSHOT_OTHER_RANGED,
+      ...SCREENSHOT_MELEE.slice(0, 8)
+    ]));
+
+    for (let seed = 0; seed < 10; seed++) {
+      for (const { match } of playMatches(picked, { healers: 3, ranged: 3, melee: 4 }, seed, 12)) {
+        expect(match.teams.map(team => classCount(team, 'ranged', 3))).toEqual([1, 1]);
+        expect(match.bench.map(player => player.classId)).toEqual([3]);
+      }
+    }
+  });
+
+  it('splits a class 1–0 rather than 2–1 when the bench cannot keep every class even', () => {
+    const picked = rosterPlayers(roster([
+      entry('Spuky', { class: 7, spec: 'Restoration' }),
+      ...SCREENSHOT_HEALERS.filter(({ class: classId }) => classId === 2 || classId === 5),
+      ...SCREENSHOT_HUNTERS, ...SCREENSHOT_OTHER_RANGED,
+      ...SCREENSHOT_MELEE.slice(0, 8)
+    ]));
+    const spukySatOut: BenchHistory = {
+      sitOuts: new Map([['Spuky-Evermoon', 1]]),
+      lastMatch: new Set(picked.filter(player => player.name !== 'Spuky').map(player => player.key)),
+      sitOutStreaks: new Map([['Spuky-Evermoon', 1]])
+    };
+
+    for (let seed = 0; seed < 40; seed++) {
+      const { match } = playMatch(picked, DEFAULT_COMPOSITION, spukySatOut, noFlagCarriers, seeded(seed));
+
+      expect(namesOf(match.bench)).not.toContain('Spuky');
+      expect(match.teams.map(team => classCount(team, 'healers', 2))).not.toContain(2);
+    }
+  });
+
+  it('never benches anyone two matches in a row to even a class, so a lone class still plays every other match', () => {
+    const picked = rosterPlayers(roster([...SCREENSHOT_HEALERS, ...SCREENSHOT_HUNTERS, ...SCREENSHOT_OTHER_RANGED, ...SCREENSHOT_MELEE]));
+
+    for (let seed = 0; seed < 20; seed++) {
+      const results = playMatches(picked, { healers: 3, ranged: 3, melee: 4 }, seed, 12);
+      results.slice(1).forEach(({ match }, index) => {
+        const lastBench = keysOf(results[index].match.bench);
+        expect(match.bench.filter(player => lastBench.includes(player.key))).toEqual([]);
+      });
+      expect(results.filter(({ match }) => !namesOf(match.bench).includes('Spuky')).length).toBeGreaterThanOrEqual(6);
+    }
+  });
+
+  it('plays the longest-benched first when most of a group sits out, so a lone class still takes its turns', () => {
+    const picked = rosterPlayers(roster([
+      ...SCREENSHOT_HEALERS.filter(({ class: classId }) => classId !== 11),
+      ...SCREENSHOT_HUNTERS, ...SCREENSHOT_OTHER_RANGED,
+      ...SCREENSHOT_MELEE.slice(0, 10)
+    ]));
+
+    for (let seed = 0; seed < 20; seed++) {
+      const results = playMatches(picked, { healers: 1, ranged: 4, melee: 5 }, seed, 12);
+      const plays = (name: string) => results.filter(({ match }) => !namesOf(match.bench).includes(name)).length;
+
+      for (const name of ['Spuky', 'Shake', 'Quro', 'Lakmir']) {
+        expect({ name, plays: plays(name) >= 2 }).toEqual({ name, plays: true });
+      }
+    }
+  });
+
+  it('rotates the bench of a one-class group, so nobody sits out twice before everyone in it has once', () => {
     const picked = ticked(4, 8, 11);
     const melee = picked.filter(player => player.name.startsWith('Melee'));
 
