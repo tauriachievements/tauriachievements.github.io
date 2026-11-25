@@ -173,10 +173,10 @@ export function markTeamFlagCarrier(
 export interface BenchHistory {
   readonly sitOuts: ReadonlyMap<string, number>;
   readonly lastMatch: ReadonlySet<string>;
-  readonly lastBench: ReadonlySet<string>;
+  readonly sitOutStreaks: ReadonlyMap<string, number>;
 }
 
-export const NO_BENCH_HISTORY: BenchHistory = { sitOuts: new Map(), lastMatch: new Set(), lastBench: new Set() };
+export const NO_BENCH_HISTORY: BenchHistory = { sitOuts: new Map(), lastMatch: new Set(), sitOutStreaks: new Map() };
 
 export interface Match {
   readonly teams: Teams;
@@ -210,7 +210,7 @@ export function playMatch(
     match: {
       teams: shuffleTeams(playing, random, flagCarriers),
       bench: inTeamOrder(bench),
-      backFromBench: new Set(playing.filter(player => history.lastBench.has(player.key)).map(player => player.key))
+      backFromBench: new Set(playing.filter(player => history.sitOutStreaks.has(player.key)).map(player => player.key))
     },
     history: {
       sitOuts: new Map([
@@ -218,7 +218,7 @@ export function playMatch(
         ...bench.map(player => [player.key, sitOutsOf(history, player) + 1] as const)
       ]),
       lastMatch: new Set(playing.map(player => player.key)),
-      lastBench: benchKeys
+      sitOutStreaks: new Map(bench.map(player => [player.key, sitOutStreakOf(history, player) + 1]))
     }
   };
 }
@@ -249,14 +249,118 @@ function benchFrom(
   flagCarriers: ReadonlySet<string>,
   random: () => number
 ): RosterPlayer[] {
-  const missedLastMatch = (player: RosterPlayer) => Number(!history.lastMatch.has(player.key));
-  return shuffled(group.filter(player => !flagCarriers.has(player.key)), random)
-    .sort((a, b) => sitOutsOf(history, a) - sitOutsOf(history, b) || missedLastMatch(a) - missedLastMatch(b))
-    .slice(0, Math.max(0, group.length - playing));
+  const seats = Math.max(0, group.length - playing);
+  const classSizes = classSizesOf(group);
+  const candidates = shuffled(group.filter(player => !flagCarriers.has(player.key)), random)
+    .sort((a, b) => compareCosts(sitOutCost(history, a), sitOutCost(history, b)));
+  const least = leastBenchCost(classSizes, [], candidates, seats, history);
+  const bench: RosterPlayer[] = [];
+
+  candidates.forEach((player, index) => {
+    const rest = candidates.slice(index + 1);
+    if (bench.length < seats && sameCost(leastBenchCost(classSizes, [...bench, player], rest, seats, history), least)) {
+      bench.push(player);
+    }
+  });
+  return bench;
+}
+
+type BenchCost = readonly [
+  sitOutStreaks: number,
+  stackedSplits: number,
+  oneSidedSplits: number,
+  sitOuts: number,
+  missedLastMatch: number
+];
+
+const NO_COST: BenchCost = [0, 0, 0, 0, 0];
+const STACKED_SPLIT: BenchCost = [0, 1, 0, 0, 0];
+const ONE_SIDED_SPLIT: BenchCost = [0, 0, 1, 0, 0];
+
+function leastBenchCost(
+  classSizes: ReadonlyMap<string, number>,
+  bench: readonly RosterPlayer[],
+  rest: readonly RosterPlayer[],
+  seats: number,
+  history: BenchHistory
+): BenchCost | undefined {
+  const toFill = seats - bench.length;
+  let least: (BenchCost | undefined)[] = [NO_COST];
+
+  for (const [classKey, size] of classSizes) {
+    const benched = bench.filter(player => classKeyOf(player) === classKey);
+    const choices = rest.filter(player => classKeyOf(player) === classKey);
+    const options = Array.from({ length: choices.length + 1 }, (_, extra) => {
+      const sitting = [...benched, ...choices.slice(0, extra)];
+      return sitting.reduce((sum, player) => addCosts(sum, sitOutCost(history, player)), splitCost(size, size - sitting.length));
+    });
+    least = cheapestCombinations(least, options, toFill);
+  }
+  return toFill < 0 ? undefined : least[toFill];
+}
+
+function cheapestCombinations(
+  least: readonly (BenchCost | undefined)[],
+  options: readonly BenchCost[],
+  limit: number
+): (BenchCost | undefined)[] {
+  const next: (BenchCost | undefined)[] = [];
+  least.forEach((cost, filled) => {
+    options.forEach((option, extra) => {
+      const current = next[filled + extra];
+      const combined = cost && filled + extra <= limit ? addCosts(cost, option) : undefined;
+      if (combined && (!current || compareCosts(combined, current) < 0)) {
+        next[filled + extra] = combined;
+      }
+    });
+  });
+  return next;
+}
+
+function sitOutCost(history: BenchHistory, player: RosterPlayer): BenchCost {
+  return [
+    sitOutStreakOf(history, player),
+    0,
+    0,
+    sitOutsOf(history, player),
+    Number(!history.lastMatch.has(player.key))
+  ];
+}
+
+function splitCost(classSize: number, playing: number): BenchCost {
+  if (classSize < 2 || playing % 2 === 0) {
+    return NO_COST;
+  }
+  return playing === 1 ? ONE_SIDED_SPLIT : STACKED_SPLIT;
+}
+
+function addCosts(a: BenchCost, b: BenchCost): BenchCost {
+  return [a[0] + b[0], a[1] + b[1], a[2] + b[2], a[3] + b[3], a[4] + b[4]];
+}
+
+function compareCosts(a: BenchCost, b: BenchCost): number {
+  const index = a.findIndex((value, position) => value !== b[position]);
+  return index === -1 ? 0 : a[index] - b[index];
+}
+
+function sameCost(a: BenchCost | undefined, b: BenchCost | undefined): boolean {
+  return a === undefined || b === undefined ? a === b : compareCosts(a, b) === 0;
+}
+
+function classSizesOf(players: readonly RosterPlayer[]): Map<string, number> {
+  const sizes = new Map<string, number>();
+  for (const player of players) {
+    sizes.set(classKeyOf(player), (sizes.get(classKeyOf(player)) ?? 0) + 1);
+  }
+  return sizes;
 }
 
 function sitOutsOf(history: BenchHistory, player: RosterPlayer): number {
   return history.sitOuts.get(player.key) ?? 0;
+}
+
+function sitOutStreakOf(history: BenchHistory, player: RosterPlayer): number {
+  return history.sitOutStreaks.get(player.key) ?? 0;
 }
 
 function balancedTeams(players: readonly RosterPlayer[], random: () => number): Teams {
@@ -386,9 +490,13 @@ function classOrder(classId: number): number {
 
 type SplitKey = (player: RosterPlayer) => string;
 
+function classKeyOf(player: RosterPlayer): string {
+  return player.classId ? `${player.classId}` : `unknown:${player.key}`;
+}
+
 const GROUP_THEN_CLASS_THEN_SPEC: readonly SplitKey[] = [
   rosterGroupOf,
-  player => player.classId ? `${player.classId}` : `unknown:${player.key}`,
+  classKeyOf,
   player => player.spec ?? `unknown:${player.key}`
 ];
 

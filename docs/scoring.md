@@ -813,17 +813,28 @@ puts everyone else on the bench, taking turns from match to match.
   ranged". With nobody ticked it only checks the 10. Once Shuffle is on, the bar says how many
   will sit out: "24 ticked · 4 on the bench".
 - **Each team gets exactly the healers, ranged and melee the dropdowns ask for, and the rest of the
-  ticked players sit out.** In each group, who sits out is decided in this order:
+  ticked players sit out.** In each group, the bench is the one that does best on these, in this
+  order:
   1. a marked flag carrier always plays;
-  2. whoever has sat out the fewest matches so far sits out first;
-  3. between two who have sat out as often, one who played the last match sits out before one
-     who didn't (who sat it out, or was ticked after it);
-  4. the rest is random.
+  2. the fewest matches sat out in a row, added up over the bench: a player who played the last
+     match counts 0, one who sat it out counts how many matches in a row they have sat out;
+  3. each class with a second ticked player in the group plays an even number, so both teams get
+     the same count of it: rather than split 3 Hunters 2–1, the third sits out. Where that can't
+     hold for every class, as few classes as possible split 2–1 (or 3–2 and so on), then as few
+     as possible 1–0;
+  4. the fewest matches sat out so far, added up over the bench;
+  5. the most players on the bench who played the last match (not ticked after it);
+  6. the rest is random.
 
-  So the last match's bench plays the next one whenever its group has enough others to sit out,
-  and nobody in a group sits out twice before everyone in it has sat out once. When more than half
-  of a group sits out, some sit out two matches in a row. The page keeps the count while it is
-  open: Change players keeps it, and Clear and a reload start it again.
+  So the last match's bench plays the next one whenever its group has enough others to sit out.
+  The even class split comes before taking turns fairly: with 3 Hunters and one ranged player to
+  bench, a Hunter sits out every match and the other ranged never do. A class with one player in
+  its group still plays, and when that leaves the other classes an odd number of seats (a lone
+  Restoration Shaman among 10 healers, 6 of them playing), one class splits 1–0 or, now and then,
+  2–1. When more than half of a group sits out, some sit out two matches in a row; those who have
+  sat out the most in a row play first, and the class split only chooses between equal runs. The
+  page keeps the counts while it is open: Change players keeps them, and Clear and a reload start
+  them again.
 - The bench shows under the two teams, in the teams' order: healers, ranged, then melee, each
   class by class, with a grey bench icon after each name and in its heading. After the next
   shuffle, each player back from the bench has a green stripe beside their row and a green return
@@ -834,8 +845,8 @@ puts everyone else on the bench, taking turns from match to match.
   spec within its class.** Healers, ranged and melee are split separately, each class by class. So
   4 Death Knights split 2 and 2, and an Arms and a Fury Warrior one each; 3 Unholy and 1 Frost
   Death Knight become Unholy + Frost against 2 Unholy. A tank counts with its class among the
-  melee. Which team gets the extra player of an odd-sized class or spec, and who plays on which
-  side, is random. A character without a known spec is split with its class; one the armory
+  melee. The bench (above) leaves an odd number of a class playing only where it has to. Which team
+  gets the extra player of an odd-sized class or spec, and who plays on which side, is random. A character without a known spec is split with its class; one the armory
   doesn't know stays random. Item level is not balanced, and neither is a class across groups: a
   Restoration and a Feral Druid, or an Elemental and an Enhancement Shaman, can land on the same
   team.
