@@ -463,7 +463,8 @@ skipped, and so is a trailing comma.
 A player's main spec can follow the realm after another dash, in any case
 (`Llýnch-Evermoon-Holy`, `Rexxar-Tauri-Beast Mastery`). Name one when a player plays a spec whose
 artifact has fewer traits than another of theirs: without it the roster takes the artifact with
-the most traits.
+the most traits. A character who plays more than one spec gets a line per spec, each naming its
+spec (`Keilalt-Tauri-Vengeance` and `Keilalt-Tauri-Havoc`), and the page shows a row per spec.
 
 To change the list, edit the file and run `api/Run-RatedBgRoster.cmd`. It runs
 RatedBgRosterExporter, then commits the list and the roster file together as
@@ -471,10 +472,11 @@ RatedBgRosterExporter, then commits the list and the roster file together as
 added to the list shows on the page only after that run.
 
 - RatedBgRosterExporter reads the list before it calls the API, and stops on a line that isn't
-  `Name-Realm` or `Name-Realm-Spec`, on a character listed twice (whatever spec each line
-  names), or on a list with nobody on it, naming the lines.
-- It makes one `character-artifact` request per character, all at once through
-  `ITauriApiClient`: that response also carries the character sheet's fields
+  `Name-Realm` or `Name-Realm-Spec`, on a character listed twice for the same spec, on a
+  character listed more than once with a line that names no spec, or on a list with nobody on it,
+  naming the lines.
+- It makes one `character-artifact` request per character, however many lines name it, all at
+  once through `ITauriApiClient`: that response also carries the character sheet's fields
   ([tauri-api.md](tauri-api.md#characters-and-guilds)).
 - **All or nothing:** when any character can't be read, or has no artifact of the spec the list
   names for them (a typo, say), it writes nothing, names them, and exits with 1, so the cmd
@@ -487,7 +489,9 @@ added to the list shows on the page only after that run.
   "players": [{ name, realm, race, gender, class, spec, traits, itemLevel }, ...] }
 ```
 
-One player per line, in the list's order, LF. `name` is the name as the armory spells it
+One player per line, LF, in the list's order, except that a character's lines are written together
+where it is first listed. A character listed for two specs is two players with the same `name` and
+`realm`; one the armory doesn't know is written once, however many lines name it. `name` is the name as the armory spells it
 (`bomboclats` in the list becomes `Bomboclats`). `spec` is the main spec the list names, else the
 spec of the artifact with the most traits, else the active spec, and `traits` that spec's
 artifact's count, spelled as the roster spells specs (`holy` in the list becomes `Holy`). Without

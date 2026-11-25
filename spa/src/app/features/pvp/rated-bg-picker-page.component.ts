@@ -168,7 +168,7 @@ export class RatedBgPickerPageComponent implements OnInit {
       return;
     }
 
-    this.picked.update(picked => togglePick(picked, player.key));
+    this.picked.update(picked => togglePick(picked, player, this.players()));
     this.flagCarriers.update(flagCarriers => tickedFlagCarriers(flagCarriers, this.picked()));
   }
 

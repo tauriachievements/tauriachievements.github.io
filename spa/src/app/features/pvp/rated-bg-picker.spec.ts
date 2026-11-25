@@ -170,6 +170,20 @@ describe('rosterPlayers', () => {
     expect(rosterPlayers(roster([entry('Morron', { realm: 'Tauri' })]))[0].key).toBe('Morron-Tauri');
   });
 
+  it('keys a character listed for more than one spec by name, realm and spec, one row per spec', () => {
+    const players = rosterPlayers(roster([
+      entry('Keilalt', { realm: 'Tauri', class: 12, spec: 'Vengeance' }),
+      entry('Morron', { realm: 'Tauri' }),
+      entry('Keilalt', { realm: 'Tauri', class: 12, spec: 'Havoc' })
+    ]));
+
+    expect(players.map(player => [player.key, player.character, player.role])).toEqual([
+      ['Keilalt-Tauri-Vengeance', 'Keilalt-Tauri', 'tank'],
+      ['Keilalt-Tauri-Havoc', 'Keilalt-Tauri', 'dps'],
+      ['Morron-Tauri', 'Morron-Tauri', 'dps']
+    ]);
+  });
+
   it("gives each player the role and range of its spec", () => {
     const players = rosterPlayers(roster([
       entry('Lythus', { class: 2, spec: 'Holy' }),
@@ -332,17 +346,32 @@ describe('shuffleWarning and canShuffle', () => {
 
 describe('togglePick', () => {
   it('ticks a player and unticks a ticked one', () => {
-    const ticked = togglePick(new Set(), 'Xyhop-Evermoon');
+    const players = rosterPlayers(roster([entry('Xyhop')]));
+    const ticked = togglePick(new Set(), players[0], players);
 
     expect([...ticked]).toEqual(['Xyhop-Evermoon']);
-    expect([...togglePick(ticked, 'Xyhop-Evermoon')]).toEqual([]);
+    expect([...togglePick(ticked, players[0], players)]).toEqual([]);
   });
 
   it('ticks any number of players', () => {
-    const many = new Set(Array.from({ length: 30 }, (_, index) => `Player${index}-Evermoon`));
+    const players = rosterPlayers(roster(Array.from({ length: 31 }, (_, index) => entry(`Player${index}`))));
+    const many = new Set(players.slice(0, 30).map(player => player.key));
 
-    expect(togglePick(many, 'Extra-Evermoon').size).toBe(31);
-    expect(togglePick(many, 'Player0-Evermoon').size).toBe(29);
+    expect(togglePick(many, players[30], players).size).toBe(31);
+    expect(togglePick(many, players[0], players).size).toBe(29);
+  });
+
+  it('ticks one spec of a character at a time: ticking another spec unticks the first', () => {
+    const players = rosterPlayers(roster([
+      entry('Keilalt', { realm: 'Tauri', class: 12, spec: 'Vengeance' }),
+      entry('Keilalt', { realm: 'Tauri', class: 12, spec: 'Havoc' }),
+      entry('Xyhop', { class: 5, spec: 'Shadow' })
+    ]));
+    const [vengeance, havoc, xyhop] = players;
+    const switched = togglePick(togglePick(togglePick(new Set(), vengeance, players), xyhop, players), havoc, players);
+
+    expect([...switched].sort()).toEqual(['Keilalt-Tauri-Havoc', 'Xyhop-Evermoon']);
+    expect([...togglePick(switched, havoc, players)]).toEqual(['Xyhop-Evermoon']);
   });
 });
 
@@ -762,6 +791,27 @@ describe('playMatch', () => {
     }
   });
 
+  it('keeps the turns of a player who switches spec: benched as Havoc, they play the next match as Vengeance', () => {
+    const players = rosterPlayers(roster([
+      ...Array.from({ length: 4 }, (_, index) => entry(`Healer${index}`, { class: 5, spec: 'Holy' })),
+      ...Array.from({ length: 8 }, (_, index) => entry(`Ranged${index}`, { class: 8, spec: 'Fire' })),
+      ...Array.from({ length: 8 }, (_, index) => entry(`Melee${index}`)),
+      entry('Keilalt', { realm: 'Tauri', class: 12, spec: 'Havoc' }),
+      entry('Keilalt', { realm: 'Tauri', class: 12, spec: 'Vengeance' })
+    ]));
+    const asHavoc = players.filter(player => player.key !== 'Keilalt-Tauri-Vengeance');
+    const asVengeance = players.filter(player => player.key !== 'Keilalt-Tauri-Havoc');
+
+    for (let seed = 0; seed < 10; seed++) {
+      const first = play(asHavoc, NO_BENCH_HISTORY, seed);
+      const second = play(asVengeance, first.history, seed + 100);
+
+      expect(keysOf(first.match.bench)).toEqual(['Keilalt-Tauri-Havoc']);
+      expect(keysOf(second.match.bench)).not.toContain('Keilalt-Tauri-Vengeance');
+      expect([...second.match.backFromBench]).toEqual(['Keilalt-Tauri-Vengeance']);
+    }
+  });
+
   it('plays a player ticked since the last match before those who played it', () => {
     const everyone = ticked(4, 8, 11);
     const first = play(everyone.filter(player => player.name !== 'Melee10'), NO_BENCH_HISTORY, 3);
@@ -866,6 +916,22 @@ describe('teamsParams and parseTeams', () => {
     expect(parseTeams([...a.slice(1), 'Gone-Evermoon'].join(','), b.join(','), players)).toBeUndefined();
     expect(parseTeams([...a.slice(1), b[0]].join(','), b.join(','), players)).toBeUndefined();
     expect(parseTeams([...a.slice(1), a[1]].join(','), b.join(','), players)).toBeUndefined();
+  });
+});
+
+describe('parseTeams with a character listed for two specs', () => {
+  it('ignores a link that puts one character on the field twice', () => {
+    const players = rosterPlayers(roster([
+      ...Array.from({ length: 19 }, (_, index) => entry(`Player${index}`)),
+      entry('Keilalt', { realm: 'Tauri', class: 12, spec: 'Vengeance' }),
+      entry('Keilalt', { realm: 'Tauri', class: 12, spec: 'Havoc' })
+    ]));
+    const others = players.filter(player => player.character !== 'Keilalt-Tauri').map(player => player.key);
+    const a = [...others.slice(0, 9), 'Keilalt-Tauri-Vengeance'].join(',');
+
+    expect(parseTeams(a, [...others.slice(9, 18), 'Keilalt-Tauri-Havoc'].join(','), players)).toBeUndefined();
+    expect(parseTeams(a, others.slice(9, 19).join(','), players)?.[0].map(player => player.key))
+      .toContain('Keilalt-Tauri-Vengeance');
   });
 });
 

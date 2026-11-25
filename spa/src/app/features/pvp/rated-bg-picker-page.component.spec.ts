@@ -195,6 +195,26 @@ describe('RatedBgPickerPageComponent', () => {
     expect(button(element, '.shuffle')?.disabled).toBe(false);
   });
 
+  it("unticks a character's other spec when one of their specs is ticked", async () => {
+    const solaureus = { name: 'Solaureus', realm: 'Evermoon', race: 1, gender: 0, class: 2, traits: 37, itemLevel: 879 };
+    const { harness, element } = await openPage('/rated-bg-picker', {
+      version: 1,
+      generatedAt: '2026-11-24T12:29:26Z',
+      players: [{ ...solaureus, spec: 'Retribution' }, { ...solaureus, spec: 'Holy' }]
+    });
+    const [retribution, holy] = checkboxes(element);
+
+    retribution.click();
+    harness.detectChanges();
+    await harness.fixture.whenStable();
+    holy.click();
+    harness.detectChanges();
+    await harness.fixture.whenStable();
+
+    expect(checkboxes(element).map(box => box.checked)).toEqual([false, true]);
+    expect(barText(element)).toMatch(/^1 ticked/);
+  });
+
   it('shuffles only when the healers, ranged and melee per team add up to 10, and fills each team that way', async () => {
     const { harness, element } = await openPage('/rated-bg-picker');
     await tick(harness, element, 24);

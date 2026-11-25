@@ -15,7 +15,8 @@ internal static class Program
         Reads AchievementLadder/Data/rated-bg-players.txt (one Name-Realm per line, kept by hand,
         optionally followed by the player's main spec: Llýnch-Evermoon-Holy) and writes each
         player's race, class, spec, artifact traits and item level to
-        spa/src/rated-bg-roster.json.
+        spa/src/rated-bg-roster.json. A character who plays more than one spec gets a line per
+        spec: Keilalt-Tauri-Vengeance and Keilalt-Tauri-Havoc.
 
         Options:
           --help   Show this help text.
@@ -65,7 +66,7 @@ internal static class Program
             var exporter = new RatedBgRosterExportService(outputDirectory, apiClient);
 
             Console.WriteLine(
-                $"Reading {characters.Count} characters from {RatedBgRosterList.FileName}..."
+                $"Reading {characters.DistinctBy(character => character.Label, StringComparer.OrdinalIgnoreCase).Count()} characters from {RatedBgRosterList.FileName}..."
             );
             var result = await exporter.ExportAsync(
                 characters,
