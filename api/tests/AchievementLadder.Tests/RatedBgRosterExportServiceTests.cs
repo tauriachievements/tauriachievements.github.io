@@ -85,13 +85,56 @@ public sealed class RatedBgRosterExportServiceTests : IDisposable
     }
 
     [Fact]
-    public void Parse_RejectsACharacterListedTwiceWithADifferentSpec()
+    public void Parse_ReadsACharacterOncePerSpecTheListNames()
+    {
+        var characters = RatedBgRosterList.Parse([
+            "Keilalt-Tauri-Vengeance",
+            "Xyhop-Evermoon",
+            "keilalt-tauri-Havoc",
+        ]);
+
+        Assert.Equal(
+            [
+                new RosterCharacter("Keilalt", "[HU] Tauri WoW Server", "Tauri", "Vengeance"),
+                new RosterCharacter("Xyhop", "[EN] Evermoon", "Evermoon"),
+                new RosterCharacter("keilalt", "[HU] Tauri WoW Server", "Tauri", "Havoc"),
+            ],
+            characters
+        );
+    }
+
+    [Fact]
+    public void Parse_RejectsACharacterListedTwiceForTheSameSpec()
     {
         var error = Assert.Throws<FormatException>(() =>
-            RatedBgRosterList.Parse(["Llýnch-Evermoon-Holy", "llýnch-evermoon-Discipline"])
+            RatedBgRosterList.Parse([
+                "Keilalt-Tauri-Havoc",
+                "Keilalt-Tauri-Vengeance",
+                "keilalt-tauri-havoc",
+            ])
         );
 
-        Assert.Contains("Line 2", error.Message);
+        Assert.DoesNotContain("Line 2", error.Message);
+        Assert.Contains("Line 3: keilalt-Tauri-havoc is already listed.", error.Message);
+    }
+
+    [Fact]
+    public void Parse_RejectsACharacterListedTwiceWhenALineNamesNoSpec()
+    {
+        var error = Assert.Throws<FormatException>(() =>
+            RatedBgRosterList.Parse([
+                "Keilalt-Tauri",
+                "Keilalt-Tauri-Havoc",
+                "Solaureus-Evermoon-Retribution",
+                "Solaureus-Evermoon",
+            ])
+        );
+
+        Assert.Contains(
+            "Line 2: Keilalt-Tauri is already listed. To list a character for more than one spec, name the spec on each of its lines",
+            error.Message
+        );
+        Assert.Contains("Line 4: Solaureus-Evermoon is already listed.", error.Message);
     }
 
     [Fact]
@@ -284,6 +327,87 @@ public sealed class RatedBgRosterExportServiceTests : IDisposable
         Assert.Contains("Llýnch-Evermoon", error.Message);
         Assert.Contains("no Holly artifact", error.Message);
         Assert.Equal("previous", await File.ReadAllTextAsync(outputPath));
+    }
+
+    [Fact]
+    public async Task ExportAsync_WritesAPlayerPerSpecTheListNamesFromOneRequest()
+    {
+        var apiClient = new FakeArtifactApiClient(
+            new Dictionary<string, object>
+            {
+                ["Keilalt"] = Character(
+                    "Keilalt",
+                    race: 4,
+                    gender: 1,
+                    @class: 12,
+                    itemLevel: 881,
+                    Artifact(128832, 37),
+                    Artifact(127829, 31)
+                ),
+            }
+        );
+
+        var result = await ExportAsync(
+            apiClient,
+            new RosterCharacter("Keilalt", "[HU] Tauri WoW Server", "Tauri", "Vengeance"),
+            new RosterCharacter("keilalt", "[HU] Tauri WoW Server", "Tauri", "havoc")
+        );
+
+        var players = await ReadPlayersAsync(result.OutputPath);
+        Assert.Equal(
+            [
+                """{"name":"Keilalt","realm":"Tauri","race":4,"gender":1,"class":12,"spec":"Vengeance","traits":37,"itemLevel":881}""",
+                """{"name":"Keilalt","realm":"Tauri","race":4,"gender":1,"class":12,"spec":"Havoc","traits":31,"itemLevel":881}""",
+            ],
+            players.Select(player => player.GetRawText())
+        );
+        Assert.Single(apiClient.Requests);
+    }
+
+    [Fact]
+    public async Task ExportAsync_WritesNothingWhenOneOfACharactersSpecsHasNoArtifact()
+    {
+        var apiClient = new FakeArtifactApiClient(
+            new Dictionary<string, object>
+            {
+                ["Keilalt"] = Character("Keilalt", 4, 1, 12, 881, Artifact(128832, 37)),
+            }
+        );
+
+        var error = await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            ExportAsync(
+                apiClient,
+                new RosterCharacter("Keilalt", "[HU] Tauri WoW Server", "Tauri", "Vengeance"),
+                new RosterCharacter("Keilalt", "[HU] Tauri WoW Server", "Tauri", "Havok")
+            )
+        );
+
+        Assert.Contains("Could not export 1 of 1 characters", error.Message);
+        Assert.Contains("Keilalt-Tauri (no Havok artifact", error.Message);
+        Assert.False(
+            File.Exists(Path.Combine(_outputDirectory, RatedBgRosterExportService.FileName))
+        );
+    }
+
+    [Fact]
+    public async Task ExportAsync_WritesACharacterTheArmoryDoesNotFindOnceWhateverSpecsTheListNames()
+    {
+        var apiClient = new FakeArtifactApiClient(
+            new Dictionary<string, object>(),
+            notFound: ["Typo"]
+        );
+
+        var result = await ExportAsync(
+            apiClient,
+            new RosterCharacter("Typo", "[EN] Evermoon", "Evermoon", "Holy"),
+            new RosterCharacter("Typo", "[EN] Evermoon", "Evermoon", "Retribution")
+        );
+
+        Assert.Equal(
+            ["""{"name":"Typo","realm":"Evermoon","notFound":true}"""],
+            (await ReadPlayersAsync(result.OutputPath)).Select(player => player.GetRawText())
+        );
+        Assert.Equal(["Typo"], result.NotFound.Select(player => player.Name));
     }
 
     [Fact]

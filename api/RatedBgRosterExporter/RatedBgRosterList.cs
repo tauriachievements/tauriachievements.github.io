@@ -7,7 +7,10 @@ public sealed record RosterCharacter(
     string ApiRealm,
     string DisplayRealm,
     string? MainSpec = null
-);
+)
+{
+    public string Label => $"{Name}-{DisplayRealm}";
+}
 
 public static class RatedBgRosterList
 {
@@ -16,7 +19,9 @@ public static class RatedBgRosterList
     public static IReadOnlyList<RosterCharacter> Parse(IReadOnlyList<string> lines)
     {
         var characters = new List<RosterCharacter>();
-        var listed = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        var specsByCharacter = new Dictionary<string, List<string?>>(
+            StringComparer.OrdinalIgnoreCase
+        );
         var errors = new List<string>();
 
         for (var index = 0; index < lines.Count; index++)
@@ -47,13 +52,14 @@ public static class RatedBgRosterList
                 continue;
             }
 
-            if (!listed.Add($"{name}-{displayRealm}"))
+            var character = new RosterCharacter(name, apiRealm, displayRealm, mainSpec);
+            if (DuplicateOf(character, specsByCharacter) is { } duplicate)
             {
-                errors.Add($"Line {index + 1}: {name}-{displayRealm} is already listed.");
+                errors.Add($"Line {index + 1}: {duplicate}");
                 continue;
             }
 
-            characters.Add(new RosterCharacter(name, apiRealm, displayRealm, mainSpec));
+            characters.Add(character);
         }
 
         if (errors.Count > 0)
@@ -67,5 +73,30 @@ public static class RatedBgRosterList
         }
 
         return characters;
+    }
+
+    private static string? DuplicateOf(
+        RosterCharacter character,
+        Dictionary<string, List<string?>> specsByCharacter
+    )
+    {
+        if (!specsByCharacter.TryGetValue(character.Label, out var specs))
+        {
+            specsByCharacter[character.Label] = [character.MainSpec];
+            return null;
+        }
+
+        if (character.MainSpec is not { } mainSpec || specs.Contains(null))
+        {
+            return $"{character.Label} is already listed. To list a character for more than one spec, name the spec on each of its lines: Name-Realm-Spec.";
+        }
+
+        if (specs.Contains(mainSpec, StringComparer.OrdinalIgnoreCase))
+        {
+            return $"{character.Label}-{mainSpec} is already listed.";
+        }
+
+        specs.Add(mainSpec);
+        return null;
     }
 }

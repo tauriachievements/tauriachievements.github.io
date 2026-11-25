@@ -29,6 +29,7 @@ export interface RatedBgRosterFile {
 
 export interface RosterPlayer {
   readonly key: string;
+  readonly character: string;
   readonly name: string;
   readonly realm: string;
   readonly found: boolean;
@@ -54,7 +55,12 @@ export function rosterPlayers(file: RatedBgRosterFile): RosterPlayer[] {
     throw new Error(`The player list is in format ${file.version}, and this page reads format ${RATED_BG_ROSTER_VERSION}.`);
   }
 
-  return file.players.map(toRosterPlayer).sort(byName);
+  const listings = new Map<string, number>();
+  for (const entry of file.players) {
+    listings.set(characterOf(entry), (listings.get(characterOf(entry)) ?? 0) + 1);
+  }
+
+  return file.players.map(entry => toRosterPlayer(entry, listings.get(characterOf(entry)) ?? 0)).sort(byName);
 }
 
 export type RosterGroupId = 'melee' | 'ranged' | 'healers';
@@ -145,8 +151,20 @@ export function compositionOf(teams: Teams): TeamComposition | undefined {
     : undefined;
 }
 
-export function togglePick(picked: ReadonlySet<string>, key: string): ReadonlySet<string> {
-  return toggleWithin(picked, key, Infinity);
+export function togglePick(
+  picked: ReadonlySet<string>,
+  player: RosterPlayer,
+  players: readonly RosterPlayer[]
+): ReadonlySet<string> {
+  const next = new Set(picked);
+  if (next.delete(player.key)) {
+    return next;
+  }
+
+  for (const otherSpec of players.filter(other => other.character === player.character)) {
+    next.delete(otherSpec.key);
+  }
+  return next.add(player.key);
 }
 
 export function toggleFlagCarrier(flagCarriers: ReadonlySet<string>, key: string): ReadonlySet<string> {
@@ -210,15 +228,15 @@ export function playMatch(
     match: {
       teams: shuffleTeams(playing, random, flagCarriers),
       bench: inTeamOrder(bench),
-      backFromBench: new Set(playing.filter(player => history.sitOutStreaks.has(player.key)).map(player => player.key))
+      backFromBench: new Set(playing.filter(player => history.sitOutStreaks.has(player.character)).map(player => player.key))
     },
     history: {
       sitOuts: new Map([
         ...history.sitOuts,
-        ...bench.map(player => [player.key, sitOutsOf(history, player) + 1] as const)
+        ...bench.map(player => [player.character, sitOutsOf(history, player) + 1] as const)
       ]),
-      lastMatch: new Set(playing.map(player => player.key)),
-      sitOutStreaks: new Map(bench.map(player => [player.key, sitOutStreakOf(history, player) + 1]))
+      lastMatch: new Set(playing.map(player => player.character)),
+      sitOutStreaks: new Map(bench.map(player => [player.character, sitOutStreakOf(history, player) + 1]))
     }
   };
 }
@@ -226,7 +244,7 @@ export function playMatch(
 export function linkedMatch(teams: Teams): MatchResult {
   return {
     match: { teams, bench: [], backFromBench: new Set() },
-    history: { ...NO_BENCH_HISTORY, lastMatch: new Set([...teams[0], ...teams[1]].map(player => player.key)) }
+    history: { ...NO_BENCH_HISTORY, lastMatch: new Set([...teams[0], ...teams[1]].map(player => player.character)) }
   };
 }
 
@@ -323,7 +341,7 @@ function sitOutCost(history: BenchHistory, player: RosterPlayer): BenchCost {
     0,
     0,
     sitOutsOf(history, player),
-    Number(!history.lastMatch.has(player.key))
+    Number(!history.lastMatch.has(player.character))
   ];
 }
 
@@ -356,11 +374,11 @@ function classSizesOf(players: readonly RosterPlayer[]): Map<string, number> {
 }
 
 function sitOutsOf(history: BenchHistory, player: RosterPlayer): number {
-  return history.sitOuts.get(player.key) ?? 0;
+  return history.sitOuts.get(player.character) ?? 0;
 }
 
 function sitOutStreakOf(history: BenchHistory, player: RosterPlayer): number {
-  return history.sitOutStreaks.get(player.key) ?? 0;
+  return history.sitOutStreaks.get(player.character) ?? 0;
 }
 
 function balancedTeams(players: readonly RosterPlayer[], random: () => number): Teams {
@@ -383,7 +401,7 @@ export function parseTeams(a: string | null, b: string | null, players: readonly
     return undefined;
   }
 
-  const distinct = new Set([...first, ...second].map(player => player.key));
+  const distinct = new Set([...first, ...second].map(player => player.character));
   return distinct.size === MATCH_SIZE ? [first, second] : undefined;
 }
 
@@ -397,11 +415,13 @@ export function teamSummary(team: readonly RosterPlayer[]): TeamSummary {
   };
 }
 
-function toRosterPlayer(entry: RatedBgRosterEntry): RosterPlayer {
+function toRosterPlayer(entry: RatedBgRosterEntry, listings: number): RosterPlayer {
   const classId = entry.class ?? 0;
   const spec = entry.spec ? specFor(classId, entry.spec) : undefined;
+  const character = characterOf(entry);
   return {
-    key: `${entry.name}-${entry.realm}`,
+    key: listings > 1 ? `${character}-${entry.spec ?? ''}` : character,
+    character,
     name: entry.name,
     realm: entry.realm,
     found: !entry.notFound,
@@ -414,6 +434,10 @@ function toRosterPlayer(entry: RatedBgRosterEntry): RosterPlayer {
     traits: entry.traits,
     itemLevel: entry.itemLevel
   };
+}
+
+function characterOf(entry: RatedBgRosterEntry): string {
+  return `${entry.name}-${entry.realm}`;
 }
 
 function teamFromParam(value: string | null, playersByKey: ReadonlyMap<string, RosterPlayer>): RosterPlayer[] | undefined {

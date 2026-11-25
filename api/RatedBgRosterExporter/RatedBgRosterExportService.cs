@@ -41,24 +41,21 @@ public sealed class RatedBgRosterExportService(string outputDirectory, ITauriApi
         ArgumentNullException.ThrowIfNull(characters);
 
         var reads = await Task.WhenAll(
-            characters.Select(character => ReadAsync(character, cancellationToken))
+            characters
+                .GroupBy(character => character.Label, StringComparer.OrdinalIgnoreCase)
+                .Select(lines => ReadAsync(lines.ToList(), cancellationToken))
         );
 
-        var failed = reads.Where(read => read.Player is null).ToList();
+        var failed = reads.Where(read => read.Failure is not null).ToList();
         if (failed.Count > 0)
         {
             throw new InvalidOperationException(
-                $"Could not export {failed.Count} of {characters.Count} characters, so nothing was written: "
-                    + string.Join(
-                        ", ",
-                        failed.Select(read =>
-                            $"{read.Character.Name}-{read.Character.DisplayRealm} ({read.Failure})"
-                        )
-                    )
+                $"Could not export {failed.Count} of {reads.Length} characters, so nothing was written: "
+                    + string.Join(", ", failed.Select(read => $"{read.Label} ({read.Failure})"))
             );
         }
 
-        var players = reads.Select(read => read.Player!).ToList();
+        var players = reads.SelectMany(read => read.Players).ToList();
         var outputPath = Path.Combine(_outputDirectory, FileName);
         await RatedBgRosterFileWriter.WriteAsync(
             outputPath,
@@ -76,11 +73,12 @@ public sealed class RatedBgRosterExportService(string outputDirectory, ITauriApi
     }
 
     private async Task<CharacterRead> ReadAsync(
-        RosterCharacter character,
+        IReadOnlyList<RosterCharacter> lines,
         CancellationToken cancellationToken
     )
     {
-        var label = $"{character.Name}-{character.DisplayRealm}";
+        var character = lines[0];
+        var label = character.Label;
         var result = await apiClient.FetchResponseElementAsync(
             "character-artifact",
             new { r = character.ApiRealm, n = character.Name },
@@ -95,61 +93,65 @@ public sealed class RatedBgRosterExportService(string outputDirectory, ITauriApi
         )
         {
             return result.ApiErrorCode == TauriApiResponseResult.CharacterNotFoundErrorCode
-                ? new CharacterRead(character, RosterPlayer.Missing(character), null, [])
+                ? new CharacterRead(label, [RosterPlayer.Missing(character)], null, [])
                 : new CharacterRead(
-                    character,
-                    null,
+                    label,
+                    [],
                     result.FailureMessage ?? "the API sent no character",
                     []
                 );
         }
 
         var artifacts = CharacterArtifactReader.Read(response);
-        var specialization = string.IsNullOrWhiteSpace(artifacts?.Specialization)
-            ? CharacterArtifactReader.ReadActiveSpecialization(response)
-            : artifacts.Specialization;
-        var traits = artifacts?.TraitCount;
-
-        if (character.MainSpec is { } mainSpec)
+        var missingSpecs = lines
+            .Select(line => line.MainSpec)
+            .OfType<string>()
+            .Where(mainSpec => WeaponOf(artifacts, mainSpec) is null)
+            .ToList();
+        if (missingSpecs.Count > 0)
         {
-            var weapon = artifacts?.Weapons.FirstOrDefault(weapon =>
-                string.Equals(weapon.Specialization, mainSpec, StringComparison.OrdinalIgnoreCase)
+            return new CharacterRead(
+                label,
+                [],
+                $"no {string.Join(" or ", missingSpecs)} artifact: check the spec in {RatedBgRosterList.FileName}",
+                []
             );
-            if (weapon is null)
-            {
-                return new CharacterRead(
-                    character,
-                    null,
-                    $"no {mainSpec} artifact: check the spec in {RatedBgRosterList.FileName}",
-                    []
-                );
-            }
-
-            specialization = weapon.Specialization;
-            traits = weapon.Traits;
         }
 
+        var bestSpecialization = string.IsNullOrWhiteSpace(artifacts?.Specialization)
+            ? CharacterArtifactReader.ReadActiveSpecialization(response)
+            : artifacts.Specialization;
         var name = ReadString(response, "name");
-
-        var player = new RosterPlayer(
-            string.IsNullOrWhiteSpace(name) ? character.Name : name.Trim(),
-            character.DisplayRealm,
-            true,
-            ReadInt(response, "race"),
-            ReadInt(response, "gender"),
-            ReadInt(response, "class"),
-            specialization,
-            traits,
-            CharacterResponseMapper.ReadItemLevel(response)
-        );
+        var players = lines
+            .Select(line =>
+            {
+                var weapon = line.MainSpec is { } mainSpec ? WeaponOf(artifacts, mainSpec) : null;
+                return new RosterPlayer(
+                    string.IsNullOrWhiteSpace(name) ? character.Name : name.Trim(),
+                    character.DisplayRealm,
+                    true,
+                    ReadInt(response, "race"),
+                    ReadInt(response, "gender"),
+                    ReadInt(response, "class"),
+                    weapon?.Specialization ?? bestSpecialization,
+                    weapon?.Traits ?? artifacts?.TraitCount,
+                    CharacterResponseMapper.ReadItemLevel(response)
+                );
+            })
+            .ToList();
         var warnings = (artifacts?.UnknownArtifacts ?? [])
             .Select(unknown =>
                 $"Unknown artifact {unknown.ItemId} ({unknown.Name}) on {label}; add it to ArtifactSpecializations in CharacterArtifactReader."
             )
             .ToList();
 
-        return new CharacterRead(character, player, null, warnings);
+        return new CharacterRead(label, players, null, warnings);
     }
+
+    private static ArtifactWeapon? WeaponOf(CharacterArtifacts? artifacts, string specialization) =>
+        artifacts?.Weapons.FirstOrDefault(weapon =>
+            string.Equals(weapon.Specialization, specialization, StringComparison.OrdinalIgnoreCase)
+        );
 
     private static int ReadInt(JsonElement element, string propertyName) =>
         element.TryGetProperty(propertyName, out var property)
@@ -164,8 +166,8 @@ public sealed class RatedBgRosterExportService(string outputDirectory, ITauriApi
             : string.Empty;
 
     private sealed record CharacterRead(
-        RosterCharacter Character,
-        RosterPlayer? Player,
+        string Label,
+        IReadOnlyList<RosterPlayer> Players,
         string? Failure,
         IReadOnlyList<string> Warnings
     );

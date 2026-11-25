@@ -854,6 +854,15 @@ puts everyone else on the bench, taking turns from match to match.
   ([data-pipeline.md](data-pipeline.md#rated-bg-roster)): the main spec the hand list names for
   them, else the spec of their artifact with the most traits, as on the guild pages, else their
   active spec. A character the armory doesn't know has no role and counts as melee.
+- **A character the list names for more than one spec has a row per spec, and one of them at a
+  time can be ticked.** Each row sits in its spec's group: Keilalt as Vengeance and as Havoc both
+  under Melee, Solaureus as Retribution under Melee and as Holy under Healers. Ticking another of
+  a character's specs unticks the one ticked before, and drops its flag-carrier mark. The bench
+  counts above follow the character, not the row, so a player who sat out as Havoc plays the next
+  match first when ticked as Vengeance instead.
+- A shared link names each player as `Name-Realm`, or `Name-Realm-Spec` for a character with more
+  than one row. A link that names one character twice, or a player the list no longer has, opens
+  no teams: the page says the link no longer matches the list.
 - A shared link opens on the teams it names, with nobody on the bench, even when a respec since
   has left their groups uneven: the link records the teams as they were picked. When both teams
   have the same number of healers, ranged and melee, and each number is on its dropdown, the
