@@ -21,7 +21,7 @@
           <section class="picker-card team" [attr.aria-label]="team.label">
             <header class="team-header">
               <h2>{{ team.label }}</h2>
-              <p class="team-summary">@if (team.averageItemLevel !== undefined) {avg ilvl {{ team.averageItemLevel | number: '1.1-1' }}}@if (team.backFromBench) {@if (team.averageItemLevel !== undefined) {<span class="bench-note-separator"> · </span>}<span class="bench-note"><app-rated-bg-mark kind="back-from-bench" [decorative]="true" />{{ team.backFromBench }} back from the bench</span>}</p>
+              <p class="team-summary">@if (team.backFromBench) {<span class="bench-note"><app-rated-bg-mark kind="back-from-bench" [decorative]="true" />{{ team.backFromBench }} back from the bench</span>}@if (team.averageItemLevel !== undefined) { avg ilvl {{ team.averageItemLevel | number: '1.1-1' }}}</p>
             </header>
             @for (group of team.groups; track group.id) {
               <ol class="team-players" [attr.aria-label]="group.label">

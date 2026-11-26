@@ -846,8 +846,8 @@ puts everyone else on the bench, taking turns from match to match.
   class by class, with a grey bench icon after each name and in its heading. After the next
   shuffle, each player back from the bench has a green stripe beside their row and a green return
   arrow after their name, and their team's heading counts them with the same arrow: "2 back from
-  the bench" (on phones on a line of its own). The icons are `app-rated-bg-mark`, inline SVGs, not
-  emoji.
+  the bench", on one line just left of the average item level, with no separator between them, at
+  every width. The icons are `app-rated-bg-mark`, inline SVGs, not emoji.
 - **Each group is split evenly between the teams, then each class within the group, then each
   spec within its class.** Healers, ranged and melee are split separately, each class by class. So
   4 Death Knights split 2 and 2, and an Arms and a Fury Warrior one each; 3 Unholy and 1 Frost

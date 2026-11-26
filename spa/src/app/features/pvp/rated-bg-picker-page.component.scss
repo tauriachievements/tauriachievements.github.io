@@ -83,9 +83,13 @@ $text: #e0e0e0;
 }
 
 .team-summary {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
   margin: 0;
   color: $muted;
   font-size: 0.78rem;
+  white-space: nowrap;
 }
 
 .team-players,
@@ -168,12 +172,12 @@ $text: #e0e0e0;
 
 .bench-note {
   display: inline-flex;
-  align-items: center;
+  align-items: baseline;
   gap: 4px;
   color: $bench-color;
-  white-space: nowrap;
 
   app-rated-bg-mark {
+    align-self: center;
     width: 13px;
     height: 13px;
   }
@@ -482,13 +486,6 @@ $text: #e0e0e0;
 
   .team-players .player-row.back-from-bench::before { left: -7px; }
   .team-players .player-row.leader::after { inset: 0 (-$phone-leader-overhang); }
-
-  .bench-note-separator { display: none; }
-
-  .bench-note {
-    display: flex;
-    margin-top: 2px;
-  }
 
   .bench-players {
     grid-template-columns: minmax(0, 1fr);
