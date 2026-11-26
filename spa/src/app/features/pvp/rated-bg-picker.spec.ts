@@ -328,11 +328,11 @@ describe('rosterGroups', () => {
 });
 
 describe('COMPOSITION_CHOICES', () => {
-  it('offers 1 to 4 healers and 1 to 5 ranged and melee per team, 3, 3 and 4 at first', () => {
+  it('offers 1 to 5 melee and ranged and 1 to 4 healers per team, in that order, 4, 3 and 3 at first', () => {
     expect(COMPOSITION_CHOICES.map(choice => [choice.id, choice.label, choice.counts])).toEqual([
-      ['healers', 'Healers', [1, 2, 3, 4]],
+      ['melee', 'Melee', [1, 2, 3, 4, 5]],
       ['ranged', 'Ranged', [1, 2, 3, 4, 5]],
-      ['melee', 'Melee', [1, 2, 3, 4, 5]]
+      ['healers', 'Healers', [1, 2, 3, 4]]
     ]);
     expect(DEFAULT_COMPOSITION).toEqual({ healers: 3, ranged: 3, melee: 4 });
   });
@@ -351,8 +351,8 @@ describe('shuffleWarning and canShuffle', () => {
 
   it('names each group with too few ticked for both teams', () => {
     expect(shuffleWarning(ticked(5, 6, 8), DEFAULT_COMPOSITION)).toBe('tick 1 more healer');
-    expect(shuffleWarning(ticked(4, 5, 8), DEFAULT_COMPOSITION)).toBe('tick 2 more healers and 1 more ranged');
-    expect(shuffleWarning(ticked(5, 4, 5), DEFAULT_COMPOSITION)).toBe('tick 1 more healer, 2 more ranged and 3 more melee');
+    expect(shuffleWarning(ticked(4, 5, 8), DEFAULT_COMPOSITION)).toBe('tick 1 more ranged and 2 more healers');
+    expect(shuffleWarning(ticked(5, 4, 5), DEFAULT_COMPOSITION)).toBe('tick 3 more melee, 2 more ranged and 1 more healer');
     expect([ticked(5, 6, 8), ticked(4, 5, 8), ticked(6, 6, 7)].map(picked => canShuffle(picked, DEFAULT_COMPOSITION)))
       .toEqual([false, false, false]);
   });

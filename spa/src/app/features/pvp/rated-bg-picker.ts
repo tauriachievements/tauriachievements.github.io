@@ -110,9 +110,9 @@ export interface CompositionChoice {
 }
 
 export const COMPOSITION_CHOICES: readonly CompositionChoice[] = [
-  { id: 'healers', label: 'Healers', counts: [1, 2, 3, 4] },
+  { id: 'melee', label: 'Melee', counts: [1, 2, 3, 4, 5] },
   { id: 'ranged', label: 'Ranged', counts: [1, 2, 3, 4, 5] },
-  { id: 'melee', label: 'Melee', counts: [1, 2, 3, 4, 5] }
+  { id: 'healers', label: 'Healers', counts: [1, 2, 3, 4] }
 ];
 
 export const DEFAULT_COMPOSITION: TeamComposition = { healers: 3, ranged: 3, melee: 4 };

@@ -140,6 +140,8 @@ describe('RatedBgPickerPageComponent', () => {
     expect(toolbar?.querySelector('.pick-count')).not.toBeNull();
     expect(toolbar?.querySelector('.toolbar-buttons')).not.toBeNull();
     expect(element.querySelectorAll('.picker-card.toolbar, .picker-card.composition')).toHaveLength(1);
+    expect([...toolbar?.querySelectorAll('.composition-choice-label') ?? []].map(label => label.textContent?.trim()))
+      .toEqual(['Melee', 'Ranged', 'Healers']);
     expect(chosen(element)).toEqual(['3', '3', '4']);
   });
 
