@@ -32,6 +32,7 @@ import {
   RosterGroupId,
   RosterPlayer,
   TeamComposition,
+  averageItemLevel,
   benchSize,
   canShuffle,
   compositionOf,
@@ -44,7 +45,6 @@ import {
   rosterPlayers,
   shuffleWarning,
   teamGroups,
-  teamSummary,
   tickedFlagCarriers,
   toggleFlagCarrier,
   togglePick,
@@ -120,7 +120,7 @@ export class RatedBgPickerPageComponent implements OnInit {
         ...group,
         rows: group.players.map(player => teamRow(player, match))
       })),
-      summary: teamSummary(players),
+      averageItemLevel: averageItemLevel(players),
       backFromBench: players.filter(player => match.backFromBench.has(player.key)).length
     }));
   });

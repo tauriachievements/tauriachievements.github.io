@@ -791,7 +791,7 @@ puts everyone else on the bench, taking turns from match to match.
 
 - **Code:** `rosterGroups`, `shuffleWarning`, `canShuffle`, `benchSize`, `playMatch`, `shuffleTeams`,
   `linkedMatch`, `compositionOf`, `togglePick`, `toggleFlagCarrier`, `tickedFlagCarriers`,
-  `withLeader`, `parseLeaders`, `matchParams`, `parseTeams`, `teamGroups` and `teamSummary` in
+  `withLeader`, `parseLeaders`, `matchParams`, `parseTeams`, `teamGroups` and `averageItemLevel` in
   `spa/src/app/features/pvp/rated-bg-picker.ts`.
 - The list shows three groups, side by side from 1000 px and one under the other below that:
   Melee, Ranged, then Healers. Ranged holds the ranged damage specs (`range` in `LEGION_SPECS`),
@@ -896,8 +896,9 @@ puts everyone else on the bench, taking turns from match to match.
   plays the next match before them.
 - A team lists its players in the list's groups, but Healers first, then Ranged, then Melee, each
   class by class, then by spec and traits, as above. A gap with no heading separates the groups,
-  and a group the team has nobody in is left out. The team's heading counts its healers and
-  averages the item levels it knows.
+  and a group the team has nobody in is left out. The team's heading shows the average of the
+  item levels it knows, without a healer count: the Each team dropdowns already say how many
+  healers each team has.
 - **Each team has one group leader, who sends the invites.** The shuffle crowns the first healer
   the team lists, so the first in its Healers group, or the first player listed when the team has
   no healer. The leader's row has a gold crown after the name and a gold tint between two thin gold

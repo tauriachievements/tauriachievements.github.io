@@ -296,8 +296,9 @@ describe('RatedBgPickerPageComponent', () => {
 
     const teams = teamNames(element);
     expect(teams.map(team => team.length)).toEqual([10, 10]);
-    expect([...element.querySelectorAll('.team .team-summary')].map(summary => summary.textContent?.trim().split(' · ')[0]))
-      .toEqual(['3 healers', '3 healers']);
+    for (const summary of element.querySelectorAll('.team .team-summary')) {
+      expect(summary.textContent?.trim()).toMatch(/^avg ilvl \d{3}\.\d$/);
+    }
     const [, query] = location.path().split('?');
     const params = new URLSearchParams(query);
     expect(params.get('a')?.split(',').map(key => key.replace('-Evermoon', ''))).toEqual(teams[0]);

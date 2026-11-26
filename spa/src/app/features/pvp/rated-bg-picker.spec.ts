@@ -14,6 +14,7 @@ import {
   TEAM_SIZE,
   TeamComposition,
   Teams,
+  averageItemLevel,
   benchSize,
   canShuffle,
   compositionOf,
@@ -27,7 +28,6 @@ import {
   shuffleTeams,
   shuffleWarning,
   teamGroups,
-  teamSummary,
   tickedFlagCarriers,
   toggleFlagCarrier,
   togglePick,
@@ -1225,18 +1225,18 @@ describe('parseTeams with a character listed for two specs', () => {
   });
 });
 
-describe('teamSummary', () => {
-  it("counts a team's healers and averages the item levels it knows", () => {
+describe('averageItemLevel', () => {
+  it('averages the item levels a team knows', () => {
     const team = rosterPlayers(roster([
       entry('Heal', { class: 5, spec: 'Holy', itemLevel: 886 }),
       entry('Dps', { itemLevel: 883 }),
       { name: 'Typo', realm: 'Evermoon', notFound: true }
     ]));
 
-    expect(teamSummary(team)).toEqual({ healers: 1, averageItemLevel: 884.5 });
+    expect(averageItemLevel(team)).toBe(884.5);
   });
 
-  it('has no average item level when it knows none', () => {
-    expect(teamSummary([])).toEqual({ healers: 0, averageItemLevel: undefined });
+  it('has none when it knows none', () => {
+    expect(averageItemLevel([])).toBeUndefined();
   });
 });

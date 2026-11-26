@@ -47,11 +47,6 @@ export interface RosterPlayer {
 
 export type Teams = readonly [readonly RosterPlayer[], readonly RosterPlayer[]];
 
-export interface TeamSummary {
-  readonly healers: number;
-  readonly averageItemLevel?: number;
-}
-
 export function rosterPlayers(file: RatedBgRosterFile): RosterPlayer[] {
   if (file.version !== RATED_BG_ROSTER_VERSION) {
     throw new Error(`The player list is in format ${file.version}, and this page reads format ${RATED_BG_ROSTER_VERSION}.`);
@@ -593,14 +588,9 @@ export function parseTeams(a: string | null, b: string | null, players: readonly
   return distinct.size === MATCH_SIZE ? [first, second] : undefined;
 }
 
-export function teamSummary(team: readonly RosterPlayer[]): TeamSummary {
+export function averageItemLevel(team: readonly RosterPlayer[]): number | undefined {
   const itemLevels = team.flatMap(player => player.itemLevel === undefined ? [] : [player.itemLevel]);
-  return {
-    healers: groupSize(team, 'healers'),
-    averageItemLevel: itemLevels.length
-      ? itemLevels.reduce((sum, itemLevel) => sum + itemLevel, 0) / itemLevels.length
-      : undefined
-  };
+  return itemLevels.length ? itemLevels.reduce((sum, itemLevel) => sum + itemLevel, 0) / itemLevels.length : undefined;
 }
 
 function toRosterPlayer(entry: RatedBgRosterEntry, listings: number): RosterPlayer {
