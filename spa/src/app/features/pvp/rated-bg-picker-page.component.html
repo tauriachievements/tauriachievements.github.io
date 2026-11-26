@@ -17,7 +17,7 @@
 
     @if (teamViews(); as teams) {
       <section #teamsSection class="teams" aria-label="Teams">
-        @for (team of teams; track team.label; let teamIndex = $index) {
+        @for (team of teams; track team.label) {
           <section class="picker-card team" [attr.aria-label]="team.label">
             <header class="team-header">
               <h2>{{ team.label }}</h2>
@@ -36,9 +36,9 @@
                       class="flag-carrier"
                       [class.marked]="isFlagCarrier(player)"
                       [attr.aria-pressed]="isFlagCarrier(player)"
-                      [attr.aria-label]="(isFlagCarrier(player) ? 'Remove ' : 'Mark ') + player.name + ' as possible flag carrier'"
-                      [title]="isFlagCarrier(player) ? 'Remove possible flag carrier' : 'Mark as possible flag carrier'"
-                      (click)="markTeamFlagCarrier(teamIndex, player)">FC</button>
+                      [attr.aria-label]="(isFlagCarrier(player) ? 'Remove ' : 'Mark ') + player.name + ' as flag carrier, so at least two play each match, one on each team'"
+                      [title]="isFlagCarrier(player) ? 'Remove flag carrier' : 'Mark as flag carrier: at least two play each match, one on each team'"
+                      (click)="toggleFlagCarrier(player)">FC</button>
                   </li>
                 }
               </ol>
@@ -122,10 +122,10 @@
                         type="button"
                         class="flag-carrier"
                         [class.marked]="isFlagCarrier(player)"
-                        [disabled]="!canMarkFlagCarrier(player)"
+                        [disabled]="locked()"
                         [attr.aria-pressed]="isFlagCarrier(player)"
-                        [attr.aria-label]="(isFlagCarrier(player) ? 'Remove ' : 'Mark ') + player.name + ' as flag carrier, so the shuffle puts the two on different teams'"
-                        [title]="isFlagCarrier(player) ? 'Remove flag carrier' : 'Mark as flag carrier: the two marked go on different teams'"
+                        [attr.aria-label]="(isFlagCarrier(player) ? 'Remove ' : 'Mark ') + player.name + ' as flag carrier, so at least two play each match, one on each team'"
+                        [title]="isFlagCarrier(player) ? 'Remove flag carrier' : 'Mark as flag carrier: at least two play each match, one on each team'"
                         (click)="toggleFlagCarrier(player)">FC</button>
                     }
                   </li>

@@ -6,7 +6,7 @@ export const RATED_BG_ROSTER_FILE = 'rated-bg-roster.json';
 export const RATED_BG_ROSTER_VERSION = 1;
 export const TEAM_SIZE = 10;
 export const MATCH_SIZE = 2 * TEAM_SIZE;
-export const FLAG_CARRIER_COUNT = 2;
+const PLAYING_FLAG_CARRIERS = 2;
 const MAX_SHUFFLES = 1000;
 
 export interface RatedBgRosterEntry {
@@ -168,24 +168,15 @@ export function togglePick(
 }
 
 export function toggleFlagCarrier(flagCarriers: ReadonlySet<string>, key: string): ReadonlySet<string> {
-  return toggleWithin(flagCarriers, key, FLAG_CARRIER_COUNT);
+  const next = new Set(flagCarriers);
+  if (!next.delete(key)) {
+    next.add(key);
+  }
+  return next;
 }
 
 export function tickedFlagCarriers(flagCarriers: ReadonlySet<string>, picked: ReadonlySet<string>): ReadonlySet<string> {
   return new Set([...flagCarriers].filter(key => picked.has(key)));
-}
-
-export function markTeamFlagCarrier(
-  flagCarriers: ReadonlySet<string>,
-  team: readonly RosterPlayer[],
-  key: string
-): ReadonlySet<string> {
-  if (flagCarriers.has(key)) {
-    return toggleFlagCarrier(flagCarriers, key);
-  }
-
-  const teamKeys = new Set(team.map(player => player.key));
-  return new Set([...[...flagCarriers].filter(marked => !teamKeys.has(marked)), key]);
 }
 
 export interface BenchHistory {
@@ -214,13 +205,7 @@ export function playMatch(
   flagCarriers: ReadonlySet<string>,
   random: () => number = Math.random
 ): MatchResult {
-  const bench = COMPOSITION_CHOICES.flatMap(({ id }) => benchFrom(
-    picked.filter(player => rosterGroupOf(player) === id),
-    2 * composition[id],
-    history,
-    flagCarriers,
-    random
-  ));
+  const bench = benchOf(picked, composition, history, flagCarriers, random);
   const benchKeys = new Set(bench.map(player => player.key));
   const playing = picked.filter(player => !benchKeys.has(player.key));
 
@@ -260,23 +245,79 @@ export function shuffleTeams(
   return teams;
 }
 
-function benchFrom(
-  group: readonly RosterPlayer[],
-  playing: number,
+interface BenchGroup {
+  readonly candidates: readonly RosterPlayer[];
+  readonly classSizes: ReadonlyMap<string, number>;
+  readonly seats: number;
+}
+
+function benchOf(
+  picked: readonly RosterPlayer[],
+  composition: TeamComposition,
   history: BenchHistory,
   flagCarriers: ReadonlySet<string>,
   random: () => number
 ): RosterPlayer[] {
-  const seats = Math.max(0, group.length - playing);
-  const classSizes = classSizesOf(group);
-  const candidates = shuffled(group.filter(player => !flagCarriers.has(player.key)), random)
-    .sort((a, b) => compareCosts(sitOutCost(history, a), sitOutCost(history, b)));
-  const least = leastBenchCost(classSizes, [], candidates, seats, history);
+  const groups = COMPOSITION_CHOICES.map(({ id }) => benchGroup(
+    picked.filter(player => rosterGroupOf(player) === id),
+    2 * composition[id],
+    history,
+    random
+  ));
+  const tickedCarriers = picked.filter(player => flagCarriers.has(player.key)).length;
+  const carriersToBench = flagCarriersToBench(
+    groups.map(group => leastBenchCosts(group, [], group.candidates, history, flagCarriers)),
+    tickedCarriers - Math.min(tickedCarriers, PLAYING_FLAG_CARRIERS),
+    random
+  );
+  return groups.flatMap((group, index) => benchFrom(group, carriersToBench[index], history, flagCarriers));
+}
+
+function benchGroup(
+  players: readonly RosterPlayer[],
+  playing: number,
+  history: BenchHistory,
+  random: () => number
+): BenchGroup {
+  return {
+    candidates: shuffled(players, random).sort((a, b) => compareCosts(sitOutCost(history, a), sitOutCost(history, b))),
+    classSizes: classSizesOf(players),
+    seats: Math.max(0, players.length - playing)
+  };
+}
+
+function flagCarriersToBench(
+  costsByGroup: readonly BenchCosts[],
+  most: number,
+  random: () => number
+): readonly number[] {
+  const splits = costsByGroup.reduce<{ readonly counts: readonly number[]; readonly benched: number; readonly cost: BenchCost }[]>(
+    (partials, costs) => partials.flatMap(({ counts, benched, cost }) => costs.flatMap((groupCost, carriers) =>
+      groupCost && benched + carriers <= most
+        ? [{ counts: [...counts, carriers], benched: benched + carriers, cost: addCosts(cost, groupCost) }]
+        : [])),
+    [{ counts: [], benched: 0, cost: NO_COST }]
+  );
+  const least = splits.reduce((best, split) => compareCosts(split.cost, best) < 0 ? split.cost : best, splits[0].cost);
+  const cheapest = splits.filter(split => sameCost(split.cost, least));
+  return cheapest[cheapest.length > 1 ? Math.floor(random() * cheapest.length) : 0].counts;
+}
+
+function benchFrom(
+  group: BenchGroup,
+  carriers: number,
+  history: BenchHistory,
+  flagCarriers: ReadonlySet<string>
+): RosterPlayer[] {
+  const least = leastBenchCosts(group, [], group.candidates, history, flagCarriers)[carriers];
   const bench: RosterPlayer[] = [];
 
-  candidates.forEach((player, index) => {
-    const rest = candidates.slice(index + 1);
-    if (bench.length < seats && sameCost(leastBenchCost(classSizes, [...bench, player], rest, seats, history), least)) {
+  group.candidates.forEach((player, index) => {
+    const rest = group.candidates.slice(index + 1);
+    if (
+      bench.length < group.seats
+      && sameCost(leastBenchCosts(group, [...bench, player], rest, history, flagCarriers)[carriers], least)
+    ) {
       bench.push(player);
     }
   });
@@ -295,43 +336,79 @@ const NO_COST: BenchCost = [0, 0, 0, 0, 0];
 const STACKED_SPLIT: BenchCost = [0, 1, 0, 0, 0];
 const ONE_SIDED_SPLIT: BenchCost = [0, 0, 1, 0, 0];
 
-function leastBenchCost(
-  classSizes: ReadonlyMap<string, number>,
+type BenchCosts = (BenchCost | undefined)[];
+
+interface BenchOption {
+  readonly seats: number;
+  readonly carriers: number;
+  readonly cost: BenchCost;
+}
+
+function leastBenchCosts(
+  group: BenchGroup,
   bench: readonly RosterPlayer[],
   rest: readonly RosterPlayer[],
-  seats: number,
-  history: BenchHistory
-): BenchCost | undefined {
-  const toFill = seats - bench.length;
-  let least: (BenchCost | undefined)[] = [NO_COST];
+  history: BenchHistory,
+  flagCarriers: ReadonlySet<string>
+): BenchCosts {
+  const toFill = group.seats - bench.length;
+  if (toFill < 0) {
+    return [];
+  }
 
-  for (const [classKey, size] of classSizes) {
+  const isCarrier = (player: RosterPlayer) => flagCarriers.has(player.key);
+  let least: BenchCosts[] = [[]];
+  least[0][bench.filter(isCarrier).length] = NO_COST;
+
+  for (const [classKey, size] of group.classSizes) {
     const benched = bench.filter(player => classKeyOf(player) === classKey);
     const choices = rest.filter(player => classKeyOf(player) === classKey);
-    const options = Array.from({ length: choices.length + 1 }, (_, extra) => {
-      const sitting = [...benched, ...choices.slice(0, extra)];
-      return sitting.reduce((sum, player) => addCosts(sum, sitOutCost(history, player)), splitCost(size, size - sitting.length));
-    });
+    const options = benchOptions(benched, choices.filter(player => !isCarrier(player)), choices.filter(isCarrier), size, history);
     least = cheapestCombinations(least, options, toFill);
   }
-  return toFill < 0 ? undefined : least[toFill];
+  return least[toFill] ?? [];
+}
+
+function benchOptions(
+  benched: readonly RosterPlayer[],
+  others: readonly RosterPlayer[],
+  carriers: readonly RosterPlayer[],
+  classSize: number,
+  history: BenchHistory
+): BenchOption[] {
+  return Array.from({ length: others.length + 1 }, (_, otherCount) =>
+    Array.from({ length: carriers.length + 1 }, (_, carrierCount) => {
+      const sitting = [...benched, ...others.slice(0, otherCount), ...carriers.slice(0, carrierCount)];
+      return {
+        seats: otherCount + carrierCount,
+        carriers: carrierCount,
+        cost: sitting.reduce(
+          (sum, player) => addCosts(sum, sitOutCost(history, player)),
+          splitCost(classSize, classSize - sitting.length)
+        )
+      };
+    })).flat();
 }
 
 function cheapestCombinations(
-  least: readonly (BenchCost | undefined)[],
-  options: readonly BenchCost[],
+  least: readonly BenchCosts[],
+  options: readonly BenchOption[],
   limit: number
-): (BenchCost | undefined)[] {
-  const next: (BenchCost | undefined)[] = [];
-  least.forEach((cost, filled) => {
-    options.forEach((option, extra) => {
-      const current = next[filled + extra];
-      const combined = cost && filled + extra <= limit ? addCosts(cost, option) : undefined;
-      if (combined && (!current || compareCosts(combined, current) < 0)) {
-        next[filled + extra] = combined;
+): BenchCosts[] {
+  const next: BenchCosts[] = [];
+  least.forEach((costs, filled) => costs.forEach((cost, carriers) => {
+    for (const option of options) {
+      const seats = filled + option.seats;
+      if (cost && seats <= limit) {
+        const combined = addCosts(cost, option.cost);
+        const row = next[seats] ??= [];
+        const current = row[carriers + option.carriers];
+        if (!current || compareCosts(combined, current) < 0) {
+          row[carriers + option.carriers] = combined;
+        }
       }
-    });
-  });
+    }
+  }));
   return next;
 }
 
@@ -451,21 +528,9 @@ function inTeamOrder(team: readonly RosterPlayer[]): RosterPlayer[] {
   return teamGroups(team).flatMap(group => group.players);
 }
 
-function toggleWithin(keys: ReadonlySet<string>, key: string, limit: number): ReadonlySet<string> {
-  if (!keys.has(key) && keys.size >= limit) {
-    return keys;
-  }
-
-  const next = new Set(keys);
-  if (!next.delete(key)) {
-    next.add(key);
-  }
-  return next;
-}
-
 function splitsFlagCarriers(teams: Teams, flagCarriers: ReadonlySet<string>): boolean {
-  const carriersIn = (team: readonly RosterPlayer[]) => team.filter(player => flagCarriers.has(player.key)).length;
-  return carriersIn([...teams[0], ...teams[1]]) < FLAG_CARRIER_COUNT || teams.every(team => carriersIn(team) === 1);
+  const [first, second] = teams.map(team => team.filter(player => flagCarriers.has(player.key)).length);
+  return Math.abs(first - second) <= 1;
 }
 
 function isHealer(player: RosterPlayer): boolean {

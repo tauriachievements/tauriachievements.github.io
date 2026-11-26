@@ -25,7 +25,6 @@ import { prefersReducedMotion } from '../../shared/motion/motion';
 import {
   COMPOSITION_CHOICES,
   DEFAULT_COMPOSITION,
-  FLAG_CARRIER_COUNT,
   MATCH_SIZE,
   Match,
   NO_BENCH_HISTORY,
@@ -37,7 +36,6 @@ import {
   canShuffle,
   compositionOf,
   linkedMatch,
-  markTeamFlagCarrier,
   parseTeams,
   playMatch,
   rosterGroups,
@@ -186,21 +184,8 @@ export class RatedBgPickerPageComponent implements OnInit {
     return this.match()?.backFromBench.has(player.key) ?? false;
   }
 
-  canMarkFlagCarrier(player: RosterPlayer): boolean {
-    return !this.locked() && (this.isFlagCarrier(player) || this.flagCarriers().size < FLAG_CARRIER_COUNT);
-  }
-
   toggleFlagCarrier(player: RosterPlayer): void {
-    if (this.canMarkFlagCarrier(player)) {
-      this.flagCarriers.update(flagCarriers => toggleFlagCarrier(flagCarriers, player.key));
-    }
-  }
-
-  markTeamFlagCarrier(teamIndex: number, player: RosterPlayer): void {
-    const team = this.teams()?.[teamIndex];
-    if (team) {
-      this.flagCarriers.update(flagCarriers => markTeamFlagCarrier(flagCarriers, team, player.key));
-    }
+    this.flagCarriers.update(flagCarriers => toggleFlagCarrier(flagCarriers, player.key));
   }
 
   shuffle(): void {

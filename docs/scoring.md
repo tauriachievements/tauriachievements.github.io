@@ -791,7 +791,7 @@ puts everyone else on the bench, taking turns from match to match.
 
 - **Code:** `rosterGroups`, `shuffleWarning`, `canShuffle`, `playMatch`, `shuffleTeams`,
   `linkedMatch`, `compositionOf`, `togglePick`, `toggleFlagCarrier`, `tickedFlagCarriers`,
-  `markTeamFlagCarrier`, `parseTeams`, `teamGroups` and `teamSummary` in
+  `parseTeams`, `teamGroups` and `teamSummary` in
   `spa/src/app/features/pvp/rated-bg-picker.ts`.
 - The list shows three groups, side by side from 1000 px and one under the other below that:
   Melee, Ranged, then Healers. Ranged holds the ranged damage specs (`range` in `LEGION_SPECS`),
@@ -815,7 +815,9 @@ puts everyone else on the bench, taking turns from match to match.
 - **Each team gets exactly the healers, ranged and melee the dropdowns ask for, and the rest of the
   ticked players sit out.** In each group, the bench is the one that does best on these, in this
   order:
-  1. a marked flag carrier always plays;
+  1. at least two marked flag carriers play, counted over healers, ranged and melee together,
+     and every marked one plays when fewer than two are ticked; beyond that, flag carriers sit
+     out like anyone else;
   2. the fewest matches sat out in a row, added up over the bench: a player who played the last
      match counts 0, one who sat it out counts how many matches in a row they have sat out;
   3. each class with a second ticked player in the group plays an even number, so both teams get
@@ -873,13 +875,17 @@ puts everyone else on the bench, taking turns from match to match.
   class by class, then by spec and traits, as above. A gap with no heading separates the groups,
   and a group the team has nobody in is left out. The team's heading counts its healers and
   averages the item levels it knows.
-- **Flag carriers are optional; with two marked, each team gets one.** Before the shuffle, the
-  `FC` button on a ticked player marks them as a flag carrier, two at most. After a shuffle, each
-  team can mark one, and marking another player of that team moves its mark. A marked player is
-  never benched. With two marked, the shuffle draws again until they land on different teams (at
-  most 1,000 tries), so every split above holds exactly as without them. One mark changes nothing
-  about the shuffle. The marks stay through Shuffle again and Change players, go when their player
-  is unticked or on Clear, and aren't part of the shared link.
+- **Flag carriers are optional, any number can be marked, and they take turns on the bench while
+  two of them play.** The `FC` button on a ticked player marks or unmarks them, in the list before
+  the shuffle and in the teams after it. The bench never leaves fewer than two marked players
+  playing (rule 1 above), so one or two marked play every match, and from three on they sit out in
+  turn like everyone else. Because all but two at most can sit out, a few flag carriers in a group
+  that benches most of its players still sit out less often than the rest of it; the more are
+  marked, the closer they come to everyone else. The shuffle splits the playing flag carriers as
+  evenly as it can, one each with two and 2–1 with three, drawing again until they are (at most
+  1,000 tries), so every split above holds exactly as without them. One mark changes nothing about
+  the shuffle. The marks stay through Shuffle again and Change players, also on a player who sat
+  out, go when their player is unticked or on Clear, and aren't part of the shared link.
 - Traits are the count of that spec's artifact: the guild pages' count (the artifact with the
   most traits) unless the list names a main spec. The item level is the API's `avgitemlevel`,
   the ladder's figure, not the guild pages' own average of the equipped items
