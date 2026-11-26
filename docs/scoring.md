@@ -803,10 +803,12 @@ puts everyone else on the bench, taking turns from match to match.
   order (no known spec last), then by traits, highest first, then by name, with those whose traits
   aren't known last. Each group's heading counts its ticked players, and the bar above the list
   counts all the ticked players.
-- **Any number of players can be ticked.** Three dropdowns under "Each team", above the bar, set
-  how many healers (1 to 4), ranged (1 to 5) and melee (1 to 5) each team gets, 2, 4 and 4 at
+- **Any number of players can be ticked.** Three dropdowns under "Each team" in the action bar set
+  how many healers (1 to 4), ranged (1 to 5) and melee (1 to 5) each team gets, 3, 3 and 4 at
   first (`COMPOSITION_CHOICES`, `DEFAULT_COMPOSITION`). Healers, ranged and melee are the list's
-  three groups. Clear keeps the dropdowns; a reload sets them back to 2, 4 and 4.
+  three groups. Clear keeps the dropdowns; a reload sets them back to 3, 3 and 4. The dropdowns,
+  ticked count and Shuffle and Clear actions share one card; on phones its contents wrap inside
+  that card.
 - **Shuffle needs the three to add up to 10, and enough ticked players in each group for both
   teams.** Until then Shuffle stays off and the bar says why after the count, on the same line, so
   the bar keeps its height: "11 per team, a team is 10", or "tick 1 more healer and 2 more
@@ -887,7 +889,7 @@ puts everyone else on the bench, taking turns from match to match.
 - A shared link opens on the teams it names, with nobody on the bench, even when a respec since
   has left their groups uneven: the link records the teams as they were picked. When both teams
   have the same number of healers, ranged and melee, and each number is on its dropdown, the
-  dropdowns take those numbers (`compositionOf`); otherwise they stay at 2, 4 and 4. The link's
+  dropdowns take those numbers (`compositionOf`); otherwise they stay at 3, 3 and 4. The link's
   players count as having played the last match, so after Change players, a player ticked again
   plays the next match before them.
 - A team lists its players in the list's groups, but Healers first, then Ranged, then Melee, each

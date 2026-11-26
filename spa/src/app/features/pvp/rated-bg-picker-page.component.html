@@ -62,25 +62,24 @@
       </section>
     }
 
-    <div class="picker-card composition" [class.open]="compositionOpen()" role="group" aria-labelledby="ratedBgCompositionLabel">
-      <span id="ratedBgCompositionLabel" class="composition-label">Each team</span>
-      @for (choice of compositionChoices; track choice.id) {
-        <div class="composition-choice">
-          <span class="composition-choice-label" aria-hidden="true">{{ choice.label }}</span>
-          <app-filter-dropdown
-            [dropdownId]="choice.dropdownId"
-            [triggerId]="choice.dropdownId + 'Trigger'"
-            [ariaLabel]="choice.label + ' per team'"
-            [options]="choice.options"
-            [selectedValue]="composition()[choice.id]"
-            [widthLabels]="choice.widthLabels"
-            [compact]="true"
-            (selectionChange)="setComposition(choice.id, $event)" />
-        </div>
-      }
-    </div>
-
-    <div class="picker-card toolbar">
+    <div class="picker-card toolbar" [class.open]="compositionOpen()">
+      <div class="composition" role="group" aria-labelledby="ratedBgCompositionLabel">
+        <span id="ratedBgCompositionLabel" class="composition-label">Each team</span>
+        @for (choice of compositionChoices; track choice.id) {
+          <div class="composition-choice">
+            <span class="composition-choice-label" aria-hidden="true">{{ choice.label }}</span>
+            <app-filter-dropdown
+              [dropdownId]="choice.dropdownId"
+              [triggerId]="choice.dropdownId + 'Trigger'"
+              [ariaLabel]="choice.label + ' per team'"
+              [options]="choice.options"
+              [selectedValue]="composition()[choice.id]"
+              [widthLabels]="choice.widthLabels"
+              [compact]="true"
+              (selectionChange)="setComposition(choice.id, $event)" />
+          </div>
+        }
+      </div>
       <p class="pick-count" aria-live="polite">{{ pickedCount() }} ticked@if (shuffleWarning(); as warning) {<span class="shuffle-warning"> · {{ warning }}</span>} @else if (benchCount()) {<span class="bench-count"> · {{ benchCount() }} on the bench</span>}</p>
       <div class="toolbar-buttons">
         @if (teams()) {

@@ -120,7 +120,7 @@ export const COMPOSITION_CHOICES: readonly CompositionChoice[] = [
   { id: 'melee', label: 'Melee', counts: [1, 2, 3, 4, 5] }
 ];
 
-export const DEFAULT_COMPOSITION: TeamComposition = { healers: 2, ranged: 4, melee: 4 };
+export const DEFAULT_COMPOSITION: TeamComposition = { healers: 3, ranged: 3, melee: 4 };
 
 export function shuffleWarning(picked: readonly RosterPlayer[], composition: TeamComposition): string | undefined {
   const perTeam = COMPOSITION_CHOICES.reduce((sum, { id }) => sum + composition[id], 0);

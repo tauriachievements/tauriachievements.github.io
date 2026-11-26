@@ -28,7 +28,7 @@ function roster(count: number): RatedBgRosterFile {
     version: 1,
     generatedAt: '2026-11-24T12:29:26Z',
     players: Array.from({ length: count }, (_, index) =>
-      index < 4
+      index < 6
         ? entry(index, { class: 5, spec: 'Holy' })
         : index < 12
           ? entry(index, { class: 3, spec: 'Marksmanship' })
@@ -108,6 +108,17 @@ const teamListSizes = (element: HTMLElement) =>
       `${list.getAttribute('aria-label')} ${list.querySelectorAll('li').length}`));
 
 describe('RatedBgPickerPageComponent', () => {
+  it('puts the composition, ticked count and actions in one toolbar', async () => {
+    const { element } = await openPage('/rated-bg-picker');
+    const toolbar = element.querySelector('.picker-card.toolbar');
+
+    expect(toolbar?.querySelector('.composition')).not.toBeNull();
+    expect(toolbar?.querySelector('.pick-count')).not.toBeNull();
+    expect(toolbar?.querySelector('.toolbar-buttons')).not.toBeNull();
+    expect(element.querySelectorAll('.picker-card.toolbar, .picker-card.composition')).toHaveLength(1);
+    expect(chosen(element)).toEqual(['3', '3', '4']);
+  });
+
   it("lists every player with their class, spec and race icons, traits and item level", async () => {
     const { element } = await openPage('/rated-bg-picker', {
       version: 1,
@@ -140,8 +151,8 @@ describe('RatedBgPickerPageComponent', () => {
 
     expect(columns.map(column => column.label)).toEqual(['Melee · 12 ticked', 'Ranged · 2 ticked', 'Healers · 0 ticked']);
     expect(columns[0].names).toHaveLength(12);
-    expect(columns[1].names).toEqual(['Player04', 'Player05', 'Player06', 'Player07', 'Player08', 'Player09', 'Player10', 'Player11']);
-    expect(columns[2].names).toEqual(['Player00', 'Player01', 'Player02', 'Player03']);
+    expect(columns[1].names).toEqual(['Player06', 'Player07', 'Player08', 'Player09', 'Player10', 'Player11']);
+    expect(columns[2].names).toEqual(['Player00', 'Player01', 'Player02', 'Player03', 'Player04', 'Player05']);
   });
 
   it('groups a column by class in alphabetical order, each by spec then traits, with a gap before each new class', async () => {
@@ -235,14 +246,14 @@ describe('RatedBgPickerPageComponent', () => {
   it('shuffles only when the healers, ranged and melee per team add up to 10, and fills each team that way', async () => {
     const { harness, element } = await openPage('/rated-bg-picker');
     await tick(harness, element, 24);
-    expect(chosen(element)).toEqual(['2', '4', '4']);
+    expect(chosen(element)).toEqual(['3', '3', '4']);
 
     await choose(harness, element, 'ratedBgMelee', '5');
-    expect(chosen(element)).toEqual(['2', '4', '5']);
+    expect(chosen(element)).toEqual(['3', '3', '5']);
     expect(barText(element)).toBe('24 ticked · 11 per team, a team is 10');
     expect(button(element, '.shuffle')?.disabled).toBe(true);
 
-    await choose(harness, element, 'ratedBgRanged', '3');
+    await choose(harness, element, 'ratedBgHealers', '2');
     expect(barText(element)).toBe('24 ticked · 4 on the bench');
 
     await press(harness, element, '.shuffle');
@@ -262,7 +273,7 @@ describe('RatedBgPickerPageComponent', () => {
     const teams = teamNames(element);
     expect(teams.map(team => team.length)).toEqual([10, 10]);
     expect([...element.querySelectorAll('.team .team-summary')].map(summary => summary.textContent?.trim().split(' · ')[0]))
-      .toEqual(['2 healers', '2 healers']);
+      .toEqual(['3 healers', '3 healers']);
     const [, query] = location.path().split('?');
     const params = new URLSearchParams(query);
     expect(params.get('a')?.split(',').map(key => key.replace('-Evermoon', ''))).toEqual(teams[0]);
@@ -430,8 +441,8 @@ describe('RatedBgPickerPageComponent', () => {
 
   it("sets the dropdowns to a shared link's healers, ranged and melee per team", async () => {
     const key = (index: number) => `Player${String(index).padStart(2, '0')}-Evermoon`;
-    const first = [0, 1, 4, 5, 6, 12, 13, 14, 15, 16].map(key);
-    const second = [2, 3, 7, 8, 9, 17, 18, 19, 20, 21].map(key);
+    const first = [0, 1, 6, 7, 8, 12, 13, 14, 15, 16].map(key);
+    const second = [2, 3, 9, 10, 11, 17, 18, 19, 20, 21].map(key);
     const { element } = await openPage(`/rated-bg-picker?a=${first.join(',')}&b=${second.join(',')}`);
 
     expect(chosen(element)).toEqual(['2', '3', '5']);
@@ -440,8 +451,8 @@ describe('RatedBgPickerPageComponent', () => {
 
   it("lists each team's healers, ranged and melee as separate lists, in that order", async () => {
     const key = (index: number) => `Player${String(index).padStart(2, '0')}-Evermoon`;
-    const first = [0, 1, 4, 5, 6, 10, 11, 12, 13, 14].reverse().map(key);
-    const second = [2, 3, 7, 8, 9, 15, 16, 17, 18, 19].map(key);
+    const first = [0, 1, 6, 7, 8, 12, 13, 14, 15, 16].reverse().map(key);
+    const second = [2, 3, 9, 10, 11, 17, 18, 19, 20, 21].map(key);
     const { element } = await openPage(`/rated-bg-picker?a=${first.join(',')}&b=${second.join(',')}`);
 
     const firstTeamLists = [...element.querySelectorAll('.team')[0].querySelectorAll('.team-players')].map(list => [
@@ -451,8 +462,8 @@ describe('RatedBgPickerPageComponent', () => {
 
     expect(firstTeamLists).toEqual([
       ['Healers', ['Player00', 'Player01']],
-      ['Ranged', ['Player04', 'Player05', 'Player06', 'Player10', 'Player11']],
-      ['Melee', ['Player12', 'Player13', 'Player14']]
+      ['Ranged', ['Player06', 'Player07', 'Player08']],
+      ['Melee', ['Player12', 'Player13', 'Player14', 'Player15', 'Player16']]
     ]);
   });
 

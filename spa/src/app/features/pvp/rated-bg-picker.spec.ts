@@ -325,13 +325,13 @@ describe('rosterGroups', () => {
 });
 
 describe('COMPOSITION_CHOICES', () => {
-  it('offers 1 to 4 healers and 1 to 5 ranged and melee per team, 2, 4 and 4 at first', () => {
+  it('offers 1 to 4 healers and 1 to 5 ranged and melee per team, 3, 3 and 4 at first', () => {
     expect(COMPOSITION_CHOICES.map(choice => [choice.id, choice.label, choice.counts])).toEqual([
       ['healers', 'Healers', [1, 2, 3, 4]],
       ['ranged', 'Ranged', [1, 2, 3, 4, 5]],
       ['melee', 'Melee', [1, 2, 3, 4, 5]]
     ]);
-    expect(DEFAULT_COMPOSITION).toEqual({ healers: 2, ranged: 4, melee: 4 });
+    expect(DEFAULT_COMPOSITION).toEqual({ healers: 3, ranged: 3, melee: 4 });
   });
 });
 
@@ -347,22 +347,22 @@ describe('shuffleWarning and canShuffle', () => {
   });
 
   it('names each group with too few ticked for both teams', () => {
-    expect(shuffleWarning(ticked(3, 8, 8), DEFAULT_COMPOSITION)).toBe('tick 1 more healer');
-    expect(shuffleWarning(ticked(2, 7, 8), DEFAULT_COMPOSITION)).toBe('tick 2 more healers and 1 more ranged');
-    expect(shuffleWarning(ticked(3, 6, 5), DEFAULT_COMPOSITION)).toBe('tick 1 more healer, 2 more ranged and 3 more melee');
-    expect([ticked(3, 8, 8), ticked(2, 7, 8), ticked(4, 8, 7)].map(picked => canShuffle(picked, DEFAULT_COMPOSITION)))
+    expect(shuffleWarning(ticked(5, 6, 8), DEFAULT_COMPOSITION)).toBe('tick 1 more healer');
+    expect(shuffleWarning(ticked(4, 5, 8), DEFAULT_COMPOSITION)).toBe('tick 2 more healers and 1 more ranged');
+    expect(shuffleWarning(ticked(5, 4, 5), DEFAULT_COMPOSITION)).toBe('tick 1 more healer, 2 more ranged and 3 more melee');
+    expect([ticked(5, 6, 8), ticked(4, 5, 8), ticked(6, 6, 7)].map(picked => canShuffle(picked, DEFAULT_COMPOSITION)))
       .toEqual([false, false, false]);
   });
 
   it(`shuffles any number of ticked players from ${MATCH_SIZE} up once every group has enough`, () => {
-    expect(canShuffle(ticked(4, 8, 8), DEFAULT_COMPOSITION)).toBe(true);
-    expect(canShuffle(ticked(5, 10, 11), DEFAULT_COMPOSITION)).toBe(true);
-    expect(shuffleWarning(ticked(5, 10, 11), DEFAULT_COMPOSITION)).toBeUndefined();
+    expect(canShuffle(ticked(6, 6, 8), DEFAULT_COMPOSITION)).toBe(true);
+    expect(canShuffle(ticked(7, 8, 11), DEFAULT_COMPOSITION)).toBe(true);
+    expect(shuffleWarning(ticked(7, 8, 11), DEFAULT_COMPOSITION)).toBeUndefined();
   });
 
   it('counts tanks and characters without a known spec as melee', () => {
     const picked = rosterPlayers(roster([
-      ...ticked(4, 8, 6).map(player => entry(player.name, { class: player.classId, spec: player.spec })),
+      ...ticked(6, 6, 6).map(player => entry(player.name, { class: player.classId, spec: player.spec })),
       entry('Guardian', { class: 11, spec: 'Guardian' }),
       entry('Nospec', { spec: undefined })
     ]));
@@ -371,16 +371,16 @@ describe('shuffleWarning and canShuffle', () => {
   });
 
   it('counts two ticked characters of one person as one player', () => {
-    expect(canShuffle(withAlts(4, 7, 8, FIRE_ALTS), DEFAULT_COMPOSITION)).toBe(true);
-    expect(shuffleWarning(withAlts(4, 6, 8, FIRE_ALTS), DEFAULT_COMPOSITION)).toBe('tick 1 more ranged');
-    expect(canShuffle(withAlts(4, 6, 8, FIRE_ALTS), DEFAULT_COMPOSITION)).toBe(false);
+    expect(canShuffle(withAlts(6, 5, 8, FIRE_ALTS), DEFAULT_COMPOSITION)).toBe(true);
+    expect(shuffleWarning(withAlts(6, 4, 8, FIRE_ALTS), DEFAULT_COMPOSITION)).toBe('tick 1 more ranged');
+    expect(canShuffle(withAlts(6, 4, 8, FIRE_ALTS), DEFAULT_COMPOSITION)).toBe(false);
   });
 
   it('counts a person in the group their characters fill best', () => {
-    expect(canShuffle(withAlts(3, 8, 8, TICHO_AND_ZBAFROMTEMU), DEFAULT_COMPOSITION)).toBe(true);
-    expect(canShuffle(withAlts(4, 8, 7, TICHO_AND_ZBAFROMTEMU), DEFAULT_COMPOSITION)).toBe(true);
-    expect(canShuffle(withAlts(3, 8, 7, TICHO_AND_ZBAFROMTEMU), DEFAULT_COMPOSITION)).toBe(false);
-    expect(shuffleWarning(withAlts(2, 8, 8, TICHO_AND_ZBAFROMTEMU), DEFAULT_COMPOSITION)).toBe('tick 1 more healer');
+    expect(canShuffle(withAlts(5, 6, 8, TICHO_AND_ZBAFROMTEMU), DEFAULT_COMPOSITION)).toBe(true);
+    expect(canShuffle(withAlts(6, 6, 7, TICHO_AND_ZBAFROMTEMU), DEFAULT_COMPOSITION)).toBe(true);
+    expect(canShuffle(withAlts(5, 6, 7, TICHO_AND_ZBAFROMTEMU), DEFAULT_COMPOSITION)).toBe(false);
+    expect(shuffleWarning(withAlts(4, 6, 8, TICHO_AND_ZBAFROMTEMU), DEFAULT_COMPOSITION)).toBe('tick 1 more healer');
   });
 
   it('asks for no players while nobody is ticked, but still checks the team size', () => {
@@ -659,14 +659,14 @@ describe('playMatch', () => {
     playMatch(picked, DEFAULT_COMPOSITION, history, flagCarriers, seeded(seed));
 
   it('fills each team with the healers, ranged and melee the dropdowns ask for, and benches the rest', () => {
-    const picked = ticked(5, 10, 11);
+    const picked = ticked(7, 8, 11);
 
     for (let seed = 0; seed < 30; seed++) {
       const { match } = play(picked, NO_BENCH_HISTORY, seed);
 
       expect(match.teams.map(groupCounts)).toEqual([
-        { healers: 2, ranged: 4, melee: 4 },
-        { healers: 2, ranged: 4, melee: 4 }
+        { healers: 3, ranged: 3, melee: 4 },
+        { healers: 3, ranged: 3, melee: 4 }
       ]);
       expect(groupCounts(match.bench)).toEqual({ healers: 1, ranged: 2, melee: 3 });
       expect(keysOf([...match.teams[0], ...match.teams[1], ...match.bench])).toEqual(keysOf(picked));
@@ -691,7 +691,7 @@ describe('playMatch', () => {
   });
 
   it('benches nobody when the ticked players fill both teams exactly', () => {
-    const { match } = play(ticked(4, 8, 8));
+    const { match } = play(ticked(6, 6, 8));
 
     expect(match.bench).toEqual([]);
     expect(match.teams.map(team => team.length)).toEqual([TEAM_SIZE, TEAM_SIZE]);
@@ -700,14 +700,14 @@ describe('playMatch', () => {
   it('leaves to chance who sits out the first match', () => {
     const benches = new Set<string>();
     for (let seed = 0; seed < 20; seed++) {
-      benches.add(namesOf(play(ticked(4, 8, 11), NO_BENCH_HISTORY, seed).match.bench).join());
+      benches.add(namesOf(play(ticked(6, 6, 11), NO_BENCH_HISTORY, seed).match.bench).join());
     }
 
     expect(benches.size).toBeGreaterThan(1);
   });
 
   it('never benches one or two flag carriers, and puts two on different teams', () => {
-    const picked = ticked(5, 10, 11);
+    const picked = ticked(7, 8, 11);
 
     for (const pool of [['Melee0'], ['Healer0', 'Melee0'], ['Melee0', 'Melee1']]) {
       const flagCarriers = new Set(pool.map(name => `${name}-Evermoon`));
@@ -722,7 +722,7 @@ describe('playMatch', () => {
   });
 
   it("plays the last match's bench first, marked as back from the bench, and benches players who played it", () => {
-    const picked = ticked(5, 10, 11);
+    const picked = ticked(7, 8, 11);
 
     for (let seed = 0; seed < 20; seed++) {
       const first = play(picked, NO_BENCH_HISTORY, seed);
@@ -755,7 +755,7 @@ describe('playMatch', () => {
     match.teams.map(team => team.filter(player => flagCarriers.has(player.key)).length);
 
   it('benches three or more flag carriers in turn like everyone else, keeping two playing, one on each team', () => {
-    const picked = ticked(4, 8, 11);
+    const picked = ticked(6, 6, 11);
 
     for (const pool of [['Melee0', 'Melee1', 'Melee2'], ['Melee0', 'Melee1', 'Melee2', 'Melee3', 'Melee4']]) {
       const flagCarriers = new Set(pool.map(name => `${name}-Evermoon`));
@@ -780,7 +780,7 @@ describe('playMatch', () => {
   });
 
   it('keeps two flag carriers playing across the healers, ranged and melee together', () => {
-    const picked = ticked(5, 9, 11);
+    const picked = ticked(7, 7, 11);
     const flagCarriers = new Set(['Healer0-Evermoon', 'Ranged0-Evermoon', 'Melee0-Evermoon']);
 
     for (let seed = 0; seed < 20; seed++) {
@@ -848,7 +848,7 @@ describe('playMatch', () => {
     };
 
     for (let seed = 0; seed < 40; seed++) {
-      const { match } = playMatch(picked, DEFAULT_COMPOSITION, spukySatOut, noFlagCarriers, seeded(seed));
+      const { match } = playMatch(picked, { healers: 2, ranged: 4, melee: 4 }, spukySatOut, noFlagCarriers, seeded(seed));
 
       expect(namesOf(match.bench)).not.toContain('Spuky');
       expect(match.teams.map(team => classCount(team, 'healers', 2))).not.toContain(2);
@@ -886,7 +886,7 @@ describe('playMatch', () => {
   });
 
   it('rotates the bench of a one-class group, so nobody sits out twice before everyone in it has once', () => {
-    const picked = ticked(4, 8, 11);
+    const picked = ticked(6, 6, 11);
     const melee = picked.filter(player => player.name.startsWith('Melee'));
 
     for (let seed = 0; seed < 10; seed++) {
@@ -910,8 +910,8 @@ describe('playMatch', () => {
 
   it('keeps the turns of a player who switches spec: benched as Havoc, they play the next match as Vengeance', () => {
     const players = rosterPlayers(roster([
-      ...Array.from({ length: 4 }, (_, index) => entry(`Healer${index}`, { class: 5, spec: 'Holy' })),
-      ...Array.from({ length: 8 }, (_, index) => entry(`Ranged${index}`, { class: 8, spec: 'Fire' })),
+      ...Array.from({ length: 6 }, (_, index) => entry(`Healer${index}`, { class: 5, spec: 'Holy' })),
+      ...Array.from({ length: 6 }, (_, index) => entry(`Ranged${index}`, { class: 8, spec: 'Fire' })),
       ...Array.from({ length: 8 }, (_, index) => entry(`Melee${index}`)),
       entry('Keilalt', { realm: 'Tauri', class: 12, spec: 'Havoc' }),
       entry('Keilalt', { realm: 'Tauri', class: 12, spec: 'Vengeance' })
@@ -930,7 +930,7 @@ describe('playMatch', () => {
   });
 
   it('never plays two characters of one person, and leaves the other one out of the match', () => {
-    const picked = withAlts(4, 8, 8, FIRE_ALTS);
+    const picked = withAlts(6, 6, 8, FIRE_ALTS);
 
     for (let seed = 0; seed < 30; seed++) {
       const { match } = play(picked, NO_BENCH_HISTORY, seed);
@@ -942,7 +942,7 @@ describe('playMatch', () => {
   });
 
   it('plays either character of a person at random when both fit, and sometimes neither', () => {
-    const picked = withAlts(4, 8, 8, FIRE_ALTS);
+    const picked = withAlts(6, 6, 8, FIRE_ALTS);
     const outcomes = new Set<string>();
 
     for (let seed = 0; seed < 60; seed++) {
@@ -954,7 +954,7 @@ describe('playMatch', () => {
   });
 
   it('plays the character the teams need: the healer when the healers are one short', () => {
-    const picked = withAlts(3, 8, 8, TICHO_AND_ZBAFROMTEMU);
+    const picked = withAlts(5, 6, 8, TICHO_AND_ZBAFROMTEMU);
 
     for (let seed = 0; seed < 20; seed++) {
       const { match } = play(picked, NO_BENCH_HISTORY, seed);
@@ -967,7 +967,7 @@ describe('playMatch', () => {
   });
 
   it('counts bench turns per person, whichever character sat out or comes back', () => {
-    const picked = withAlts(4, 8, 8, FIRE_ALTS);
+    const picked = withAlts(6, 6, 8, FIRE_ALTS);
     const personSatOut: BenchHistory = {
       sitOuts: new Map([[ALT_PERSON, 1]]),
       lastMatch: new Set(picked.filter(player => player.person !== ALT_PERSON).map(player => player.person)),
@@ -997,7 +997,7 @@ describe('playMatch', () => {
   });
 
   it('counts two marked characters of one person as one flag carrier', () => {
-    const picked = withAlts(4, 8, 8, FIRE_ALTS);
+    const picked = withAlts(6, 6, 8, FIRE_ALTS);
     const flagCarriers = new Set(['Alt1-Evermoon', 'Alt2-Evermoon', 'Melee0-Evermoon']);
 
     for (let seed = 0; seed < 30; seed++) {
@@ -1009,7 +1009,7 @@ describe('playMatch', () => {
   });
 
   it("plays a person's marked character when it takes that to keep two flag carriers playing", () => {
-    const picked = withAlts(4, 8, 8, FIRE_ALTS);
+    const picked = withAlts(6, 6, 8, FIRE_ALTS);
     const flagCarriers = new Set(['Alt2-Evermoon', 'Melee0-Evermoon']);
 
     for (let seed = 0; seed < 30; seed++) {
@@ -1020,7 +1020,7 @@ describe('playMatch', () => {
   });
 
   it('plays a player ticked since the last match before those who played it', () => {
-    const everyone = ticked(4, 8, 11);
+    const everyone = ticked(6, 6, 11);
     const first = play(everyone.filter(player => player.name !== 'Melee10'), NO_BENCH_HISTORY, 3);
 
     for (let seed = 0; seed < 20; seed++) {
@@ -1034,9 +1034,9 @@ describe('playMatch', () => {
 
 describe('linkedMatch', () => {
   it("opens a link's teams with nobody on the bench, and counts its players as having played", () => {
-    const linked = ticked(4, 8, 8);
+    const linked = ticked(6, 6, 8);
     const teams = shuffleTeams(linked, seeded(5));
-    const latecomers = ticked(4, 8, 10).filter(player => ['Melee8', 'Melee9'].includes(player.name));
+    const latecomers = ticked(6, 6, 10).filter(player => ['Melee8', 'Melee9'].includes(player.name));
     const { match, history } = linkedMatch(teams);
 
     expect(match).toEqual({ teams, bench: [], backFromBench: new Set() });
