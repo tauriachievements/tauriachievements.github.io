@@ -11,5 +11,6 @@ svg {
   fill: currentColor;
 }
 
+:host(.leader) { color: #f7b500; }
 :host(.benched) { color: #b5b5b5; }
 :host(.back-from-bench) { color: #3fb68b; }

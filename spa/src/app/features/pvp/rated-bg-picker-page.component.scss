@@ -104,11 +104,16 @@ $text: #e0e0e0;
 
 .team-players .player-row {
   position: relative;
-  grid-template-columns: $icons-width minmax(0, 1fr) $number-width $number-width $carrier-width;
+  grid-template-columns: minmax(0, 1fr) $carrier-width;
   padding-block: 2px;
 
   & + .player-row { border-top: 1px solid $row-line; }
   &.flag-carrier-marked { background: rgba(255, 255, 255, 0.05); }
+  &.leader {
+    border-radius: 4px;
+    background: linear-gradient(90deg, rgba(247, 181, 0, 0.18), rgba(247, 181, 0, 0.04));
+    box-shadow: inset 0 0 0 1px rgba(247, 181, 0, 0.3);
+  }
 
   &.back-from-bench::before {
     position: absolute;
@@ -120,6 +125,30 @@ $text: #e0e0e0;
     background: $bench-color;
     content: '';
   }
+}
+
+.leader-pick {
+  display: grid;
+  grid-template-columns: $icons-width minmax(0, 1fr) $number-width $number-width;
+  align-items: center;
+  column-gap: var(--column-gap);
+  min-width: 0;
+  min-height: 30px;
+  padding: 0;
+  border: 0;
+  border-radius: 4px;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+
+  &:focus-visible { outline: 2px solid $gold; outline-offset: 2px; }
+  .leader & { cursor: default; }
+}
+
+@media (hover: hover) {
+  .team-players .player-row:not(.leader):has(.leader-pick:hover) { background: rgba(255, 255, 255, 0.035); }
 }
 
 .bench-note {
@@ -399,7 +428,7 @@ $text: #e0e0e0;
   }
 }
 
-@media (max-width: 720px) {
+@media (max-width: #{$columns-breakpoint - 1px}) {
   .composition {
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -469,8 +498,8 @@ $text: #e0e0e0;
     padding: 8px 10px;
   }
 
-  .team-players .player-row {
-    grid-template-columns: $phone-icons-width minmax(0, 1fr) $phone-number-width $phone-number-width $carrier-width;
+  .leader-pick {
+    grid-template-columns: $phone-icons-width minmax(0, 1fr) $phone-number-width $phone-number-width;
   }
 
   .list-head { grid-template-columns: 20px $phone-icons-width minmax(0, 1fr) $phone-number-width $phone-number-width $carrier-width; }
@@ -487,8 +516,8 @@ $text: #e0e0e0;
     grid-template-columns: $narrow-icons-width minmax(0, 1fr) $phone-number-width $phone-number-width;
   }
 
-  .team-players .player-row {
-    grid-template-columns: $narrow-icons-width minmax(0, 1fr) $phone-number-width $phone-number-width $carrier-width;
+  .leader-pick {
+    grid-template-columns: $narrow-icons-width minmax(0, 1fr) $phone-number-width $phone-number-width;
   }
 
   .list-head { grid-template-columns: 20px $narrow-icons-width minmax(0, 1fr) $phone-number-width $phone-number-width $carrier-width; }

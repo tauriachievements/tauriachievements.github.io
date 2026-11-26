@@ -9,7 +9,7 @@
 </span>
 <span class="player-name-cell">
   <span class="player-name" [class.missing]="!player().found" [style.color]="classColor()" [title]="player().name + '-' + player().realm">{{ player().name }}</span>
-  @if (mark(); as mark) {
+  @for (mark of marks(); track mark) {
     <app-rated-bg-mark [kind]="mark" />
   }
 </span>

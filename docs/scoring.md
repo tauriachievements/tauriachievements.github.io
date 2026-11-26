@@ -791,7 +791,7 @@ puts everyone else on the bench, taking turns from match to match.
 
 - **Code:** `rosterGroups`, `shuffleWarning`, `canShuffle`, `benchSize`, `playMatch`, `shuffleTeams`,
   `linkedMatch`, `compositionOf`, `togglePick`, `toggleFlagCarrier`, `tickedFlagCarriers`,
-  `parseTeams`, `teamGroups` and `teamSummary` in
+  `withLeader`, `parseLeaders`, `matchParams`, `parseTeams`, `teamGroups` and `teamSummary` in
   `spa/src/app/features/pvp/rated-bg-picker.ts`.
 - The list shows three groups, side by side from 1000 px and one under the other below that:
   Melee, Ranged, then Healers. Ranged holds the ranged damage specs (`range` in `LEGION_SPECS`),
@@ -807,8 +807,10 @@ puts everyone else on the bench, taking turns from match to match.
   how many healers (1 to 4), ranged (1 to 5) and melee (1 to 5) each team gets, 3, 3 and 4 at
   first (`COMPOSITION_CHOICES`, `DEFAULT_COMPOSITION`). Healers, ranged and melee are the list's
   three groups. Clear keeps the dropdowns; a reload sets them back to 3, 3 and 4. The dropdowns,
-  ticked count and Shuffle and Clear actions share one card; on phones its contents wrap inside
-  that card.
+  ticked count and Shuffle and Clear actions share one card, on one row from 1000 px. Below that,
+  where the page is at most 760 px wide and the row with Shuffle again and Change players needs
+  about 907 px, the dropdowns take a row of their own above the count and the buttons, before
+  and after the shuffle alike, so the bar keeps its height.
 - **Shuffle needs the three to add up to 10, and enough ticked players in each group for both
   teams.** Until then Shuffle stays off and the bar says why after the count, on the same line, so
   the bar keeps its height: "11 per team, a team is 10", or "tick 1 more healer and 2 more
@@ -896,6 +898,13 @@ puts everyone else on the bench, taking turns from match to match.
   class by class, then by spec and traits, as above. A gap with no heading separates the groups,
   and a group the team has nobody in is left out. The team's heading counts its healers and
   averages the item levels it knows.
+- **Each team has one group leader, who sends the invites.** The shuffle crowns the first healer
+  the team lists, so the first in its Healers group, or the first player listed when the team has
+  no healer. The leader's row has a gold crown after the name and a gold tint. Clicking any other
+  player of the team, anywhere from the class icon to the item level, moves the crown to them;
+  the FC button doesn't. Every shuffle, Shuffle again included, crowns the first healer listed
+  again, and a player who sits out can't lead. The leaders are in the shared link (`leaders`); a
+  link without them, or naming nobody on a team, crowns that team's first healer listed.
 - **Flag carriers are optional, any number can be marked, and they take turns on the bench while
   two of them play.** The `FC` button on a ticked player marks or unmarks them, in the list before
   the shuffle and in the teams after it. The bench never leaves fewer than two marked players

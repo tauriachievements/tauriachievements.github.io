@@ -231,6 +231,7 @@ export const NO_BENCH_HISTORY: BenchHistory = { sitOuts: new Map(), lastMatch: n
 
 export interface Match {
   readonly teams: Teams;
+  readonly leaders: ReadonlySet<string>;
   readonly bench: readonly RosterPlayer[];
   readonly backFromBench: ReadonlySet<string>;
 }
@@ -251,10 +252,12 @@ export function playMatch(
   const bench = benchOf(lineup, composition, history, flagCarriers, random);
   const benchKeys = new Set(bench.map(player => player.key));
   const playing = lineup.filter(player => !benchKeys.has(player.key));
+  const teams = shuffleTeams(playing, random, flagCarriers);
 
   return {
     match: {
-      teams: shuffleTeams(playing, random, flagCarriers),
+      teams,
+      leaders: teamLeaders(teams),
       bench: inTeamOrder(bench),
       backFromBench: new Set(playing.filter(player => history.sitOutStreaks.has(player.person)).map(player => player.key))
     },
@@ -269,11 +272,28 @@ export function playMatch(
   };
 }
 
-export function linkedMatch(teams: Teams): MatchResult {
+export function linkedMatch(teams: Teams, leaders: ReadonlySet<string> = teamLeaders(teams)): MatchResult {
   return {
-    match: { teams, bench: [], backFromBench: new Set() },
+    match: { teams, leaders, bench: [], backFromBench: new Set() },
     history: { ...NO_BENCH_HISTORY, lastMatch: new Set([...teams[0], ...teams[1]].map(player => player.person)) }
   };
+}
+
+export function withLeader(match: Match, key: string): Match {
+  const playing = match.teams.some(team => team.some(player => player.key === key));
+  return playing ? { ...match, leaders: teamLeaders(match.teams, [key, ...match.leaders]) } : match;
+}
+
+export function parseLeaders(value: string | null, teams: Teams): ReadonlySet<string> {
+  return teamLeaders(teams, value ? value.split(',') : []);
+}
+
+function teamLeaders(teams: Teams, named: readonly string[] = []): ReadonlySet<string> {
+  return new Set(teams.flatMap(team => {
+    const keys = inTeamOrder(team).map(player => player.key);
+    const leader = named.find(key => keys.includes(key)) ?? keys[0];
+    return leader === undefined ? [] : [leader];
+  }));
 }
 
 export function shuffleTeams(
@@ -548,10 +568,17 @@ function balancedTeams(players: readonly RosterPlayer[], random: () => number): 
   return [inTeamOrder(first), inTeamOrder(second)];
 }
 
-export function teamsParams(teams: Teams | undefined): { a: string | null; b: string | null } {
-  return teams
-    ? { a: teams[0].map(player => player.key).join(','), b: teams[1].map(player => player.key).join(',') }
-    : { a: null, b: null };
+export function matchParams(match: Match | undefined): { a: string | null; b: string | null; leaders: string | null } {
+  if (!match) {
+    return { a: null, b: null, leaders: null };
+  }
+
+  const [first, second] = match.teams.map(team => team.map(player => player.key));
+  return {
+    a: first.join(','),
+    b: second.join(','),
+    leaders: [...first, ...second].filter(key => match.leaders.has(key)).join(',')
+  };
 }
 
 export function parseTeams(a: string | null, b: string | null, players: readonly RosterPlayer[]): Teams | undefined {

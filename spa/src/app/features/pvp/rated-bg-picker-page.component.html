@@ -25,12 +25,22 @@
             </header>
             @for (group of team.groups; track group.id) {
               <ol class="team-players" [attr.aria-label]="group.label">
-                @for (player of group.players; track player.key) {
+                @for (row of group.rows; track row.player.key) {
+                  @let player = row.player;
                   <li
                     class="player-row"
                     [class.flag-carrier-marked]="isFlagCarrier(player)"
-                    [class.back-from-bench]="isBackFromBench(player)">
-                    <app-rated-bg-player [player]="player" [mark]="isBackFromBench(player) ? 'back-from-bench' : undefined" />
+                    [class.back-from-bench]="row.backFromBench"
+                    [class.leader]="row.leader">
+                    <button
+                      type="button"
+                      class="leader-pick"
+                      [attr.aria-pressed]="row.leader"
+                      [attr.aria-label]="row.leader ? player.name + ', group leader: sends the invites' : 'Make ' + player.name + ' the group leader, who sends the invites'"
+                      [title]="row.leader ? 'Group leader: sends the invites' : 'Make group leader'"
+                      (click)="setLeader(player)">
+                      <app-rated-bg-player [player]="player" [marks]="row.marks" />
+                    </button>
                     <button
                       type="button"
                       class="flag-carrier"
@@ -54,7 +64,7 @@
             </header>
             <ol class="bench-players">
               @for (player of bench(); track player.key) {
-                <li class="player-row"><app-rated-bg-player [player]="player" mark="benched" /></li>
+                <li class="player-row"><app-rated-bg-player [player]="player" [marks]="['benched']" /></li>
               }
             </ol>
           </section>

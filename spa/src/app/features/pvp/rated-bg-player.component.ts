@@ -16,7 +16,7 @@ import { RatedBgMark, RatedBgMarkComponent } from './rated-bg-mark.component';
 })
 export class RatedBgPlayerComponent {
   readonly player = input.required<RosterPlayer>();
-  readonly mark = input<RatedBgMark>();
+  readonly marks = input<readonly RatedBgMark[]>([]);
 
   readonly raceIcon = computed(() => getRaceIconPath(this.player().race, this.player().gender));
   readonly raceName = computed(() => RACE_NAMES[this.player().race] ?? 'Unknown race');
