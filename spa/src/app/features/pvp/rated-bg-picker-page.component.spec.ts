@@ -427,6 +427,21 @@ describe('RatedBgPickerPageComponent', () => {
       .toHaveLength(teamsWithReturns.length);
   });
 
+  it('puts the back-from-the-bench count before the average item level, with no dot between them', async () => {
+    const { harness, element } = await openPage('/rated-bg-picker');
+    await tick(harness, element, 24);
+    await press(harness, element, '.shuffle');
+    await press(harness, element, '.shuffle-again');
+
+    const summaries = [...element.querySelectorAll('.team')]
+      .filter(team => team.querySelector('li.back-from-bench'))
+      .map(team => team.querySelector('.team-summary')?.textContent?.replace(/\s+/g, ' ').trim());
+    expect(summaries.length).toBeGreaterThan(0);
+    for (const summary of summaries) {
+      expect(summary).toMatch(/^\d+ back from the bench avg ilvl \d{3}\.\d$/);
+    }
+  });
+
   it('shows no bench when the ticked players fill both teams exactly', async () => {
     const { harness, element } = await openPage('/rated-bg-picker', roster(20));
     await tick(harness, element, 20);
