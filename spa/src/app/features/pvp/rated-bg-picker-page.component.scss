@@ -10,6 +10,10 @@ $columns-breakpoint: 1000px;
 $first-team-color: #4a9eff;
 $second-team-color: #e5484d;
 $bench-color: #3fb68b;
+$leader-line: rgba(247, 181, 0, 0.42);
+$leader-fade: 44px;
+$leader-overhang: 12px;
+$phone-leader-overhang: 8px;
 $card: #161616;
 $line: rgba(255, 255, 255, 0.08);
 $row-line: rgba(255, 255, 255, 0.04);
@@ -110,9 +114,20 @@ $text: #e0e0e0;
   & + .player-row { border-top: 1px solid $row-line; }
   &.flag-carrier-marked { background: rgba(255, 255, 255, 0.05); }
   &.leader {
-    border-radius: 4px;
-    background: linear-gradient(90deg, rgba(247, 181, 0, 0.18), rgba(247, 181, 0, 0.04));
-    box-shadow: inset 0 0 0 1px rgba(247, 181, 0, 0.3);
+    isolation: isolate;
+    background: none;
+
+    &::after {
+      position: absolute;
+      inset: 0 (-$leader-overhang);
+      z-index: -1;
+      background:
+        linear-gradient(90deg, transparent, $leader-line $leader-fade, $leader-line calc(100% - #{$leader-fade}), transparent) top / 100% 1px no-repeat,
+        linear-gradient(90deg, transparent, $leader-line $leader-fade, $leader-line calc(100% - #{$leader-fade}), transparent) bottom / 100% 1px no-repeat,
+        linear-gradient(90deg, transparent, rgba(247, 181, 0, 0.18) $leader-fade, rgba(247, 181, 0, 0.05) calc(100% - #{$leader-fade}), transparent);
+      content: '';
+      pointer-events: none;
+    }
   }
 
   &.back-from-bench::before {
@@ -466,6 +481,7 @@ $text: #e0e0e0;
   .roster-group { padding-inline: 10px; }
 
   .team-players .player-row.back-from-bench::before { left: -7px; }
+  .team-players .player-row.leader::after { inset: 0 (-$phone-leader-overhang); }
 
   .bench-note-separator { display: none; }
 

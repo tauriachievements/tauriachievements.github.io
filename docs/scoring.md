@@ -900,7 +900,8 @@ puts everyone else on the bench, taking turns from match to match.
   averages the item levels it knows.
 - **Each team has one group leader, who sends the invites.** The shuffle crowns the first healer
   the team lists, so the first in its Healers group, or the first player listed when the team has
-  no healer. The leader's row has a gold crown after the name and a gold tint. Clicking any other
+  no healer. The leader's row has a gold crown after the name and a gold tint between two thin gold
+  lines, all three fading out at both ends of the row. Clicking any other
   player of the team, anywhere from the class icon to the item level, moves the crown to them;
   the FC button doesn't. Every shuffle, Shuffle again included, crowns the first healer listed
   again, and a player who sits out can't lead. The leaders are in the shared link (`leaders`); a
