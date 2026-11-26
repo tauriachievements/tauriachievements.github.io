@@ -6,7 +6,8 @@ public sealed record RosterCharacter(
     string Name,
     string ApiRealm,
     string DisplayRealm,
-    string? MainSpec = null
+    string? MainSpec = null,
+    string? Person = null
 )
 {
     public string Label => $"{Name}-{DisplayRealm}";
@@ -22,44 +23,43 @@ public static class RatedBgRosterList
         var specsByCharacter = new Dictionary<string, List<string?>>(
             StringComparer.OrdinalIgnoreCase
         );
+        var people = new People();
         var errors = new List<string>();
 
         for (var index = 0; index < lines.Count; index++)
         {
-            var line = lines[index].Trim().TrimEnd(',').Trim();
+            var line = lines[index].Trim();
             if (line.Length == 0 || line.StartsWith('#'))
             {
                 continue;
             }
 
-            var parts = line.Split('-', StringSplitOptions.TrimEntries);
-            var name = parts[0];
-            var mainSpec = parts.Length == 3 ? parts[2] : null;
-            if (
-                parts.Length is not (2 or 3)
-                || name.Length == 0
-                || mainSpec is ""
-                || !CharacterHelpers.TryResolveRealm(
-                    parts[1],
-                    out var apiRealm,
-                    out var displayRealm
+            var onLine = new List<RosterCharacter>();
+            foreach (
+                var part in line.Split(
+                    ',',
+                    StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries
                 )
             )
             {
-                errors.Add(
-                    $"Line {index + 1}: \"{line}\" isn't Name-Realm or Name-Realm-Spec with the realm Evermoon, Tauri or WoD."
-                );
-                continue;
+                if (ParseCharacter(part) is not { } character)
+                {
+                    errors.Add(
+                        $"Line {index + 1}: \"{part}\" isn't Name-Realm or Name-Realm-Spec with the realm Evermoon, Tauri or WoD."
+                    );
+                }
+                else if (DuplicateOf(character, specsByCharacter) is { } duplicate)
+                {
+                    errors.Add($"Line {index + 1}: {duplicate}");
+                }
+                else
+                {
+                    onLine.Add(character);
+                }
             }
 
-            var character = new RosterCharacter(name, apiRealm, displayRealm, mainSpec);
-            if (DuplicateOf(character, specsByCharacter) is { } duplicate)
-            {
-                errors.Add($"Line {index + 1}: {duplicate}");
-                continue;
-            }
-
-            characters.Add(character);
+            people.Link(onLine.Select(character => character.Label));
+            characters.AddRange(onLine);
         }
 
         if (errors.Count > 0)
@@ -72,7 +72,23 @@ public static class RatedBgRosterList
             throw new FormatException("The list names no players.");
         }
 
-        return characters;
+        return characters
+            .Select(character => character with { Person = people.PersonOf(character.Label) })
+            .ToList();
+    }
+
+    private static RosterCharacter? ParseCharacter(string text)
+    {
+        var parts = text.Split('-', StringSplitOptions.TrimEntries);
+        var name = parts[0];
+        var mainSpec = parts.Length == 3 ? parts[2] : null;
+        return
+            parts.Length is not (2 or 3)
+            || name.Length == 0
+            || mainSpec is ""
+            || !CharacterHelpers.TryResolveRealm(parts[1], out var apiRealm, out var displayRealm)
+            ? null
+            : new RosterCharacter(name, apiRealm, displayRealm, mainSpec);
     }
 
     private static string? DuplicateOf(
@@ -98,5 +114,50 @@ public static class RatedBgRosterList
 
         specs.Add(mainSpec);
         return null;
+    }
+
+    private sealed class People
+    {
+        private readonly List<string> _labelsInListOrder = [];
+        private readonly Dictionary<string, int> _personByLabel = new(
+            StringComparer.OrdinalIgnoreCase
+        );
+
+        public void Link(IEnumerable<string> labels)
+        {
+            var linked = labels.Select(PersonOrNew).Distinct().ToList();
+            if (linked.Count < 2)
+            {
+                return;
+            }
+
+            var firstListed = linked.Min();
+            foreach (var label in _labelsInListOrder)
+            {
+                if (linked.Contains(_personByLabel[label]))
+                {
+                    _personByLabel[label] = firstListed;
+                }
+            }
+        }
+
+        public string? PersonOf(string label)
+        {
+            var person = _personByLabel[label];
+            return _personByLabel.Values.Count(other => other == person) > 1
+                ? _labelsInListOrder[person]
+                : null;
+        }
+
+        private int PersonOrNew(string label)
+        {
+            if (!_personByLabel.TryGetValue(label, out var person))
+            {
+                person = _labelsInListOrder.Count;
+                _labelsInListOrder.Add(label);
+                _personByLabel[label] = person;
+            }
+            return person;
+        }
     }
 }

@@ -466,15 +466,21 @@ artifact has fewer traits than another of theirs: without it the roster takes th
 the most traits. A character who plays more than one spec gets a line per spec, each naming its
 spec (`Keilalt-Tauri-Vengeance` and `Keilalt-Tauri-Havoc`), and the page shows a row per spec.
 
+One person's characters go on one line, separated by commas, each written as on a line of its
+own: `Zerololq-Evermoon-Frost, Zerolul-Evermoon-Shadow`. The page then never plays two of them in
+one match ([scoring.md](scoring.md#rated-bg-picker-teams)). A character goes with the person of
+every line that names it, so `Keilalt-Tauri-Vengeance, Nimphel-Tauri-Marksmanship` with
+`Keilalt-Tauri-Havoc` on a line of its own makes both of Keilalt's specs and Nimphel one person.
+
 To change the list, edit the file and run `api/Run-RatedBgRoster.cmd`. It runs
 RatedBgRosterExporter, then commits the list and the roster file together as
 `sync rated bg roster data` and pushes, with the same `main` checks as `Run-Arena.cmd`. A name
 added to the list shows on the page only after that run.
 
-- RatedBgRosterExporter reads the list before it calls the API, and stops on a line that isn't
-  `Name-Realm` or `Name-Realm-Spec`, on a character listed twice for the same spec, on a
-  character listed more than once with a line that names no spec, or on a list with nobody on it,
-  naming the lines.
+- RatedBgRosterExporter reads the list before it calls the API, and stops on a character that
+  isn't `Name-Realm` or `Name-Realm-Spec`, on a character listed twice for the same spec (on one
+  line or two), on a character listed more than once with a line that names no spec, or on a list
+  with nobody on it, naming the lines.
 - It makes one `character-artifact` request per character, however many lines name it, all at
   once through `ITauriApiClient`: that response also carries the character sheet's fields
   ([tauri-api.md](tauri-api.md#characters-and-guilds)).
@@ -486,18 +492,22 @@ added to the list shows on the page only after that run.
 
 ```
 { "version": 1, "generatedAt": "2026-11-24T12:29:26Z",
-  "players": [{ name, realm, race, gender, class, spec, traits, itemLevel }, ...] }
+  "players": [{ name, realm, person, race, gender, class, spec, traits, itemLevel }, ...] }
 ```
 
-One player per line, LF, in the list's order, except that a character's lines are written together
-where it is first listed. A character listed for two specs is two players with the same `name` and
+One player per line, LF, in the list's order (a line's characters left to right), except that a
+character's lines are written together where it is first listed. `person` is only on the rows of
+a person with more than one character: the `Name-Realm` of their first listed character, as the
+armory spells it (as the list does when the armory doesn't know it), the same on each of their rows (`Keilalt-Tauri` on both of Keilalt's rows and on
+Nimphel's). A character listed for two specs alone is not a person of two characters and gets no
+`person`. A character listed for two specs is two players with the same `name` and
 `realm`; one the armory doesn't know is written once, however many lines name it. `name` is the name as the armory spells it
 (`bomboclats` in the list becomes `Bomboclats`). `spec` is the main spec the list names, else the
 spec of the artifact with the most traits, else the active spec, and `traits` that spec's
 artifact's count, spelled as the roster spells specs (`holy` in the list becomes `Holy`). Without
 a named spec both are as on the guild pages (`CharacterArtifactReader`). `itemLevel` is the API's
 `avgitemlevel`, the ladder's figure. A field the API doesn't give is left out, and a character it
-doesn't know is `{ name, realm, notFound: true }`.
+doesn't know is `{ name, realm, notFound: true }`, with `person` after `realm` when it has one.
 The page reads the file with `rosterPlayers` (`rated-bg-picker.ts`), which refuses another
 `version`; its rules are in [scoring.md](scoring.md#rated-bg-picker-teams).
 

@@ -104,6 +104,93 @@ public sealed class RatedBgRosterExportServiceTests : IDisposable
     }
 
     [Fact]
+    public void Parse_LinksTheCharactersOnOneLineAsOnePerson()
+    {
+        var characters = RatedBgRosterList.Parse([
+            "Zerololq-Evermoon-Frost, Zerolul-Evermoon-Shadow",
+            "Xyhop-Evermoon",
+            " Ticho-Tauri-Subtlety ,Zbafromtemu-evermoon-Holy, ",
+        ]);
+
+        Assert.Equal(
+            [
+                new RosterCharacter(
+                    "Zerololq",
+                    "[EN] Evermoon",
+                    "Evermoon",
+                    "Frost",
+                    "Zerololq-Evermoon"
+                ),
+                new RosterCharacter(
+                    "Zerolul",
+                    "[EN] Evermoon",
+                    "Evermoon",
+                    "Shadow",
+                    "Zerololq-Evermoon"
+                ),
+                new RosterCharacter("Xyhop", "[EN] Evermoon", "Evermoon"),
+                new RosterCharacter(
+                    "Ticho",
+                    "[HU] Tauri WoW Server",
+                    "Tauri",
+                    "Subtlety",
+                    "Ticho-Tauri"
+                ),
+                new RosterCharacter(
+                    "Zbafromtemu",
+                    "[EN] Evermoon",
+                    "Evermoon",
+                    "Holy",
+                    "Ticho-Tauri"
+                ),
+            ],
+            characters
+        );
+    }
+
+    [Fact]
+    public void Parse_LinksEverySpecLineOfALinkedCharacterToTheFirstListedCharacter()
+    {
+        var characters = RatedBgRosterList.Parse([
+            "Keilalt-Tauri-Vengeance",
+            "Xyhop-Evermoon",
+            "Nimphel-Tauri-Marksmanship, keilalt-tauri-Havoc",
+        ]);
+
+        Assert.Equal(
+            ["Keilalt-Tauri", null, "Keilalt-Tauri", "Keilalt-Tauri"],
+            characters.Select(character => character.Person)
+        );
+    }
+
+    [Fact]
+    public void Parse_GivesNoPersonToACharacterLinkedOnlyToItsOwnSpecs()
+    {
+        var characters = RatedBgRosterList.Parse([
+            "Keilalt-Tauri-Vengeance, Keilalt-Tauri-Havoc",
+            "Xyhop-Evermoon",
+        ]);
+
+        Assert.All(characters, character => Assert.Null(character.Person));
+    }
+
+    [Fact]
+    public void Parse_RejectsABadOrRepeatedCharacterOnAPersonLine()
+    {
+        var error = Assert.Throws<FormatException>(() =>
+            RatedBgRosterList.Parse([
+                "Xyhop-Evermoon",
+                "Zerololq-Evermoon-Frost, Zerolul",
+                "Zowy-Evermoon, xyhop-evermoon",
+            ])
+        );
+
+        Assert.DoesNotContain("Line 1", error.Message);
+        Assert.Contains("Line 2: \"Zerolul\" isn't Name-Realm", error.Message);
+        Assert.Contains("Line 3: xyhop-Evermoon is already listed.", error.Message);
+    }
+
+    [Fact]
     public void Parse_RejectsACharacterListedTwiceForTheSameSpec()
     {
         var error = Assert.Throws<FormatException>(() =>
@@ -430,6 +517,44 @@ public sealed class RatedBgRosterExportServiceTests : IDisposable
             players[0].GetRawText()
         );
         Assert.Equal(["Typo"], result.NotFound.Select(player => player.Name));
+    }
+
+    [Fact]
+    public async Task ExportAsync_WritesThePersonOfLinkedCharactersAsTheArmorySpellsTheFirst()
+    {
+        var apiClient = new FakeArtifactApiClient(
+            new Dictionary<string, object>
+            {
+                ["zerololq"] = Character("Zerololq", 2, 1, 6, 892),
+                ["Zerolul"] = Character("Zerolul", 2, 1, 5, 880),
+                ["Xyhop"] = Character("Xyhop", 9, 1, 5, 886),
+            },
+            notFound: ["Typo"]
+        );
+
+        var result = await ExportAsync(
+            apiClient,
+            new RosterCharacter("zerololq", "[EN] Evermoon", "Evermoon", null, "zerololq-Evermoon"),
+            new RosterCharacter("Zerolul", "[EN] Evermoon", "Evermoon", null, "zerololq-Evermoon"),
+            new RosterCharacter("Typo", "[EN] Evermoon", "Evermoon", null, "zerololq-Evermoon"),
+            new RosterCharacter("Xyhop", "[EN] Evermoon", "Evermoon")
+        );
+
+        var players = await ReadPlayersAsync(result.OutputPath);
+        Assert.Equal(
+            ["Zerololq-Evermoon", "Zerololq-Evermoon", "Zerololq-Evermoon", null],
+            players.Select(player =>
+                player.TryGetProperty("person", out var person) ? person.GetString() : null
+            )
+        );
+        Assert.StartsWith(
+            """{"name":"Zerololq","realm":"Evermoon","person":"Zerololq-Evermoon","race":2,""",
+            players[0].GetRawText()
+        );
+        Assert.Equal(
+            """{"name":"Typo","realm":"Evermoon","person":"Zerololq-Evermoon","notFound":true}""",
+            players[2].GetRawText()
+        );
     }
 
     [Fact]

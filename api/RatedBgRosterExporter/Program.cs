@@ -16,7 +16,9 @@ internal static class Program
         optionally followed by the player's main spec: Llýnch-Evermoon-Holy) and writes each
         player's race, class, spec, artifact traits and item level to
         spa/src/rated-bg-roster.json. A character who plays more than one spec gets a line per
-        spec: Keilalt-Tauri-Vengeance and Keilalt-Tauri-Havoc.
+        spec: Keilalt-Tauri-Vengeance and Keilalt-Tauri-Havoc. One person's characters go on one
+        line, separated by commas, so the page never plays two of them in one match:
+        Zerololq-Evermoon-Frost, Zerolul-Evermoon-Shadow.
 
         Options:
           --help   Show this help text.
@@ -109,7 +111,14 @@ internal static class Program
 
     private static string Describe(RosterPlayer player)
     {
-        var character = $"{player.Name}-{player.Realm}".PadRight(26);
+        var label = $"{player.Name}-{player.Realm}";
+        var samePlayer =
+            player.Person is { } person && person != label ? $"  same player as {person}" : "";
+        return $"{DescribeCharacter(player, label.PadRight(26))}{samePlayer}";
+    }
+
+    private static string DescribeCharacter(RosterPlayer player, string character)
+    {
         if (!player.Found)
         {
             return $"{character}not found on the armory";

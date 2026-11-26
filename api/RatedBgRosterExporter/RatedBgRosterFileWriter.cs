@@ -60,6 +60,10 @@ public static class RatedBgRosterFileWriter
         item.WriteStartObject();
         item.WriteString("name", player.Name);
         item.WriteString("realm", player.Realm);
+        if (player.Person is { } person)
+        {
+            item.WriteString("person", person);
+        }
         if (!player.Found)
         {
             item.WriteBoolean("notFound", true);
