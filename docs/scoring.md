@@ -789,7 +789,7 @@ decision: ask first.** When a rule does change, change its tests first and see t
 The unlisted `/rated-bg-picker` page splits the players who turned up into two teams of 10 and
 puts everyone else on the bench, taking turns from match to match.
 
-- **Code:** `rosterGroups`, `shuffleWarning`, `canShuffle`, `playMatch`, `shuffleTeams`,
+- **Code:** `rosterGroups`, `shuffleWarning`, `canShuffle`, `benchSize`, `playMatch`, `shuffleTeams`,
   `linkedMatch`, `compositionOf`, `togglePick`, `toggleFlagCarrier`, `tickedFlagCarriers`,
   `parseTeams`, `teamGroups` and `teamSummary` in
   `spa/src/app/features/pvp/rated-bg-picker.ts`.
@@ -860,11 +860,30 @@ puts everyone else on the bench, taking turns from match to match.
   time can be ticked.** Each row sits in its spec's group: Keilalt as Vengeance and as Havoc both
   under Melee, Solaureus as Retribution under Melee and as Holy under Healers. Ticking another of
   a character's specs unticks the one ticked before, and drops its flag-carrier mark. The bench
-  counts above follow the character, not the row, so a player who sat out as Havoc plays the next
-  match first when ticked as Vengeance instead.
+  counts above follow the person (below), not the row, so a player who sat out as Havoc plays the
+  next match first when ticked as Vengeance instead.
+- **One person's characters can all be ticked, and at most one of them plays.** The hand list
+  links them ([data-pipeline.md](data-pipeline.md#rated-bg-roster)): Zerololq and Zerolul,
+  Keilalt (both specs) and Nimphel, Ticho and Zbafromtemu. A person counts once: in the bench
+  counts above, in "N on the bench" (the bar's "ticked" still counts ticks), and in the check that
+  each group has enough ticked players, where they count in whichever group leaves the fewest
+  missing. Before the bench, the shuffle picks one character per person: it tries every
+  combination of the people's ticked characters that fills both teams and keeps the one whose
+  bench does best on the rules above, the most flag carriers kept playing (up to two) first. Equal
+  ones are random. The person then plays or sits out as that character; their other characters
+  show nowhere in the match, so a person who sits out is on the bench once. Two marked characters
+  of one person count as one flag carrier.
+
+  Because bench turns go per person, a person with characters in two groups mostly plays the one
+  in the group with fewer players waiting, about as often as that group's players. On the 26 Nov
+  2026 list with everyone ticked and 2, 4 and 4 per team, over 1,200 matches: Zerolul (Shadow,
+  ranged) played 63% of matches and Zerololq (Frost Death Knight, melee) none, Nimphel 62% and
+  Keilalt none, Zbafromtemu 10% and Ticho 33%, against 61% for the other ranged, 43% for melee and
+  35% for healers. Each linked person doubles the combinations tried: a shuffle took 2.6 ms with
+  the list's three, 41 ms with five more pairs and 319 ms with eight more.
 - A shared link names each player as `Name-Realm`, or `Name-Realm-Spec` for a character with more
-  than one row. A link that names one character twice, or a player the list no longer has, opens
-  no teams: the page says the link no longer matches the list.
+  than one row. A link that names one character or one person twice, or a player the list no
+  longer has, opens no teams: the page says the link no longer matches the list.
 - A shared link opens on the teams it names, with nobody on the bench, even when a respec since
   has left their groups uneven: the link records the teams as they were picked. When both teams
   have the same number of healers, ranged and melee, and each number is on its dropdown, the

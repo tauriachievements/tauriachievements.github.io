@@ -195,6 +195,23 @@ describe('RatedBgPickerPageComponent', () => {
     expect(button(element, '.shuffle')?.disabled).toBe(false);
   });
 
+  it('counts two ticked characters of one person once on the bench, and puts only one of them in the match', async () => {
+    const file = roster(24);
+    const { harness, element } = await openPage('/rated-bg-picker', {
+      ...file,
+      players: [...file.players, entry(24, { person: 'Player24-Evermoon' }), entry(25, { person: 'Player24-Evermoon' })]
+    });
+    await tick(harness, element, 26);
+
+    expect(barText(element)).toBe('26 ticked · 5 on the bench');
+
+    await press(harness, element, '.shuffle');
+    const inMatch = [...teamNames(element).flat(), ...benchNames(element)];
+    expect(inMatch).toHaveLength(25);
+    expect(inMatch.filter(name => name === 'Player24' || name === 'Player25')).toHaveLength(1);
+    expect(element.querySelector('.bench .team-summary')?.textContent?.trim()).toBe('5 players');
+  });
+
   it("unticks a character's other spec when one of their specs is ticked", async () => {
     const solaureus = { name: 'Solaureus', realm: 'Evermoon', race: 1, gender: 0, class: 2, traits: 37, itemLevel: 879 };
     const { harness, element } = await openPage('/rated-bg-picker', {

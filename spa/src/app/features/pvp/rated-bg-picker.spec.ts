@@ -13,6 +13,7 @@ import {
   TEAM_SIZE,
   TeamComposition,
   Teams,
+  benchSize,
   canShuffle,
   compositionOf,
   linkedMatch,
@@ -59,13 +60,33 @@ function twenty(healers: number): RosterPlayer[] {
 
 const healerCount = (team: readonly RosterPlayer[]) => team.filter(player => player.role === 'healer').length;
 
-function ticked(healers: number, ranged: number, melee: number): RosterPlayer[] {
-  return rosterPlayers(roster([
+function tickedEntries(healers: number, ranged: number, melee: number): RatedBgRosterEntry[] {
+  return [
     ...Array.from({ length: healers }, (_, index) => entry(`Healer${index}`, { class: 5, spec: 'Holy' })),
     ...Array.from({ length: ranged }, (_, index) => entry(`Ranged${index}`, { class: 8, spec: 'Fire' })),
     ...Array.from({ length: melee }, (_, index) => entry(`Melee${index}`))
-  ]));
+  ];
 }
+
+function ticked(healers: number, ranged: number, melee: number): RosterPlayer[] {
+  return rosterPlayers(roster(tickedEntries(healers, ranged, melee)));
+}
+
+const ALT_PERSON = 'Alt1-Evermoon';
+
+const FIRE_ALTS: RatedBgRosterEntry[] = ['Alt1', 'Alt2'].map(name => entry(name, { class: 8, spec: 'Fire', person: ALT_PERSON }));
+
+const TICHO_AND_ZBAFROMTEMU: RatedBgRosterEntry[] = [
+  entry('Ticho', { realm: 'Tauri', class: 4, spec: 'Subtlety', person: 'Ticho-Tauri' }),
+  entry('Zbafromtemu', { class: 5, spec: 'Holy', person: 'Ticho-Tauri' })
+];
+
+function withAlts(healers: number, ranged: number, melee: number, alts: readonly RatedBgRosterEntry[]): RosterPlayer[] {
+  return rosterPlayers(roster([...tickedEntries(healers, ranged, melee), ...alts]));
+}
+
+const altsIn = (players: readonly RosterPlayer[]) =>
+  players.filter(player => player.person === ALT_PERSON).map(player => player.name).sort();
 
 const groupCounts = (players: readonly RosterPlayer[]) =>
   Object.fromEntries(teamGroups(players).map(group => [group.id, group.players.length]));
@@ -197,6 +218,20 @@ describe('rosterPlayers', () => {
       ['Pesi', 'dps', 'melee'],
       ['Xyhop', 'dps', 'ranged'],
       ['Zowy', 'tank', undefined]
+    ]);
+  });
+
+  it('gives each player the person the file links them to, else their own character', () => {
+    const players = rosterPlayers(roster([
+      entry('Zerololq', { class: 8, spec: 'Frost', person: 'Zerololq-Evermoon' }),
+      entry('Xyhop', { class: 5, spec: 'Shadow' }),
+      entry('Zerolul', { class: 5, spec: 'Shadow', person: 'Zerololq-Evermoon' })
+    ]));
+
+    expect(players.map(player => [player.key, player.person])).toEqual([
+      ['Xyhop-Evermoon', 'Xyhop-Evermoon'],
+      ['Zerololq-Evermoon', 'Zerololq-Evermoon'],
+      ['Zerolul-Evermoon', 'Zerololq-Evermoon']
     ]);
   });
 
@@ -335,6 +370,19 @@ describe('shuffleWarning and canShuffle', () => {
     expect(canShuffle(picked, DEFAULT_COMPOSITION)).toBe(true);
   });
 
+  it('counts two ticked characters of one person as one player', () => {
+    expect(canShuffle(withAlts(4, 7, 8, FIRE_ALTS), DEFAULT_COMPOSITION)).toBe(true);
+    expect(shuffleWarning(withAlts(4, 6, 8, FIRE_ALTS), DEFAULT_COMPOSITION)).toBe('tick 1 more ranged');
+    expect(canShuffle(withAlts(4, 6, 8, FIRE_ALTS), DEFAULT_COMPOSITION)).toBe(false);
+  });
+
+  it('counts a person in the group their characters fill best', () => {
+    expect(canShuffle(withAlts(3, 8, 8, TICHO_AND_ZBAFROMTEMU), DEFAULT_COMPOSITION)).toBe(true);
+    expect(canShuffle(withAlts(4, 8, 7, TICHO_AND_ZBAFROMTEMU), DEFAULT_COMPOSITION)).toBe(true);
+    expect(canShuffle(withAlts(3, 8, 7, TICHO_AND_ZBAFROMTEMU), DEFAULT_COMPOSITION)).toBe(false);
+    expect(shuffleWarning(withAlts(2, 8, 8, TICHO_AND_ZBAFROMTEMU), DEFAULT_COMPOSITION)).toBe('tick 1 more healer');
+  });
+
   it('asks for no players while nobody is ticked, but still checks the team size', () => {
     expect(shuffleWarning([], DEFAULT_COMPOSITION)).toBeUndefined();
     expect(canShuffle([], DEFAULT_COMPOSITION)).toBe(false);
@@ -342,7 +390,23 @@ describe('shuffleWarning and canShuffle', () => {
   });
 });
 
+describe('benchSize', () => {
+  it(`counts who sits out beyond the ${MATCH_SIZE} who play, two characters of one person as one`, () => {
+    expect(benchSize(ticked(5, 10, 11))).toBe(6);
+    expect(benchSize(withAlts(4, 8, 8, FIRE_ALTS))).toBe(1);
+    expect(benchSize(ticked(4, 8, 7))).toBe(0);
+  });
+});
+
 describe('togglePick', () => {
+  it('ticks both characters of one person', () => {
+    const players = rosterPlayers(roster(FIRE_ALTS));
+
+    expect([...togglePick(togglePick(new Set(), players[0], players), players[1], players)].sort())
+      .toEqual(['Alt1-Evermoon', 'Alt2-Evermoon']);
+  });
+
+
   it('ticks a player and unticks a ticked one', () => {
     const players = rosterPlayers(roster([entry('Xyhop')]));
     const ticked = togglePick(new Set(), players[0], players);
@@ -865,6 +929,96 @@ describe('playMatch', () => {
     }
   });
 
+  it('never plays two characters of one person, and leaves the other one out of the match', () => {
+    const picked = withAlts(4, 8, 8, FIRE_ALTS);
+
+    for (let seed = 0; seed < 30; seed++) {
+      const { match } = play(picked, NO_BENCH_HISTORY, seed);
+
+      expect(altsIn([...match.teams[0], ...match.teams[1], ...match.bench])).toHaveLength(1);
+      expect(match.teams.map(team => team.length)).toEqual([TEAM_SIZE, TEAM_SIZE]);
+      expect(match.bench).toHaveLength(1);
+    }
+  });
+
+  it('plays either character of a person at random when both fit, and sometimes neither', () => {
+    const picked = withAlts(4, 8, 8, FIRE_ALTS);
+    const outcomes = new Set<string>();
+
+    for (let seed = 0; seed < 60; seed++) {
+      const { match } = play(picked, NO_BENCH_HISTORY, seed);
+      outcomes.add(altsIn(match.bench).length ? 'bench' : altsIn([...match.teams[0], ...match.teams[1]]).join());
+    }
+
+    expect([...outcomes].sort()).toEqual(['Alt1', 'Alt2', 'bench']);
+  });
+
+  it('plays the character the teams need: the healer when the healers are one short', () => {
+    const picked = withAlts(3, 8, 8, TICHO_AND_ZBAFROMTEMU);
+
+    for (let seed = 0; seed < 20; seed++) {
+      const { match } = play(picked, NO_BENCH_HISTORY, seed);
+      const playing = namesOf([...match.teams[0], ...match.teams[1]]);
+
+      expect(playing).toContain('Zbafromtemu');
+      expect(playing).not.toContain('Ticho');
+      expect(match.bench).toEqual([]);
+    }
+  });
+
+  it('counts bench turns per person, whichever character sat out or comes back', () => {
+    const picked = withAlts(4, 8, 8, FIRE_ALTS);
+    const personSatOut: BenchHistory = {
+      sitOuts: new Map([[ALT_PERSON, 1]]),
+      lastMatch: new Set(picked.filter(player => player.person !== ALT_PERSON).map(player => player.person)),
+      sitOutStreaks: new Map([[ALT_PERSON, 1]])
+    };
+    const backAs = new Set<string>();
+
+    for (let seed = 0; seed < 30; seed++) {
+      const { match, history } = play(picked, personSatOut, seed);
+      const [playingAs] = altsIn([...match.teams[0], ...match.teams[1]]);
+
+      expect(altsIn(match.bench)).toEqual([]);
+      expect([...match.backFromBench]).toEqual([`${playingAs}-Evermoon`]);
+      expect(history.lastMatch.has(ALT_PERSON)).toBe(true);
+      backAs.add(playingAs);
+    }
+    expect([...backAs].sort()).toEqual(['Alt1', 'Alt2']);
+
+    const benchedPeople = new Set<string>();
+    for (let seed = 0; seed < 60; seed++) {
+      const { match, history } = play(picked, NO_BENCH_HISTORY, seed);
+      if (altsIn(match.bench).length) {
+        benchedPeople.add([...history.sitOutStreaks.keys(), ...history.sitOuts.keys()].join());
+      }
+    }
+    expect([...benchedPeople]).toEqual([`${ALT_PERSON},${ALT_PERSON}`]);
+  });
+
+  it('counts two marked characters of one person as one flag carrier', () => {
+    const picked = withAlts(4, 8, 8, FIRE_ALTS);
+    const flagCarriers = new Set(['Alt1-Evermoon', 'Alt2-Evermoon', 'Melee0-Evermoon']);
+
+    for (let seed = 0; seed < 30; seed++) {
+      const { match } = play(picked, NO_BENCH_HISTORY, seed, flagCarriers);
+
+      expect(altsIn(match.bench)).toEqual([]);
+      expect(carriersPlaying(match, flagCarriers).sort()).toEqual([1, 1]);
+    }
+  });
+
+  it("plays a person's marked character when it takes that to keep two flag carriers playing", () => {
+    const picked = withAlts(4, 8, 8, FIRE_ALTS);
+    const flagCarriers = new Set(['Alt2-Evermoon', 'Melee0-Evermoon']);
+
+    for (let seed = 0; seed < 30; seed++) {
+      const { match } = play(picked, NO_BENCH_HISTORY, seed, flagCarriers);
+
+      expect(altsIn([...match.teams[0], ...match.teams[1]])).toEqual(['Alt2']);
+    }
+  });
+
   it('plays a player ticked since the last match before those who played it', () => {
     const everyone = ticked(4, 8, 11);
     const first = play(everyone.filter(player => player.name !== 'Melee10'), NO_BENCH_HISTORY, 3);
@@ -969,6 +1123,16 @@ describe('teamsParams and parseTeams', () => {
     expect(parseTeams([...a.slice(1), 'Gone-Evermoon'].join(','), b.join(','), players)).toBeUndefined();
     expect(parseTeams([...a.slice(1), b[0]].join(','), b.join(','), players)).toBeUndefined();
     expect(parseTeams([...a.slice(1), a[1]].join(','), b.join(','), players)).toBeUndefined();
+  });
+});
+
+describe('parseTeams with two characters of one person', () => {
+  it('ignores a link that puts both on the field', () => {
+    const players = rosterPlayers(roster([...Array.from({ length: 18 }, (_, index) => entry(`Player${index}`)), ...FIRE_ALTS]));
+    const others = players.filter(player => player.person !== ALT_PERSON).map(player => player.key);
+
+    expect(parseTeams([...others.slice(0, 9), 'Alt1-Evermoon'].join(','), [...others.slice(9), 'Alt2-Evermoon'].join(','), players))
+      .toBeUndefined();
   });
 });
 

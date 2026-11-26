@@ -19,11 +19,23 @@ public sealed record RosterPlayer(
     int Class,
     string Specialization,
     int? Traits,
-    decimal? ItemLevel
+    decimal? ItemLevel,
+    string? Person = null
 )
 {
     public static RosterPlayer Missing(RosterCharacter character) =>
-        new(character.Name, character.DisplayRealm, false, 0, 0, 0, string.Empty, null, null);
+        new(
+            character.Name,
+            character.DisplayRealm,
+            false,
+            0,
+            0,
+            0,
+            string.Empty,
+            null,
+            null,
+            character.Person
+        );
 }
 
 public sealed class RatedBgRosterExportService(string outputDirectory, ITauriApiClient apiClient)
@@ -55,7 +67,7 @@ public sealed class RatedBgRosterExportService(string outputDirectory, ITauriApi
             );
         }
 
-        var players = reads.SelectMany(read => read.Players).ToList();
+        var players = WithArmoryPersons(reads);
         var outputPath = Path.Combine(_outputDirectory, FileName);
         await RatedBgRosterFileWriter.WriteAsync(
             outputPath,
@@ -135,7 +147,8 @@ public sealed class RatedBgRosterExportService(string outputDirectory, ITauriApi
                     ReadInt(response, "class"),
                     weapon?.Specialization ?? bestSpecialization,
                     weapon?.Traits ?? artifacts?.TraitCount,
-                    CharacterResponseMapper.ReadItemLevel(response)
+                    CharacterResponseMapper.ReadItemLevel(response),
+                    line.Person
                 );
             })
             .ToList();
@@ -146,6 +159,29 @@ public sealed class RatedBgRosterExportService(string outputDirectory, ITauriApi
             .ToList();
 
         return new CharacterRead(label, players, null, warnings);
+    }
+
+    private static List<RosterPlayer> WithArmoryPersons(IReadOnlyList<CharacterRead> reads)
+    {
+        var armoryLabels = reads
+            .Where(read => read.Players.Count > 0)
+            .ToDictionary(
+                read => read.Label,
+                read => $"{read.Players[0].Name}-{read.Players[0].Realm}",
+                StringComparer.OrdinalIgnoreCase
+            );
+
+        return reads
+            .SelectMany(read => read.Players)
+            .Select(player =>
+                player.Person is { } person
+                    ? player with
+                    {
+                        Person = armoryLabels.GetValueOrDefault(person, person),
+                    }
+                    : player
+            )
+            .ToList();
     }
 
     private static ArtifactWeapon? WeaponOf(CharacterArtifacts? artifacts, string specialization) =>

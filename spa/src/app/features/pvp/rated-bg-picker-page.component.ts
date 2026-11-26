@@ -25,7 +25,6 @@ import { prefersReducedMotion } from '../../shared/motion/motion';
 import {
   COMPOSITION_CHOICES,
   DEFAULT_COMPOSITION,
-  MATCH_SIZE,
   Match,
   NO_BENCH_HISTORY,
   RATED_BG_ROSTER_FILE,
@@ -33,6 +32,7 @@ import {
   RosterGroupId,
   RosterPlayer,
   TeamComposition,
+  benchSize,
   canShuffle,
   compositionOf,
   linkedMatch,
@@ -98,7 +98,7 @@ export class RatedBgPickerPageComponent implements OnInit {
   });
   readonly shuffleWarning = computed(() => shuffleWarning(this.pickedPlayers(), this.composition()));
   readonly readyToShuffle = computed(() => canShuffle(this.pickedPlayers(), this.composition()));
-  readonly benchCount = computed(() => this.readyToShuffle() ? this.pickedCount() - MATCH_SIZE : 0);
+  readonly benchCount = computed(() => this.readyToShuffle() ? benchSize(this.pickedPlayers()) : 0);
   readonly compositionOpen = computed(() =>
     this.compositionChoices.some(choice => this.dropdowns.isOpen(choice.dropdownId)));
   readonly groups = computed(() => {

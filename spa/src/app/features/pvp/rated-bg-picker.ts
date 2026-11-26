@@ -12,6 +12,7 @@ const MAX_SHUFFLES = 1000;
 export interface RatedBgRosterEntry {
   readonly name: string;
   readonly realm: string;
+  readonly person?: string;
   readonly notFound?: boolean;
   readonly race?: number;
   readonly gender?: number;
@@ -30,6 +31,7 @@ export interface RatedBgRosterFile {
 export interface RosterPlayer {
   readonly key: string;
   readonly character: string;
+  readonly person: string;
   readonly name: string;
   readonly realm: string;
   readonly found: boolean;
@@ -129,11 +131,51 @@ export function shuffleWarning(picked: readonly RosterPlayer[], composition: Tea
     return undefined;
   }
 
-  const missing = COMPOSITION_CHOICES.flatMap(({ id }) => {
-    const short = 2 * composition[id] - groupSize(picked, id);
-    return short > 0 ? [`${short} more ${groupNoun(id, short)}`] : [];
-  });
+  const missing = fewestMissing(lineupsOf(picked), composition)
+    .flatMap(({ id, short }) => short > 0 ? [`${short} more ${groupNoun(id, short)}`] : []);
   return missing.length ? `tick ${listed(missing)}` : undefined;
+}
+
+interface Shortfall {
+  readonly id: RosterGroupId;
+  readonly short: number;
+}
+
+function missingFrom(lineup: readonly RosterPlayer[], composition: TeamComposition): Shortfall[] {
+  return COMPOSITION_CHOICES.map(({ id }) => ({ id, short: Math.max(0, 2 * composition[id] - groupSize(lineup, id)) }));
+}
+
+function fewestMissing(lineups: readonly (readonly RosterPlayer[])[], composition: TeamComposition): Shortfall[] {
+  return lineups
+    .map(lineup => missingFrom(lineup, composition))
+    .reduce((fewest, missing) => totalShort(missing) < totalShort(fewest) ? missing : fewest);
+}
+
+function totalShort(missing: readonly Shortfall[]): number {
+  return missing.reduce((sum, { short }) => sum + short, 0);
+}
+
+function lineupsOf(picked: readonly RosterPlayer[]): RosterPlayer[][] {
+  const charactersByPerson = new Map<string, RosterPlayer[]>();
+  for (const player of picked) {
+    charactersByPerson.set(player.person, [...charactersByPerson.get(player.person) ?? [], player]);
+  }
+
+  const alternatives = [...charactersByPerson.values()].filter(characters => characters.length > 1);
+  const alternativeKeys = new Set(alternatives.flat().map(player => player.key));
+  return alternatives
+    .reduce<RosterPlayer[][]>(
+      (partials, characters) => partials.flatMap(chosen => characters.map(character => [...chosen, character])),
+      [[]]
+    )
+    .map(chosen => {
+      const chosenKeys = new Set(chosen.map(player => player.key));
+      return picked.filter(player => !alternativeKeys.has(player.key) || chosenKeys.has(player.key));
+    });
+}
+
+export function benchSize(picked: readonly RosterPlayer[]): number {
+  return Math.max(0, new Set(picked.map(player => player.person)).size - MATCH_SIZE);
 }
 
 export function canShuffle(picked: readonly RosterPlayer[], composition: TeamComposition): boolean {
@@ -205,23 +247,24 @@ export function playMatch(
   flagCarriers: ReadonlySet<string>,
   random: () => number = Math.random
 ): MatchResult {
-  const bench = benchOf(picked, composition, history, flagCarriers, random);
+  const lineup = lineupOf(picked, composition, history, flagCarriers, random);
+  const bench = benchOf(lineup, composition, history, flagCarriers, random);
   const benchKeys = new Set(bench.map(player => player.key));
-  const playing = picked.filter(player => !benchKeys.has(player.key));
+  const playing = lineup.filter(player => !benchKeys.has(player.key));
 
   return {
     match: {
       teams: shuffleTeams(playing, random, flagCarriers),
       bench: inTeamOrder(bench),
-      backFromBench: new Set(playing.filter(player => history.sitOutStreaks.has(player.character)).map(player => player.key))
+      backFromBench: new Set(playing.filter(player => history.sitOutStreaks.has(player.person)).map(player => player.key))
     },
     history: {
       sitOuts: new Map([
         ...history.sitOuts,
-        ...bench.map(player => [player.character, sitOutsOf(history, player) + 1] as const)
+        ...bench.map(player => [player.person, sitOutsOf(history, player) + 1] as const)
       ]),
-      lastMatch: new Set(playing.map(player => player.character)),
-      sitOutStreaks: new Map(bench.map(player => [player.character, sitOutStreakOf(history, player) + 1]))
+      lastMatch: new Set(playing.map(player => player.person)),
+      sitOutStreaks: new Map(bench.map(player => [player.person, sitOutStreakOf(history, player) + 1]))
     }
   };
 }
@@ -229,7 +272,7 @@ export function playMatch(
 export function linkedMatch(teams: Teams): MatchResult {
   return {
     match: { teams, bench: [], backFromBench: new Set() },
-    history: { ...NO_BENCH_HISTORY, lastMatch: new Set([...teams[0], ...teams[1]].map(player => player.character)) }
+    history: { ...NO_BENCH_HISTORY, lastMatch: new Set([...teams[0], ...teams[1]].map(player => player.person)) }
   };
 }
 
@@ -251,56 +294,97 @@ interface BenchGroup {
   readonly seats: number;
 }
 
-function benchOf(
+function lineupOf(
   picked: readonly RosterPlayer[],
   composition: TeamComposition,
   history: BenchHistory,
   flagCarriers: ReadonlySet<string>,
   random: () => number
-): RosterPlayer[] {
-  const groups = COMPOSITION_CHOICES.map(({ id }) => benchGroup(
-    picked.filter(player => rosterGroupOf(player) === id),
-    2 * composition[id],
-    history,
-    random
-  ));
-  const tickedCarriers = picked.filter(player => flagCarriers.has(player.key)).length;
-  const carriersToBench = flagCarriersToBench(
-    groups.map(group => leastBenchCosts(group, [], group.candidates, history, flagCarriers)),
-    tickedCarriers - Math.min(tickedCarriers, PLAYING_FLAG_CARRIERS),
-    random
-  );
-  return groups.flatMap((group, index) => benchFrom(group, carriersToBench[index], history, flagCarriers));
+): readonly RosterPlayer[] {
+  const lineups = lineupsOf(picked);
+  if (lineups.length === 1) {
+    return lineups[0];
+  }
+
+  const filling = lineups.filter(lineup => totalShort(missingFrom(lineup, composition)) === 0);
+  const candidates = filling.length ? filling : lineups;
+  const costs = candidates.map(lineup => lineupCost(lineup, composition, history, flagCarriers));
+  const least = costs.reduce((best, cost) => compareCosts(cost, best) < 0 ? cost : best);
+  return atRandom(candidates.filter((_, index) => compareCosts(costs[index], least) === 0), random);
 }
 
-function benchGroup(
-  players: readonly RosterPlayer[],
-  playing: number,
+function lineupCost(
+  lineup: readonly RosterPlayer[],
+  composition: TeamComposition,
   history: BenchHistory,
-  random: () => number
-): BenchGroup {
-  return {
-    candidates: shuffled(players, random).sort((a, b) => compareCosts(sitOutCost(history, a), sitOutCost(history, b))),
-    classSizes: classSizesOf(players),
-    seats: Math.max(0, players.length - playing)
-  };
+  flagCarriers: ReadonlySet<string>
+): readonly number[] {
+  const groups = benchGroups(lineup, composition, history, players => [...players]);
+  const carriers = flagCarriersIn(lineup, flagCarriers);
+  const [cheapest] = cheapestSplits(groups, carriers, history, flagCarriers);
+  return [PLAYING_FLAG_CARRIERS - Math.min(carriers, PLAYING_FLAG_CARRIERS), ...cheapest.cost];
 }
 
-function flagCarriersToBench(
-  costsByGroup: readonly BenchCosts[],
-  most: number,
+function benchOf(
+  lineup: readonly RosterPlayer[],
+  composition: TeamComposition,
+  history: BenchHistory,
+  flagCarriers: ReadonlySet<string>,
   random: () => number
-): readonly number[] {
-  const splits = costsByGroup.reduce<{ readonly counts: readonly number[]; readonly benched: number; readonly cost: BenchCost }[]>(
-    (partials, costs) => partials.flatMap(({ counts, benched, cost }) => costs.flatMap((groupCost, carriers) =>
-      groupCost && benched + carriers <= most
-        ? [{ counts: [...counts, carriers], benched: benched + carriers, cost: addCosts(cost, groupCost) }]
-        : [])),
-    [{ counts: [], benched: 0, cost: NO_COST }]
-  );
+): RosterPlayer[] {
+  const groups = benchGroups(lineup, composition, history, players => shuffled(players, random));
+  const { counts } = atRandom(cheapestSplits(groups, flagCarriersIn(lineup, flagCarriers), history, flagCarriers), random);
+  return groups.flatMap((group, index) => benchFrom(group, counts[index], history, flagCarriers));
+}
+
+function flagCarriersIn(players: readonly RosterPlayer[], flagCarriers: ReadonlySet<string>): number {
+  return players.filter(player => flagCarriers.has(player.key)).length;
+}
+
+function benchGroups(
+  lineup: readonly RosterPlayer[],
+  composition: TeamComposition,
+  history: BenchHistory,
+  order: (players: readonly RosterPlayer[]) => RosterPlayer[]
+): BenchGroup[] {
+  return COMPOSITION_CHOICES.map(({ id }) => {
+    const players = lineup.filter(player => rosterGroupOf(player) === id);
+    return {
+      candidates: order(players).sort((a, b) => compareCosts(sitOutCost(history, a), sitOutCost(history, b))),
+      classSizes: classSizesOf(players),
+      seats: Math.max(0, players.length - 2 * composition[id])
+    };
+  });
+}
+
+interface BenchSplit {
+  readonly counts: readonly number[];
+  readonly benched: number;
+  readonly cost: BenchCost;
+}
+
+function cheapestSplits(
+  groups: readonly BenchGroup[],
+  carriers: number,
+  history: BenchHistory,
+  flagCarriers: ReadonlySet<string>
+): BenchSplit[] {
+  const most = carriers - Math.min(carriers, PLAYING_FLAG_CARRIERS);
+  const splits = groups
+    .map(group => leastBenchCosts(group, [], group.candidates, history, flagCarriers))
+    .reduce<BenchSplit[]>(
+      (partials, costs) => partials.flatMap(({ counts, benched, cost }) => costs.flatMap((groupCost, groupCarriers) =>
+        groupCost && benched + groupCarriers <= most
+          ? [{ counts: [...counts, groupCarriers], benched: benched + groupCarriers, cost: addCosts(cost, groupCost) }]
+          : [])),
+      [{ counts: [], benched: 0, cost: NO_COST }]
+    );
   const least = splits.reduce((best, split) => compareCosts(split.cost, best) < 0 ? split.cost : best, splits[0].cost);
-  const cheapest = splits.filter(split => sameCost(split.cost, least));
-  return cheapest[cheapest.length > 1 ? Math.floor(random() * cheapest.length) : 0].counts;
+  return splits.filter(split => sameCost(split.cost, least));
+}
+
+function atRandom<T>(items: readonly T[], random: () => number): T {
+  return items[items.length > 1 ? Math.floor(random() * items.length) : 0];
 }
 
 function benchFrom(
@@ -418,7 +502,7 @@ function sitOutCost(history: BenchHistory, player: RosterPlayer): BenchCost {
     0,
     0,
     sitOutsOf(history, player),
-    Number(!history.lastMatch.has(player.character))
+    Number(!history.lastMatch.has(player.person))
   ];
 }
 
@@ -433,7 +517,7 @@ function addCosts(a: BenchCost, b: BenchCost): BenchCost {
   return [a[0] + b[0], a[1] + b[1], a[2] + b[2], a[3] + b[3], a[4] + b[4]];
 }
 
-function compareCosts(a: BenchCost, b: BenchCost): number {
+function compareCosts(a: readonly number[], b: readonly number[]): number {
   const index = a.findIndex((value, position) => value !== b[position]);
   return index === -1 ? 0 : a[index] - b[index];
 }
@@ -451,11 +535,11 @@ function classSizesOf(players: readonly RosterPlayer[]): Map<string, number> {
 }
 
 function sitOutsOf(history: BenchHistory, player: RosterPlayer): number {
-  return history.sitOuts.get(player.character) ?? 0;
+  return history.sitOuts.get(player.person) ?? 0;
 }
 
 function sitOutStreakOf(history: BenchHistory, player: RosterPlayer): number {
-  return history.sitOutStreaks.get(player.character) ?? 0;
+  return history.sitOutStreaks.get(player.person) ?? 0;
 }
 
 function balancedTeams(players: readonly RosterPlayer[], random: () => number): Teams {
@@ -478,7 +562,7 @@ export function parseTeams(a: string | null, b: string | null, players: readonly
     return undefined;
   }
 
-  const distinct = new Set([...first, ...second].map(player => player.character));
+  const distinct = new Set([...first, ...second].map(player => player.person));
   return distinct.size === MATCH_SIZE ? [first, second] : undefined;
 }
 
@@ -499,6 +583,7 @@ function toRosterPlayer(entry: RatedBgRosterEntry, listings: number): RosterPlay
   return {
     key: listings > 1 ? `${character}-${entry.spec ?? ''}` : character,
     character,
+    person: entry.person ?? character,
     name: entry.name,
     realm: entry.realm,
     found: !entry.notFound,
