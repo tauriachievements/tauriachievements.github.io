@@ -3,7 +3,6 @@ import {
   BenchHistory,
   COMPOSITION_CHOICES,
   DEFAULT_COMPOSITION,
-  FLAG_CARRIER_COUNT,
   MATCH_SIZE,
   MatchResult,
   NO_BENCH_HISTORY,
@@ -17,7 +16,6 @@ import {
   canShuffle,
   compositionOf,
   linkedMatch,
-  markTeamFlagCarrier,
   parseTeams,
   rosterGroups,
   playMatch,
@@ -383,11 +381,12 @@ describe('toggleFlagCarrier', () => {
     expect([...toggleFlagCarrier(marked, 'Cicámqu-Evermoon')]).toEqual([]);
   });
 
-  it(`never marks more than ${FLAG_CARRIER_COUNT} players`, () => {
-    const full = new Set(['Cicámqu-Evermoon', 'Zowy-Evermoon']);
+  it('marks any number of players', () => {
+    const keys = ['Cicámqu-Evermoon', 'Zowy-Evermoon', 'Heaven-Tauri', 'Majä-Evermoon', 'Trelhy-Evermoon'];
+    const marked = keys.reduce<ReadonlySet<string>>((flagCarriers, key) => toggleFlagCarrier(flagCarriers, key), new Set());
 
-    expect([...toggleFlagCarrier(full, 'Heaven-Tauri')]).toEqual(['Cicámqu-Evermoon', 'Zowy-Evermoon']);
-    expect([...toggleFlagCarrier(full, 'Zowy-Evermoon')]).toEqual(['Cicámqu-Evermoon']);
+    expect([...marked]).toEqual(keys);
+    expect([...toggleFlagCarrier(marked, 'Zowy-Evermoon')]).toEqual(keys.filter(key => key !== 'Zowy-Evermoon'));
   });
 });
 
@@ -396,21 +395,6 @@ describe('tickedFlagCarriers', () => {
     const marked = new Set(['Cicámqu-Evermoon', 'Zowy-Evermoon']);
 
     expect([...tickedFlagCarriers(marked, new Set(['Zowy-Evermoon', 'Heaven-Tauri']))]).toEqual(['Zowy-Evermoon']);
-  });
-});
-
-describe('markTeamFlagCarrier', () => {
-  const team = twenty(2).slice(0, TEAM_SIZE);
-  const [first, second] = team.map(player => player.key);
-
-  it("moves the team's mark to the player and keeps the other team's", () => {
-    const marked = markTeamFlagCarrier(new Set([first, 'Other-Evermoon']), team, second);
-
-    expect([...marked].sort()).toEqual(['Other-Evermoon', second].sort());
-  });
-
-  it('unmarks a marked player', () => {
-    expect([...markTeamFlagCarrier(new Set([first, 'Other-Evermoon']), team, first)]).toEqual(['Other-Evermoon']);
   });
 });
 
@@ -503,6 +487,27 @@ describe('shuffleTeams', () => {
         teamsOfFirst.add(teams[0].some(player => player.name === pair[0]) ? 0 : 1);
       }
       expect([...teamsOfFirst].sort()).toEqual([0, 1]);
+    }
+  });
+
+  it('splits three or more flag carriers as evenly as it can, every split as even as without them', () => {
+    const players = groupOfTwenty();
+    const pools = [
+      ['Cicámqu', 'Trelhy', 'Zowy'],
+      ['Cicámqu', 'Trelhy', 'Zowy', 'Morron'],
+      ['Allisa', 'Dkügli', 'Rcodio', 'Zerololq', 'Majä'],
+      ['Llýnch', 'Spuky', 'Cicámqu', 'Majä', 'Zsozé', 'Dnx']
+    ];
+
+    for (const pool of pools) {
+      const flagCarriers = new Set(pool.map(name => `${name}-Evermoon`));
+      for (let seed = 0; seed < 50; seed++) {
+        const teams = shuffleTeams(players, seeded(seed), flagCarriers);
+        const [first, second] = teams.map(team => team.filter(player => flagCarriers.has(player.key)).length);
+
+        expect({ pool, seed, gap: Math.abs(first - second) <= 1 }).toEqual({ pool, seed, gap: true });
+        expectEvenSplit(players, teams);
+      }
     }
   });
 
@@ -637,15 +642,18 @@ describe('playMatch', () => {
     expect(benches.size).toBeGreaterThan(1);
   });
 
-  it('never benches a flag carrier, and puts one on each team', () => {
+  it('never benches one or two flag carriers, and puts two on different teams', () => {
     const picked = ticked(5, 10, 11);
-    const flagCarriers = new Set(['Healer0-Evermoon', 'Melee0-Evermoon']);
 
-    for (let seed = 0; seed < 30; seed++) {
-      const { match } = play(picked, NO_BENCH_HISTORY, seed, flagCarriers);
+    for (const pool of [['Melee0'], ['Healer0', 'Melee0'], ['Melee0', 'Melee1']]) {
+      const flagCarriers = new Set(pool.map(name => `${name}-Evermoon`));
+      for (let seed = 0; seed < 30; seed++) {
+        const { match } = play(picked, NO_BENCH_HISTORY, seed, flagCarriers);
+        const carriersIn = match.teams.map(team => team.filter(player => flagCarriers.has(player.key)).length);
 
-      expect(match.bench.filter(player => flagCarriers.has(player.key))).toEqual([]);
-      expect(match.teams.map(team => team.filter(player => flagCarriers.has(player.key)).length)).toEqual([1, 1]);
+        expect(match.bench.filter(player => flagCarriers.has(player.key))).toEqual([]);
+        expect(carriersIn.sort()).toEqual(pool.length === 1 ? [0, 1] : [1, 1]);
+      }
     }
   });
 
@@ -668,15 +676,60 @@ describe('playMatch', () => {
     composition: TeamComposition,
     seed: number,
     count: number,
-    history = NO_BENCH_HISTORY
+    history = NO_BENCH_HISTORY,
+    flagCarriers = noFlagCarriers
   ): MatchResult[] {
     const results: MatchResult[] = [];
     for (let match = 0; match < count; match++) {
-      const result = playMatch(picked, composition, results.at(-1)?.history ?? history, noFlagCarriers, seeded(seed * 100 + match));
+      const result = playMatch(picked, composition, results.at(-1)?.history ?? history, flagCarriers, seeded(seed * 100 + match));
       results.push(result);
     }
     return results;
   }
+
+  const carriersPlaying = (match: MatchResult['match'], flagCarriers: ReadonlySet<string>) =>
+    match.teams.map(team => team.filter(player => flagCarriers.has(player.key)).length);
+
+  it('benches three or more flag carriers in turn like everyone else, keeping two playing, one on each team', () => {
+    const picked = ticked(4, 8, 11);
+
+    for (const pool of [['Melee0', 'Melee1', 'Melee2'], ['Melee0', 'Melee1', 'Melee2', 'Melee3', 'Melee4']]) {
+      const flagCarriers = new Set(pool.map(name => `${name}-Evermoon`));
+      for (let seed = 0; seed < 10; seed++) {
+        const results = playMatches(picked, DEFAULT_COMPOSITION, seed, 11, NO_BENCH_HISTORY, flagCarriers);
+        const sitOuts = (key: string) => results.filter(({ match }) => match.bench.some(player => player.key === key)).length;
+
+        for (const { match } of results) {
+          const [first, second] = carriersPlaying(match, flagCarriers);
+          expect(first + second).toBeGreaterThanOrEqual(2);
+          expect(Math.abs(first - second)).toBeLessThanOrEqual(1);
+        }
+        for (const key of flagCarriers) {
+          expect({ key, sitOuts: sitOuts(key) >= 2 }).toEqual({ key, sitOuts: true });
+        }
+        results.slice(1).forEach(({ match }, index) => {
+          const lastBench = keysOf(results[index].match.bench);
+          expect(match.bench.filter(player => lastBench.includes(player.key))).toEqual([]);
+        });
+      }
+    }
+  });
+
+  it('keeps two flag carriers playing across the healers, ranged and melee together', () => {
+    const picked = ticked(5, 9, 11);
+    const flagCarriers = new Set(['Healer0-Evermoon', 'Ranged0-Evermoon', 'Melee0-Evermoon']);
+
+    for (let seed = 0; seed < 20; seed++) {
+      const results = playMatches(picked, DEFAULT_COMPOSITION, seed, 12, NO_BENCH_HISTORY, flagCarriers);
+
+      for (const { match } of results) {
+        const [first, second] = carriersPlaying(match, flagCarriers);
+        expect(first + second).toBeGreaterThanOrEqual(2);
+        expect(Math.abs(first - second)).toBeLessThanOrEqual(1);
+      }
+      expect(results.filter(({ match }) => match.bench.some(player => flagCarriers.has(player.key))).length).toBeGreaterThan(0);
+    }
+  });
 
   const groupOf = (player: RosterPlayer) => teamGroups([player])[0].id;
 

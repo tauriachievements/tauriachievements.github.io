@@ -327,7 +327,9 @@ describe('RatedBgPickerPageComponent', () => {
     expect(backFromBench(element)).toEqual([]);
   });
 
-  it('marks one possible flag carrier per team, and a reshuffle keeps them on different teams', async () => {
+  const carrierName = (carrier: HTMLButtonElement) => carrier.closest('li')?.querySelector('.player-name')?.textContent?.trim();
+
+  it('marks and unmarks any number of flag carriers in the teams, and a reshuffle spreads them evenly', async () => {
     const { harness, element } = await openPage('/rated-bg-picker');
     await tick(harness, element, 24);
     await press(harness, element, '.shuffle');
@@ -335,49 +337,48 @@ describe('RatedBgPickerPageComponent', () => {
     const teamButtons = () => [...element.querySelectorAll<HTMLElement>('.team')].map(team =>
       [...team.querySelectorAll<HTMLButtonElement>('.flag-carrier')]);
     const [firstTeam, secondTeam] = teamButtons();
+    const healerButtons = [firstTeam[0], firstTeam[1], secondTeam[0], secondTeam[1]];
 
-    firstTeam[0].click();
-    secondTeam[0].click();
+    healerButtons.forEach(carrier => carrier.click());
     harness.detectChanges();
     await harness.fixture.whenStable();
-    expect(firstTeam[0].getAttribute('aria-pressed')).toBe('true');
-    expect(secondTeam[0].getAttribute('aria-pressed')).toBe('true');
+    expect(healerButtons.map(carrier => carrier.getAttribute('aria-pressed'))).toEqual(['true', 'true', 'true', 'true']);
 
-    firstTeam[1].click();
+    secondTeam[1].click();
     harness.detectChanges();
     await harness.fixture.whenStable();
-    expect(firstTeam[0].getAttribute('aria-pressed')).toBe('false');
-    expect(firstTeam[1].getAttribute('aria-pressed')).toBe('true');
-    expect(secondTeam[0].getAttribute('aria-pressed')).toBe('true');
-    const carriers = [firstTeam[1], secondTeam[0]].map(carrier => carrier.closest('li')?.querySelector('.player-name')?.textContent?.trim());
+    expect(healerButtons.map(carrier => carrier.getAttribute('aria-pressed'))).toEqual(['true', 'true', 'true', 'false']);
+    const carriers = healerButtons.slice(0, 3).map(carrierName);
 
     await press(harness, element, '.shuffle-again');
-    expect(markedInTeams(element).map(team => team.length)).toEqual([1, 1]);
+    expect(markedInTeams(element).map(team => team.length).sort()).toEqual([1, 2]);
     expect(markedInTeams(element).flat().sort()).toEqual(carriers.sort());
   });
 
-  it('marks up to two ticked players as flag carriers before the shuffle, and puts one on each team', async () => {
+  it('marks any number of ticked players as flag carriers before the shuffle, and keeps two of them playing', async () => {
     const { harness, element } = await openPage('/rated-bg-picker');
     await tick(harness, element, 24);
     const rosterButtons = () => [...element.querySelectorAll<HTMLButtonElement>('.roster .flag-carrier')];
+    const pressed = () => rosterButtons().filter(carrier => carrier.getAttribute('aria-pressed') === 'true');
     expect(rosterButtons()).toHaveLength(24);
 
-    rosterButtons()[0].click();
-    rosterButtons()[1].click();
+    rosterButtons().slice(0, 3).forEach(carrier => carrier.click());
     harness.detectChanges();
     await harness.fixture.whenStable();
-    expect(rosterButtons().map(carrier => carrier.getAttribute('aria-pressed')).filter(pressed => pressed === 'true')).toHaveLength(2);
-    expect(rosterButtons().slice(2).every(carrier => carrier.disabled)).toBe(true);
-    const carriers = rosterButtons().slice(0, 2).map(carrier => carrier.closest('li')?.querySelector('.player-name')?.textContent?.trim());
+    expect(pressed()).toHaveLength(3);
+    expect(rosterButtons().some(carrier => carrier.disabled)).toBe(false);
+    const carriers = pressed().map(carrierName);
 
     await press(harness, element, '.shuffle');
 
-    expect(markedInTeams(element).map(team => team.length)).toEqual([1, 1]);
-    expect(markedInTeams(element).flat().sort()).toEqual(carriers.sort());
+    const [first, second] = markedInTeams(element);
+    expect(first.length + second.length).toBeGreaterThanOrEqual(2);
+    expect(Math.abs(first.length - second.length)).toBeLessThanOrEqual(1);
+    expect([...first, ...second].every(name => carriers.includes(name))).toBe(true);
     expect(rosterButtons().every(carrier => carrier.disabled)).toBe(true);
 
     await press(harness, element, '.change-players');
-    expect(rosterButtons().filter(carrier => carrier.getAttribute('aria-pressed') === 'true')).toHaveLength(2);
+    expect(pressed()).toHaveLength(3);
   });
 
   it('offers no flag carrier button on an unticked player, and drops the mark when the player is unticked', async () => {
