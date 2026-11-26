@@ -21,16 +21,26 @@
           <section class="picker-card team" [attr.aria-label]="team.label">
             <header class="team-header">
               <h2>{{ team.label }}</h2>
-              <p class="team-summary">{{ team.summary.healers }} {{ team.summary.healers === 1 ? 'healer' : 'healers' }}@if (team.summary.averageItemLevel !== undefined) { · avg ilvl {{ team.summary.averageItemLevel | number: '1.1-1' }}}@if (team.backFromBench) {<span class="bench-note-separator"> · </span><span class="bench-note"><app-rated-bg-mark kind="back-from-bench" [decorative]="true" />{{ team.backFromBench }} back from the bench</span>}</p>
+              <p class="team-summary">@if (team.averageItemLevel !== undefined) {avg ilvl {{ team.averageItemLevel | number: '1.1-1' }}}@if (team.backFromBench) {@if (team.averageItemLevel !== undefined) {<span class="bench-note-separator"> · </span>}<span class="bench-note"><app-rated-bg-mark kind="back-from-bench" [decorative]="true" />{{ team.backFromBench }} back from the bench</span>}</p>
             </header>
             @for (group of team.groups; track group.id) {
               <ol class="team-players" [attr.aria-label]="group.label">
-                @for (player of group.players; track player.key) {
+                @for (row of group.rows; track row.player.key) {
+                  @let player = row.player;
                   <li
                     class="player-row"
                     [class.flag-carrier-marked]="isFlagCarrier(player)"
-                    [class.back-from-bench]="isBackFromBench(player)">
-                    <app-rated-bg-player [player]="player" [mark]="isBackFromBench(player) ? 'back-from-bench' : undefined" />
+                    [class.back-from-bench]="row.backFromBench"
+                    [class.leader]="row.leader">
+                    <button
+                      type="button"
+                      class="leader-pick"
+                      [attr.aria-pressed]="row.leader"
+                      [attr.aria-label]="row.leader ? player.name + ', group leader: sends the invites' : 'Make ' + player.name + ' the group leader, who sends the invites'"
+                      [title]="row.leader ? 'Group leader: sends the invites' : 'Make group leader'"
+                      (click)="setLeader(player)">
+                      <app-rated-bg-player [player]="player" [marks]="row.marks" />
+                    </button>
                     <button
                       type="button"
                       class="flag-carrier"
@@ -54,7 +64,7 @@
             </header>
             <ol class="bench-players">
               @for (player of bench(); track player.key) {
-                <li class="player-row"><app-rated-bg-player [player]="player" mark="benched" /></li>
+                <li class="player-row"><app-rated-bg-player [player]="player" [marks]="['benched']" /></li>
               }
             </ol>
           </section>

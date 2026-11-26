@@ -4,6 +4,7 @@ import {
   COMPOSITION_CHOICES,
   DEFAULT_COMPOSITION,
   MATCH_SIZE,
+  Match,
   MatchResult,
   NO_BENCH_HISTORY,
   RatedBgRosterEntry,
@@ -13,10 +14,13 @@ import {
   TEAM_SIZE,
   TeamComposition,
   Teams,
+  averageItemLevel,
   benchSize,
   canShuffle,
   compositionOf,
   linkedMatch,
+  matchParams,
+  parseLeaders,
   parseTeams,
   rosterGroups,
   playMatch,
@@ -24,11 +28,10 @@ import {
   shuffleTeams,
   shuffleWarning,
   teamGroups,
-  teamSummary,
-  teamsParams,
   tickedFlagCarriers,
   toggleFlagCarrier,
-  togglePick
+  togglePick,
+  withLeader
 } from './rated-bg-picker';
 
 function entry(name: string, overrides: Partial<RatedBgRosterEntry> = {}): RatedBgRosterEntry {
@@ -325,11 +328,11 @@ describe('rosterGroups', () => {
 });
 
 describe('COMPOSITION_CHOICES', () => {
-  it('offers 1 to 4 healers and 1 to 5 ranged and melee per team, 3, 3 and 4 at first', () => {
+  it('offers 1 to 5 melee and ranged and 1 to 4 healers per team, in that order, 4, 3 and 3 at first', () => {
     expect(COMPOSITION_CHOICES.map(choice => [choice.id, choice.label, choice.counts])).toEqual([
-      ['healers', 'Healers', [1, 2, 3, 4]],
+      ['melee', 'Melee', [1, 2, 3, 4, 5]],
       ['ranged', 'Ranged', [1, 2, 3, 4, 5]],
-      ['melee', 'Melee', [1, 2, 3, 4, 5]]
+      ['healers', 'Healers', [1, 2, 3, 4]]
     ]);
     expect(DEFAULT_COMPOSITION).toEqual({ healers: 3, ranged: 3, melee: 4 });
   });
@@ -348,8 +351,8 @@ describe('shuffleWarning and canShuffle', () => {
 
   it('names each group with too few ticked for both teams', () => {
     expect(shuffleWarning(ticked(5, 6, 8), DEFAULT_COMPOSITION)).toBe('tick 1 more healer');
-    expect(shuffleWarning(ticked(4, 5, 8), DEFAULT_COMPOSITION)).toBe('tick 2 more healers and 1 more ranged');
-    expect(shuffleWarning(ticked(5, 4, 5), DEFAULT_COMPOSITION)).toBe('tick 1 more healer, 2 more ranged and 3 more melee');
+    expect(shuffleWarning(ticked(4, 5, 8), DEFAULT_COMPOSITION)).toBe('tick 1 more ranged and 2 more healers');
+    expect(shuffleWarning(ticked(5, 4, 5), DEFAULT_COMPOSITION)).toBe('tick 3 more melee, 2 more ranged and 1 more healer');
     expect([ticked(5, 6, 8), ticked(4, 5, 8), ticked(6, 6, 7)].map(picked => canShuffle(picked, DEFAULT_COMPOSITION)))
       .toEqual([false, false, false]);
   });
@@ -1039,7 +1042,7 @@ describe('linkedMatch', () => {
     const latecomers = ticked(6, 6, 10).filter(player => ['Melee8', 'Melee9'].includes(player.name));
     const { match, history } = linkedMatch(teams);
 
-    expect(match).toEqual({ teams, bench: [], backFromBench: new Set() });
+    expect(match).toEqual({ teams, leaders: new Set(teams.map(team => team[0].key)), bench: [], backFromBench: new Set() });
     for (let seed = 0; seed < 20; seed++) {
       const next = playMatch([...linked, ...latecomers], DEFAULT_COMPOSITION, history, new Set(), seeded(seed));
 
@@ -1098,18 +1101,88 @@ describe('teamGroups', () => {
   });
 });
 
-describe('teamsParams and parseTeams', () => {
+describe('team leaders', () => {
+  const leadersOf = (match: Match) =>
+    match.teams.map(team => team.filter(player => match.leaders.has(player.key)).map(player => player.name));
+  const firstHealerListed = (team: readonly RosterPlayer[]) =>
+    teamGroups(team).find(group => group.id === 'healers')?.players[0].name;
+
+  it('crowns the first healer listed on each team after a shuffle', () => {
+    for (let seed = 0; seed < 20; seed++) {
+      const { match } = playMatch(ticked(7, 8, 11), DEFAULT_COMPOSITION, NO_BENCH_HISTORY, new Set(), seeded(seed));
+
+      expect(leadersOf(match)).toEqual(match.teams.map(team => [firstHealerListed(team)]));
+    }
+  });
+
+  it('crowns the first player listed on a team without a healer', () => {
+    const players = ticked(2, 9, 9);
+    const firstTeam = ['Healer0', 'Healer1', 'Ranged0', 'Ranged1', 'Ranged2', 'Ranged3', 'Melee0', 'Melee1', 'Melee2', 'Melee3'];
+    const teams: Teams = [
+      players.filter(player => firstTeam.includes(player.name)),
+      players.filter(player => !firstTeam.includes(player.name))
+    ];
+
+    expect(leadersOf(linkedMatch(teams).match)).toEqual([['Healer0'], ['Ranged4']]);
+  });
+
+  it('moves the crown to anyone on the same team, and keeps the other team\'s leader', () => {
+    const { match } = playMatch(ticked(7, 8, 11), DEFAULT_COMPOSITION, NO_BENCH_HISTORY, new Set(), seeded(3));
+    const lastListed = match.teams[0][TEAM_SIZE - 1];
+
+    expect(leadersOf(withLeader(match, lastListed.key))).toEqual([[lastListed.name], leadersOf(match)[1]]);
+    expect(leadersOf(withLeader(withLeader(match, lastListed.key), match.teams[0][4].key)))
+      .toEqual([[match.teams[0][4].name], leadersOf(match)[1]]);
+  });
+
+  it('keeps the leaders for a player who sits out or is not on the list', () => {
+    const { match } = playMatch(ticked(7, 8, 11), DEFAULT_COMPOSITION, NO_BENCH_HISTORY, new Set(), seeded(3));
+
+    expect(withLeader(match, match.bench[0].key)).toBe(match);
+    expect(withLeader(match, 'Gone-Evermoon')).toBe(match);
+  });
+
+  it("reads a link's leaders, one per team, in any order", () => {
+    const teams = shuffleTeams(twenty(4), seeded(7));
+    const leaders = (value: string | null) => leadersOf(linkedMatch(teams, parseLeaders(value, teams)).match);
+
+    expect(leaders(`${teams[1][2].key},${teams[0][7].key}`)).toEqual([[teams[0][7].name], [teams[1][2].name]]);
+  });
+
+  it("crowns a team's first healer when a link names no leader on that team", () => {
+    const teams = shuffleTeams(twenty(4), seeded(7));
+    const leaders = (value: string | null) => leadersOf(linkedMatch(teams, parseLeaders(value, teams)).match);
+    const firstHealers = teams.map(team => [firstHealerListed(team)]);
+
+    expect(leaders(null)).toEqual(firstHealers);
+    expect(leaders('')).toEqual(firstHealers);
+    expect(leaders('Gone-Evermoon')).toEqual(firstHealers);
+    expect(leaders(`${teams[0][5].key},${teams[0][8].key}`)).toEqual([[teams[0][5].name], firstHealers[1]]);
+  });
+});
+
+describe('matchParams and parseTeams', () => {
   it('writes each team as its players joined by commas, and reads them back', () => {
     const players = twenty(3);
     const teams = shuffleTeams(players, seeded(7));
-    const params = teamsParams(teams);
+    const params = matchParams(linkedMatch(teams).match);
 
     expect(params.a?.split(',')).toEqual(teams[0].map(player => player.key));
     expect(parseTeams(params.a, params.b, players)).toEqual(teams);
   });
 
-  it('leaves both parameters out without teams', () => {
-    expect(teamsParams(undefined)).toEqual({ a: null, b: null });
+  it("writes the leaders, the first team's then the second's, and reads them back", () => {
+    const players = twenty(3);
+    const teams = shuffleTeams(players, seeded(7));
+    const match = withLeader(linkedMatch(teams).match, teams[1][6].key);
+    const params = matchParams(match);
+
+    expect(params.leaders).toBe(`${teams[0][0].key},${teams[1][6].key}`);
+    expect(parseLeaders(params.leaders, teams)).toEqual(match.leaders);
+  });
+
+  it('leaves all three parameters out without teams', () => {
+    expect(matchParams(undefined)).toEqual({ a: null, b: null, leaders: null });
   });
 
   it(`ignores a link unless each team is ${TEAM_SIZE} different players from the list`, () => {
@@ -1152,18 +1225,18 @@ describe('parseTeams with a character listed for two specs', () => {
   });
 });
 
-describe('teamSummary', () => {
-  it("counts a team's healers and averages the item levels it knows", () => {
+describe('averageItemLevel', () => {
+  it('averages the item levels a team knows', () => {
     const team = rosterPlayers(roster([
       entry('Heal', { class: 5, spec: 'Holy', itemLevel: 886 }),
       entry('Dps', { itemLevel: 883 }),
       { name: 'Typo', realm: 'Evermoon', notFound: true }
     ]));
 
-    expect(teamSummary(team)).toEqual({ healers: 1, averageItemLevel: 884.5 });
+    expect(averageItemLevel(team)).toBe(884.5);
   });
 
-  it('has no average item level when it knows none', () => {
-    expect(teamSummary([])).toEqual({ healers: 0, averageItemLevel: undefined });
+  it('has none when it knows none', () => {
+    expect(averageItemLevel([])).toBeUndefined();
   });
 });

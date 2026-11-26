@@ -107,6 +107,30 @@ const teamListSizes = (element: HTMLElement) =>
     [...team.querySelectorAll('.team-players')].map(list =>
       `${list.getAttribute('aria-label')} ${list.querySelectorAll('li').length}`));
 
+const nameIn = (row: Element | null) => row?.querySelector('.player-name')?.textContent?.trim();
+
+const leaders = (element: HTMLElement) =>
+  [...element.querySelectorAll('.team')].map(team => [...team.querySelectorAll('li.leader')].map(nameIn));
+
+const crowned = (element: HTMLElement) =>
+  [...element.querySelectorAll('.team')].map(team =>
+    [...team.querySelectorAll('li app-rated-bg-mark.leader')].map(crown => nameIn(crown.closest('li'))));
+
+const pressedPicks = (element: HTMLElement) =>
+  [...element.querySelectorAll('.team')].map(team =>
+    [...team.querySelectorAll('.leader-pick[aria-pressed="true"]')].map(pick => nameIn(pick)));
+
+const teamRow = (element: HTMLElement, team: number, name: string | undefined) =>
+  [...element.querySelectorAll('.team')[team].querySelectorAll('li')].find(row => nameIn(row) === name);
+
+async function crown(harness: RouterTestingHarness, row: Element | undefined, selector = '.leader-pick') {
+  row?.querySelector<HTMLElement>(selector)?.click();
+  harness.detectChanges();
+  await harness.fixture.whenStable();
+}
+
+const leadersParam = (location: Location) => new URLSearchParams(location.path().split('?')[1]).get('leaders');
+
 describe('RatedBgPickerPageComponent', () => {
   it('puts the composition, ticked count and actions in one toolbar', async () => {
     const { element } = await openPage('/rated-bg-picker');
@@ -116,6 +140,8 @@ describe('RatedBgPickerPageComponent', () => {
     expect(toolbar?.querySelector('.pick-count')).not.toBeNull();
     expect(toolbar?.querySelector('.toolbar-buttons')).not.toBeNull();
     expect(element.querySelectorAll('.picker-card.toolbar, .picker-card.composition')).toHaveLength(1);
+    expect([...toolbar?.querySelectorAll('.composition-choice-label') ?? []].map(label => label.textContent?.trim()))
+      .toEqual(['Melee', 'Ranged', 'Healers']);
     expect(chosen(element)).toEqual(['3', '3', '4']);
   });
 
@@ -272,12 +298,87 @@ describe('RatedBgPickerPageComponent', () => {
 
     const teams = teamNames(element);
     expect(teams.map(team => team.length)).toEqual([10, 10]);
-    expect([...element.querySelectorAll('.team .team-summary')].map(summary => summary.textContent?.trim().split(' · ')[0]))
-      .toEqual(['3 healers', '3 healers']);
+    for (const summary of element.querySelectorAll('.team .team-summary')) {
+      expect(summary.textContent?.trim()).toMatch(/^avg ilvl \d{3}\.\d$/);
+    }
     const [, query] = location.path().split('?');
     const params = new URLSearchParams(query);
     expect(params.get('a')?.split(',').map(key => key.replace('-Evermoon', ''))).toEqual(teams[0]);
     expect(params.get('b')?.split(',').map(key => key.replace('-Evermoon', ''))).toEqual(teams[1]);
+  });
+
+  it('crowns the first healer listed on each team as its leader, and writes the leaders to the address', async () => {
+    const { harness, element, location } = await openPage('/rated-bg-picker');
+    await tick(harness, element, 24);
+
+    await press(harness, element, '.shuffle');
+
+    const firstListed = teamNames(element).map(team => [team[0]]);
+    expect([...element.querySelectorAll('.team')].map(team => nameIn(team.querySelector('.team-players[aria-label="Healers"] li'))))
+      .toEqual(firstListed.flat());
+    expect(leaders(element)).toEqual(firstListed);
+    expect(crowned(element)).toEqual(firstListed);
+    expect(pressedPicks(element)).toEqual(firstListed);
+    expect(element.querySelector('.team app-filter-dropdown')).toBeNull();
+    expect(leadersParam(location)).toBe(firstListed.flat().map(name => `${name}-Evermoon`).join(','));
+  });
+
+  it("moves the crown to a player clicked anywhere from their class icon to their item level, keeping the other team's leader", async () => {
+    const { harness, element, location } = await openPage('/rated-bg-picker');
+    await tick(harness, element, 24);
+    await press(harness, element, '.shuffle');
+    const [first, second] = teamNames(element);
+
+    await crown(harness, teamRow(element, 0, first[9]), '.player-item-level');
+    expect(leaders(element)).toEqual([[first[9]], [second[0]]]);
+    expect(crowned(element)).toEqual([[first[9]], [second[0]]]);
+    expect(pressedPicks(element)).toEqual([[first[9]], [second[0]]]);
+    expect(leadersParam(location)).toBe(`${first[9]}-Evermoon,${second[0]}-Evermoon`);
+
+    await crown(harness, teamRow(element, 1, second[5]), '.player-icons img');
+    expect(leaders(element)).toEqual([[first[9]], [second[5]]]);
+  });
+
+  it("leaves the crown where it is when a player's FC button is clicked", async () => {
+    const { harness, element } = await openPage('/rated-bg-picker');
+    await tick(harness, element, 24);
+    await press(harness, element, '.shuffle');
+    const before = leaders(element);
+
+    await crown(harness, teamRow(element, 0, teamNames(element)[0][4]), '.flag-carrier');
+
+    expect(markedInTeams(element)[0]).toEqual([teamNames(element)[0][4]]);
+    expect(leaders(element)).toEqual(before);
+  });
+
+  it('crowns the first healer listed on each new team after Shuffle again', async () => {
+    const { harness, element } = await openPage('/rated-bg-picker');
+    await tick(harness, element, 24);
+    await press(harness, element, '.shuffle');
+    await crown(harness, teamRow(element, 0, teamNames(element)[0][9]));
+
+    await press(harness, element, '.shuffle-again');
+
+    expect(leaders(element)).toEqual(teamNames(element).map(team => [team[0]]));
+  });
+
+  it('opens a shared link with the leaders it names crowned', async () => {
+    const key = (index: number) => `Player${String(index).padStart(2, '0')}-Evermoon`;
+    const first = Array.from({ length: 10 }, (_, index) => key(index));
+    const second = Array.from({ length: 10 }, (_, index) => key(index + 10));
+    const { element } = await openPage(`/rated-bg-picker?a=${first.join(',')}&b=${second.join(',')}&leaders=${key(15)},${key(3)}`);
+
+    expect(leaders(element)).toEqual([['Player03'], ['Player15']]);
+    expect(crowned(element)).toEqual([['Player03'], ['Player15']]);
+  });
+
+  it('crowns the first healer listed, or the first player without one, on a shared link without leaders', async () => {
+    const key = (index: number) => `Player${String(index).padStart(2, '0')}-Evermoon`;
+    const first = Array.from({ length: 10 }, (_, index) => key(index));
+    const second = Array.from({ length: 10 }, (_, index) => key(index + 10));
+    const { element } = await openPage(`/rated-bg-picker?a=${first.join(',')}&b=${second.join(',')}`);
+
+    expect(leaders(element)).toEqual([['Player00'], ['Player10']]);
   });
 
   it('lists the bench, and the next shuffle plays it first, marked as back from the bench', async () => {
@@ -311,11 +412,11 @@ describe('RatedBgPickerPageComponent', () => {
       .map(row => row.querySelector('app-rated-bg-mark.benched')?.getAttribute('aria-label'));
     expect(benchMarks).toEqual(['On the bench', 'On the bench', 'On the bench', 'On the bench']);
     expect(element.querySelector('.bench h2 app-rated-bg-mark.benched')?.getAttribute('aria-hidden')).toBe('true');
-    expect(element.querySelectorAll('.team app-rated-bg-mark')).toHaveLength(0);
+    expect(element.querySelectorAll('.team app-rated-bg-mark:not(.leader)')).toHaveLength(0);
 
     await press(harness, element, '.shuffle-again');
 
-    const rowMarks = [...element.querySelectorAll('.team .player-row app-rated-bg-mark')].map(mark => [
+    const rowMarks = [...element.querySelectorAll('.team .player-row app-rated-bg-mark:not(.leader)')].map(mark => [
       mark.closest('li')?.classList.contains('back-from-bench'),
       mark.classList.contains('back-from-bench'),
       mark.getAttribute('aria-label')

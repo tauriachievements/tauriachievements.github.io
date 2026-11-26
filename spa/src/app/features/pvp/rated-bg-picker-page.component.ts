@@ -32,23 +32,25 @@ import {
   RosterGroupId,
   RosterPlayer,
   TeamComposition,
+  averageItemLevel,
   benchSize,
   canShuffle,
   compositionOf,
   linkedMatch,
+  matchParams,
+  parseLeaders,
   parseTeams,
   playMatch,
   rosterGroups,
   rosterPlayers,
   shuffleWarning,
   teamGroups,
-  teamSummary,
-  teamsParams,
   tickedFlagCarriers,
   toggleFlagCarrier,
-  togglePick
+  togglePick,
+  withLeader
 } from './rated-bg-picker';
-import { RatedBgMarkComponent } from './rated-bg-mark.component';
+import { RatedBgMark, RatedBgMarkComponent } from './rated-bg-mark.component';
 import { RatedBgPlayerComponent } from './rated-bg-player.component';
 
 @Component({
@@ -114,8 +116,11 @@ export class RatedBgPickerPageComponent implements OnInit {
     const match = this.match();
     return match?.teams.map((players, index) => ({
       label: `Team ${index + 1}`,
-      groups: teamGroups(players),
-      summary: teamSummary(players),
+      groups: teamGroups(players).map(group => ({
+        ...group,
+        rows: group.players.map(player => teamRow(player, match))
+      })),
+      averageItemLevel: averageItemLevel(players),
       backFromBench: players.filter(player => match.backFromBench.has(player.key)).length
     }));
   });
@@ -180,12 +185,13 @@ export class RatedBgPickerPageComponent implements OnInit {
     return this.flagCarriers().has(player.key);
   }
 
-  isBackFromBench(player: RosterPlayer): boolean {
-    return this.match()?.backFromBench.has(player.key) ?? false;
-  }
-
   toggleFlagCarrier(player: RosterPlayer): void {
     this.flagCarriers.update(flagCarriers => toggleFlagCarrier(flagCarriers, player.key));
+  }
+
+  setLeader(player: RosterPlayer): void {
+    this.match.update(match => match && withLeader(match, player.key));
+    this.writeUrl();
   }
 
   shuffle(): void {
@@ -225,7 +231,7 @@ export class RatedBgPickerPageComponent implements OnInit {
 
     const teams = parseTeams(params.get('a'), params.get('b'), players);
     if (teams) {
-      const { match, history } = linkedMatch(teams);
+      const { match, history } = linkedMatch(teams, parseLeaders(params.get('leaders'), teams));
       this.match.set(match);
       this.benchHistory.set(history);
       this.composition.set(compositionOf(teams) ?? DEFAULT_COMPOSITION);
@@ -249,6 +255,19 @@ export class RatedBgPickerPageComponent implements OnInit {
   }
 
   private writeUrl(): void {
-    this.replaceUrl(teamsParams(this.teams()));
+    this.replaceUrl(matchParams(this.match()));
   }
+}
+
+function teamRow(player: RosterPlayer, match: Match) {
+  const leader = match.leaders.has(player.key);
+  const backFromBench = match.backFromBench.has(player.key);
+  const marks: RatedBgMark[] = [];
+  if (leader) {
+    marks.push('leader');
+  }
+  if (backFromBench) {
+    marks.push('back-from-bench');
+  }
+  return { player, leader, backFromBench, marks };
 }

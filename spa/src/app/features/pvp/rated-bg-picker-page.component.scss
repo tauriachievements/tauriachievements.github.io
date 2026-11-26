@@ -10,6 +10,10 @@ $columns-breakpoint: 1000px;
 $first-team-color: #4a9eff;
 $second-team-color: #e5484d;
 $bench-color: #3fb68b;
+$leader-line: rgba(247, 181, 0, 0.42);
+$leader-fade: 44px;
+$leader-overhang: 12px;
+$phone-leader-overhang: 8px;
 $card: #161616;
 $line: rgba(255, 255, 255, 0.08);
 $row-line: rgba(255, 255, 255, 0.04);
@@ -104,11 +108,27 @@ $text: #e0e0e0;
 
 .team-players .player-row {
   position: relative;
-  grid-template-columns: $icons-width minmax(0, 1fr) $number-width $number-width $carrier-width;
+  grid-template-columns: minmax(0, 1fr) $carrier-width;
   padding-block: 2px;
 
   & + .player-row { border-top: 1px solid $row-line; }
   &.flag-carrier-marked { background: rgba(255, 255, 255, 0.05); }
+  &.leader {
+    isolation: isolate;
+    background: none;
+
+    &::after {
+      position: absolute;
+      inset: 0 (-$leader-overhang);
+      z-index: -1;
+      background:
+        linear-gradient(90deg, transparent, $leader-line $leader-fade, $leader-line calc(100% - #{$leader-fade}), transparent) top / 100% 1px no-repeat,
+        linear-gradient(90deg, transparent, $leader-line $leader-fade, $leader-line calc(100% - #{$leader-fade}), transparent) bottom / 100% 1px no-repeat,
+        linear-gradient(90deg, transparent, rgba(247, 181, 0, 0.18) $leader-fade, rgba(247, 181, 0, 0.05) calc(100% - #{$leader-fade}), transparent);
+      content: '';
+      pointer-events: none;
+    }
+  }
 
   &.back-from-bench::before {
     position: absolute;
@@ -120,6 +140,30 @@ $text: #e0e0e0;
     background: $bench-color;
     content: '';
   }
+}
+
+.leader-pick {
+  display: grid;
+  grid-template-columns: $icons-width minmax(0, 1fr) $number-width $number-width;
+  align-items: center;
+  column-gap: var(--column-gap);
+  min-width: 0;
+  min-height: 30px;
+  padding: 0;
+  border: 0;
+  border-radius: 4px;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+
+  &:focus-visible { outline: 2px solid $gold; outline-offset: 2px; }
+  .leader & { cursor: default; }
+}
+
+@media (hover: hover) {
+  .team-players .player-row:not(.leader):has(.leader-pick:hover) { background: rgba(255, 255, 255, 0.035); }
 }
 
 .bench-note {
@@ -399,7 +443,7 @@ $text: #e0e0e0;
   }
 }
 
-@media (max-width: 720px) {
+@media (max-width: #{$columns-breakpoint - 1px}) {
   .composition {
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -437,6 +481,7 @@ $text: #e0e0e0;
   .roster-group { padding-inline: 10px; }
 
   .team-players .player-row.back-from-bench::before { left: -7px; }
+  .team-players .player-row.leader::after { inset: 0 (-$phone-leader-overhang); }
 
   .bench-note-separator { display: none; }
 
@@ -469,8 +514,8 @@ $text: #e0e0e0;
     padding: 8px 10px;
   }
 
-  .team-players .player-row {
-    grid-template-columns: $phone-icons-width minmax(0, 1fr) $phone-number-width $phone-number-width $carrier-width;
+  .leader-pick {
+    grid-template-columns: $phone-icons-width minmax(0, 1fr) $phone-number-width $phone-number-width;
   }
 
   .list-head { grid-template-columns: 20px $phone-icons-width minmax(0, 1fr) $phone-number-width $phone-number-width $carrier-width; }
@@ -487,8 +532,8 @@ $text: #e0e0e0;
     grid-template-columns: $narrow-icons-width minmax(0, 1fr) $phone-number-width $phone-number-width;
   }
 
-  .team-players .player-row {
-    grid-template-columns: $narrow-icons-width minmax(0, 1fr) $phone-number-width $phone-number-width $carrier-width;
+  .leader-pick {
+    grid-template-columns: $narrow-icons-width minmax(0, 1fr) $phone-number-width $phone-number-width;
   }
 
   .list-head { grid-template-columns: 20px $narrow-icons-width minmax(0, 1fr) $phone-number-width $phone-number-width $carrier-width; }

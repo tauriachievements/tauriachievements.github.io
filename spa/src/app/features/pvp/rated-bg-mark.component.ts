@@ -1,8 +1,12 @@
 import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
 
-export type RatedBgMark = 'benched' | 'back-from-bench';
+export type RatedBgMark = 'leader' | 'benched' | 'back-from-bench';
 
 const MARK_ICONS: Readonly<Record<RatedBgMark, { readonly label: string; readonly path: string }>> = {
+  leader: {
+    label: 'Group leader: sends the invites',
+    path: 'M2.5 7.5 7.5 11 12 4l4.5 7 5-3.5L19.5 17h-15zM4.5 18.5h15V21h-15z'
+  },
   benched: {
     label: 'On the bench',
     path: 'M3 4h18v2.5H3zM3 8h18v2.5H3zM5 6.5h1.5V13H5zM17.5 6.5H19V13h-1.5zM2 13h20v2.5H2zM4 15.5h2V20H4zM18 15.5h2V20h-2z'

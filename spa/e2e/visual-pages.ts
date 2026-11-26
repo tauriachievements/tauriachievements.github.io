@@ -11,6 +11,13 @@ export interface VisualPage {
   readonly wide?: boolean;
 }
 
+const RATED_BG_TEAMS = '/rated-bg-picker'
+  + '?a=Xyhop-Evermoon,Zerololq-Evermoon,Zowy-Evermoon,Bomboclats-Evermoon,Lyantha-Evermoon,'
+  + 'Demifae-Evermoon,Lythus-Evermoon-Holy,Trelhy-Evermoon,Lakmir-Evermoon,Pesi-Evermoon'
+  + '&b=Morron-Tauri,Allisa-Evermoon,Dnx-Evermoon,Dom-Evermoon,Harqu-Evermoon,'
+  + 'Solaureus-Evermoon-Retribution,Heaven-Tauri,Rcodio-Evermoon,Maj%C3%A4-Evermoon,Ll%C3%BDnch-Evermoon'
+  + '&leaders=Zerololq-Evermoon,Maj%C3%A4-Evermoon';
+
 export const VISUAL_PAGES: readonly VisualPage[] = [
   { name: 'ladder', path: '/' },
   { name: 'ladder-filtered', path: '/?sort=honorableKills&realm=Evermoon&faction=Horde&class=8' },
@@ -30,15 +37,7 @@ export const VISUAL_PAGES: readonly VisualPage[] = [
   { name: 'rated-battleground', path: '/rated-battleground' },
   { name: 'rated-battleground-matches', path: '/rated-battleground?view=matches' },
   { name: 'rated-bg-picker', path: '/rated-bg-picker', wide: true },
-  {
-    name: 'rated-bg-picker-teams',
-    path: '/rated-bg-picker'
-      + '?a=Xyhop-Evermoon,Zerololq-Evermoon,Zowy-Evermoon,Bomboclats-Evermoon,Lyantha-Evermoon,'
-      + 'Demifae-Evermoon,Lythus-Evermoon,Trelhy-Evermoon,Lakmir-Evermoon,Pesi-Evermoon'
-      + '&b=Morron-Tauri,Allisa-Evermoon,Dnx-Evermoon,Dom-Evermoon,Harqu-Evermoon,'
-      + 'Solaureus-Evermoon,Heaven-Tauri,Rcodio-Evermoon,Maj%C3%A4-Evermoon,Ll%C3%BDnch-Evermoon',
-    wide: true
-  },
+  { name: 'rated-bg-picker-teams', path: RATED_BG_TEAMS, wide: true },
   { name: 'raid-logs', path: '/raid-logs' },
   { name: 'raid-logs-heroic', path: '/raid-logs?difficulty=heroic' },
   { name: 'raid-logs-guilds', path: '/raid-logs/guilds' },
