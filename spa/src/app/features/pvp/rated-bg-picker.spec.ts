@@ -1076,11 +1076,57 @@ describe('team leaders', () => {
   const firstHealerListed = (team: readonly RosterPlayer[]) =>
     teamGroups(team).find(group => group.id === 'healers')?.players[0].name;
 
-  it('crowns the first healer listed on each team after a shuffle', () => {
+  it('crowns the first healer listed on each team without a listed leader after a shuffle', () => {
     for (let seed = 0; seed < 20; seed++) {
       const { match } = playMatch(ticked(7, 8, 11), DEFAULT_COMPOSITION, NO_BENCH_HISTORY, new Set(), seeded(seed));
 
       expect(leadersOf(match)).toEqual(match.teams.map(team => [firstHealerListed(team)]));
+    }
+  });
+
+  const LEADERS_IN_ORDER = ['Zerololq', 'Majä', 'Xyhop', 'Zowy', 'Wxz'];
+  const splitBy = (players: readonly RosterPlayer[], firstTeam: readonly string[]): Teams => [
+    players.filter(player => firstTeam.includes(player.name)),
+    players.filter(player => !firstTeam.includes(player.name))
+  ];
+
+  it('crowns Zerololq, Majä, Xyhop, Zowy or Wxz before the first healer, whoever of them comes first in that order on the team', () => {
+    const group = groupOfTwenty();
+    const crowned = (firstTeam: readonly string[]) => leadersOf(linkedMatch(splitBy(group, firstTeam)).match);
+
+    expect(crowned(['Wxz', 'Llýnch', 'Lakmir', 'Dnx', 'Sósa', 'Zowy', 'Majä', 'Allisa', 'Morron', 'Cicámqu']))
+      .toEqual([['Majä'], ['Zerololq']]);
+    expect(crowned(['Wxz', 'Llýnch', 'Lakmir', 'Dnx', 'Xyhop', 'Zowy', 'Allisa', 'Morron', 'Cicámqu', 'Dkügli']))
+      .toEqual([['Xyhop'], ['Zerololq']]);
+    expect(crowned(['Wxz', 'Llýnch', 'Lakmir', 'Dnx', 'Sósa', 'Zowy', 'Allisa', 'Morron', 'Cicámqu', 'Dkügli']))
+      .toEqual([['Zowy'], ['Zerololq']]);
+    expect(crowned(['Llýnch', 'Lakmir', 'Lythus', 'Dnx', 'Sósa', 'Allisa', 'Dkügli', 'Morron', 'Cicámqu', 'Trelhy']))
+      .toEqual([['Lakmir'], ['Zerololq']]);
+  });
+
+  it('crowns a listed leader whichever of their characters plays', () => {
+    const players = rosterPlayers(roster([
+      entry('Zerolul', { class: 5, spec: 'Shadow', person: 'Zerololq-Evermoon' }),
+      entry('Majä', { class: 10, spec: 'Windwalker' }),
+      entry('Lythus', { class: 2, spec: 'Holy' }),
+      entry('Íllìðäñgøðx', { class: 12, spec: 'Havoc', person: 'Wxz-Evermoon' }),
+      entry('Spuky', { class: 7, spec: 'Restoration' })
+    ]));
+
+    expect(leadersOf(linkedMatch(splitBy(players, ['Zerolul', 'Majä', 'Lythus'])).match))
+      .toEqual([['Zerolul'], ['Íllìðäñgøðx']]);
+  });
+
+  it('applies the leaders on every shuffle, Shuffle again included, to those who play', () => {
+    const players = [...groupOfTwenty(), ...ticked(2, 2, 2)];
+    const composition = { healers: 3, ranged: 2, melee: 5 };
+    const expected = (team: readonly RosterPlayer[]) =>
+      [LEADERS_IN_ORDER.find(name => team.some(player => player.name === name)) ?? firstHealerListed(team)];
+    let result = playMatch(players, composition, NO_BENCH_HISTORY, new Set(), seeded(0));
+
+    for (let seed = 1; seed <= 20; seed++) {
+      expect(leadersOf(result.match)).toEqual(result.match.teams.map(expected));
+      result = playMatch(players, composition, result.history, new Set(), seeded(seed));
     }
   });
 

@@ -925,14 +925,19 @@ puts everyone else on the bench, taking turns from match to match.
   and a group the team has nobody in is left out. The team's heading shows the average of the
   item levels it knows, without a healer count: the Each team dropdowns already say how many
   healers each team has.
-- **Each team has one group leader, who sends the invites.** The shuffle crowns the first healer
-  the team lists, so the first in its Healers group, or the first player listed when the team has
-  no healer. The leader's row has a gold crown after the name and a gold tint between two thin gold
-  lines, all three fading out at both ends of the row. Clicking any other
+- **Each team has one group leader, who sends the invites.** The shuffle crowns the first of
+  Zerololq, Majä, Xyhop, Zowy and Wxz, in that order, that plays on the team
+  (`PREFERRED_LEADERS` in `rated-bg-picker.ts`, `Name-Realm` of each person). The list goes by
+  person, so Zerolul leads for Zerololq, and Wazweaver or Íllìðäñgøðx for Wxz. A team with none
+  of them gets the first healer it lists, so the first in its Healers group, or the first player
+  listed when it has no healer. The list doesn't change who plays or which team they join: the
+  five can sit out, and land on one team, like anyone else. The How the shuffle works page names
+  them too, so change both. The leader's row has a gold crown after the name and a gold tint
+  between two thin gold lines, all three fading out at both ends of the row. Clicking any other
   player of the team, anywhere from the class icon to the item level, moves the crown to them;
-  the FC button doesn't. Every shuffle, Shuffle again included, crowns the first healer listed
-  again, and a player who sits out can't lead. The leaders are in the link; an old link without
-  `leaders`, or naming nobody on a team, crowns that team's first healer listed.
+  the FC button doesn't. Every shuffle, Shuffle again included, crowns by the list again, and a
+  player who sits out can't lead. The leaders are in the link; an old link without `leaders`, or
+  naming nobody on a team, crowns that team's leader as a shuffle does.
 - **Copy invites copies the leader's invites.** The button right after each team's heading puts
   one `/inv Name-Realm` line per player on the team on the clipboard, in the order the team lists
   them, leaving out the leader, who sends them (`inviteCommands`): 9 lines, joined by line

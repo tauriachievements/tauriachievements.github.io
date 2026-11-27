@@ -8,6 +8,7 @@ export const TEAM_SIZE = 10;
 export const MATCH_SIZE = 2 * TEAM_SIZE;
 const PLAYING_FLAG_CARRIERS = 2;
 const MAX_SHUFFLES = 1000;
+const PREFERRED_LEADERS: readonly string[] = ['Zerololq-Evermoon', 'Majä-Evermoon', 'Xyhop-Evermoon', 'Zowy-Evermoon', 'Wxz-Evermoon'];
 
 export interface RatedBgRosterEntry {
   readonly name: string;
@@ -285,10 +286,14 @@ export function parseLeaders(value: string | null, teams: Teams): ReadonlySet<st
 
 export function teamLeaders(teams: Teams, named: readonly string[] = []): ReadonlySet<string> {
   return new Set(teams.flatMap(team => {
-    const keys = inTeamOrder(team).map(player => player.key);
-    const leader = named.find(key => keys.includes(key)) ?? keys[0];
+    const listed = inTeamOrder(team);
+    const leader = named.find(key => listed.some(player => player.key === key)) ?? shuffleLeader(listed)?.key;
     return leader === undefined ? [] : [leader];
   }));
+}
+
+function shuffleLeader(listed: readonly RosterPlayer[]): RosterPlayer | undefined {
+  return PREFERRED_LEADERS.flatMap(person => listed.filter(player => player.person === person))[0] ?? listed[0];
 }
 
 export function shuffleTeams(
