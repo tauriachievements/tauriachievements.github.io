@@ -180,6 +180,20 @@ describe('RatedBgPickerPageComponent', () => {
     expect(chosen(element)).toEqual(['3', '3', '4']);
   });
 
+  it('links to how the shuffle works from the toolbar, before and after the shuffle', async () => {
+    const { harness, element } = await openPage('/rated-bg-picker');
+    const infoLink = () => element.querySelector<HTMLAnchorElement>('.picker-card.toolbar a.info-link');
+
+    expect(infoLink()?.getAttribute('href')).toBe('/rated-bg-picker/info');
+    expect(infoLink()?.textContent?.trim()).toContain('How the shuffle works');
+
+    await tick(harness, element, 24);
+    await press(harness, element, '.shuffle');
+
+    expect(element.querySelectorAll('.team')).toHaveLength(2);
+    expect(infoLink()?.getAttribute('href')).toBe('/rated-bg-picker/info');
+  });
+
   it("lists every player with their class, spec and race icons, traits and item level", async () => {
     const { element } = await openPage('/rated-bg-picker', {
       version: 1,

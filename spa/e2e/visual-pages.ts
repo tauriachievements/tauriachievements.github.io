@@ -12,9 +12,9 @@ export interface VisualPage {
 }
 
 const RATED_BG_TEAMS = '/rated-bg-picker?t=1T433'
-  + 'dXzizBA5ytozBAvpx_zBAzzSYzBAFomfzBAgHgtzBA4qsVLbApwzBA4-CZzBAzxXVzBAcSjl1BAafCI1BA70gq1BAV5Qw1BA825i1BAMS611BA'
-  + 'NCBlNAet41BAw4141BA2gtd1BAzfsKnBB4obOnBBdhlHnBBMfEknBB_Pv_nBBBQGTnBB-636nBB9z8GnBBYg1hnBBmIaNnBBYD0YnBBqMIQnBB'
-  + '0frJnBBNidqnCCBHUOnBBQXo6nCCMjNrvBBgxbWnBBob3FnCCPR_3nCCKJmnnBBXH0JnBBsMVknCC_g6MnCCxEnTnCCaRSYBb-HXBkqLUBHQOAB';
+  + '4obOzBAMfEkzBABQGTzBA9z8GzBAmIaNzBAqMIQzBAQXo6zCAMjNr7BAPR_3zCAsMVkzCAzfsK1BAdhlH1BA_Pv_1BA-6361BAYg1h1BA0frJ1'
+  + 'BANidq1CA4qsVNob3F1CAxEnT1CA5ytonCBvpx_nCBafCInCBzzSYnCBdXzinCBV5QwnCB825inCBFomfnCBMS61nCBYD0YnCCgHgtnCBBHUOn'
+  + 'CCNCBlvBBgxbWnCCbApwnCBAet4nCBKJmnnCCXH0JnCCw414nCB4-CZnCBkqLUnCBzxXVnCB2gtdnCB_g6MnDDaRSYBb-HXBcSjlBHQOAB';
 
 export const VISUAL_PAGES: readonly VisualPage[] = [
   { name: 'ladder', path: '/' },
@@ -37,6 +37,7 @@ export const VISUAL_PAGES: readonly VisualPage[] = [
   { name: 'rated-battleground-match', path: '/rated-battleground?view=matches&match=142259' },
   { name: 'rated-bg-picker', path: '/rated-bg-picker', wide: true },
   { name: 'rated-bg-picker-teams', path: RATED_BG_TEAMS, wide: true },
+  { name: 'rated-bg-picker-info', path: '/rated-bg-picker/info', wide: true },
   { name: 'raid-logs', path: '/raid-logs' },
   { name: 'raid-logs-heroic', path: '/raid-logs?difficulty=heroic' },
   { name: 'raid-logs-guilds', path: '/raid-logs/guilds' },

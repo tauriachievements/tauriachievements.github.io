@@ -13,7 +13,7 @@ import {
   viewChild
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, RouterLink } from '@angular/router';
 import { DataFileService } from '../../core/data-file.service';
 import { setPageHeader } from '../../core/page-header';
 import { injectReplaceUrl } from '../../core/url-state';
@@ -72,7 +72,7 @@ const COPY_RESULT_MS = 2000;
   selector: 'app-rated-bg-picker-page',
   templateUrl: './rated-bg-picker-page.component.html',
   styleUrls: ['./rated-bg-picker-page.component.scss'],
-  imports: [DecimalPipe, FilterDropdownComponent, LoadStateComponent, RatedBgMarkComponent, RatedBgPlayerComponent],
+  imports: [DecimalPipe, FilterDropdownComponent, LoadStateComponent, RatedBgMarkComponent, RatedBgPlayerComponent, RouterLink],
   providers: [FilterDropdownCoordinatorService],
   changeDetection: ChangeDetectionStrategy.OnPush
 })

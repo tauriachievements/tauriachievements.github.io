@@ -1,0 +1,54 @@
+$gold: #f7b500;
+$first-team-color: #4a9eff;
+$second-team-color: #e5484d;
+
+.column {
+  display: grid;
+  gap: 16px;
+}
+
+.steps {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  counter-reset: step;
+
+  li {
+    position: relative;
+    padding-left: 30px;
+    counter-increment: step;
+
+    &::before {
+      content: counter(step);
+      position: absolute;
+      top: .15em;
+      left: 0;
+      display: grid;
+      place-items: center;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: #2e2716;
+      color: $gold;
+      font-size: .72rem;
+      font-weight: 700;
+    }
+  }
+}
+
+.mini-table {
+  .team-1 { color: $first-team-color; }
+  .team-2 { color: $second-team-color; }
+  .empty { color: #777; }
+}
+
+code {
+  padding: 1px 5px;
+  border-radius: 4px;
+  background: #111;
+  color: #e0e0e0;
+  font-family: Consolas, 'Courier New', monospace;
+  font-size: .85em;
+}
