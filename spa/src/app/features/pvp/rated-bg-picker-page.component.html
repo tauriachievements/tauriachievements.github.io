@@ -9,10 +9,8 @@
     (retry)="loadData()" />
 
   @if (!isLoading() && !loadError()) {
-    @if (staleLink()) {
-      <p class="stale-link" role="status">
-        The teams in that link no longer match the player list. Tick today's players and shuffle again.
-      </p>
+    @if (linkNote(); as note) {
+      <p class="stale-link" role="status">{{ note }}</p>
     }
 
     @if (teamViews(); as teams) {
