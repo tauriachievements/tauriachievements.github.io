@@ -1,5 +1,16 @@
 import { DecimalPipe, PercentPipe } from '@angular/common';
-import { ChangeDetectionStrategy, Component, DestroyRef, OnInit, computed, inject, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  DestroyRef,
+  ElementRef,
+  OnInit,
+  afterRenderEffect,
+  computed,
+  inject,
+  signal,
+  viewChild
+} from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute } from '@angular/router';
 import { forkJoin } from 'rxjs';
@@ -41,7 +52,7 @@ import {
   RatedBattlegroundContentView,
   RatedBattlegroundViewSwitcherComponent
 } from './rated-battleground-view-switcher.component';
-import { injectReplaceUrl, parsePage } from '../../core/url-state';
+import { injectReplaceUrl, parseInteger, parsePage } from '../../core/url-state';
 import { setPageHeader } from '../../core/page-header';
 import { SkeletonComponent } from '../../shared/skeleton.component';
 import { ScanChange, rankChangeLabel, valueChangeLabel } from '../../shared/scan-change';
@@ -100,6 +111,9 @@ export class RatedBattlegroundPageComponent implements OnInit {
   readonly selectedPlayer = signal<RatedPlayerSummary | undefined>(undefined);
   readonly selectedView = signal<RatedBattlegroundContentView>('players');
   readonly leaderboardPage = signal(1);
+  private readonly matchSection = viewChild<ElementRef<HTMLElement>>('matchSection');
+  private readonly matchTabs = viewChild<ElementRef<HTMLElement>>('matchTabs');
+  private scrollToLinkedMatch = false;
 
   readonly metricOptions = METRIC_OPTIONS;
   readonly allAnalytics = computed(() => buildRatedBattlegroundAnalytics(this.matches()));
@@ -177,6 +191,16 @@ export class RatedBattlegroundPageComponent implements OnInit {
 
   constructor() {
     setPageHeader(() => ({ lastEdited: this.lastEdited(), label: 'Latest match:' }));
+    afterRenderEffect(() => {
+      const section = this.matchSection()?.nativeElement;
+      if (!section || !this.scrollToLinkedMatch) {
+        return;
+      }
+
+      this.scrollToLinkedMatch = false;
+      section.scrollIntoView({ block: 'start' });
+      this.revealActiveMatchTab();
+    });
   }
 
   ngOnInit(): void {
@@ -185,6 +209,8 @@ export class RatedBattlegroundPageComponent implements OnInit {
       .subscribe(params => {
         this.selectedView.set(params.get('view') === 'matches' ? 'matches' : 'players');
         this.leaderboardPage.set(parsePage(params.get('page')));
+        this.selectedMatchId.set(parseInteger(params.get('match')));
+        this.scrollToLinkedMatch = this.selectedView() === 'matches' && params.has('match');
       });
     this.loadMatches();
   }
@@ -228,6 +254,7 @@ export class RatedBattlegroundPageComponent implements OnInit {
 
   selectMatch(matchId: number): void {
     this.selectedMatchId.set(matchId);
+    this.writeUrl();
   }
 
   openPlayerHistory(player: RatedPlayerSummary): void {
@@ -276,20 +303,24 @@ export class RatedBattlegroundPageComponent implements OnInit {
   private loadMatches(): void {
     this.isLoading.set(true);
     this.loadError.set(undefined);
-    forkJoin({ matches: this.service.getMatches(), newMatches: this.service.getNewMatches() }).subscribe({
-      next: ({ matches, newMatches }) => {
-        this.matches.set(matches);
-        this.newMatches.set(newMatches);
-        this.selectedMatchId.set(matches.at(-1)?.matchid);
-        this.isLoading.set(false);
-      },
-      error: (error: unknown) => {
-        console.error('Failed to load rated battleground data:', error);
-        this.matches.set([]);
-        this.loadError.set('We could not load the rated battleground archive. Please try again.');
-        this.isLoading.set(false);
-      }
-    });
+    forkJoin({ matches: this.service.getMatches(), newMatches: this.service.getNewMatches() })
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: ({ matches, newMatches }) => {
+          this.matches.set(matches);
+          this.newMatches.set(newMatches);
+          this.isLoading.set(false);
+          if (this.selectedView() === 'matches') {
+            this.writeUrl();
+          }
+        },
+        error: (error: unknown) => {
+          console.error('Failed to load rated battleground data:', error);
+          this.matches.set([]);
+          this.loadError.set('We could not load the rated battleground archive. Please try again.');
+          this.isLoading.set(false);
+        }
+      });
   }
 
   private writeUrl(): void {
@@ -297,7 +328,20 @@ export class RatedBattlegroundPageComponent implements OnInit {
     const page = this.leaderboardPage();
     this.replaceUrl({
       view: players ? null : 'matches',
-      page: players && page > 1 ? page : null
+      page: players && page > 1 ? page : null,
+      match: players ? null : this.selectedMatch()?.matchid ?? null
     }, { merge: true });
+  }
+
+  private revealActiveMatchTab(): void {
+    const strip = this.matchTabs()?.nativeElement;
+    const tab = strip?.querySelector<HTMLElement>('.match-tab.active');
+    if (!strip || !tab) {
+      return;
+    }
+
+    const stripBox = strip.getBoundingClientRect();
+    const tabBox = tab.getBoundingClientRect();
+    strip.scrollLeft += tabBox.left - stripBox.left - (stripBox.width - tabBox.width) / 2;
   }
 }

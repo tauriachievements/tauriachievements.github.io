@@ -611,6 +611,7 @@
 
 .match-section {
   margin-top: 0;
+  scroll-margin-top: calc(var(--update-bar-height) + 76px);
 }
 
 .section-heading {
