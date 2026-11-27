@@ -1,5 +1,6 @@
 import { FilterDropdownOption } from '../../shared/filter-dropdown.types';
 import { CLASS_NAMES, RoleFilter, matchesRoleFilter, realmSlug } from '../../game/wow';
+import { fitClassAndSpecTo, specById, specFor, specsForRole } from '../../game/wow-specs';
 import {
   MythicPlusDungeon,
   MythicPlusMember,
@@ -62,6 +63,17 @@ export function memberFilter({ realm, classId, spec, role }: MemberFilters): ((m
     && matchesRoleFilter(member, role);
 }
 
+export interface PlayerClassFilters {
+  classId?: number;
+  spec?: string;
+}
+
+export function fitFiltersToRole(role: RoleFilter | undefined, { classId, spec }: PlayerClassFilters): PlayerClassFilters {
+  const specId = classId === undefined || spec === undefined ? undefined : specFor(classId, spec)?.id;
+  const fitted = fitClassAndSpecTo(specsForRole(role), { classId, specId });
+  return { classId: fitted.classId, spec: fitted.specId === undefined ? undefined : specById(fitted.specId)?.spec };
+}
+
 const ROLE_PLAYER_NOUNS: Readonly<Record<RoleFilter, string>> = {
   tank: 'tank',
   healer: 'healer',
@@ -72,6 +84,19 @@ const ROLE_PLAYER_NOUNS: Readonly<Record<RoleFilter, string>> = {
 
 export function rolePlayerNoun(role: RoleFilter): string {
   return ROLE_PLAYER_NOUNS[role];
+}
+
+function playerNoun(classId: number | undefined, spec: string | undefined, role: RoleFilter | undefined): string {
+  const className = classId === undefined ? undefined : CLASS_NAMES[classId];
+  if (className && spec) {
+    return `${spec} ${className}`;
+  }
+
+  if (role) {
+    return [className, rolePlayerNoun(role)].filter(Boolean).join(' ');
+  }
+
+  return className ?? 'player';
 }
 
 export function runsInScope(
@@ -123,9 +148,7 @@ export function emptyLeaderboardMessage(state: EmptyLeaderboard): string {
   }
 
   if (view === 'players' && (classId !== undefined || realmName || role)) {
-    const who = role ? rolePlayerNoun(role)
-      : classId === undefined ? 'player' : [state.spec, CLASS_NAMES[classId]].filter(Boolean).join(' ');
-    return `No ${who}${realmName ? ` on ${realmName}` : ''} has a run${dungeon ? ` in ${dungeon.name}` : ''} yet.`;
+    return `No ${playerNoun(classId, state.spec, role)}${realmName ? ` on ${realmName}` : ''} has a run${dungeon ? ` in ${dungeon.name}` : ''} yet.`;
   }
 
   if (period === 'week') {

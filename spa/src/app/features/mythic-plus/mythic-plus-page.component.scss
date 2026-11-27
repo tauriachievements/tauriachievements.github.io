@@ -175,6 +175,8 @@
 }
 
 .filter-slot { width: 170px; }
+.role-slot { width: auto; }
+.realm-slot { width: 120px; }
 
 .filter-reset {
   display: inline-flex;
@@ -307,6 +309,7 @@
   .player-search input { width: 100%; }
   .character-chip { flex: 1 1 100%; order: -2; }
   .filter-slot { flex: 1 1 calc((100% - 16px) / 3); width: auto; min-width: 0; }
+  .role-slot { flex-basis: 100%; }
   .filters-collapsed .collapsible-filter { display: none; }
   .filter-reset { order: 1; }
   .filter-reset:disabled { display: none; }

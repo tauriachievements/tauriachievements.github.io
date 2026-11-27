@@ -1,5 +1,5 @@
 import { FilterDropdownOption } from '../shared/filter-dropdown.types';
-import { DamageRange, Role } from './wow';
+import { CLASS_FILTER_OPTIONS, DamageRange, Role, RoleFilter, matchesRoleFilter } from './wow';
 
 export interface SpecDefinition {
   classId: number;
@@ -74,10 +74,10 @@ export function specRoleFor(classId: number, spec: string): Role | undefined {
   return specFor(classId, spec)?.role;
 }
 
-export function specFilterOptions(classId: number | undefined): FilterDropdownOption[] {
+export function specFilterOptions(classId: number | undefined, role?: RoleFilter): FilterDropdownOption[] {
   return [
     { value: undefined, label: 'All specs' },
-    ...LEGION_SPECS
+    ...specsForRole(role)
       .filter(spec => spec.classId === classId)
       .map(spec => ({ value: spec.spec, label: spec.spec, icon: spec.icon }))
   ];
@@ -85,4 +85,27 @@ export function specFilterOptions(classId: number | undefined): FilterDropdownOp
 
 export function parseSpecName(classId: number | undefined, value: string | null): string | undefined {
   return LEGION_SPECS.find(spec => spec.classId === classId && spec.spec === value)?.spec;
+}
+
+export function specsForRole(role: RoleFilter | undefined): ReadonlyArray<LegionSpec> {
+  return role === undefined ? LEGION_SPECS : LEGION_SPECS.filter(spec => matchesRoleFilter(spec, role));
+}
+
+export function classOptionsFor(specs: ReadonlyArray<{ classId: number }>): FilterDropdownOption[] {
+  const classes = new Set(specs.map(spec => spec.classId));
+  return CLASS_FILTER_OPTIONS.filter(option => typeof option.value !== 'number' || classes.has(option.value));
+}
+
+export interface ClassAndSpec {
+  classId?: number;
+  specId?: number;
+}
+
+export function fitClassAndSpecTo(specs: ReadonlyArray<{ id: number; classId: number }>, picked: ClassAndSpec): ClassAndSpec {
+  const classId = specs.some(spec => spec.classId === picked.classId) ? picked.classId : undefined;
+  const classSpecs = specs.filter(spec => spec.classId === classId);
+  const specId = classSpecs.some(spec => spec.id === picked.specId)
+    ? picked.specId
+    : classSpecs.length === 1 ? classSpecs[0].id : undefined;
+  return { classId, specId };
 }

@@ -258,16 +258,77 @@ describe('MythicPlusPageComponent roles', () => {
     expect(location.path()).toBe('/mythic-plus');
   });
 
-  it('opens on tanks, and Players goes back to the plain ladder', async () => {
-    const page = await open('/mythic-plus');
+  it('picks a role on Players and goes back to every role', async () => {
+    const page = await open('/mythic-plus?view=players');
+    const location = TestBed.inject(Location);
 
-    page.showRoles();
-    expect(page.view()).toBe('players');
-    expect(page.roleFilter()).toBe('tank');
+    page.setRole('healer');
+    expect([ladder(page), location.path()]).toEqual([[['Exkeito', 196], ['Napim', 160]], '/mythic-plus?view=players&role=healer']);
+
+    page.setRole(undefined);
+    expect([ladder(page), location.path()]).toEqual([[['Exkeito', 196], ['Napim', 196]], '/mythic-plus?view=players']);
+  });
+
+  it("fits the class and spec to the role, picking the class's only spec of it", async () => {
+    const page = await open('/mythic-plus?view=players&class=11&spec=Feral');
+
+    page.setRole('tank');
+    expect([page.classFilter(), page.specFilter(), ladder(page)]).toEqual([11, 'Guardian', [['Napim', 196]]]);
+    expect(TestBed.inject(Location).path()).toBe('/mythic-plus?view=players&class=11&spec=Guardian&role=tank');
+    expect(page.classOptions().map(option => option.label)).toEqual([
+      'All classes', 'Death Knight', 'Demon Hunter', 'Druid', 'Monk', 'Paladin', 'Warrior'
+    ]);
+    expect(page.specOptions().map(option => option.label)).toEqual(['All specs', 'Guardian']);
+
+    page.setClassFilter(undefined);
+    page.setClassFilter(11);
+    expect(page.specFilter()).toBe('Guardian');
+  });
+
+  it("fits a link's class and spec to its role", async () => {
+    const page = await open('/mythic-plus?view=players&role=dps&class=11&spec=Guardian');
+
+    expect([page.roleFilter(), page.classFilter(), page.specFilter()]).toEqual(['dps', 11, undefined]);
+  });
+
+  it('resets the role with the realm, class and spec', async () => {
+    const page = await open('/mythic-plus?view=players&role=dps&realm=tauri');
+    expect(page.activeFilterLabels()).toEqual(['DPS', 'Tauri']);
+
+    page.resetFilters();
+    expect([page.roleFilter(), page.realmFilter(), page.activeFilterLabels()]).toEqual([undefined, undefined, []]);
+    expect(TestBed.inject(Location).path()).toBe('/mythic-plus?view=players');
+  });
+
+  it('keeps the role, like the other filters, across Runs and back', async () => {
+    const page = await open('/mythic-plus?view=players&role=healer');
+    const location = TestBed.inject(Location);
+
+    page.setView('runs');
+    expect(location.path()).toBe('/mythic-plus');
 
     page.setView('players');
-    expect(page.roleFilter()).toBeUndefined();
-    expect(ladder(page)).toEqual([['Exkeito', 196], ['Napim', 196]]);
+    expect([page.roleFilter(), location.path()]).toEqual(['healer', '/mythic-plus?view=players&role=healer']);
+  });
+
+  it('shows Runs and Players, and the role dropdown right after Reset', async () => {
+    TestBed.configureTestingModule({
+      providers: [
+        provideRouter([{ path: 'mythic-plus', component: MythicPlusPageComponent }]),
+        { provide: DataFileService, useValue: new FakeDataFiles(roles.index, roles) }
+      ]
+    });
+    const harness = await RouterTestingHarness.create();
+    await harness.navigateByUrl('/mythic-plus?view=players', MythicPlusPageComponent);
+    harness.detectChanges();
+    const element = harness.routeNativeElement as HTMLElement;
+
+    expect([...element.querySelectorAll('.toolbar-actions .view-switch button')].map(button => button.textContent?.trim()))
+      .toEqual(['Runs', 'Players']);
+    expect([...element.querySelectorAll('#mythic-plus-filters .filter-reset, #mythic-plus-filters [id$="Trigger"]')]
+      .map(node => node.id || node.textContent?.trim()))
+      .toEqual(['Reset', 'mythicPlusRoleTrigger', 'mythicPlusRealmTrigger', 'mythicPlusClassTrigger', 'mythicPlusSpecTrigger']);
+    expect(element.querySelector('#mythicPlusRoleTrigger')?.closest('.filter-slot')?.classList).toContain('collapsible-filter');
   });
 });
 
