@@ -36,6 +36,7 @@ export const VISUAL_PAGES: readonly VisualPage[] = [
   { name: 'battleground', path: '/battleground' },
   { name: 'rated-battleground', path: '/rated-battleground' },
   { name: 'rated-battleground-matches', path: '/rated-battleground?view=matches' },
+  { name: 'rated-battleground-match', path: '/rated-battleground?view=matches&match=142259' },
   { name: 'rated-bg-picker', path: '/rated-bg-picker', wide: true },
   { name: 'rated-bg-picker-teams', path: RATED_BG_TEAMS, wide: true },
   { name: 'raid-logs', path: '/raid-logs' },

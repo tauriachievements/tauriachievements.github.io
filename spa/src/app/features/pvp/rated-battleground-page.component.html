@@ -256,7 +256,7 @@
     }
 
     @if (selectedView() === 'matches') {
-      <section class="match-section">
+      <section #matchSection class="match-section">
         <header class="section-heading">
           <div>
             <span class="eyebrow">Match explorer</span>
@@ -266,7 +266,7 @@
           <span>{{ matchArchive().length }} matches</span>
         </header>
 
-        <div class="match-tabs" role="list" aria-label="Rated battleground matches">
+        <div #matchTabs class="match-tabs" role="list" aria-label="Rated battleground matches">
           @for (match of matchArchive(); track match.matchid) {
             <button
               type="button"
@@ -300,7 +300,7 @@
             </header>
 
             <div class="team-summary-grid">
-              @for (team of selectedTeams(); track team) {
+              @for (team of selectedTeams(); track team.side) {
                 <article class="team-summary" [class.team-summary--winner]="team.won">
                   <header>
                     <div>
@@ -324,7 +324,7 @@
               }
             </div>
 
-            @for (team of selectedTeams(); track team) {
+            @for (team of selectedTeams(); track team.side) {
               <section class="scoreboard">
                 <header class="scoreboard-heading" [class.winner]="team.won">
                   <div>
