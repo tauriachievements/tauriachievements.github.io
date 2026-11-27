@@ -11,12 +11,10 @@ export interface VisualPage {
   readonly wide?: boolean;
 }
 
-const RATED_BG_TEAMS = '/rated-bg-picker'
-  + '?a=Xyhop-Evermoon,Zerololq-Evermoon,Zowy-Evermoon,Bomboclats-Evermoon,Lyantha-Evermoon,'
-  + 'Demifae-Evermoon,Lythus-Evermoon-Holy,Trelhy-Evermoon,Lakmir-Evermoon,Pesi-Evermoon'
-  + '&b=Morron-Tauri,Allisa-Evermoon,Dnx-Evermoon,Dom-Evermoon,Harqu-Evermoon,'
-  + 'Solaureus-Evermoon-Retribution,Heaven-Tauri,Rcodio-Evermoon,Maj%C3%A4-Evermoon,Ll%C3%BDnch-Evermoon'
-  + '&leaders=Zerololq-Evermoon,Maj%C3%A4-Evermoon';
+const RATED_BG_TEAMS = '/rated-bg-picker?t=1T433'
+  + 'dXzizBA5ytozBAvpx_zBAzzSYzBAFomfzBAgHgtzBA4qsVLbApwzBA4-CZzBAzxXVzBAcSjl1BAafCI1BA70gq1BAV5Qw1BA825i1BAMS611BA'
+  + 'NCBlNAet41BAw4141BA2gtd1BAzfsKnBB4obOnBBdhlHnBBMfEknBB_Pv_nBBBQGTnBB-636nBB9z8GnBBYg1hnBBmIaNnBBYD0YnBBqMIQnBB'
+  + '0frJnBBNidqnCCBHUOnBBQXo6nCCMjNrvBBgxbWnBBob3FnCCPR_3nCCKJmnnBBXH0JnBBsMVknCC_g6MnCCxEnTnCCaRSYBb-HXBkqLUBHQOAB';
 
 export const VISUAL_PAGES: readonly VisualPage[] = [
   { name: 'ladder', path: '/' },

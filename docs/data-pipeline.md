@@ -477,6 +477,12 @@ RatedBgRosterExporter, then commits the list and the roster file together as
 `sync rated bg roster data` and pushes, with the same `main` checks as `Run-Arena.cmd`. A name
 added to the list shows on the page only after that run.
 
+The page's links name each row by a 4-character code made from its key
+([frontend.md](frontend.md#url-state)). `rated-bg-picker-link.spec.ts` reads the roster file and
+fails, and so stops the deploy, when two rows share a code: a link naming either would open
+neither. The chance is about 1 in 12,000 at today's 52 rows and 1 in 3,000 at 100. If it ever
+happens, the link needs a longer code: a new format, `2`, with `1` still read.
+
 - RatedBgRosterExporter reads the list before it calls the API, and stops on a character that
   isn't `Name-Realm` or `Name-Realm-Spec`, on a character listed twice for the same spec (on one
   line or two), on a character listed more than once with a line that names no spec, or on a list

@@ -280,10 +280,10 @@ export function withLeader(match: Match, key: string): Match {
 }
 
 export function parseLeaders(value: string | null, teams: Teams): ReadonlySet<string> {
-  return teamLeaders(teams, value ? value.split(',') : []);
+  return teamLeaders(teams, keysIn(value));
 }
 
-function teamLeaders(teams: Teams, named: readonly string[] = []): ReadonlySet<string> {
+export function teamLeaders(teams: Teams, named: readonly string[] = []): ReadonlySet<string> {
   return new Set(teams.flatMap(team => {
     const keys = inTeamOrder(team).map(player => player.key);
     const leader = named.find(key => keys.includes(key)) ?? keys[0];
@@ -563,29 +563,26 @@ function balancedTeams(players: readonly RosterPlayer[], random: () => number): 
   return [inTeamOrder(first), inTeamOrder(second)];
 }
 
-export function matchParams(match: Match | undefined): { a: string | null; b: string | null; leaders: string | null } {
-  if (!match) {
-    return { a: null, b: null, leaders: null };
-  }
-
-  const [first, second] = match.teams.map(team => team.map(player => player.key));
-  return {
-    a: first.join(','),
-    b: second.join(','),
-    leaders: [...first, ...second].filter(key => match.leaders.has(key)).join(',')
-  };
-}
-
 export function parseTeams(a: string | null, b: string | null, players: readonly RosterPlayer[]): Teams | undefined {
   const playersByKey = new Map(players.map(player => [player.key, player]));
-  const first = teamFromParam(a, playersByKey);
-  const second = teamFromParam(b, playersByKey);
-  if (!first || !second) {
+  return teamsOf(keysIn(a).map(key => playersByKey.get(key)), keysIn(b).map(key => playersByKey.get(key)));
+}
+
+export function keysIn(value: string | null): string[] {
+  return value ? value.split(',') : [];
+}
+
+export function teamsOf(
+  first: readonly (RosterPlayer | undefined)[],
+  second: readonly (RosterPlayer | undefined)[]
+): Teams | undefined {
+  const [firstTeam, secondTeam] = [first, second].map(fullTeam);
+  if (!firstTeam || !secondTeam) {
     return undefined;
   }
 
-  const distinct = new Set([...first, ...second].map(player => player.person));
-  return distinct.size === MATCH_SIZE ? [first, second] : undefined;
+  const distinct = new Set([...firstTeam, ...secondTeam].map(player => player.person));
+  return distinct.size === MATCH_SIZE ? [firstTeam, secondTeam] : undefined;
 }
 
 export function averageItemLevel(team: readonly RosterPlayer[]): number | undefined {
@@ -619,14 +616,13 @@ function characterOf(entry: RatedBgRosterEntry): string {
   return `${entry.name}-${entry.realm}`;
 }
 
-function teamFromParam(value: string | null, playersByKey: ReadonlyMap<string, RosterPlayer>): RosterPlayer[] | undefined {
-  const team = (value ? value.split(',') : []).map(key => playersByKey.get(key));
+function fullTeam(team: readonly (RosterPlayer | undefined)[]): RosterPlayer[] | undefined {
   return team.length === TEAM_SIZE && team.every(player => player !== undefined)
     ? inTeamOrder(team as RosterPlayer[])
     : undefined;
 }
 
-function inTeamOrder(team: readonly RosterPlayer[]): RosterPlayer[] {
+export function inTeamOrder(team: readonly RosterPlayer[]): RosterPlayer[] {
   return teamGroups(team).flatMap(group => group.players);
 }
 

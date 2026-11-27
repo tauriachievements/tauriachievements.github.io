@@ -8,7 +8,6 @@ import {
   MatchResult,
   NO_BENCH_HISTORY,
   RatedBgRosterEntry,
-  RatedBgRosterFile,
   RosterGroup,
   RosterPlayer,
   TEAM_SIZE,
@@ -19,7 +18,6 @@ import {
   canShuffle,
   compositionOf,
   linkedMatch,
-  matchParams,
   parseLeaders,
   parseTeams,
   rosterGroups,
@@ -33,25 +31,7 @@ import {
   togglePick,
   withLeader
 } from './rated-bg-picker';
-
-function entry(name: string, overrides: Partial<RatedBgRosterEntry> = {}): RatedBgRosterEntry {
-  return { name, realm: 'Evermoon', race: 1, gender: 0, class: 1, spec: 'Arms', traits: 40, itemLevel: 885, ...overrides };
-}
-
-function roster(players: RatedBgRosterEntry[], version = 1): RatedBgRosterFile {
-  return { version, generatedAt: '2026-11-24T12:29:26Z', players };
-}
-
-function seeded(seed: number): () => number {
-  let state = seed >>> 0;
-  return () => {
-    state = (state + 0x6d2b79f5) >>> 0;
-    let value = state;
-    value = Math.imul(value ^ (value >>> 15), value | 1);
-    value ^= value + Math.imul(value ^ (value >>> 7), value | 61);
-    return ((value ^ (value >>> 14)) >>> 0) / 4294967296;
-  };
-}
+import { entry, roster, seeded, ticked, tickedEntries } from './rated-bg-picker.fixture';
 
 function twenty(healers: number): RosterPlayer[] {
   return rosterPlayers(roster(Array.from({ length: MATCH_SIZE }, (_, index) =>
@@ -62,18 +42,6 @@ function twenty(healers: number): RosterPlayer[] {
 }
 
 const healerCount = (team: readonly RosterPlayer[]) => team.filter(player => player.role === 'healer').length;
-
-function tickedEntries(healers: number, ranged: number, melee: number): RatedBgRosterEntry[] {
-  return [
-    ...Array.from({ length: healers }, (_, index) => entry(`Healer${index}`, { class: 5, spec: 'Holy' })),
-    ...Array.from({ length: ranged }, (_, index) => entry(`Ranged${index}`, { class: 8, spec: 'Fire' })),
-    ...Array.from({ length: melee }, (_, index) => entry(`Melee${index}`))
-  ];
-}
-
-function ticked(healers: number, ranged: number, melee: number): RosterPlayer[] {
-  return rosterPlayers(roster(tickedEntries(healers, ranged, melee)));
-}
 
 const ALT_PERSON = 'Alt1-Evermoon';
 
@@ -1161,28 +1129,13 @@ describe('team leaders', () => {
   });
 });
 
-describe('matchParams and parseTeams', () => {
-  it('writes each team as its players joined by commas, and reads them back', () => {
+describe('parseTeams', () => {
+  it("reads an old link's teams, each its players joined by commas in any order", () => {
     const players = twenty(3);
     const teams = shuffleTeams(players, seeded(7));
-    const params = matchParams(linkedMatch(teams).match);
+    const [a, b] = teams.map(team => team.map(player => player.key).reverse().join(','));
 
-    expect(params.a?.split(',')).toEqual(teams[0].map(player => player.key));
-    expect(parseTeams(params.a, params.b, players)).toEqual(teams);
-  });
-
-  it("writes the leaders, the first team's then the second's, and reads them back", () => {
-    const players = twenty(3);
-    const teams = shuffleTeams(players, seeded(7));
-    const match = withLeader(linkedMatch(teams).match, teams[1][6].key);
-    const params = matchParams(match);
-
-    expect(params.leaders).toBe(`${teams[0][0].key},${teams[1][6].key}`);
-    expect(parseLeaders(params.leaders, teams)).toEqual(match.leaders);
-  });
-
-  it('leaves all three parameters out without teams', () => {
-    expect(matchParams(undefined)).toEqual({ a: null, b: null, leaders: null });
+    expect(parseTeams(a, b, players)).toEqual(teams);
   });
 
   it(`ignores a link unless each team is ${TEAM_SIZE} different players from the list`, () => {

@@ -129,7 +129,17 @@ async function crown(harness: RouterTestingHarness, row: Element | undefined, se
   await harness.fixture.whenStable();
 }
 
-const leadersParam = (location: Location) => new URLSearchParams(location.path().split('?')[1]).get('leaders');
+async function reopen(location: Location, file: RatedBgRosterFile = roster(24)) {
+  const url = location.path();
+  TestBed.resetTestingModule();
+  return openPage(url, file);
+}
+
+function without(name: string | undefined, file: RatedBgRosterFile = roster(24)): RatedBgRosterFile {
+  return { ...file, players: file.players.filter(player => player.name !== name) };
+}
+
+const note = (element: HTMLElement) => element.querySelector('.stale-link')?.textContent?.trim();
 
 describe('RatedBgPickerPageComponent', () => {
   it('puts the composition, ticked count and actions in one toolbar', async () => {
@@ -301,10 +311,8 @@ describe('RatedBgPickerPageComponent', () => {
     for (const summary of element.querySelectorAll('.team .team-summary')) {
       expect(summary.textContent?.trim()).toMatch(/^avg ilvl \d{3}\.\d$/);
     }
-    const [, query] = location.path().split('?');
-    const params = new URLSearchParams(query);
-    expect(params.get('a')?.split(',').map(key => key.replace('-Evermoon', ''))).toEqual(teams[0]);
-    expect(params.get('b')?.split(',').map(key => key.replace('-Evermoon', ''))).toEqual(teams[1]);
+    expect(location.path()).toMatch(/^\/rated-bg-picker\?t=1T433[A-Za-z0-9_-]+$/);
+    expect(teamNames((await reopen(location)).element)).toEqual(teams);
   });
 
   it('crowns the first healer listed on each team as its leader, and writes the leaders to the address', async () => {
@@ -320,7 +328,7 @@ describe('RatedBgPickerPageComponent', () => {
     expect(crowned(element)).toEqual(firstListed);
     expect(pressedPicks(element)).toEqual(firstListed);
     expect(element.querySelector('.team app-filter-dropdown')).toBeNull();
-    expect(leadersParam(location)).toBe(firstListed.flat().map(name => `${name}-Evermoon`).join(','));
+    expect(leaders((await reopen(location)).element)).toEqual(firstListed);
   });
 
   it("moves the crown to a player clicked anywhere from their class icon to their item level, keeping the other team's leader", async () => {
@@ -333,10 +341,10 @@ describe('RatedBgPickerPageComponent', () => {
     expect(leaders(element)).toEqual([[first[9]], [second[0]]]);
     expect(crowned(element)).toEqual([[first[9]], [second[0]]]);
     expect(pressedPicks(element)).toEqual([[first[9]], [second[0]]]);
-    expect(leadersParam(location)).toBe(`${first[9]}-Evermoon,${second[0]}-Evermoon`);
 
     await crown(harness, teamRow(element, 1, second[5]), '.player-icons img');
     expect(leaders(element)).toEqual([[first[9]], [second[5]]]);
+    expect(leaders((await reopen(location)).element)).toEqual([[first[9]], [second[5]]]);
   });
 
   it("leaves the crown where it is when a player's FC button is clicked", async () => {
@@ -583,15 +591,106 @@ describe('RatedBgPickerPageComponent', () => {
     ]);
   });
 
-  it('says so when a shared link no longer matches the list, and drops it from the address', async () => {
+  it('ticks the players an old link still matches when its teams no longer do, and says so', async () => {
     const { element, location } = await openPage('/rated-bg-picker?a=Gone-Evermoon&b=Player01-Evermoon');
 
     expect(element.querySelectorAll('.team')).toHaveLength(0);
-    expect(element.querySelector('.stale-link')).not.toBeNull();
+    expect(note(element)).toBe("1 player in that link is no longer on the player list, so its teams didn't open. Shuffle for new teams.");
+    expect(checkboxes(element).filter(box => box.checked)).toHaveLength(1);
+    expect(location.path()).toMatch(/^\/rated-bg-picker\?t=1P433[A-Za-z0-9_-]+$/);
+  });
+
+  it('turns an old link into a short one in the address, on the same teams', async () => {
+    const key = (index: number) => `Player${String(index).padStart(2, '0')}-Evermoon`;
+    const first = Array.from({ length: 10 }, (_, index) => key(index));
+    const second = Array.from({ length: 10 }, (_, index) => key(index + 10));
+    const { element, location } = await openPage(`/rated-bg-picker?a=${first.join(',')}&b=${second.join(',')}&leaders=${key(15)},${key(3)}`);
+    const teams = teamNames(element);
+
+    expect(location.path()).toMatch(/^\/rated-bg-picker\?t=1T[A-Za-z0-9_-]+$/);
+    const reopened = (await reopen(location)).element;
+    expect(teamNames(reopened)).toEqual(teams);
+    expect(leaders(reopened)).toEqual([['Player03'], ['Player15']]);
+  });
+
+  it('writes the ticks, flag carrier marks and Each team numbers to the address before the shuffle', async () => {
+    const { harness, element, location } = await openPage('/rated-bg-picker');
+    await tick(harness, element, 5);
+    await press(harness, element, '.roster .flag-carrier');
+    await choose(harness, element, 'ratedBgMelee', '5');
+
+    const reopened = (await reopen(location)).element;
+
+    expect(checkboxes(reopened).filter(box => box.checked)).toHaveLength(5);
+    expect(reopened.querySelectorAll('.roster .flag-carrier[aria-pressed="true"]')).toHaveLength(1);
+    expect(chosen(reopened)).toEqual(['3', '3', '5']);
+    expect(note(reopened)).toBeUndefined();
+  });
+
+  it('opens a link on the same teams, leaders, bench, flag carriers and back-from-bench marks', async () => {
+    const { harness, element, location } = await openPage('/rated-bg-picker');
+    await tick(harness, element, 24);
+    await press(harness, element, '.roster .flag-carrier');
+    await press(harness, element, '.shuffle');
+    await press(harness, element, '.shuffle-again');
+    await crown(harness, teamRow(element, 1, teamNames(element)[1][6]));
+    const before = [teamNames(element), leaders(element), benchNames(element), backFromBench(element), markedInTeams(element)];
+
+    const reopened = (await reopen(location)).element;
+
+    expect(backFromBench(element).length).toBeGreaterThan(0);
+    expect([teamNames(reopened), leaders(reopened), benchNames(reopened), backFromBench(reopened), markedInTeams(reopened)])
+      .toEqual(before);
+    expect(checkboxes(reopened).filter(box => box.checked)).toHaveLength(24);
+    expect(checkboxes(reopened).every(box => box.disabled)).toBe(true);
+  });
+
+  it('keeps the bench turns in the link, so the next shuffle on it plays the bench first', async () => {
+    const { harness, element, location } = await openPage('/rated-bg-picker');
+    await tick(harness, element, 24);
+    await press(harness, element, '.shuffle');
+    const firstBench = benchNames(element);
+
+    const { harness: reopenedHarness, element: reopened } = await reopen(location);
+    await press(reopenedHarness, reopened, '.shuffle-again');
+
+    expect(backFromBench(reopened).sort()).toEqual([...firstBench].sort());
+  });
+
+  it('opens a link from an older list without a benched player it no longer has, and says so', async () => {
+    const { harness, element, location } = await openPage('/rated-bg-picker');
+    await tick(harness, element, 24);
+    await press(harness, element, '.shuffle');
+    const [gone, ...stillBenched] = benchNames(element);
+    const teams = teamNames(element);
+
+    const reopened = (await reopen(location, without(gone))).element;
+
+    expect(teamNames(reopened)).toEqual(teams);
+    expect(benchNames(reopened)).toEqual(stillBenched);
+    expect(note(reopened)).toBe('1 player in that link is no longer on the player list and is left out.');
+  });
+
+  it('keeps the ticks but not the teams when the list no longer has a player in them, and says so', async () => {
+    const { harness, element, location } = await openPage('/rated-bg-picker');
+    await tick(harness, element, 24);
+    await press(harness, element, '.shuffle');
+
+    const reopened = (await reopen(location, without(teamNames(element)[0][0]))).element;
+
+    expect(reopened.querySelectorAll('.team')).toHaveLength(0);
+    expect(checkboxes(reopened).filter(box => box.checked)).toHaveLength(23);
+    expect(note(reopened)).toBe("1 player in that link is no longer on the player list, so its teams didn't open. Shuffle for new teams.");
+  });
+
+  it("says so when a link can't be read, and drops it from the address", async () => {
+    const { element, location } = await openPage('/rated-bg-picker?t=1T4');
+
+    expect(note(element)).toBe("That link can't be read. Tick today's players and shuffle again.");
     expect(location.path()).toBe('/rated-bg-picker');
   });
 
-  it('Change players hides the teams, keeps the ticks and clears the address', async () => {
+  it('Change players hides the teams and keeps the ticks, also in the address', async () => {
     const { harness, element, location } = await openPage('/rated-bg-picker');
     await tick(harness, element, 24);
     await press(harness, element, '.shuffle');
@@ -601,11 +700,13 @@ describe('RatedBgPickerPageComponent', () => {
     expect(element.querySelectorAll('.team')).toHaveLength(0);
     expect(checkboxes(element).filter(box => box.checked)).toHaveLength(24);
     expect(checkboxes(element)[0].disabled).toBe(false);
-    expect(location.path()).toBe('/rated-bg-picker');
+    const reopened = (await reopen(location)).element;
+    expect(reopened.querySelectorAll('.team')).toHaveLength(0);
+    expect(checkboxes(reopened).filter(box => box.checked)).toHaveLength(24);
   });
 
-  it('Clear unticks everyone and drops the flag carrier marks', async () => {
-    const { harness, element } = await openPage('/rated-bg-picker');
+  it('Clear unticks everyone, drops the flag carrier marks and empties the address', async () => {
+    const { harness, element, location } = await openPage('/rated-bg-picker');
     await tick(harness, element, 5);
     expect(checkboxes(element).filter(box => box.checked)).toHaveLength(5);
     await press(harness, element, '.roster .flag-carrier');
@@ -613,6 +714,7 @@ describe('RatedBgPickerPageComponent', () => {
 
     await press(harness, element, '.clear');
 
+    expect(location.path()).toBe('/rated-bg-picker');
     expect(checkboxes(element).filter(box => box.checked)).toHaveLength(0);
     await tick(harness, element, 5);
     expect(element.querySelectorAll('.roster .flag-carrier[aria-pressed="true"]')).toHaveLength(0);

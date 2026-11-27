@@ -35,11 +35,6 @@ import {
   averageItemLevel,
   benchSize,
   canShuffle,
-  compositionOf,
-  linkedMatch,
-  matchParams,
-  parseLeaders,
-  parseTeams,
   playMatch,
   rosterGroups,
   rosterPlayers,
@@ -50,6 +45,7 @@ import {
   togglePick,
   withLeader
 } from './rated-bg-picker';
+import { PICKER_LINK_PARAM, PickerState, linkNote, openLegacyLink, openPickerLink, pickerLink } from './rated-bg-picker-link';
 import { RatedBgMark, RatedBgMarkComponent } from './rated-bg-mark.component';
 import { RatedBgPlayerComponent } from './rated-bg-player.component';
 
@@ -86,7 +82,7 @@ export class RatedBgPickerPageComponent implements OnInit {
   readonly composition = signal<TeamComposition>(DEFAULT_COMPOSITION);
   readonly match = signal<Match | undefined>(undefined);
   readonly flagCarriers = signal<ReadonlySet<string>>(new Set());
-  readonly staleLink = signal(false);
+  readonly linkNote = signal<string | undefined>(undefined);
   private readonly benchHistory = signal(NO_BENCH_HISTORY);
   private readonly generatedAt = signal<string | undefined>(undefined);
 
@@ -149,7 +145,7 @@ export class RatedBgPickerPageComponent implements OnInit {
             const players = rosterPlayers(file);
             this.players.set(players);
             this.generatedAt.set(file.generatedAt);
-            this.openSharedTeams(players);
+            this.openSharedLink(players);
           } catch {
             this.loadError.set("Couldn't read the player list. Reload the page to get the latest one.");
           }
@@ -173,11 +169,13 @@ export class RatedBgPickerPageComponent implements OnInit {
 
     this.picked.update(picked => togglePick(picked, player, this.players()));
     this.flagCarriers.update(flagCarriers => tickedFlagCarriers(flagCarriers, this.picked()));
+    this.writeUrl();
   }
 
   setComposition(id: RosterGroupId, count: FilterDropdownValue): void {
     if (typeof count === 'number') {
       this.composition.update(composition => ({ ...composition, [id]: count }));
+      this.writeUrl();
     }
   }
 
@@ -187,6 +185,7 @@ export class RatedBgPickerPageComponent implements OnInit {
 
   toggleFlagCarrier(player: RosterPlayer): void {
     this.flagCarriers.update(flagCarriers => toggleFlagCarrier(flagCarriers, player.key));
+    this.writeUrl();
   }
 
   setLeader(player: RosterPlayer): void {
@@ -203,7 +202,7 @@ export class RatedBgPickerPageComponent implements OnInit {
     const { match, history } = playMatch(players, this.composition(), this.benchHistory(), this.flagCarriers());
     this.match.set(match);
     this.benchHistory.set(history);
-    this.staleLink.set(false);
+    this.linkNote.set(undefined);
     this.writeUrl();
     afterNextRender(() => this.scrollToTeams(), { injector: this.injector });
   }
@@ -217,34 +216,34 @@ export class RatedBgPickerPageComponent implements OnInit {
     this.picked.set(new Set());
     this.match.set(undefined);
     this.benchHistory.set(NO_BENCH_HISTORY);
-    this.clearFlagCarriers();
-    this.staleLink.set(false);
-    this.writeUrl();
-  }
-
-  private openSharedTeams(players: readonly RosterPlayer[]): void {
-    this.clearFlagCarriers();
-    const params = this.route.snapshot.queryParamMap;
-    if (!params.has('a') && !params.has('b')) {
-      return;
-    }
-
-    const teams = parseTeams(params.get('a'), params.get('b'), players);
-    if (teams) {
-      const { match, history } = linkedMatch(teams, parseLeaders(params.get('leaders'), teams));
-      this.match.set(match);
-      this.benchHistory.set(history);
-      this.composition.set(compositionOf(teams) ?? DEFAULT_COMPOSITION);
-      this.picked.set(new Set([...teams[0], ...teams[1]].map(player => player.key)));
-      return;
-    }
-
-    this.staleLink.set(true);
-    this.writeUrl();
-  }
-
-  private clearFlagCarriers(): void {
     this.flagCarriers.set(new Set());
+    this.linkNote.set(undefined);
+    this.writeUrl();
+  }
+
+  private openSharedLink(players: readonly RosterPlayer[]): void {
+    const params = this.route.snapshot.queryParamMap;
+    const value = params.get(PICKER_LINK_PARAM);
+    if (value === null && !params.has('a') && !params.has('b')) {
+      return;
+    }
+
+    const opened = value === null
+      ? openLegacyLink(params.get('a'), params.get('b'), params.get('leaders'), players)
+      : openPickerLink(value, players);
+    if (opened) {
+      this.showState(opened.state);
+    }
+    this.linkNote.set(linkNote(opened));
+    this.writeUrl();
+  }
+
+  private showState({ picked, composition, flagCarriers, match, history }: PickerState): void {
+    this.picked.set(picked);
+    this.composition.set(composition);
+    this.flagCarriers.set(flagCarriers);
+    this.match.set(match);
+    this.benchHistory.set(history);
   }
 
   private scrollToTeams(): void {
@@ -255,7 +254,14 @@ export class RatedBgPickerPageComponent implements OnInit {
   }
 
   private writeUrl(): void {
-    this.replaceUrl(matchParams(this.match()));
+    const state: PickerState = {
+      picked: this.picked(),
+      composition: this.composition(),
+      flagCarriers: this.flagCarriers(),
+      match: this.match(),
+      history: this.benchHistory()
+    };
+    this.replaceUrl({ [PICKER_LINK_PARAM]: pickerLink(state, this.players()) });
   }
 }
 

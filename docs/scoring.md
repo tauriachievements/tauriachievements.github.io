@@ -791,8 +791,9 @@ puts everyone else on the bench, taking turns from match to match.
 
 - **Code:** `rosterGroups`, `shuffleWarning`, `canShuffle`, `benchSize`, `playMatch`, `shuffleTeams`,
   `linkedMatch`, `compositionOf`, `togglePick`, `toggleFlagCarrier`, `tickedFlagCarriers`,
-  `withLeader`, `parseLeaders`, `matchParams`, `parseTeams`, `teamGroups` and `averageItemLevel` in
-  `spa/src/app/features/pvp/rated-bg-picker.ts`.
+  `withLeader`, `parseLeaders`, `parseTeams`, `teamsOf`, `teamGroups` and `averageItemLevel` in
+  `spa/src/app/features/pvp/rated-bg-picker.ts`; the shared link's `playerCode`, `pickerLink`,
+  `openPickerLink`, `openLegacyLink` and `linkNote` in `rated-bg-picker-link.ts`.
 - The list shows three groups, side by side from 1000 px and one under the other below that:
   Melee, Ranged, then Healers. Ranged holds the ranged damage specs (`range` in `LEGION_SPECS`),
   Healers the healer specs, and Melee everyone else: the melee damage specs, tanks, and characters
@@ -806,8 +807,8 @@ puts everyone else on the bench, taking turns from match to match.
 - **Any number of players can be ticked.** Three dropdowns under "Each team" in the action bar set
   how many melee (1 to 5), ranged (1 to 5) and healers (1 to 4) each team gets, in that order as
   in the list's columns, 4, 3 and 3 at first (`COMPOSITION_CHOICES`, `DEFAULT_COMPOSITION`).
-  Melee, ranged and healers are the list's three groups. Clear keeps the dropdowns; a reload sets
-  them back to 4, 3 and 3. The dropdowns,
+  Melee, ranged and healers are the list's three groups. Clear and a reload keep the dropdowns;
+  the page opened without a link starts at 4, 3 and 3. The dropdowns,
   ticked count and Shuffle and Clear actions share one card, on one row from 1000 px. Below that,
   where the page is at most 760 px wide and the row with Shuffle again and Change players needs
   about 907 px, the dropdowns take a row of their own above the count and the buttons, before
@@ -840,8 +841,8 @@ puts everyone else on the bench, taking turns from match to match.
   Restoration Shaman among 10 healers, 6 of them playing), one class splits 1–0 or, now and then,
   2–1. When more than half of a group sits out, some sit out two matches in a row; those who have
   sat out the most in a row play first, and the class split only chooses between equal runs. The
-  page keeps the counts while it is open: Change players keeps them, and Clear and a reload start
-  them again.
+  counts are in the page's link (below), so Change players, a reload and anyone opening the link
+  keep them; Clear starts them again.
 - The bench shows under the two teams, in the teams' order: healers, ranged, then melee, each
   class by class, with a grey bench icon after each name and in its heading. After the next
   shuffle, each player back from the bench has a green stripe beside their row and a green return
@@ -886,15 +887,27 @@ puts everyone else on the bench, taking turns from match to match.
   Keilalt none, Zbafromtemu 10% and Ticho 33%, against 61% for the other ranged, 43% for melee and
   35% for healers. Each linked person doubles the combinations tried: a shuffle took 2.6 ms with
   the list's three, 41 ms with five more pairs and 319 ms with eight more.
-- A shared link names each player as `Name-Realm`, or `Name-Realm-Spec` for a character with more
-  than one row. A link that names one character or one person twice, or a player the list no
-  longer has, opens no teams: the page says the link no longer matches the list.
-- A shared link opens on the teams it names, with nobody on the bench, even when a respec since
-  has left their groups uneven: the link records the teams as they were picked. When both teams
-  have the same number of melee, ranged and healers, and each number is on its dropdown, the
+- **The address is the whole page, so anyone opening it sees and can carry on with exactly what
+  its sender had.** It holds the ticks, the Each team numbers, the FC marks, both teams and their
+  leaders, the bench, the back-from-the-bench marks and every person's sit-out counts, so a
+  Shuffle again on the link benches the same way the sender's would. Each player is a 4-character
+  code made from their key, `Name-Realm` or `Name-Realm-Spec` for a character with more than one
+  row (format: [frontend.md](frontend.md#url-state)). With 30 ticked and 10 on the bench after one
+  shuffle the whole address is 230 characters; the names aren't readable in it.
+- A link opens on the teams it records, even when a respec since has left their groups uneven.
+  A player the list no longer has is left out, and the page says how many: the rest opens as it
+  was, and the teams too while all 20 of their players are still on the list. When one isn't, the
+  teams don't open and the page asks for a new shuffle; the ticks, marks, numbers and counts
+  still open, and the teams' players count as having played the last match. A code two rows of
+  the list share counts as a player the list no longer has, so a link never opens the wrong
+  player. A value the page can't read opens nothing and says so.
+- Links from before the short format (`a`, `b`, `leaders`: each player as their key) still open,
+  on their teams, with nobody on the bench and no FC marks, which they didn't record. When both
+  teams have the same number of melee, ranged and healers, and each number is on its dropdown, the
   dropdowns take those numbers (`compositionOf`); otherwise they stay at 4, 3 and 3. The link's
   players count as having played the last match, so after Change players, a player ticked again
-  plays the next match before them.
+  plays the next match before them. When the teams no longer match the list, the players still on
+  it are ticked, as with a short link.
 - A team lists its players in the list's groups, but Healers first, then Ranged, then Melee, each
   class by class, then by spec and traits, as above. A gap with no heading separates the groups,
   and a group the team has nobody in is left out. The team's heading shows the average of the
@@ -906,8 +919,8 @@ puts everyone else on the bench, taking turns from match to match.
   lines, all three fading out at both ends of the row. Clicking any other
   player of the team, anywhere from the class icon to the item level, moves the crown to them;
   the FC button doesn't. Every shuffle, Shuffle again included, crowns the first healer listed
-  again, and a player who sits out can't lead. The leaders are in the shared link (`leaders`); a
-  link without them, or naming nobody on a team, crowns that team's first healer listed.
+  again, and a player who sits out can't lead. The leaders are in the link; an old link without
+  `leaders`, or naming nobody on a team, crowns that team's first healer listed.
 - **Flag carriers are optional, any number can be marked, and they take turns on the bench while
   two of them play.** The `FC` button on a ticked player marks or unmarks them, in the list before
   the shuffle and in the teams after it. The bench never leaves fewer than two marked players
@@ -918,10 +931,11 @@ puts everyone else on the bench, taking turns from match to match.
   evenly as it can, one each with two and 2–1 with three, drawing again until they are (at most
   1,000 tries), so every split above holds exactly as without them. One mark changes nothing about
   the shuffle. The marks stay through Shuffle again and Change players, also on a player who sat
-  out, go when their player is unticked or on Clear, and aren't part of the shared link.
+  out, go when their player is unticked or on Clear, and are in the link.
 - Traits are the count of that spec's artifact: the guild pages' count (the artifact with the
   most traits) unless the list names a main spec. The item level is the API's `avgitemlevel`,
   the ladder's figure, not the guild pages' own average of the equipped items
   ([tauri-api.md](tauri-api.md#characters-and-guilds)).
-- **Tests:** `rated-bg-picker.spec.ts`, `rated-bg-picker-page.component.spec.ts`,
-  `RatedBgRosterExportServiceTests`, `CharacterArtifactReaderTests`.
+- **Tests:** `rated-bg-picker.spec.ts`, `rated-bg-picker-link.spec.ts`,
+  `rated-bg-picker-page.component.spec.ts`, `RatedBgRosterExportServiceTests`,
+  `CharacterArtifactReaderTests`.
