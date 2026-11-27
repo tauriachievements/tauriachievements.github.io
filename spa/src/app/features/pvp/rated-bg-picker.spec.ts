@@ -17,6 +17,7 @@ import {
   benchSize,
   canShuffle,
   compositionOf,
+  inviteCommands,
   linkedMatch,
   parseLeaders,
   parseTeams,
@@ -1126,6 +1127,25 @@ describe('team leaders', () => {
     expect(leaders('')).toEqual(firstHealers);
     expect(leaders('Gone-Evermoon')).toEqual(firstHealers);
     expect(leaders(`${teams[0][5].key},${teams[0][8].key}`)).toEqual([[teams[0][5].name], firstHealers[1]]);
+  });
+});
+
+describe('inviteCommands', () => {
+  it("gives an /inv Name-Realm line for each player in the team's order, leaving out the leader who sends them", () => {
+    const players = rosterPlayers(roster([
+      entry('Melee0'),
+      entry('Healer0', { class: 5, spec: 'Holy' }),
+      entry('Ranged0', { realm: 'Tauri', class: 8, spec: 'Fire' }),
+      entry('Healer1', { class: 5, spec: 'Holy' }),
+      entry('Lythus', { class: 2, spec: 'Holy' }),
+      entry('Lythus', { class: 2, spec: 'Retribution' })
+    ]));
+    const team = players.filter(player => player.key !== 'Lythus-Evermoon-Holy');
+
+    expect(inviteCommands(team, new Set(['Healer0-Evermoon']))).toBe(
+      ['/inv Healer1-Evermoon', '/inv Ranged0-Tauri', '/inv Lythus-Evermoon', '/inv Melee0-Evermoon'].join('\n'));
+    expect(inviteCommands(team, new Set(['Lythus-Evermoon-Retribution']))).toBe(
+      ['/inv Healer0-Evermoon', '/inv Healer1-Evermoon', '/inv Ranged0-Tauri', '/inv Melee0-Evermoon'].join('\n'));
   });
 });
 

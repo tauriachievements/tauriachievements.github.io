@@ -4,7 +4,7 @@ import { provideLocationMocks } from '@angular/common/testing';
 import { provideRouter } from '@angular/router';
 import { RouterTestingHarness } from '@angular/router/testing';
 import { of } from 'rxjs';
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { DataFileService } from '../../core/data-file.service';
 import { RatedBgPickerPageComponent } from './rated-bg-picker-page.component';
 import { RatedBgRosterEntry, RatedBgRosterFile } from './rated-bg-picker';
@@ -141,7 +141,32 @@ function without(name: string | undefined, file: RatedBgRosterFile = roster(24))
 
 const note = (element: HTMLElement) => element.querySelector('.stale-link')?.textContent?.trim();
 
+function stubClipboard(writeText: (text: string) => Promise<void>) {
+  const clipboard = { writeText: vi.fn(writeText) };
+  Object.defineProperty(navigator, 'clipboard', { value: clipboard, configurable: true });
+  return clipboard;
+}
+
+const copyButtons = (element: HTMLElement) => [...element.querySelectorAll<HTMLButtonElement>('.team .team-header .copy-invites')];
+
+const copyLabels = (element: HTMLElement) =>
+  copyButtons(element).map(copy => copy.querySelector('.copy-label.shown')?.textContent?.trim());
+
+const copyStatus = (element: HTMLElement) => element.querySelector('.copy-status')?.textContent?.trim();
+
+async function copyInvites(harness: RouterTestingHarness, element: HTMLElement, team: number) {
+  copyButtons(element)[team].click();
+  await harness.fixture.whenStable();
+  harness.detectChanges();
+  await harness.fixture.whenStable();
+}
+
+const invitesFor = (names: (string | undefined)[], leader: string | undefined) =>
+  names.filter(name => name !== leader).map(name => `/inv ${name}-Evermoon`).join('\n');
+
 describe('RatedBgPickerPageComponent', () => {
+  afterEach(() => Reflect.deleteProperty(navigator, 'clipboard'));
+
   it('puts the composition, ticked count and actions in one toolbar', async () => {
     const { element } = await openPage('/rated-bg-picker');
     const toolbar = element.querySelector('.picker-card.toolbar');
@@ -368,6 +393,64 @@ describe('RatedBgPickerPageComponent', () => {
     await press(harness, element, '.shuffle-again');
 
     expect(leaders(element)).toEqual(teamNames(element).map(team => [team[0]]));
+  });
+
+  it("puts a Copy invites button right after each team's heading", async () => {
+    const { harness, element } = await openPage('/rated-bg-picker');
+    await tick(harness, element, 24);
+
+    await press(harness, element, '.shuffle');
+
+    expect([...element.querySelectorAll('.team .team-header')].map(header =>
+      [...header.querySelectorAll('.team-title > *')].map(child => child.tagName.toLowerCase())))
+      .toEqual([['h2', 'button'], ['h2', 'button']]);
+    expect(copyLabels(element)).toEqual(['Copy invites', 'Copy invites']);
+    expect(copyButtons(element).map(copy => copy.getAttribute('aria-label')))
+      .toEqual(['Copy invites for Team 1', 'Copy invites for Team 2']);
+  });
+
+  it("copies an /inv Name-Realm line for each player on the team but its leader, in the team's order, and says Copied", async () => {
+    const clipboard = stubClipboard(() => Promise.resolve());
+    const { harness, element } = await openPage('/rated-bg-picker');
+    await tick(harness, element, 24);
+    await press(harness, element, '.shuffle');
+    const [, second] = teamNames(element);
+    await crown(harness, teamRow(element, 1, second[6]));
+
+    await copyInvites(harness, element, 1);
+
+    expect(clipboard.writeText).toHaveBeenCalledTimes(1);
+    expect(clipboard.writeText).toHaveBeenCalledWith(invitesFor(second, second[6]));
+    expect(clipboard.writeText.mock.calls[0][0].split('\n')).toHaveLength(9);
+    expect(copyLabels(element)).toEqual(['Copy invites', 'Copied']);
+    expect(copyStatus(element)).toBe('Copied the invites for Team 2');
+  });
+
+  it('copies the new teams after Shuffle again, and the button says Copy invites again', async () => {
+    const clipboard = stubClipboard(() => Promise.resolve());
+    const { harness, element } = await openPage('/rated-bg-picker');
+    await tick(harness, element, 24);
+    await press(harness, element, '.shuffle');
+    await copyInvites(harness, element, 0);
+
+    await press(harness, element, '.shuffle-again');
+    expect(copyLabels(element)).toEqual(['Copy invites', 'Copy invites']);
+
+    await copyInvites(harness, element, 0);
+    const [first] = teamNames(element);
+    expect(clipboard.writeText).toHaveBeenLastCalledWith(invitesFor(first, first[0]));
+  });
+
+  it("says Copy failed when the browser won't copy", async () => {
+    stubClipboard(() => Promise.reject(new Error('denied')));
+    const { harness, element } = await openPage('/rated-bg-picker');
+    await tick(harness, element, 24);
+    await press(harness, element, '.shuffle');
+
+    await copyInvites(harness, element, 0);
+
+    expect(copyLabels(element)).toEqual(['Copy failed', 'Copy invites']);
+    expect(copyStatus(element)).toBe("Couldn't copy the invites for Team 1");
   });
 
   it('opens a shared link with the leaders it names crowned', async () => {

@@ -15,10 +15,26 @@
 
     @if (teamViews(); as teams) {
       <section #teamsSection class="teams" aria-label="Teams">
+        <p class="visually-hidden copy-status" role="status">{{ copyMessage() }}</p>
         @for (team of teams; track team.label) {
           <section class="picker-card team" [attr.aria-label]="team.label">
             <header class="team-header">
-              <h2>{{ team.label }}</h2>
+              <div class="team-title">
+                <h2>{{ team.label }}</h2>
+                @let copy = copyState(team);
+                <button
+                  type="button"
+                  class="copy-invites"
+                  [class.copied]="copy === 'copied'"
+                  [class.failed]="copy === 'failed'"
+                  [attr.aria-label]="'Copy invites for ' + team.label"
+                  title="Copy an /inv Name-Realm line for each player but the group leader, who sends the invites"
+                  (click)="copyInvites(team)">
+                  @for (label of copyLabels; track label.state) {
+                    <span class="copy-label" [class.shown]="label.state === copy">{{ label.text }}</span>
+                  }
+                </button>
+              </div>
               <p class="team-summary">@if (team.backFromBench) {<span class="bench-note"><app-rated-bg-mark kind="back-from-bench" [decorative]="true" />{{ team.backFromBench }} back from the bench</span>}@if (team.averageItemLevel !== undefined) { avg ilvl {{ team.averageItemLevel | number: '1.1-1' }}}</p>
             </header>
             @for (group of team.groups; track group.id) {
