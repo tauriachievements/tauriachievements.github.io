@@ -35,6 +35,7 @@ import {
   averageItemLevel,
   benchSize,
   canShuffle,
+  inviteCommands,
   playMatch,
   rosterGroups,
   rosterPlayers,
@@ -48,6 +49,24 @@ import {
 import { PICKER_LINK_PARAM, PickerState, linkNote, openLegacyLink, openPickerLink, pickerLink } from './rated-bg-picker-link';
 import { RatedBgMark, RatedBgMarkComponent } from './rated-bg-mark.component';
 import { RatedBgPlayerComponent } from './rated-bg-player.component';
+
+type CopyState = 'ready' | 'copied' | 'failed';
+
+interface TeamInvites {
+  readonly label: string;
+  readonly invites: string;
+}
+
+interface CopyResult extends TeamInvites {
+  readonly copied: boolean;
+}
+
+const COPY_LABELS: readonly { readonly state: CopyState; readonly text: string }[] = [
+  { state: 'ready', text: 'Copy invites' },
+  { state: 'copied', text: 'Copied' },
+  { state: 'failed', text: 'Copy failed' }
+];
+const COPY_RESULT_MS = 2000;
 
 @Component({
   selector: 'app-rated-bg-picker-page',
@@ -83,6 +102,9 @@ export class RatedBgPickerPageComponent implements OnInit {
   readonly match = signal<Match | undefined>(undefined);
   readonly flagCarriers = signal<ReadonlySet<string>>(new Set());
   readonly linkNote = signal<string | undefined>(undefined);
+  readonly copyLabels = COPY_LABELS;
+  private readonly copyResult = signal<CopyResult | undefined>(undefined);
+  private copyResultTimer: ReturnType<typeof setTimeout> | undefined;
   private readonly benchHistory = signal(NO_BENCH_HISTORY);
   private readonly generatedAt = signal<string | undefined>(undefined);
 
@@ -117,8 +139,16 @@ export class RatedBgPickerPageComponent implements OnInit {
         rows: group.players.map(player => teamRow(player, match))
       })),
       averageItemLevel: averageItemLevel(players),
-      backFromBench: players.filter(player => match.backFromBench.has(player.key)).length
+      backFromBench: players.filter(player => match.backFromBench.has(player.key)).length,
+      invites: inviteCommands(players, match.leaders)
     }));
+  });
+  readonly copyMessage = computed(() => {
+    const result = this.copyResult();
+    if (!result) {
+      return '';
+    }
+    return result.copied ? `Copied the invites for ${result.label}` : `Couldn't copy the invites for ${result.label}`;
   });
   private readonly lastEdited = computed(() => {
     const generatedAt = this.generatedAt();
@@ -127,6 +157,7 @@ export class RatedBgPickerPageComponent implements OnInit {
 
   constructor() {
     setPageHeader(() => ({ lastEdited: this.lastEdited() }));
+    this.destroyRef.onDestroy(() => clearTimeout(this.copyResultTimer));
   }
 
   ngOnInit(): void {
@@ -191,6 +222,26 @@ export class RatedBgPickerPageComponent implements OnInit {
   setLeader(player: RosterPlayer): void {
     this.match.update(match => match && withLeader(match, player.key));
     this.writeUrl();
+  }
+
+  copyState(team: TeamInvites): CopyState {
+    const result = this.copyResult();
+    if (result?.label !== team.label || result.invites !== team.invites) {
+      return 'ready';
+    }
+    return result.copied ? 'copied' : 'failed';
+  }
+
+  async copyInvites(team: TeamInvites): Promise<void> {
+    let copied = true;
+    try {
+      await navigator.clipboard.writeText(team.invites);
+    } catch {
+      copied = false;
+    }
+    clearTimeout(this.copyResultTimer);
+    this.copyResult.set({ label: team.label, invites: team.invites, copied });
+    this.copyResultTimer = setTimeout(() => this.copyResult.set(undefined), COPY_RESULT_MS);
   }
 
   shuffle(): void {

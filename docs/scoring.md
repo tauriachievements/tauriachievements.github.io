@@ -791,7 +791,8 @@ puts everyone else on the bench, taking turns from match to match.
 
 - **Code:** `rosterGroups`, `shuffleWarning`, `canShuffle`, `benchSize`, `playMatch`, `shuffleTeams`,
   `linkedMatch`, `compositionOf`, `togglePick`, `toggleFlagCarrier`, `tickedFlagCarriers`,
-  `withLeader`, `parseLeaders`, `parseTeams`, `teamsOf`, `teamGroups` and `averageItemLevel` in
+  `withLeader`, `parseLeaders`, `parseTeams`, `teamsOf`, `teamGroups`, `averageItemLevel` and
+  `inviteCommands` in
   `spa/src/app/features/pvp/rated-bg-picker.ts`; the shared link's `playerCode`, `pickerLink`,
   `openPickerLink`, `openLegacyLink` and `linkNote` in `rated-bg-picker-link.ts`.
 - The list shows three groups, side by side from 1000 px and one under the other below that:
@@ -921,6 +922,16 @@ puts everyone else on the bench, taking turns from match to match.
   the FC button doesn't. Every shuffle, Shuffle again included, crowns the first healer listed
   again, and a player who sits out can't lead. The leaders are in the link; an old link without
   `leaders`, or naming nobody on a team, crowns that team's first healer listed.
+- **Copy invites copies the leader's invites.** The button right after each team's heading puts
+  one `/inv Name-Realm` line per player on the team on the clipboard, in the order the team lists
+  them, leaving out the leader, who sends them (`inviteCommands`): 9 lines, joined by line
+  breaks, with no line break after the last. The name is the character's, without the spec a
+  two-spec character's key carries. It copies the team as it shows at that moment, so after a
+  shuffle or a crown move it copies the new players without the new leader. The button says
+  "Copied" in green, or "Copy failed" in orange when the browser refuses, for 2 seconds or until
+  the team or its leader changes. All three labels share one spot, so the button never changes
+  width, and a hidden status line says the same to screen readers. On the 27 Nov 2026 list, the
+  ten longest names come to 247 characters, under the 255 a WoW macro holds.
 - **Flag carriers are optional, any number can be marked, and they take turns on the bench while
   two of them play.** The `FC` button on a ticked player marks or unmarks them, in the list before
   the shuffle and in the teams after it. The bench never leaves fewer than two marked players

@@ -626,6 +626,13 @@ export function inTeamOrder(team: readonly RosterPlayer[]): RosterPlayer[] {
   return teamGroups(team).flatMap(group => group.players);
 }
 
+export function inviteCommands(team: readonly RosterPlayer[], leaders: ReadonlySet<string>): string {
+  return inTeamOrder(team)
+    .filter(player => !leaders.has(player.key))
+    .map(player => `/inv ${player.character}`)
+    .join('\n');
+}
+
 function splitsFlagCarriers(teams: Teams, flagCarriers: ReadonlySet<string>): boolean {
   const [first, second] = teams.map(team => team.filter(player => flagCarriers.has(player.key)).length);
   return Math.abs(first - second) <= 1;

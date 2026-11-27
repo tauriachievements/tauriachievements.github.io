@@ -82,6 +82,50 @@ $text: #e0e0e0;
   }
 }
 
+.team-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.copy-invites {
+  display: inline-grid;
+  min-height: 24px;
+  padding: 0 9px;
+  border: 1px solid #3a3a3a;
+  border-radius: 6px;
+  background: #111;
+  color: #bdbdbd;
+  font: inherit;
+  font-size: 0.72rem;
+  font-weight: 700;
+  white-space: nowrap;
+  cursor: pointer;
+
+  &:hover { border-color: $gold; color: #fff; }
+  &:focus-visible { outline: 2px solid $gold; outline-offset: 2px; }
+
+  &.copied,
+  &.copied:hover {
+    border-color: rgba(63, 182, 139, 0.6);
+    color: $bench-color;
+  }
+
+  &.failed,
+  &.failed:hover {
+    border-color: rgba(255, 178, 122, 0.6);
+    color: #ffb27a;
+  }
+}
+
+.copy-label {
+  grid-area: 1 / 1;
+  place-self: center;
+  visibility: hidden;
+
+  &.shown { visibility: visible; }
+}
+
 .team-summary {
   display: flex;
   align-items: baseline;
@@ -431,7 +475,8 @@ $text: #e0e0e0;
 @media (pointer: coarse) {
   .action { min-height: 40px; }
   .pick-row { min-height: 40px; }
-  .flag-carrier { min-height: 32px; }
+  .flag-carrier,
+  .copy-invites { min-height: 32px; }
 }
 
 @media (min-width: $columns-breakpoint) {
