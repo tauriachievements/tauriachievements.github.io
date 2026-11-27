@@ -1,0 +1,190 @@
+<main class="explainer-page">
+  <header class="page-header">
+    <h1>How the shuffle works</h1>
+    <p>
+      The Rated BG Picker splits everyone who turned up into <strong>two teams of 10</strong>. When more
+      players are ticked than fit, the rest <strong>sit out in turns</strong>, match after match. These are
+      all the rules it follows.
+    </p>
+  </header>
+
+  <div class="columns">
+    <div class="column">
+      <section class="panel" aria-labelledby="picking-title">
+        <h2 id="picking-title"><span class="panel-tag">Picking</span> Before the shuffle</h2>
+        <p class="lead">Tick everyone who is there and set what each team needs. Shuffle turns on once the numbers work.</p>
+
+        <ul class="facts">
+          <li>
+            <strong>Tick any number of players.</strong> Each one plays the spec the list shows for them:
+            healer specs are healers, ranged damage specs are ranged, and everyone else is melee, tanks included.
+          </li>
+          <li>
+            <strong>Each team</strong> sets how many melee (1 to 5), ranged (1 to 5) and healers (1 to 4) every
+            team gets. It starts at 4 melee, 3 ranged and 3 healers, and the three must add up to 10.
+          </li>
+          <li>
+            <strong>Shuffle turns on</strong> once every group has enough ticked players for both teams. Until
+            then the bar says what is missing, such as "tick 2 more ranged". After that it says how many will
+            sit out.
+          </li>
+        </ul>
+
+        <h3>Alts and second specs</h3>
+        <ul class="facts">
+          <li>
+            A character listed with two specs has a row for each, and <strong>only one of them can be
+            ticked</strong>. Ticking the other spec switches to it.
+          </li>
+          <li>
+            All of one player's characters can be ticked, and <strong>at most one of them plays</strong> a
+            match. The shuffle picks the character that keeps the most flag carriers playing, then the one
+            that gives the best bench under the rules below.
+          </li>
+          <li>
+            Turns on the bench belong to the <strong>player, not the character</strong>. Someone who sat out on
+            one character plays first on any of them, and sits out only once a match.
+          </li>
+        </ul>
+      </section>
+
+      <section class="panel" aria-labelledby="bench-title">
+        <h2 id="bench-title"><span class="panel-tag">Bench</span> Who sits out</h2>
+        <p class="lead">
+          Melee, ranged and healers each bench their own extra players. Of all the ways to do that, the
+          shuffle takes the one that does best on these rules, checked in this order:
+        </p>
+
+        <ol class="steps">
+          <li>
+            <strong>Two flag carriers play.</strong> At least two players marked FC play every match, or every
+            marked player when fewer than two are marked. Beyond those two, flag carriers sit out like anyone else.
+          </li>
+          <li>
+            <strong>Nobody sits out twice in a row</strong> if it can be avoided. Whoever sat out the last match
+            plays the next one. When more than half of a group has to sit out, some sit out again, and those who
+            have sat out the most matches in a row play first.
+          </li>
+          <li>
+            <strong>Classes stay even.</strong> When a group has two or more players of a class, an even number
+            of them plays, so both teams get the same count. Rather than split 3 Hunters 2–1, the third Hunter
+            sits out. Where that can't work for every class, as few classes as possible end up uneven.
+          </li>
+          <li>
+            <strong>Turns are shared.</strong> The players who have sat out the fewest matches so far sit out next.
+          </li>
+          <li>
+            <strong>Late arrivals play.</strong> Someone ticked after the last match plays before someone who
+            played it.
+          </li>
+          <li><strong>The rest is random.</strong></li>
+        </ol>
+
+        <figure class="example">
+          <figcaption>Example: 7 ranged ticked for 6 seats</figcaption>
+          <p class="calc">3 Hunters, a Mage, a Warlock, a Shadow Priest and a Balance Druid. One of them sits out each match.</p>
+          <p class="compare">
+            Benching anyone but a Hunter would leave 3 Hunters to split 2–1, so <strong>the Hunters take
+            turns</strong>: a different one sits out each match, and the other four play every match. Even
+            classes come before sharing turns.
+          </p>
+        </figure>
+
+        <h3>Good to know</h3>
+        <ul class="facts">
+          <li>The bench is listed under the two teams. After the next shuffle, players back from the bench have a green arrow and stripe, and their team's heading counts them.</li>
+          <li><strong>Shuffle again</strong> and <strong>Change players</strong> keep everyone's turns. <strong>Clear</strong> starts them over.</li>
+        </ul>
+      </section>
+    </div>
+
+    <div class="column">
+      <section class="panel" aria-labelledby="teams-title">
+        <h2 id="teams-title"><span class="panel-tag">Teams</span> Who plays on which team</h2>
+        <p class="lead">
+          Each team gets exactly the melee, ranged and healers set under Each team, and every group is split
+          as evenly as it can be.
+        </p>
+
+        <ul class="facts">
+          <li><strong>Each group is split on its own:</strong> healers, ranged and melee.</li>
+          <li>Within a group, <strong>each class is split evenly</strong>: 4 Death Knights go 2 and 2.</li>
+          <li>
+            Within a class, <strong>each spec is split evenly</strong>: an Arms and a Fury Warrior go one to each
+            team.
+          </li>
+          <li>
+            Which team gets the odd one out of a class or spec, and who plays on which side, is
+            <strong>random</strong>.
+          </li>
+        </ul>
+
+        <figure class="example">
+          <figcaption>Example: 8 melee, 4 per team</figcaption>
+          <table class="mini-table example-table">
+            <thead>
+              <tr><th scope="col">Class</th><th scope="col" class="team-1">Team 1</th><th scope="col" class="team-2">Team 2</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>4 Death Knights</td><td>Unholy, Frost</td><td>Unholy, Unholy</td></tr>
+              <tr><td>2 Warriors</td><td>Arms</td><td>Fury</td></tr>
+              <tr><td>Rogue</td><td>Rogue</td><td class="empty">–</td></tr>
+              <tr><td>Paladin</td><td class="empty">–</td><td>Retribution</td></tr>
+            </tbody>
+          </table>
+          <p class="compare">
+            The lone Rogue and Paladin go to different teams, but which goes where is random, as is which team
+            gets the Frost Death Knight.
+          </p>
+        </figure>
+
+        <h3>Flag carriers</h3>
+        <ul class="facts">
+          <li>Marking flag carriers is optional. The <strong>FC</strong> button marks any ticked player, before or after the shuffle.</li>
+          <li>At least two of them play every match. From three marked on, they take turns on the bench like everyone else, so when only a few are marked they sit out less often than the rest of their group.</li>
+          <li>The flag carriers who play are <strong>split evenly</strong>: one per team with two, 2–1 with three.</li>
+          <li>The marks stay through Shuffle again and Change players. Unticking a player drops their mark.</li>
+        </ul>
+
+        <h3>Not balanced</h3>
+        <ul class="facts">
+          <li>Item level and traits are shown, but the shuffle doesn't use them.</li>
+          <li>A class isn't balanced across groups: a Restoration and a Feral Druid can land on the same team.</li>
+        </ul>
+      </section>
+
+      <section class="panel" aria-labelledby="playing-title">
+        <h2 id="playing-title"><span class="panel-tag">Playing</span> After the shuffle</h2>
+        <p class="lead">Each team has a leader who invites the others, and the next match is one click away.</p>
+
+        <ul class="facts">
+          <li>
+            <strong>The group leader</strong> has a gold crown and sends the invites. The shuffle crowns each
+            team's first healer listed, or its first player when it has no healer. Click any other player on
+            the team to move the crown.
+          </li>
+          <li>
+            <strong>Copy invites</strong> copies an <code>/inv Name-Realm</code> line for everyone on the team
+            except the leader, ready to paste into a macro.
+          </li>
+          <li><strong>Shuffle again</strong> plays the next match with the same players, and crowns new leaders.</li>
+          <li><strong>Change players</strong> unlocks the list, to tick or untick players between matches.</li>
+          <li><strong>Clear</strong> unticks everyone and starts the turns over.</li>
+        </ul>
+
+        <h3>Sharing</h3>
+        <ul class="facts">
+          <li>
+            The page's address always holds <strong>the whole picker</strong>: the ticks, the Each team numbers,
+            the flag carriers, both teams and their leaders, the bench and everyone's turns.
+          </li>
+          <li>
+            Send it to someone and they see exactly what you see. Their Shuffle again follows the same turns
+            as yours.
+          </li>
+          <li>A player who has left the player list since is left out, and the page says so.</li>
+        </ul>
+      </section>
+    </div>
+  </div>
+</main>

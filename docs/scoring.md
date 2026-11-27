@@ -810,9 +810,11 @@ puts everyone else on the bench, taking turns from match to match.
   in the list's columns, 4, 3 and 3 at first (`COMPOSITION_CHOICES`, `DEFAULT_COMPOSITION`).
   Melee, ranged and healers are the list's three groups. Clear and a reload keep the dropdowns;
   the page opened without a link starts at 4, 3 and 3. The dropdowns,
-  ticked count and Shuffle and Clear actions share one card, on one row from 1000 px. Below that,
-  where the page is at most 760 px wide and the row with Shuffle again and Change players needs
-  about 907 px, the dropdowns take a row of their own above the count and the buttons, before
+  ticked count, Shuffle and Clear actions and the link to How the shuffle works (below) share one
+  card, on one row from 1000 px, where the link is a square "?" button at the row's end. Below
+  that, where the page is at most 760 px wide and the row with Shuffle again and Change players
+  needs about 907 px, the dropdowns take a row of their own above the count and the buttons, and
+  the link, a small "? How the shuffle works", sits at the right end of the Each team line, before
   and after the shuffle alike, so the bar keeps its height.
 - **Shuffle needs the three to add up to 10, and enough ticked players in each group for both
   teams.** Until then Shuffle stays off and the bar says why after the count, on the same line, so
@@ -947,6 +949,11 @@ puts everyone else on the bench, taking turns from match to match.
   most traits) unless the list names a main spec. The item level is the API's `avgitemlevel`,
   the ladder's figure, not the guild pages' own average of the equipped items
   ([tauri-api.md](tauri-api.md#characters-and-guilds)).
+- **How the shuffle works** (`/rated-bg-picker/info`, `rated-bg-picker-info-page.component`)
+  explains these rules to the players in plain words, with an example of the bench and one of
+  the split. It has no link back to the picker, at the owner's choice: the browser's Back returns
+  to the picker as it was, since its address holds everything. A change to a rule above changes
+  that page in the same PR.
 - **Tests:** `rated-bg-picker.spec.ts`, `rated-bg-picker-link.spec.ts`,
   `rated-bg-picker-page.component.spec.ts`, `RatedBgRosterExportServiceTests`,
   `CharacterArtifactReaderTests`.

@@ -30,5 +30,10 @@ export const PVP_ROUTES: Routes = [
     path: 'rated-bg-picker',
     loadComponent: () => import('./rated-bg-picker-page.component')
       .then(module => module.RatedBgPickerPageComponent)
+  },
+  {
+    path: 'rated-bg-picker/info',
+    loadComponent: () => import('./rated-bg-picker-info-page.component')
+      .then(module => module.RatedBgPickerInfoPageComponent)
   }
 ];

@@ -382,6 +382,16 @@ $text: #e0e0e0;
   }
 }
 
+.info-link {
+  @include help-link;
+  position: relative;
+  flex: none;
+
+  .tap-area { display: none; }
+}
+
+.info-link-icon { @include help-link-icon; }
+
 .roster-columns {
   display: grid;
   gap: 14px;
@@ -482,6 +492,23 @@ $text: #e0e0e0;
 @media (min-width: $columns-breakpoint) {
   .picker-page { width: min(1120px, calc(100% - 32px)); }
 
+  .info-link {
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    padding: 0;
+    border-color: #3a3a3a;
+    border-radius: 7px;
+
+    @media (pointer: coarse) {
+      width: 40px;
+      height: 40px;
+    }
+  }
+
+  .info-link-icon { width: 20px; height: 20px; font-size: 0.8rem; }
+  .info-link-text { @include hidden-visually; }
+
   .roster-columns { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 
   .roster-group {
@@ -496,9 +523,23 @@ $text: #e0e0e0;
   .composition {
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-row: 1;
     grid-column: 1 / -1;
     gap: 4px 8px;
   }
+
+  .info-link {
+    grid-row: 1;
+    grid-column: 1 / -1;
+    justify-self: end;
+    align-self: start;
+    gap: 5px;
+    margin-top: -4px;
+    padding: 2px 8px;
+    font-size: 0.72rem;
+  }
+
+  .info-link-icon { width: 14px; height: 14px; font-size: 0.62rem; }
 
   .composition-label { grid-column: 1 / -1; }
 
@@ -554,6 +595,13 @@ $text: #e0e0e0;
 
   .toolbar {
     padding: 8px 10px;
+  }
+
+  @media (pointer: coarse) {
+    .info-link .tap-area {
+      display: block;
+      inset: -4px -4px -9px;
+    }
   }
 
   .leader-pick {

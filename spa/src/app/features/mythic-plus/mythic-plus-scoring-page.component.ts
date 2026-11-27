@@ -5,7 +5,7 @@ import { RouterLink } from '@angular/router';
   selector: 'app-mythic-plus-scoring-page',
   imports: [RouterLink],
   templateUrl: './mythic-plus-scoring-page.component.html',
-  styleUrl: './mythic-plus-scoring-page.component.scss',
+  styleUrls: ['../../shared/explainer-page.scss', './mythic-plus-scoring-page.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class MythicPlusScoringPageComponent {}
