@@ -1,5 +1,885 @@
 [
   {
+    "name": "Arathi Basin",
+    "startTime": "2026.11.26 23.58",
+    "duration": "00:08:59"
+  },
+  {
+    "name": "Twin Peaks",
+    "startTime": "2026.11.26 23.43",
+    "duration": "00:14:24"
+  },
+  {
+    "name": "Temple of Kotmogu",
+    "startTime": "2026.11.26 23.46",
+    "duration": "00:08:52"
+  },
+  {
+    "name": "Temple of Kotmogu",
+    "startTime": "2026.11.26 23.28",
+    "duration": "00:14:18"
+  },
+  {
+    "name": "Silvershard Mines",
+    "startTime": "2026.11.26 23.31",
+    "duration": "00:07:46"
+  },
+  {
+    "name": "The Battle for Gilneas",
+    "startTime": "2026.11.26 23.17",
+    "duration": "00:13:05"
+  },
+  {
+    "name": "Twin Peaks",
+    "startTime": "2026.11.26 23.14",
+    "duration": "00:13:22"
+  },
+  {
+    "name": "The Battle for Gilneas",
+    "startTime": "2026.11.26 23.10",
+    "duration": "00:05:16"
+  },
+  {
+    "name": "The Battle for Gilneas",
+    "startTime": "2026.11.26 22.57",
+    "duration": "00:15:19"
+  },
+  {
+    "name": "Warsong Gulch",
+    "startTime": "2026.11.26 22.54",
+    "duration": "00:17:02"
+  },
+  {
+    "name": "Silvershard Mines",
+    "startTime": "2026.11.26 23.01",
+    "duration": "00:07:11"
+  },
+  {
+    "name": "Alterac Valley",
+    "startTime": "2026.11.26 22.16",
+    "duration": "00:36:45"
+  },
+  {
+    "name": "Eye of the Storm",
+    "startTime": "2026.11.26 22.08",
+    "duration": "00:15:37"
+  },
+  {
+    "name": "The Battle for Gilneas",
+    "startTime": "2026.11.26 21.58",
+    "duration": "00:15:19"
+  },
+  {
+    "name": "Silvershard Mines",
+    "startTime": "2026.11.26 22.04",
+    "duration": "00:08:48"
+  },
+  {
+    "name": "Temple of Kotmogu",
+    "startTime": "2026.11.26 21.52",
+    "duration": "00:11:03"
+  },
+  {
+    "name": "Twin Peaks",
+    "startTime": "2026.11.26 21.48",
+    "duration": "00:12:12"
+  },
+  {
+    "name": "The Battle for Gilneas",
+    "startTime": "2026.11.26 21.42",
+    "duration": "00:13:41"
+  },
+  {
+    "name": "Warsong Gulch",
+    "startTime": "2026.11.26 21.37",
+    "duration": "00:12:31"
+  },
+  {
+    "name": "Temple of Kotmogu",
+    "startTime": "2026.11.26 21.32",
+    "duration": "00:13:58"
+  },
+  {
+    "name": "The Battle for Gilneas",
+    "startTime": "2026.11.26 21.27",
+    "duration": "00:11:40"
+  },
+  {
+    "name": "Deepwind Gorge",
+    "startTime": "2026.11.26 21.20",
+    "duration": "00:14:25"
+  },
+  {
+    "name": "The Battle for Gilneas",
+    "startTime": "2026.11.26 21.13",
+    "duration": "00:13:31"
+  },
+  {
+    "name": "Temple of Kotmogu",
+    "startTime": "2026.11.26 21.11",
+    "duration": "00:10:33"
+  },
+  {
+    "name": "Twin Peaks",
+    "startTime": "2026.11.26 21.07",
+    "duration": "00:10:59"
+  },
+  {
+    "name": "Warsong Gulch",
+    "startTime": "2026.11.26 20.55",
+    "duration": "00:16:25"
+  },
+  {
+    "name": "Silvershard Mines",
+    "startTime": "2026.11.26 21.01",
+    "duration": "00:08:02"
+  },
+  {
+    "name": "Twin Peaks",
+    "startTime": "2026.11.26 20.48",
+    "duration": "00:17:03"
+  },
+  {
+    "name": "Warsong Gulch",
+    "startTime": "2026.11.26 20.45",
+    "duration": "00:12:53"
+  },
+  {
+    "name": "Silvershard Mines",
+    "startTime": "2026.11.26 20.49",
+    "duration": "00:08:12"
+  },
+  {
+    "name": "Silvershard Mines",
+    "startTime": "2026.11.26 20.40",
+    "duration": "00:10:03"
+  },
+  {
+    "name": "The Battle for Gilneas",
+    "startTime": "2026.11.26 20.30",
+    "duration": "00:14:01"
+  },
+  {
+    "name": "The Battle for Gilneas",
+    "startTime": "2026.11.26 20.29",
+    "duration": "00:15:17"
+  },
+  {
+    "name": "Temple of Kotmogu",
+    "startTime": "2026.11.26 20.35",
+    "duration": "00:09:22"
+  },
+  {
+    "name": "Twin Peaks",
+    "startTime": "2026.11.26 20.24",
+    "duration": "00:16:24"
+  },
+  {
+    "name": "The Battle for Gilneas",
+    "startTime": "2026.11.26 20.19",
+    "duration": "00:14:54"
+  },
+  {
+    "name": "Twin Peaks",
+    "startTime": "2026.11.26 20.15",
+    "duration": "00:11:36"
+  },
+  {
+    "name": "Arathi Basin",
+    "startTime": "2026.11.26 20.02",
+    "duration": "00:23:04"
+  },
+  {
+    "name": "Temple of Kotmogu",
+    "startTime": "2026.11.26 20.08",
+    "duration": "00:11:02"
+  },
+  {
+    "name": "Eye of the Storm",
+    "startTime": "2026.11.26 20.00",
+    "duration": "00:16:37"
+  },
+  {
+    "name": "Silvershard Mines",
+    "startTime": "2026.11.26 20.04",
+    "duration": "00:09:27"
+  },
+  {
+    "name": "Silvershard Mines",
+    "startTime": "2026.11.26 19.55",
+    "duration": "00:09:39"
+  },
+  {
+    "name": "Warsong Gulch",
+    "startTime": "2026.11.26 19.51",
+    "duration": "00:09:21"
+  },
+  {
+    "name": "Silvershard Mines",
+    "startTime": "2026.11.26 19.47",
+    "duration": "00:10:48"
+  },
+  {
+    "name": "Deepwind Gorge",
+    "startTime": "2026.11.26 19.38",
+    "duration": "00:16:23"
+  },
+  {
+    "name": "Twin Peaks",
+    "startTime": "2026.11.26 19.36",
+    "duration": "00:17:02"
+  },
+  {
+    "name": "Warsong Gulch",
+    "startTime": "2026.11.26 19.32",
+    "duration": "00:17:02"
+  },
+  {
+    "name": "Temple of Kotmogu",
+    "startTime": "2026.11.26 19.38",
+    "duration": "00:08:42"
+  },
+  {
+    "name": "Silvershard Mines",
+    "startTime": "2026.11.26 19.26",
+    "duration": "00:09:14"
+  },
+  {
+    "name": "Strand of the Ancients",
+    "startTime": "2026.11.26 19.15",
+    "duration": "00:19:17"
+  },
+  {
+    "name": "Temple of Kotmogu",
+    "startTime": "2026.11.26 19.18",
+    "duration": "00:12:56"
+  },
+  {
+    "name": "Temple of Kotmogu",
+    "startTime": "2026.11.26 19.11",
+    "duration": "00:13:12"
+  },
+  {
+    "name": "Warsong Gulch",
+    "startTime": "2026.11.26 19.05",
+    "duration": "00:09:28"
+  },
+  {
+    "name": "Twin Peaks",
+    "startTime": "2026.11.26 19.00",
+    "duration": "00:12:06"
+  },
+  {
+    "name": "Twin Peaks",
+    "startTime": "2026.11.26 18.54",
+    "duration": "00:17:02"
+  },
+  {
+    "name": "Silvershard Mines",
+    "startTime": "2026.11.26 18.55",
+    "duration": "00:08:57"
+  },
+  {
+    "name": "The Battle for Gilneas",
+    "startTime": "2026.11.26 18.46",
+    "duration": "00:12:03"
+  },
+  {
+    "name": "Twin Peaks",
+    "startTime": "2026.11.26 18.37",
+    "duration": "00:17:02"
+  },
+  {
+    "name": "Silvershard Mines",
+    "startTime": "2026.11.26 18.42",
+    "duration": "00:10:22"
+  },
+  {
+    "name": "Temple of Kotmogu",
+    "startTime": "2026.11.26 18.37",
+    "duration": "00:11:17"
+  },
+  {
+    "name": "Twin Peaks",
+    "startTime": "2026.11.26 18.32",
+    "duration": "00:11:58"
+  },
+  {
+    "name": "Temple of Kotmogu",
+    "startTime": "2026.11.26 18.25",
+    "duration": "00:15:08"
+  },
+  {
+    "name": "The Battle for Gilneas",
+    "startTime": "2026.11.26 18.22",
+    "duration": "00:08:53"
+  },
+  {
+    "name": "Twin Peaks",
+    "startTime": "2026.11.26 18.06",
+    "duration": "00:16:11"
+  },
+  {
+    "name": "Twin Peaks",
+    "startTime": "2026.11.26 18.12",
+    "duration": "00:08:14"
+  },
+  {
+    "name": "Silvershard Mines",
+    "startTime": "2026.11.26 18.09",
+    "duration": "00:10:21"
+  },
+  {
+    "name": "The Battle for Gilneas",
+    "startTime": "2026.11.26 17.56",
+    "duration": "00:09:54"
+  },
+  {
+    "name": "Deepwind Gorge",
+    "startTime": "2026.11.26 17.51",
+    "duration": "00:13:36"
+  },
+  {
+    "name": "Strand of the Ancients",
+    "startTime": "2026.11.26 17.32",
+    "duration": "00:20:26"
+  },
+  {
+    "name": "Twin Peaks",
+    "startTime": "2026.11.26 17.39",
+    "duration": "00:09:32"
+  },
+  {
+    "name": "Twin Peaks",
+    "startTime": "2026.11.26 17.24",
+    "duration": "00:10:15"
+  },
+  {
+    "name": "Warsong Gulch",
+    "startTime": "2026.11.26 17.20",
+    "duration": "00:10:03"
+  },
+  {
+    "name": "The Battle for Gilneas",
+    "startTime": "2026.11.26 17.15",
+    "duration": "00:08:14"
+  },
+  {
+    "name": "Temple of Kotmogu",
+    "startTime": "2026.11.26 17.09",
+    "duration": "00:09:34"
+  },
+  {
+    "name": "Twin Peaks",
+    "startTime": "2026.11.26 17.05",
+    "duration": "00:07:45"
+  },
+  {
+    "name": "Silvershard Mines",
+    "startTime": "2026.11.26 16.57",
+    "duration": "00:08:19"
+  },
+  {
+    "name": "Warsong Gulch",
+    "startTime": "2026.11.26 16.55",
+    "duration": "00:08:30"
+  },
+  {
+    "name": "Silvershard Mines",
+    "startTime": "2026.11.26 16.47",
+    "duration": "00:07:12"
+  },
+  {
+    "name": "Twin Peaks",
+    "startTime": "2026.11.26 16.42",
+    "duration": "00:07:25"
+  },
+  {
+    "name": "Silvershard Mines",
+    "startTime": "2026.11.26 16.36",
+    "duration": "00:08:56"
+  },
+  {
+    "name": "Warsong Gulch",
+    "startTime": "2026.11.26 16.32",
+    "duration": "00:08:31"
+  },
+  {
+    "name": "Silvershard Mines",
+    "startTime": "2026.11.26 16.27",
+    "duration": "00:07:38"
+  },
+  {
+    "name": "Temple of Kotmogu",
+    "startTime": "2026.11.26 16.21",
+    "duration": "00:07:47"
+  },
+  {
+    "name": "The Battle for Gilneas",
+    "startTime": "2026.11.26 16.12",
+    "duration": "00:11:39"
+  },
+  {
+    "name": "Warsong Gulch",
+    "startTime": "2026.11.26 16.01",
+    "duration": "00:14:23"
+  },
+  {
+    "name": "Temple of Kotmogu",
+    "startTime": "2026.11.26 15.57",
+    "duration": "00:12:33"
+  },
+  {
+    "name": "The Battle for Gilneas",
+    "startTime": "2026.11.26 15.47",
+    "duration": "00:12:14"
+  },
+  {
+    "name": "Twin Peaks",
+    "startTime": "2026.11.26 15.37",
+    "duration": "00:17:03"
+  },
+  {
+    "name": "Warsong Gulch",
+    "startTime": "2026.11.26 15.28",
+    "duration": "00:17:02"
+  },
+  {
+    "name": "Twin Peaks",
+    "startTime": "2026.11.26 15.20",
+    "duration": "00:10:07"
+  },
+  {
+    "name": "The Battle for Gilneas",
+    "startTime": "2026.11.26 15.11",
+    "duration": "00:09:15"
+  },
+  {
+    "name": "Warsong Gulch",
+    "startTime": "2026.11.26 14.58",
+    "duration": "00:17:02"
+  },
+  {
+    "name": "Temple of Kotmogu",
+    "startTime": "2026.11.26 14.49",
+    "duration": "00:08:42"
+  },
+  {
+    "name": "Warsong Gulch",
+    "startTime": "2026.11.26 14.44",
+    "duration": "00:09:02"
+  },
+  {
+    "name": "Twin Peaks",
+    "startTime": "2026.11.26 14.26",
+    "duration": "00:16:51"
+  },
+  {
+    "name": "Silvershard Mines",
+    "startTime": "2026.11.26 14.32",
+    "duration": "00:09:47"
+  },
+  {
+    "name": "Silvershard Mines",
+    "startTime": "2026.11.26 14.15",
+    "duration": "00:09:50"
+  },
+  {
+    "name": "Eye of the Storm",
+    "startTime": "2026.11.26 13.58",
+    "duration": "00:20:06"
+  },
+  {
+    "name": "Temple of Kotmogu",
+    "startTime": "2026.11.26 13.52",
+    "duration": "00:05:07"
+  },
+  {
+    "name": "Arathi Basin",
+    "startTime": "2026.11.26 13.28",
+    "duration": "00:22:29"
+  },
+  {
+    "name": "Silvershard Mines",
+    "startTime": "2026.11.26 13.17",
+    "duration": "00:08:56"
+  },
+  {
+    "name": "Twin Peaks",
+    "startTime": "2026.11.26 13.04",
+    "duration": "00:08:56"
+  },
+  {
+    "name": "Twin Peaks",
+    "startTime": "2026.11.26 12.46",
+    "duration": "00:06:58"
+  },
+  {
+    "name": "Temple of Kotmogu",
+    "startTime": "2026.11.26 12.39",
+    "duration": "00:06:17"
+  },
+  {
+    "name": "Warsong Gulch",
+    "startTime": "2026.11.26 12.25",
+    "duration": "00:13:12"
+  },
+  {
+    "name": "Temple of Kotmogu",
+    "startTime": "2026.11.26 12.14",
+    "duration": "00:11:09"
+  },
+  {
+    "name": "The Battle for Gilneas",
+    "startTime": "2026.11.26 12.02",
+    "duration": "00:15:08"
+  },
+  {
+    "name": "Twin Peaks",
+    "startTime": "2026.11.26 11.48",
+    "duration": "00:12:10"
+  },
+  {
+    "name": "The Battle for Gilneas",
+    "startTime": "2026.11.26 11.41",
+    "duration": "00:05:01"
+  },
+  {
+    "name": "Warsong Gulch",
+    "startTime": "2026.11.26 11.25",
+    "duration": "00:09:04"
+  },
+  {
+    "name": "Temple of Kotmogu",
+    "startTime": "2026.11.26 11.09",
+    "duration": "00:08:47"
+  },
+  {
+    "name": "Arathi Basin",
+    "startTime": "2026.11.26 10.51",
+    "duration": "00:15:29"
+  },
+  {
+    "name": "Silvershard Mines",
+    "startTime": "2026.11.26 10.39",
+    "duration": "00:08:29"
+  },
+  {
+    "name": "Temple of Kotmogu",
+    "startTime": "2026.11.26 10.23",
+    "duration": "00:07:32"
+  },
+  {
+    "name": "The Battle for Gilneas",
+    "startTime": "2026.11.26 10.10",
+    "duration": "00:11:42"
+  },
+  {
+    "name": "Eye of the Storm",
+    "startTime": "2026.11.26 09.55",
+    "duration": "00:09:36"
+  },
+  {
+    "name": "Twin Peaks",
+    "startTime": "2026.11.26 09.35",
+    "duration": "00:18:55"
+  },
+  {
+    "name": "Silvershard Mines",
+    "startTime": "2026.11.26 09.25",
+    "duration": "00:08:05"
+  },
+  {
+    "name": "Warsong Gulch",
+    "startTime": "2026.11.26 09.04",
+    "duration": "00:19:08"
+  },
+  {
+    "name": "Temple of Kotmogu",
+    "startTime": "2026.11.26 08.47",
+    "duration": "00:13:27"
+  },
+  {
+    "name": "Warsong Gulch",
+    "startTime": "2026.11.26 08.35",
+    "duration": "00:08:45"
+  },
+  {
+    "name": "Silvershard Mines",
+    "startTime": "2026.11.26 08.23",
+    "duration": "00:07:11"
+  },
+  {
+    "name": "The Battle for Gilneas",
+    "startTime": "2026.11.26 08.05",
+    "duration": "00:15:17"
+  },
+  {
+    "name": "Silvershard Mines",
+    "startTime": "2026.11.26 07.54",
+    "duration": "00:07:46"
+  },
+  {
+    "name": "The Battle for Gilneas",
+    "startTime": "2026.11.26 07.47",
+    "duration": "00:06:10"
+  },
+  {
+    "name": "Warsong Gulch",
+    "startTime": "2026.11.26 07.34",
+    "duration": "00:10:00"
+  },
+  {
+    "name": "Temple of Kotmogu",
+    "startTime": "2026.11.26 07.23",
+    "duration": "00:09:27"
+  },
+  {
+    "name": "Warsong Gulch",
+    "startTime": "2026.11.26 07.04",
+    "duration": "00:17:24"
+  },
+  {
+    "name": "Silvershard Mines",
+    "startTime": "2026.11.26 06.54",
+    "duration": "00:08:14"
+  },
+  {
+    "name": "The Battle for Gilneas",
+    "startTime": "2026.11.26 06.46",
+    "duration": "00:05:19"
+  },
+  {
+    "name": "Warsong Gulch",
+    "startTime": "2026.11.26 06.36",
+    "duration": "00:08:05"
+  },
+  {
+    "name": "Silvershard Mines",
+    "startTime": "2026.11.26 06.24",
+    "duration": "00:10:37"
+  },
+  {
+    "name": "The Battle for Gilneas",
+    "startTime": "2026.11.26 06.12",
+    "duration": "00:10:03"
+  },
+  {
+    "name": "Silvershard Mines",
+    "startTime": "2026.11.26 06.01",
+    "duration": "00:10:04"
+  },
+  {
+    "name": "Twin Peaks",
+    "startTime": "2026.11.26 05.43",
+    "duration": "00:17:02"
+  },
+  {
+    "name": "Temple of Kotmogu",
+    "startTime": "2026.11.26 05.32",
+    "duration": "00:09:19"
+  },
+  {
+    "name": "The Battle for Gilneas",
+    "startTime": "2026.11.26 05.18",
+    "duration": "00:13:25"
+  },
+  {
+    "name": "Warsong Gulch",
+    "startTime": "2026.11.26 05.00",
+    "duration": "00:15:13"
+  },
+  {
+    "name": "Silvershard Mines",
+    "startTime": "2026.11.26 05.07",
+    "duration": "00:07:46"
+  },
+  {
+    "name": "The Battle for Gilneas",
+    "startTime": "2026.11.26 04.47",
+    "duration": "00:11:38"
+  },
+  {
+    "name": "Arathi Basin",
+    "startTime": "2026.11.26 04.26",
+    "duration": "00:21:27"
+  },
+  {
+    "name": "Silvershard Mines",
+    "startTime": "2026.11.26 04.16",
+    "duration": "00:07:46"
+  },
+  {
+    "name": "Twin Peaks",
+    "startTime": "2026.11.26 04.00",
+    "duration": "00:17:02"
+  },
+  {
+    "name": "The Battle for Gilneas",
+    "startTime": "2026.11.26 04.04",
+    "duration": "00:11:18"
+  },
+  {
+    "name": "The Battle for Gilneas",
+    "startTime": "2026.11.26 03.54",
+    "duration": "00:05:44"
+  },
+  {
+    "name": "Warsong Gulch",
+    "startTime": "2026.11.26 03.46",
+    "duration": "00:12:17"
+  },
+  {
+    "name": "Warsong Gulch",
+    "startTime": "2026.11.26 03.34",
+    "duration": "00:17:02"
+  },
+  {
+    "name": "Silvershard Mines",
+    "startTime": "2026.11.26 03.37",
+    "duration": "00:07:46"
+  },
+  {
+    "name": "The Battle for Gilneas",
+    "startTime": "2026.11.26 03.29",
+    "duration": "00:06:15"
+  },
+  {
+    "name": "Silvershard Mines",
+    "startTime": "2026.11.26 03.25",
+    "duration": "00:08:06"
+  },
+  {
+    "name": "Temple of Kotmogu",
+    "startTime": "2026.11.26 03.19",
+    "duration": "00:09:08"
+  },
+  {
+    "name": "Warsong Gulch",
+    "startTime": "2026.11.26 03.08",
+    "duration": "00:15:11"
+  },
+  {
+    "name": "Silvershard Mines",
+    "startTime": "2026.11.26 03.11",
+    "duration": "00:08:53"
+  },
+  {
+    "name": "The Battle for Gilneas",
+    "startTime": "2026.11.26 02.59",
+    "duration": "00:17:27"
+  },
+  {
+    "name": "Temple of Kotmogu",
+    "startTime": "2026.11.26 02.55",
+    "duration": "00:12:12"
+  },
+  {
+    "name": "The Battle for Gilneas",
+    "startTime": "2026.11.26 02.40",
+    "duration": "00:17:18"
+  },
+  {
+    "name": "Silvershard Mines",
+    "startTime": "2026.11.26 02.47",
+    "duration": "00:07:00"
+  },
+  {
+    "name": "Warsong Gulch",
+    "startTime": "2026.11.26 02.35",
+    "duration": "00:17:02"
+  },
+  {
+    "name": "Silvershard Mines",
+    "startTime": "2026.11.26 02.28",
+    "duration": "00:08:01"
+  },
+  {
+    "name": "Temple of Kotmogu",
+    "startTime": "2026.11.26 02.17",
+    "duration": "00:16:08"
+  },
+  {
+    "name": "The Battle for Gilneas",
+    "startTime": "2026.11.26 02.11",
+    "duration": "00:05:23"
+  },
+  {
+    "name": "Silvershard Mines",
+    "startTime": "2026.11.26 02.01",
+    "duration": "00:07:33"
+  },
+  {
+    "name": "Temple of Kotmogu",
+    "startTime": "2026.11.26 01.53",
+    "duration": "00:06:33"
+  },
+  {
+    "name": "Warsong Gulch",
+    "startTime": "2026.11.26 01.41",
+    "duration": "00:17:02"
+  },
+  {
+    "name": "The Battle for Gilneas",
+    "startTime": "2026.11.26 01.30",
+    "duration": "00:11:57"
+  },
+  {
+    "name": "Temple of Kotmogu",
+    "startTime": "2026.11.26 01.28",
+    "duration": "00:11:22"
+  },
+  {
+    "name": "Eye of the Storm",
+    "startTime": "2026.11.26 01.16",
+    "duration": "00:11:11"
+  },
+  {
+    "name": "Silvershard Mines",
+    "startTime": "2026.11.26 01.05",
+    "duration": "00:09:01"
+  },
+  {
+    "name": "Twin Peaks",
+    "startTime": "2026.11.26 00.57",
+    "duration": "00:17:02"
+  },
+  {
+    "name": "Temple of Kotmogu",
+    "startTime": "2026.11.26 00.53",
+    "duration": "00:09:33"
+  },
+  {
+    "name": "Silvershard Mines",
+    "startTime": "2026.11.26 00.43",
+    "duration": "00:09:26"
+  },
+  {
+    "name": "Warsong Gulch",
+    "startTime": "2026.11.26 00.39",
+    "duration": "00:12:19"
+  },
+  {
+    "name": "Temple of Kotmogu",
+    "startTime": "2026.11.26 00.29",
+    "duration": "00:12:48"
+  },
+  {
+    "name": "Twin Peaks",
+    "startTime": "2026.11.26 00.21",
+    "duration": "00:17:02"
+  },
+  {
+    "name": "Warsong Gulch",
+    "startTime": "2026.11.26 00.14",
+    "duration": "00:10:32"
+  },
+  {
+    "name": "The Battle for Gilneas",
+    "startTime": "2026.11.26 00.11",
+    "duration": "00:08:03"
+  },
+  {
     "name": "The Battle for Gilneas",
     "startTime": "2026.11.25 23.57",
     "duration": "00:13:31"
