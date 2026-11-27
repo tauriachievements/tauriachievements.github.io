@@ -102,14 +102,9 @@
                 (click)="setView('runs')">Runs</button>
               <button
                 type="button"
-                [class.active]="view() === 'players' && !roleFilter()"
-                [attr.aria-pressed]="view() === 'players' && !roleFilter()"
+                [class.active]="view() === 'players'"
+                [attr.aria-pressed]="view() === 'players'"
                 (click)="setView('players')">Players</button>
-              <button
-                type="button"
-                [class.active]="view() === 'players' && !!roleFilter()"
-                [attr.aria-pressed]="view() === 'players' && !!roleFilter()"
-                (click)="showRoles()">Roles</button>
             </div>
           </div>
         </div>
@@ -138,20 +133,18 @@
                 [expanded]="filtersOpen()"
                 [activeFilters]="activeFilterLabels()"
                 (expandedChange)="filtersOpen.set($event)" />
-              @if (roleFilter(); as currentRole) {
-                <div class="filter-slot role-slot">
-                  <app-role-filter dropdownId="mythicPlusRole" [includeAll]="false" [selected]="currentRole" (selectedChange)="setRole($event)" />
-                </div>
-              }
               <button
                 type="button"
                 class="filter-reset collapsible-filter"
                 [disabled]="!activeFilterLabels().length"
-                aria-label="Reset realm, class and spec filters"
+                aria-label="Reset role, realm, class and spec filters"
                 (click)="resetFilters()">
                 Reset
               </button>
-              <div class="filter-slot collapsible-filter">
+              <div class="filter-slot role-slot collapsible-filter">
+                <app-role-filter dropdownId="mythicPlusRole" [selected]="roleFilter()" (selectedChange)="setRole($event)" />
+              </div>
+              <div class="filter-slot realm-slot collapsible-filter">
                 <app-filter-dropdown
                   dropdownId="mythicPlusRealm"
                   triggerId="mythicPlusRealmTrigger"
@@ -162,35 +155,31 @@
                   [highlightWhenSelected]="true"
                   (selectionChange)="setRealmFilter($event)" />
               </div>
-              @if (!roleFilter()) {
-                <div class="filter-slot collapsible-filter">
-                  <app-filter-dropdown
-                    dropdownId="mythicPlusClass"
-                    triggerId="mythicPlusClassTrigger"
-                    ariaLabel="Filter players by class"
-                    [options]="classOptions"
-                    [selectedValue]="classFilter()"
-                    [showIcons]="true"
-                    [compact]="true"
-                    [highlightWhenSelected]="true"
-                    (selectionChange)="setClassFilter($event)" />
-                </div>
-              }
-              @if (!roleFilter()) {
-                <div class="filter-slot collapsible-filter">
-                  <app-filter-dropdown
-                    dropdownId="mythicPlusSpec"
-                    triggerId="mythicPlusSpecTrigger"
-                    ariaLabel="Filter players by spec"
-                    [options]="specOptions()"
-                    [selectedValue]="specFilter()"
-                    [showIcons]="true"
-                    [compact]="true"
-                    [highlightWhenSelected]="true"
-                    [disabled]="classFilter() === undefined"
-                    (selectionChange)="setSpecFilter($event)" />
-                </div>
-              }
+              <div class="filter-slot collapsible-filter">
+                <app-filter-dropdown
+                  dropdownId="mythicPlusClass"
+                  triggerId="mythicPlusClassTrigger"
+                  ariaLabel="Filter players by class"
+                  [options]="classOptions()"
+                  [selectedValue]="classFilter()"
+                  [showIcons]="true"
+                  [compact]="true"
+                  [highlightWhenSelected]="true"
+                  (selectionChange)="setClassFilter($event)" />
+              </div>
+              <div class="filter-slot collapsible-filter">
+                <app-filter-dropdown
+                  dropdownId="mythicPlusSpec"
+                  triggerId="mythicPlusSpecTrigger"
+                  ariaLabel="Filter players by spec"
+                  [options]="specOptions()"
+                  [selectedValue]="specFilter()"
+                  [showIcons]="true"
+                  [compact]="true"
+                  [highlightWhenSelected]="true"
+                  [disabled]="classFilter() === undefined"
+                  (selectionChange)="setSpecFilter($event)" />
+              </div>
             }
             @if (view() === 'runs' && characterFilter(); as character) {
               <div class="character-chip">

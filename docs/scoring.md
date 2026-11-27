@@ -182,8 +182,17 @@ decision: ask first.** When a rule does change, change its tests first and see t
   of spec.
 - Where a page offers fewer roles, it lists only those: a boss's Damage tab has no Healer
   (healers rank under Healing), and Talent Analytics with a class picked lists only the roles
-  that class can fill. The Mythic+ Roles views need a role, so they have no "All roles".
-- **Tests:** `wow.spec.ts`, `role-filter.component.spec.ts`.
+  that class can fill. The Mythic+ guild page's Roles view needs a role, so it has no "All
+  roles". The Mythic+ leaderboard has no Roles view: its role dropdown sits on Players beside
+  realm, class and spec, and starts on "All roles".
+- Where class and spec dropdowns sit beside the role, they fit it: they list only the classes
+  and specs of that role, a picked class without one is cleared, and a class with only one
+  gets that spec picked (a Paladin on Tank gets Protection). `fitClassAndSpecTo`,
+  `classOptionsFor` and `specFilterOptions(classId, role)` in `wow-specs.ts` do this; the raid
+  leaderboard and boss tabs call them through `fitClassAndSpec`
+  ([Raid leaderboard](#raid-leaderboard)), the Mythic+ leaderboard through `fitFiltersToRole`.
+- **Tests:** `wow.spec.ts`, `wow-specs.spec.ts`, `role-filter.component.spec.ts`,
+  `mythic-plus-leaderboard.spec.ts`.
 
 ## Mythic+
 

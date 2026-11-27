@@ -8,7 +8,7 @@ import {
   linkedSignal,
   signal
 } from '@angular/core';
-import { ActivatedRoute, RouterLink } from '@angular/router';
+import { ActivatedRoute, ParamMap, RouterLink } from '@angular/router';
 import { injectCompactViewport } from '../../shared/compact-viewport';
 import { SkeletonBlock } from '../../shared/skeleton';
 import {
@@ -56,19 +56,21 @@ import { MythicPlusPageStore } from './mythic-plus-page.store';
 import {
   LeaderboardPeriod,
   LeaderboardView,
+  PlayerClassFilters,
   RankedRun,
   RunOrder,
   emptyLeaderboardMessage,
   filterRuns,
+  fitFiltersToRole,
   memberFilter,
   realmFilterOptions,
   runsInScope
 } from './mythic-plus-leaderboard';
 import { getClassColor } from '../../game/class-colors';
 import { GlideDirective } from '../../shared/motion/glide.directive';
-import { CLASS_FILTER_OPTIONS, CLASS_NAMES, RoleFilter, parseClassId, parseRoleFilter } from '../../game/wow';
+import { CLASS_NAMES, ROLE_FILTER_LABELS, RoleFilter, parseClassId, parseRoleFilter } from '../../game/wow';
 import { RoleFilterComponent } from '../../shared/role-filter.component';
-import { parseSpecName, specFilterOptions } from '../../game/wow-specs';
+import { classOptionsFor, parseSpecName, specFilterOptions, specsForRole } from '../../game/wow-specs';
 import { injectReplaceUrl, parsePage } from '../../core/url-state';
 import { LoadStateComponent } from '../../shared/load-state.component';
 import { PagerComponent } from '../../shared/pager.component';
@@ -80,6 +82,11 @@ import { mythicPlusProfileLink } from '../../core/page-links';
 interface RankedPlayer {
   player: PlayerScore;
   rank: number;
+}
+
+function linkClassFilters(query: ParamMap, role: RoleFilter | undefined): PlayerClassFilters {
+  const classId = parseClassId(query.get('class'));
+  return fitFiltersToRole(role, { classId, spec: parseSpecName(classId, query.get('spec')) });
 }
 
 interface CharacterFilter {
@@ -146,18 +153,18 @@ export class MythicPlusPageComponent implements OnInit {
     this.route.snapshot.queryParamMap.get('view') === 'players' ? 'players' : 'runs');
   readonly runOrder = signal<RunOrder>(this.route.snapshot.queryParamMap.get('sort') === 'latest' ? 'latest' : 'best');
   readonly realmFilter = signal<string | undefined>(this.route.snapshot.queryParamMap.get('realm')?.toLowerCase() || undefined);
-  readonly classFilter = signal<number | undefined>(parseClassId(this.route.snapshot.queryParamMap.get('class')));
-  readonly specFilter = signal<string | undefined>(
-    parseSpecName(this.classFilter(), this.route.snapshot.queryParamMap.get('spec')));
   readonly roleFilter = signal<RoleFilter | undefined>(
     this.view() === 'players' ? parseRoleFilter(this.route.snapshot.queryParamMap.get('role')) : undefined);
+  private readonly linkFilters = linkClassFilters(this.route.snapshot.queryParamMap, this.roleFilter());
+  readonly classFilter = signal<number | undefined>(this.linkFilters.classId);
+  readonly specFilter = signal<string | undefined>(this.linkFilters.spec);
   readonly chartRole = signal<RoleFilter | undefined>(parseRoleFilter(this.route.snapshot.queryParamMap.get('chartRole')));
   readonly period = signal<LeaderboardPeriod>(
     this.route.snapshot.queryParamMap.get('period') === 'week' ? 'week' : 'season');
 
-  readonly classOptions = CLASS_FILTER_OPTIONS;
+  readonly classOptions = computed(() => classOptionsFor(specsForRole(this.roleFilter())));
 
-  readonly specOptions = computed(() => specFilterOptions(this.classFilter()));
+  readonly specOptions = computed(() => specFilterOptions(this.classFilter(), this.roleFilter()));
 
   readonly realmOptions = computed(() => realmFilterOptions(currentPlayers(this.index())));
 
@@ -168,7 +175,9 @@ export class MythicPlusPageComponent implements OnInit {
 
   readonly activeFilterLabels = computed(() => {
     const classId = this.classFilter();
+    const role = this.roleFilter();
     return [
+      role && ROLE_FILTER_LABELS[role],
       this.realmName(),
       classId === undefined ? undefined : CLASS_NAMES[classId],
       classId === undefined ? undefined : this.specFilter()
@@ -390,6 +399,7 @@ export class MythicPlusPageComponent implements OnInit {
   }
 
   resetFilters(): void {
+    this.roleFilter.set(undefined);
     this.realmFilter.set(undefined);
     this.classFilter.set(undefined);
     this.specFilter.set(undefined);
@@ -405,6 +415,7 @@ export class MythicPlusPageComponent implements OnInit {
 
     this.classFilter.set(classId);
     this.specFilter.set(undefined);
+    this.fitClassAndSpecToRole();
     this.page.set(1);
     this.syncQueryParams();
   }
@@ -457,39 +468,31 @@ export class MythicPlusPageComponent implements OnInit {
   }
 
   setView(view: LeaderboardView): void {
-    if (view === this.view() && !(view === 'players' && this.roleFilter())) {
+    if (view === this.view()) {
       return;
     }
 
     this.view.set(view);
-    this.roleFilter.set(undefined);
-    this.page.set(1);
-    this.expandedRunId.set(undefined);
-    this.syncQueryParams();
-  }
-
-  showRoles(): void {
-    if (this.view() === 'players' && this.roleFilter()) {
-      return;
-    }
-
-    this.view.set('players');
-    this.roleFilter.set('tank');
-    this.classFilter.set(undefined);
-    this.specFilter.set(undefined);
     this.page.set(1);
     this.expandedRunId.set(undefined);
     this.syncQueryParams();
   }
 
   setRole(role: RoleFilter | undefined): void {
-    if (!role || role === this.roleFilter()) {
+    if (role === this.roleFilter()) {
       return;
     }
 
     this.roleFilter.set(role);
+    this.fitClassAndSpecToRole();
     this.page.set(1);
     this.syncQueryParams();
+  }
+
+  private fitClassAndSpecToRole(): void {
+    const fitted = fitFiltersToRole(this.roleFilter(), { classId: this.classFilter(), spec: this.specFilter() });
+    this.classFilter.set(fitted.classId);
+    this.specFilter.set(fitted.spec);
   }
 
   setChartRole(role: RoleFilter | undefined): void {

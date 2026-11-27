@@ -3,6 +3,7 @@ import { MythicPlusDungeon, MythicPlusIndex, MythicPlusMember, MythicPlusRun } f
 import {
   emptyLeaderboardMessage,
   filterRuns,
+  fitFiltersToRole,
   memberFilter,
   realmFilterOptions,
   runsInScope
@@ -102,6 +103,24 @@ describe('filterRuns', () => {
   });
 });
 
+describe('fitFiltersToRole', () => {
+  it('keeps the class and spec without a role, or when they fit it', () => {
+    expect(fitFiltersToRole(undefined, { classId: 11, spec: 'Feral' })).toEqual({ classId: 11, spec: 'Feral' });
+    expect(fitFiltersToRole('melee', { classId: 11, spec: 'Feral' })).toEqual({ classId: 11, spec: 'Feral' });
+    expect(fitFiltersToRole('dps', { classId: 11 })).toEqual({ classId: 11, spec: undefined });
+  });
+
+  it('clears a class without a spec of the role', () => {
+    expect(fitFiltersToRole('tank', { classId: 8, spec: 'Fire' })).toEqual({ classId: undefined, spec: undefined });
+  });
+
+  it("picks the class's only spec of the role, and drops a spec of another role", () => {
+    expect(fitFiltersToRole('tank', { classId: 2 })).toEqual({ classId: 2, spec: 'Protection' });
+    expect(fitFiltersToRole('ranged', { classId: 3, spec: 'Survival' })).toEqual({ classId: 3, spec: undefined });
+    expect(fitFiltersToRole('dps', { classId: 11, spec: 'Guardian' })).toEqual({ classId: 11, spec: undefined });
+  });
+});
+
 describe('emptyLeaderboardMessage', () => {
   const base = { view: 'runs' as const, period: 'season' as const, query: '' };
 
@@ -121,6 +140,15 @@ describe('emptyLeaderboardMessage', () => {
     expect(emptyLeaderboardMessage({ ...players, role: 'melee' })).toBe('No melee DPS player has a run yet.');
     expect(emptyLeaderboardMessage({ ...players, role: 'ranged', realmName: 'Tauri' }))
       .toBe('No ranged DPS player on Tauri has a run yet.');
+  });
+
+  it('names the class within a role, and a spec on its own', () => {
+    const players = { ...base, view: 'players' as const };
+    expect(emptyLeaderboardMessage({ ...players, role: 'dps', classId: 11 })).toBe('No Druid DPS player has a run yet.');
+    expect(emptyLeaderboardMessage({ ...players, role: 'tank', classId: 11, realmName: 'Tauri' }))
+      .toBe('No Druid tank on Tauri has a run yet.');
+    expect(emptyLeaderboardMessage({ ...players, role: 'tank', classId: 11, spec: 'Guardian' }))
+      .toBe('No Guardian Druid has a run yet.');
   });
 
   it('falls back to the period and the dungeon', () => {

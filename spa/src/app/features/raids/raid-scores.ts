@@ -1,5 +1,6 @@
 import { SpecPerformanceSummary, summarizeSpecScores } from '../../shared/spec-charts/spec-performance';
-import { CLASS_FILTER_OPTIONS, matchesRoleFilter, raceFaction, realmSlug, Role, RoleFilter } from '../../game/wow';
+import { matchesRoleFilter, raceFaction, realmSlug, Role, RoleFilter } from '../../game/wow';
+import { ClassAndSpec, classOptionsFor, fitClassAndSpecTo } from '../../game/wow-specs';
 import { FilterDropdownOption } from '../../shared/filter-dropdown.types';
 import { ScanChange, scanChanges } from '../../shared/scan-change';
 import { RaidBoss, RaidSpec, RaidCharacter, RaidMember, RaidKillDetails } from './raid-logs.types';
@@ -12,11 +13,6 @@ export interface RankingFilter {
   specId?: number;
   realm?: string;
   role?: RoleFilter;
-}
-
-export interface ClassAndSpec {
-  classId?: number;
-  specId?: number;
 }
 
 export interface RankedPerformance {
@@ -38,6 +34,10 @@ function ranks(spec: RaidSpec, metric: RaidMetric, role: RoleFilter | undefined)
   return countsFor(metric, spec) && matchesRoleFilter(spec, role);
 }
 
+function rankingSpecs(specs: ReadonlyMap<number, RaidSpec>, metric: RaidMetric, role: RoleFilter | undefined): RaidSpec[] {
+  return [...specs.values()].filter(spec => ranks(spec, metric, role));
+}
+
 export function rankedSpecs(
   specs: ReadonlyMap<number, RaidSpec>,
   classId: number | undefined,
@@ -52,8 +52,7 @@ export function rankedClassOptions(
   metric: RaidMetric,
   role?: RoleFilter
 ): FilterDropdownOption[] {
-  const ranked = new Set([...specs.values()].filter(spec => ranks(spec, metric, role)).map(spec => spec.classId));
-  return CLASS_FILTER_OPTIONS.filter(option => typeof option.value !== 'number' || ranked.has(option.value));
+  return classOptionsFor(rankingSpecs(specs, metric, role));
 }
 
 export function fitClassAndSpec(
@@ -62,13 +61,7 @@ export function fitClassAndSpec(
   metric: RaidMetric,
   role?: RoleFilter
 ): ClassAndSpec {
-  const ranked = [...specs.values()].filter(spec => ranks(spec, metric, role));
-  const classId = ranked.some(spec => spec.classId === picked.classId) ? picked.classId : undefined;
-  const classSpecs = ranked.filter(spec => spec.classId === classId);
-  const specId = classSpecs.some(spec => spec.id === picked.specId)
-    ? picked.specId
-    : classSpecs.length === 1 ? classSpecs[0].id : undefined;
-  return { classId, specId };
+  return fitClassAndSpecTo(rankingSpecs(specs, metric, role), picked);
 }
 
 export function rankCharacters(

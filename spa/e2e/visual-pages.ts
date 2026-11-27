@@ -104,7 +104,13 @@ export const VISUAL_PAGES: readonly VisualPage[] = [
   { name: 'state-ladder-search', path: '/?search=Lara' },
   { name: 'state-compare-two', path: '/compare?a=Tauri:Larahh&b=Tauri:Darkpaladino' },
   { name: 'state-mythic-plus-dropdown', path: '/mythic-plus?view=players', clicks: ['#mythicPlusRealmTrigger'], only: 'desktop' },
-  { name: 'state-mythic-plus-role-menu', path: '/mythic-plus?view=players&role=melee', clicks: ['#mythicPlusRoleTrigger'] },
+  { name: 'state-mythic-plus-role-menu', path: '/mythic-plus?view=players&role=melee', clicks: ['#mythicPlusRoleTrigger'], only: 'desktop' },
+  {
+    name: 'state-mythic-plus-role-menu-phone',
+    path: '/mythic-plus?view=players&role=tank&class=11',
+    clicks: ['.mobile-filter-toggle', '#mythicPlusRoleTrigger'],
+    only: 'phone'
+  },
   { name: 'state-mythic-plus-chart-role', path: '/mythic-plus?chartRole=ranged', only: 'desktop' },
   { name: 'state-mythic-plus-chart-performance', path: '/mythic-plus', clicks: ['.view-filter button:has-text("Performance")'], only: 'desktop' },
   {
